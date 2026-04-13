@@ -9,29 +9,29 @@
 #define ANALYZE_H
 
 #include <stdint.h>
+#include "elevation.h"
 
-/*
- * ピーク解析結果
- */
 typedef struct {
-    int32_t peak_x, peak_y;     /* ピーク座標(タイル内ピクセル) */
-    float   peak_elev;          /* ピーク標高(m) */
-    int32_t col_x, col_y;       /* コル座標(タイル内ピクセル) */
-    float   col_elev;           /* コル標高(m) */
-    float   prominence;         /* プロミネンス(m) */
-    int     is_tile_top;        /* タイル内最高峰フラグ */
+    int32_t peak_x, peak_y;
+    float   peak_elev;
+    int32_t col_x, col_y;
+    float   col_elev;
+    float   prominence;
+    int     is_tile_top;    /* タイル最高峰フラグ(境界またぎ未解決) */
 } PeakResult;
 
-/*
- * タイル解析結果
- */
 typedef struct {
-    PeakResult *peaks;          /* ピーク結果リスト */
-    int         peak_cnt;       /* ピーク数 */
+    PeakResult *peaks;
+    int         peak_cnt;
 } AnalyzeResult;
 
-/* 関数プロトタイプ */
 AnalyzeResult *analyze_tile(const char *png_path, float min_prominence);
+AnalyzeResult *analyze_tile_overlap(const char *tile_dir,
+                                     TileCoord tc,
+                                     float min_prominence);
+AnalyzeResult *analyze_tile_data(const ElevTile *tile,
+                                  uint32_t main_w, uint32_t main_h,
+                                  float min_prominence);
 void           analyze_result_destroy(AnalyzeResult *result);
 
 #endif /* ANALYZE_H */
