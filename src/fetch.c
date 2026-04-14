@@ -233,22 +233,15 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
         pthread_create(&threads[t], NULL, worker_thread, &args[t]);
 
     /* 進捗監視(メインスレッド) */
-    int last_done = 0;
     while (1) {
         sleep(5);  /* 5秒ごとに進捗表示 */
 
         int fetched = 0, nodata = 0;
-        /* 全スレッドの進捗を集計(ロックなし・概算でOK) */
         for (int t = 0; t < nthreads; t++) {
             fetched += args[t].fetched;
             nodata  += args[t].nodata;
         }
         int done = fetched + nodata;
-
-        /* 全部終わったら抜ける */
-        if (done >= need && done > last_done) {
-            last_done = done;
-        }
 
         clock_gettime(CLOCK_MONOTONIC, &ts_now);
         double elapsed = (ts_now.tv_sec  - ts_start.tv_sec) +
@@ -265,7 +258,7 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
                fetched, cached, nodata);
         fflush(stdout);
 
-        if (done >= need) break;
+        if (done >= need) break;  /* 全スレッド完了 */
     }
 
     /* スレッド終了待ち */
