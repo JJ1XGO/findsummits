@@ -113,7 +113,7 @@ ElevTile *elev_load_png(const char *path)
     uint32_t w, h, ch;
     uint8_t *rgb = load_png_rgb(path, &w, &h, &ch);
     if (!rgb) {
-        fprintf(stderr, "elev_load_png: 読み込み失敗: %s\n", path);
+
         return NULL;
     }
 
