@@ -202,6 +202,73 @@ ElevTile *elev_load_with_overlap(const char *tile_dir, TileCoord tc)
     return tile;
 }
 
+/*
+ * タイルを8方向オーバーラップで読み込む（推奨版）
+ * メインタイルを中心に上下左右＋斜め4方向から必要なピクセルを重ねる
+ */
+ElevTile *elev_load_with_overlap_8dir(const char *tile_dir, TileCoord tc)
+{
+    uint32_t W = TILE_PIX + 2;  /* 258 */
+    uint32_t H = TILE_PIX + 2;  /* 258 */
+
+    ElevTile *tile = malloc(sizeof(ElevTile));
+    if (!tile) return NULL;
+    tile->width  = W;
+    tile->height = H;
+    tile->data   = calloc(W * H, sizeof(float));
+    if (!tile->data) { free(tile); return NULL; }
+
+    /* オフセット +1 で中央にメインタイルを配置 */
+    int offset = 1;
+
+    /* 1. メインタイル (256×256) */
+    load_tile_into(tile, offset, offset,
+                   tile_dir, tc.x, tc.y,
+                   0, 0, TILE_PIX, TILE_PIX);
+
+    /* 2. 上方向 (y-1) - 下端1行 */
+    load_tile_into(tile, offset, 0,
+                   tile_dir, tc.x, tc.y-1,
+                   0, TILE_PIX-1, TILE_PIX, TILE_PIX);
+
+    /* 3. 下方向 (y+1) - 上端1行 */
+    load_tile_into(tile, offset, TILE_PIX + offset,
+                   tile_dir, tc.x, tc.y+1,
+                   0, 0, TILE_PIX, 1);
+
+    /* 4. 左方向 (x-1) - 右端1列 */
+    load_tile_into(tile, 0, offset,
+                   tile_dir, tc.x-1, tc.y,
+                   TILE_PIX-1, 0, TILE_PIX, TILE_PIX);
+
+    /* 5. 右方向 (x+1) - 左端1列 */
+    load_tile_into(tile, TILE_PIX + offset, offset,
+                   tile_dir, tc.x+1, tc.y,
+                   0, 0, 1, TILE_PIX);
+
+    /* 6. 左上斜め */
+    load_tile_into(tile, 0, 0,
+                   tile_dir, tc.x-1, tc.y-1,
+                   TILE_PIX-1, TILE_PIX-1, TILE_PIX, TILE_PIX);
+
+    /* 7. 右上斜め */
+    load_tile_into(tile, TILE_PIX + offset, 0,
+                   tile_dir, tc.x+1, tc.y-1,
+                   0, TILE_PIX-1, 1, TILE_PIX);
+
+    /* 8. 左下斜め */
+    load_tile_into(tile, 0, TILE_PIX + offset,
+                   tile_dir, tc.x-1, tc.y+1,
+                   TILE_PIX-1, 0, TILE_PIX, 1);
+
+    /* 9. 右下斜め */
+    load_tile_into(tile, TILE_PIX + offset, TILE_PIX + offset,
+                   tile_dir, tc.x+1, tc.y+1,
+                   0, 0, 1, 1);
+
+    return tile;
+}
+
 void elev_destroy(ElevTile *tile)
 {
     if (!tile) return;
