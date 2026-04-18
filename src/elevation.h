@@ -45,4 +45,6 @@ ElevTile *elev_load_with_overlap(const char *tile_dir,
 void      elev_destroy(ElevTile *tile);
 float     elev_get(const ElevTile *tile, int x, int y);
 
+ElevTile *elev_load_with_overlap_8dir(const char *tile_dir, TileCoord tc);
+
 #endif /* ELEVATION_H */

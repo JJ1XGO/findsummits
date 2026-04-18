@@ -19,7 +19,16 @@
 #include "fetch.h"
 
 /*
- * 1次メッシュの全タイルを1枚の巨大ElevTileに展開する（8方向オーバーラップ対応）
+ * 1次メッシュの全タイルを1枚の巨大ElevTileに展開する
+ *
+ * bigタイルの座標系:
+ *   x=0, y=0                          : 外周ボーダー（海面=0、calloc済み）
+ *   x=1〜tile_w*TILE_PIX, y=1〜...    : メッシュデータ本体
+ *   x=W-1, y=H-1                      : 外周ボーダー（海面=0、calloc済み）
+ *
+ * 外周ボーダーはcallocで0埋め済みのため追加処理不要。
+ * Union-Findはボーダーの0標高をメッシュ外の「海面」として扱い、
+ * メッシュ端のピークのプロミネンス計算に利用する。
  */
 static ElevTile *load_mesh_tile(const char *tile_dir,
                                  const MeshTileRange *range)
@@ -27,7 +36,7 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
     uint32_t W = (uint32_t)range->tile_w * TILE_PIX + 2;
     uint32_t H = (uint32_t)range->tile_h * TILE_PIX + 2;
 
-    printf("  イメージサイズ: %u x %u ピクセル (8方向オーバーラップ込み)\n", W, H);
+    printf("  イメージサイズ: %u x %u ピクセル (外周ボーダー込み)\n", W, H);
     printf("  メモリ: %.1f MB\n",
            (double)W * H * sizeof(float) / 1024 / 1024);
 
@@ -35,7 +44,7 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
     if (!big) return NULL;
     big->width  = W;
     big->height = H;
-    big->data   = calloc(W * H, sizeof(float));
+    big->data   = calloc(W * H, sizeof(float));  /* 外周ボーダー=0で初期化 */
     if (!big->data) { free(big); return NULL; }
 
     int total = range->tile_w * range->tile_h;
@@ -43,6 +52,8 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
 
     for (int ty = range->y_min; ty <= range->y_max; ty++) {
         for (int tx = range->x_min; tx <= range->x_max; tx++) {
+            /* メッシュ内グリッド位置（0始まり）から bigタイル上の書き込み先を計算 */
+            /* +1 は外周ボーダー1ピクセル分のオフセット */
             int dst_x = (tx - range->x_min) * TILE_PIX + 1;
             int dst_y = (ty - range->y_min) * TILE_PIX + 1;
 
@@ -50,27 +61,27 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
             ElevTile *tile = elev_load_with_overlap_8dir(tile_dir, tc);
 
             if (tile) {
-                /* 中央256×256だけをコピーし、オーバーラップ領域は明確に0にしておく */
+                /* 中央256×256部分のみをコピー（オーバーラップ分を除く） */
+                /* elev_load_with_overlap_8dir は258×258を返し、
+                 * メインタイルは (1,1)〜(256,256) に配置される */
                 for (uint32_t py = 0; py < TILE_PIX; py++) {
                     for (uint32_t px = 0; px < TILE_PIX; px++) {
                         float elev = elev_get(tile, px + 1, py + 1);
-                        if (elev == ELEV_NODATA || elev < 0.0f) {
+                        if (elev == ELEV_NODATA || elev < 0.0f)
                             elev = 0.0f;
-                        }
                         big->data[(dst_y + py) * W + (dst_x + px)] = elev;
                     }
                 }
-                /* オーバーラップ領域（端の1ピクセル分）は明確に0にする */
-                /* 上端と下端 */
-                for (uint32_t px = 0; px < W; px++) {
-                    big->data[(dst_y - 1) * W + px] = 0.0f;
-                    big->data[(dst_y + TILE_PIX) * W + px] = 0.0f;
-                }
-                /* 左端と右端 */
-                for (uint32_t py = 0; py < H; py++) {
-                    big->data[py * W + (dst_x - 1)] = 0.0f;
-                    big->data[py * W + (dst_x + TILE_PIX)] = 0.0f;
-                }
+                /*
+                 * [修正] 0リセットブロックを削除。
+                 *
+                 * 旧コードはここで dst_y-1 行と dst_x-1 列を 0 にリセットして
+                 * いたが、これは直前のタイルが書き込んだデータを破壊するバグ。
+                 * 例: タイル(gx,gy)のリセットが dst_y-1 = gy*TILE_PIX 行を
+                 * 0にすると、タイル(gx,gy-1)の最終行が消える。
+                 * 外周ボーダーは calloc で既に 0 になっているため、
+                 * リセット処理は不要。
+                 */
                 elev_destroy(tile);
             }
 
@@ -87,17 +98,20 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
 
 /*
  * ピクセル座標から緯度経度を計算する
+ *
+ * px, py は bigタイル上の座標（外周ボーダーが x=0, y=0）。
+ * メッシュデータは x=1, y=1 から始まるため、グローバルタイル座標への
+ * 変換では -1 のオフセットが必要。
  */
 static void pixel_to_latlon(const MeshTileRange *range,
                               int px, int py,
                               double *lat, double *lon)
 {
-    /* ピクセル座標をグローバルタイル座標に変換 */
-    double global_px = range->x_min * TILE_PIX + px;
-    double global_py = range->y_min * TILE_PIX + py;
+    /* [修正] bigタイルの外周ボーダー分（+1オフセット）を差し引く */
+    double global_px = range->x_min * TILE_PIX + (px - 1);
+    double global_py = range->y_min * TILE_PIX + (py - 1);
     int z = range->z;
 
-    /* タイル座標から緯度経度 */
     double n = pow(2.0, z);
     *lon = global_px / (n * TILE_PIX) * 360.0 - 180.0;
     double mapy = 3.14159265358979 -
@@ -139,10 +153,11 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
            (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9);
 
     /* === デバッグ：巨大イメージに標高が入っているか確認 === */
+    /* [注] メッシュデータは bigタイルの (1,1) から始まるため +1 オフセット */
     float max_elev = 0.0f;
     int valid_pixels = 0;
-    for (uint32_t y = 0; y < TILE_PIX * range.tile_h; y++) {
-        for (uint32_t x = 0; x < TILE_PIX * range.tile_w; x++) {
+    for (uint32_t y = 1; y <= (uint32_t)(TILE_PIX * range.tile_h); y++) {
+        for (uint32_t x = 1; x <= (uint32_t)(TILE_PIX * range.tile_w); x++) {
             float e = big->data[y * big->width + x];
             if (e > 10.0f) {
                 valid_pixels++;
@@ -151,16 +166,31 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
         }
     }
     printf("  巨大イメージ有効ピクセル: %d / %u   最高標高: %.1fm\n",
-           valid_pixels, TILE_PIX * range.tile_w * TILE_PIX * range.tile_h, max_elev);
+           valid_pixels,
+           (uint32_t)TILE_PIX * range.tile_w * TILE_PIX * range.tile_h,
+           max_elev);
     /* ==================================================== */
 
     /* Union-Find解析 */
     printf("  Union-Find解析開始...\n");
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
-    /* オーバーラップ領域を避けるため、端から8ピクセル内側に絞る */
-    uint32_t effective_w = TILE_PIX * range.tile_w - 16;
-    uint32_t effective_h = TILE_PIX * range.tile_h - 16;
+    /*
+     * [修正] ピーク報告範囲を正しく設定。
+     *
+     * bigタイルは (tile_w*TILE_PIX + 2) × (tile_h*TILE_PIX + 2)。
+     * analyze_tile_data は p->x >= main_w または p->y >= main_h の
+     * ピークを除外する（上限チェックのみ）。
+     *
+     * メッシュデータが x=1〜tile_w*TILE_PIX に存在するため:
+     *   main_w = tile_w*TILE_PIX + 1  → x=tile_w*TILE_PIX まで含む
+     *   main_h = tile_h*TILE_PIX + 1
+     *
+     * x=0 の外周ボーダーは calloc で 0 のためピーク検出されない。
+     * 旧コードの -16（端から8ピクセル削り）は不要。
+     */
+    uint32_t effective_w = TILE_PIX * range.tile_w + 1;
+    uint32_t effective_h = TILE_PIX * range.tile_h + 1;
 
     AnalyzeResult *result = analyze_tile_data(big,
                                                effective_w,
