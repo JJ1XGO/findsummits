@@ -22,5 +22,8 @@ typedef struct {
 
 /* 関数プロトタイプ */
 int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode);
-
+/* 外部から巨大イメージを作成して使うための関数（視覚化用） */
+ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range);
+/* ピクセル座標から緯度経度を計算する（外部から使用可能） */
+void pixel_to_latlon(const MeshTileRange *range, int px, int py, double *lat, double *lon);
 #endif /* MESH_ANALYZE_H */

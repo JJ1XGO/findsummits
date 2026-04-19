@@ -30,8 +30,7 @@
  * Union-Findはボーダーの0標高をメッシュ外の「海面」として扱い、
  * メッシュ端のピークのプロミネンス計算に利用する。
  */
-static ElevTile *load_mesh_tile(const char *tile_dir,
-                                 const MeshTileRange *range)
+ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range)
 {
     uint32_t W = (uint32_t)range->tile_w * TILE_PIX + 2;
     uint32_t H = (uint32_t)range->tile_h * TILE_PIX + 2;
@@ -57,8 +56,17 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
             int dst_x = (tx - range->x_min) * TILE_PIX + 1;
             int dst_y = (ty - range->y_min) * TILE_PIX + 1;
 
+            /* 8方向オーバーラップ + dem10補完でタイルを読み込む */
             TileCoord tc = {15, tx, ty};
-            ElevTile *tile = elev_load_with_overlap_8dir(tile_dir, tc);
+            ElevTile *tile = elev_load_with_overlap_8dir_with_dem10(tile_dir, tc);
+
+            /* // ★デバッグ用
+            if (!tile) {
+                printf("  タイル読み込み失敗: z=15 x=%d y=%d\n", tx, ty);
+            } else {
+                printf("  タイル読み込み成功: z=15 x=%d y=%d (サイズ%ux%u)\n",
+                    tx, ty, tile->width, tile->height);
+            } */
 
             if (tile) {
                 /* 中央256×256部分のみをコピー（オーバーラップ分を除く） */
@@ -67,6 +75,12 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
                 for (uint32_t py = 0; py < TILE_PIX; py++) {
                     for (uint32_t px = 0; px < TILE_PIX; px++) {
                         float elev = elev_get(tile, px + 1, py + 1);
+
+                        /* // ★デバッグ用（最初の1タイルだけ確認）
+                        if (tx == range->x_min && ty == range->y_min && px == 0 && py == 0) {
+                            printf("  最初のピクセル標高値: %f\n", elev);
+                        } */
+
                         if (elev == ELEV_NODATA || elev < 0.0f)
                             elev = 0.0f;
                         big->data[(dst_y + py) * W + (dst_x + px)] = elev;
@@ -103,7 +117,7 @@ static ElevTile *load_mesh_tile(const char *tile_dir,
  * メッシュデータは x=1, y=1 から始まるため、グローバルタイル座標への
  * 変換では -1 のオフセットが必要。
  */
-static void pixel_to_latlon(const MeshTileRange *range,
+void pixel_to_latlon(const MeshTileRange *range,
                               int px, int py,
                               double *lat, double *lon)
 {

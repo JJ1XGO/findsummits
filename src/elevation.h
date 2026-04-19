@@ -44,7 +44,8 @@ ElevTile *elev_load_with_overlap(const char *tile_dir,
                                   TileCoord tc);
 void      elev_destroy(ElevTile *tile);
 float     elev_get(const ElevTile *tile, int x, int y);
-
+/* dem5失敗時にdem10で補完するバージョン（8方向オーバーラップ対応） */
+ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *tile_dir, TileCoord tc);
 ElevTile *elev_load_with_overlap_8dir(const char *tile_dir, TileCoord tc);
 
 #endif /* ELEVATION_H */

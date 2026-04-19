@@ -12,8 +12,9 @@
 #include "elevation.h"
 #include "unionfind.h"
 
-static const int dx[] = {0, 0, -1, 1};
-static const int dy[] = {-1, 1, 0, 0};
+/* 近傍を8方向（上下左右＋斜め4方向）に拡張 */
+static const int dx[] = { 0,  0, -1,  1, -1,  1, -1,  1 };
+static const int dy[] = {-1,  1,  0,  0, -1, -1,  1,  1 };
 
 typedef struct {
     int32_t x, y;
@@ -75,10 +76,10 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
 
         processed[i] = 1;
 
-        int32_t neighbor_roots[4];
+        int32_t neighbor_roots[8];
         int     neighbor_cnt = 0;
 
-        for (int d = 0; d < 4; d++) {
+        for (int d = 0; d < 8; d++) {
             int nx = x + dx[d];
             int ny = y + dy[d];
             if (nx < 0 || nx >= (int)W || ny < 0 || ny >= (int)H) continue;

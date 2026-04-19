@@ -158,7 +158,22 @@ static void load_tile_into(ElevTile *dst,
     const char *dems[] = {"a", "b", "c"};
     for (int d = 0; d < 3 && !rgb; d++) {
         make_tile_path(path, sizeof(path), tile_dir, tx, ty, dems[d]);
+
+        /* // ★デバッグ用
+        if (tx == 29036 && ty == 12867) {
+            printf("  試しているパス: %s\n", path);
+        } */
+
         rgb = load_png_rgb(path, &w, &h, &ch);
+        /* // ★デバッグ用
+        if (tx == 29036 && ty == 12867 && d == 0) {
+            if (rgb) {
+                printf("  PNG読み込み成功: %ux%u ch=%u\n", w, h, ch);
+                printf("  先頭ピクセルRGB: %d %d %d\n", rgb[0], rgb[1], rgb[2]);
+            } else {
+                printf("  PNG読み込み失敗!\n");
+            }
+        } */
     }
 
     if (!rgb) return;  /* タイルなし→0埋めのまま */
@@ -279,4 +294,66 @@ void elev_destroy(ElevTile *tile)
 float elev_get(const ElevTile *tile, int x, int y)
 {
     return tile->data[y * tile->width + x];
+}
+
+/*
+ * 8方向オーバーラップ + dem10補完付きでタイルを読み込む
+ * dem5a/b/c がすべて失敗した場合、ズームレベル14のdem10で補完する
+ */
+ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *tile_dir, TileCoord tc)
+{
+    /* まずdem5で試す */
+    ElevTile *tile = elev_load_with_overlap_8dir(tile_dir, tc);
+    if (tile) {
+        /* dem5で有効なデータがかなり入っていればそのまま返す */
+        int valid = 0;
+        for (uint32_t y = 1; y <= TILE_PIX; y++) {
+            for (uint32_t x = 1; x <= TILE_PIX; x++) {
+                if (elev_get(tile, x, y) > 10.0f) valid++;
+            }
+        }
+
+        // ★デバッグ用
+        // printf("  dem5有効ピクセル数: %d / %d\n", valid, TILE_PIX * TILE_PIX);
+
+        if (valid >= 0) {  /* dem5データをそのまま使う */
+            return tile;
+        }
+        elev_destroy(tile);
+    }
+
+    /* dem5がほとんど無効だった場合、dem10で補完 */
+    printf("  dem5 failed, trying dem10 for tile %d/%d/%d\n", tc.z, tc.x, tc.y);
+
+    /* dem10はズームレベル14なので、座標を変換して取得 */
+    int dem10_x = tc.x / 2;
+    int dem10_y = tc.y / 2;
+    int offset_x = (tc.x % 2) * TILE_PIX;
+    int offset_y = (tc.y % 2) * TILE_PIX;
+
+    TileCoord dem10_tc = {14, dem10_x, dem10_y};
+    ElevTile *dem10_tile = elev_load_with_overlap_8dir(tile_dir, dem10_tc);  /* 仮に8方向で取得 */
+
+    if (!dem10_tile) return NULL;
+
+    /* dem10から対応する256×256部分を抜き出して返す（簡易版） */
+    ElevTile *result = malloc(sizeof(ElevTile));
+    result->width = TILE_PIX + 2;
+    result->height = TILE_PIX + 2;
+    result->data = calloc(result->width * result->height, sizeof(float));
+
+    for (uint32_t y = 0; y < TILE_PIX + 2; y++) {
+        for (uint32_t x = 0; x < TILE_PIX + 2; x++) {
+            int src_x = offset_x + x;
+            int src_y = offset_y + y;
+            if (src_x < dem10_tile->width && src_y < dem10_tile->height) {
+                result->data[y * result->width + x] = elev_get(dem10_tile, src_x, src_y);
+            } else {
+                result->data[y * result->width + x] = 0.0f;
+            }
+        }
+    }
+
+    elev_destroy(dem10_tile);
+    return result;
 }
