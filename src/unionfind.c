@@ -83,6 +83,9 @@ int uf_new_peak(UnionFind *uf, int32_t i, int32_t x, int32_t y, float elev)
  *
  * 同標高ピークの扱い:
  *   両方のコルを更新し、どちらかを代表にする
+ *
+ * [修正] peak_id < 0 のノードが渡された場合は早期リターン。
+ * analyze.c 側でフィルタしているが念のため防御する。
  */
 int uf_union(UnionFind *uf, int32_t a, int32_t b,
              float col_elev, int32_t col_x, int32_t col_y)
@@ -95,31 +98,29 @@ int uf_union(UnionFind *uf, int32_t a, int32_t b,
     int pid_a = uf->peak_id[ra];
     int pid_b = uf->peak_id[rb];
 
+    /* [修正] どちらかが海面コンポーネント（peak_id=-1）なら処理しない */
+    if (pid_a < 0 || pid_b < 0) return -1;
+
     int pid_winner, pid_loser;
     int32_t r_winner, r_loser;
 
     if (uf->peaks[pid_a].elev > uf->peaks[pid_b].elev) {
-        /* aの方が高い → aがwinner */
         pid_winner = pid_a; r_winner = ra;
         pid_loser  = pid_b; r_loser  = rb;
-        /* loserのキーコルを更新 */
         if (col_elev > uf->peaks[pid_loser].col_elev) {
             uf->peaks[pid_loser].col_elev = col_elev;
             uf->peaks[pid_loser].col_x    = col_x;
             uf->peaks[pid_loser].col_y    = col_y;
         }
     } else if (uf->peaks[pid_b].elev > uf->peaks[pid_a].elev) {
-        /* bの方が高い → bがwinner */
         pid_winner = pid_b; r_winner = rb;
         pid_loser  = pid_a; r_loser  = ra;
-        /* loserのキーコルを更新 */
         if (col_elev > uf->peaks[pid_loser].col_elev) {
             uf->peaks[pid_loser].col_elev = col_elev;
             uf->peaks[pid_loser].col_x    = col_x;
             uf->peaks[pid_loser].col_y    = col_y;
         }
     } else {
-        /* 同標高 → 両方のコルを更新してaをwinnerにする */
         pid_winner = pid_a; r_winner = ra;
         pid_loser  = pid_b; r_loser  = rb;
         if (col_elev > uf->peaks[pid_a].col_elev) {
@@ -134,7 +135,6 @@ int uf_union(UnionFind *uf, int32_t a, int32_t b,
         }
     }
 
-    /* loserをwinnerの子にする */
     uf->parent[r_loser] = r_winner;
     if (uf->rank[r_winner] == uf->rank[r_loser])
         uf->rank[r_winner]++;

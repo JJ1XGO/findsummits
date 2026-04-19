@@ -72,8 +72,6 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
         float   elev = pixels[pi].elev;
         int32_t i    = y * W + x;
 
-        if (elev <= 0.0f) continue;
-
         processed[i] = 1;
 
         int32_t neighbor_roots[8];
@@ -87,6 +85,7 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
             if (!processed[ni]) continue;
 
             int32_t root = uf_find(uf, ni);
+
             int already = 0;
             for (int k = 0; k < neighbor_cnt; k++)
                 if (neighbor_roots[k] == root) { already = 1; break; }
@@ -95,30 +94,55 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
         }
 
         if (neighbor_cnt == 0) {
-            uf_new_peak(uf, i, x, y, elev);
+            /* 海面・谷底ピクセルはピークを作らない */
+            if (elev > 0.0f)
+                uf_new_peak(uf, i, x, y, elev);
 
         } else if (neighbor_cnt == 1) {
-            uf->peak_id[i] = uf->peak_id[neighbor_roots[0]];
-            uf->parent[i]  = neighbor_roots[0];
-
-        } else {
-            /* コル発見 */
-            int32_t max_root = neighbor_roots[0];
-            for (int k = 1; k < neighbor_cnt; k++) {
-                int pid_k   = uf->peak_id[neighbor_roots[k]];
-                int pid_max = uf->peak_id[max_root];
-                if (pid_k >= 0 && pid_max >= 0 &&
-                    uf->peaks[pid_k].elev > uf->peaks[pid_max].elev)
-                    max_root = neighbor_roots[k];
+            int32_t root = neighbor_roots[0];
+            if (uf->peak_id[root] >= 0) {
+                /* 有効なピークコンポーネントに合流 */
+                uf->peak_id[i] = uf->peak_id[root];
+                uf->parent[i]  = root;
+            }
+            /* peak_id < 0（海面コンポーネント）への合流は何もしない：
+             * このピクセルは独立ピーク候補のまま残す。
+             * ただし elev <= 0 なら海面なのでピークも作らない */
+            else if (elev > 0.0f) {
+                uf_new_peak(uf, i, x, y, elev);
             }
 
-            uf->peak_id[i] = uf->peak_id[max_root];
-            uf->parent[i]  = max_root;
-
+        } else {
+            /* neighbor_cnt >= 2：コル発見。
+             * peak_id >= 0 のrootだけを対象にwinner(最高峰)を選ぶ */
+            int32_t max_root = -1;
             for (int k = 0; k < neighbor_cnt; k++) {
                 int32_t root = neighbor_roots[k];
-                if (root == max_root) continue;
-                uf_union(uf, i, root, elev, x, y);
+                if (uf->peak_id[root] < 0) continue;  /* 海面コンポーネントは除外 */
+                if (max_root < 0) {
+                    max_root = root;
+                } else {
+                    int pid_k   = uf->peak_id[root];
+                    int pid_max = uf->peak_id[max_root];
+                    if (uf->peaks[pid_k].elev > uf->peaks[pid_max].elev)
+                        max_root = root;
+                }
+            }
+
+            if (max_root < 0) {
+                /* 全隣接が海面コンポーネント：このピクセルも海面扱い */
+                if (elev > 0.0f)
+                    uf_new_peak(uf, i, x, y, elev);
+            } else {
+                uf->peak_id[i] = uf->peak_id[max_root];
+                uf->parent[i]  = max_root;
+
+                for (int k = 0; k < neighbor_cnt; k++) {
+                    int32_t root = neighbor_roots[k];
+                    if (root == max_root) continue;
+                    if (uf->peak_id[root] < 0) continue;  /* 海面コンポーネントはスキップ */
+                    uf_union(uf, i, root, elev, x, y);
+                }
             }
         }
     }
