@@ -65,8 +65,11 @@ static long download_url(const char *url, const char *path)
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_to_file);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);       /* スレッド安全タイムアウト */
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 100L);  /* 100bytes/s未満を失速とみなす */
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 15L);    /* 15秒失速したらタイムアウト */
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
     CURLcode res = curl_easy_perform(curl);
