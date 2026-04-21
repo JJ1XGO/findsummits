@@ -48,4 +48,18 @@ float     elev_get(const ElevTile *tile, int x, int y);
 ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *tile_dir, TileCoord tc);
 ElevTile *elev_load_with_overlap_8dir(const char *tile_dir, TileCoord tc);
 
+/*
+ * ビッグタイルへの直接ロード (8方向オーバーラップなし, NODATA保持)
+ * load_mesh_tile 高速化用: 各タイルを1回だけ読み込む
+ */
+void elev_load_tile_into_big(ElevTile *big, int dst_x, int dst_y,
+                              const char *base, int tx, int ty);
+
+/*
+ * NODATAピクセルをdem10bで補完し、最後にNODATA/負値→SEA変換
+ * range_x_min/range_y_min: ビッグタイルの左上z15タイル座標
+ */
+void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
+                              int range_x_min, int range_y_min);
+
 #endif /* ELEVATION_H */

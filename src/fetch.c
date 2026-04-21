@@ -15,28 +15,37 @@
 #include <curl/curl.h>
 #include "fetch.h"
 
-#define GSI_URL_FMT \
-    "https://cyberjapandata.gsi.go.jp/xyz/dem5%s_png/15/%d/%d.png"
-#define MIN_VALID_SIZE 1000
+/* URL形式: dem5{a/b/c}_png */
+#define GSI_DEM5_URL "https://cyberjapandata.gsi.go.jp/xyz/dem5%s_png/15/%d/%d.png"
+/* URL形式: dem10b_png (z=14) */
+#define GSI_DEM10B_URL "https://cyberjapandata.gsi.go.jp/xyz/dem10b_png/14/%d/%d.png"
 
 void make_tile_cache_path(char *buf, size_t bufsize,
-                          const char *tile_dir,
+                          const char *base, int z,
                           int x, int y, const char *dem)
 {
-    snprintf(buf, bufsize, "%s/%d/%d_%s.png", tile_dir, x, y, dem);
+    snprintf(buf, bufsize, "%s/%d/%d/%d_%s.png", base, z, x, y, dem);
 }
 
-int tile_is_cached(const char *tile_dir, int x, int y)
+int tile_is_cached(const char *base, int x, int y)
 {
     char path[512];
     const char *dems[] = {"a", "b", "c"};
     struct stat st;
     for (int d = 0; d < 3; d++) {
-        make_tile_cache_path(path, sizeof(path), tile_dir, x, y, dems[d]);
-        if (stat(path, &st) == 0 && st.st_size > MIN_VALID_SIZE)
+        make_tile_cache_path(path, sizeof(path), base, 15, x, y, dems[d]);
+        if (stat(path, &st) == 0)
             return 1;
     }
     return 0;
+}
+
+int tile_dem10b_is_cached(const char *base, int x14, int y14)
+{
+    char path[512];
+    struct stat st;
+    make_tile_cache_path(path, sizeof(path), base, 14, x14, y14, "b");
+    return stat(path, &st) == 0;
 }
 
 static size_t write_to_file(void *ptr, size_t size,
@@ -77,36 +86,51 @@ static long download_url(const char *url, const char *path)
     return -1;
 }
 
+static void ensure_dirs(const char *base, int z, int x)
+{
+    char dir[512];
+    snprintf(dir, sizeof(dir), "%s/%d", base, z);
+    mkdir(dir, 0755);
+    snprintf(dir, sizeof(dir), "%s/%d/%d", base, z, x);
+    mkdir(dir, 0755);
+}
+
 int fetch_tile(const FetchConfig *cfg, int x, int y)
 {
     if (tile_is_cached(cfg->tile_dir, x, y))
         return 1;
 
-    char dirpath[512];
-    snprintf(dirpath, sizeof(dirpath), "%s/%d", cfg->tile_dir, x);
-    mkdir(dirpath, 0755);
+    ensure_dirs(cfg->tile_dir, 15, x);
 
     char path[512];
     char url[512];
     const char *dems[] = {"a", "b", "c"};
 
     for (int d = 0; d < 3; d++) {
-        make_tile_cache_path(path, sizeof(path),
-                             cfg->tile_dir, x, y, dems[d]);
-        snprintf(url, sizeof(url), GSI_URL_FMT, dems[d], x, y);
+        make_tile_cache_path(path, sizeof(path), cfg->tile_dir, 15, x, y, dems[d]);
+        snprintf(url, sizeof(url), GSI_DEM5_URL, dems[d], x, y);
 
         long size = download_url(url, path);
-
-        if (size > MIN_VALID_SIZE) {
-            return 1;
-        } else if (size > 0 && size <= MIN_VALID_SIZE) {
-            remove(path);
-            break;  /* dem5aが小さければ海・範囲外 */
-        } else {
-            if (size > 0) remove(path);
-        }
+        if (size > 0)
+            return 1;  /* ダウンロード成功 */
     }
     return 0;
+}
+
+int fetch_dem10b_tile(const FetchConfig *cfg, int x14, int y14)
+{
+    if (tile_dem10b_is_cached(cfg->tile_dir, x14, y14))
+        return 1;
+
+    ensure_dirs(cfg->tile_dir, 14, x14);
+
+    char path[512];
+    char url[512];
+    make_tile_cache_path(path, sizeof(path), cfg->tile_dir, 14, x14, y14, "b");
+    snprintf(url, sizeof(url), GSI_DEM10B_URL, x14, y14);
+
+    long size = download_url(url, path);
+    return size > 0 ? 1 : 0;
 }
 
 /*
@@ -114,11 +138,11 @@ int fetch_tile(const FetchConfig *cfg, int x, int y)
  */
 typedef struct {
     const FetchConfig *cfg;
-    int    *tile_xs;    /* タイルX座標の配列 */
-    int    *tile_ys;    /* タイルY座標の配列 */
-    int     n;          /* 担当タイル数 */
-    int     fetched;    /* 取得成功数 */
-    int     nodata;     /* データなし数 */
+    int    *tile_xs;
+    int    *tile_ys;
+    int     n;
+    int     fetched;
+    int     nodata;
 } WorkerArg;
 
 static void *worker_thread(void *arg)
@@ -130,12 +154,11 @@ static void *worker_thread(void *arg)
     for (int i = 0; i < wa->n; i++) {
         if (tile_is_cached(wa->cfg->tile_dir,
                            wa->tile_xs[i], wa->tile_ys[i])) {
-            continue;  /* キャッシュ済みはスキップ */
+            continue;
         }
         int ret = fetch_tile(wa->cfg, wa->tile_xs[i], wa->tile_ys[i]);
         if (ret == 1) {
             wa->fetched++;
-            /* DL成功時のみウェイト */
             if (wa->cfg->interval_ms > 0)
                 usleep(wa->cfg->interval_ms * 1000);
         } else {
@@ -176,7 +199,6 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
 
     printf("タイル取得開始: %d枚 (%d並列)\n", total, nthreads);
 
-    /* 全タイル座標をリスト化 */
     int *xs = malloc(sizeof(int) * total);
     int *ys = malloc(sizeof(int) * total);
     if (!xs || !ys) { free(xs); free(ys); return -1; }
@@ -194,7 +216,7 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
             }
         }
 
-    int need = idx;  /* キャッシュ未済のタイル数 */
+    int need = idx;
     printf("  キャッシュ済み: %d枚 / 未取得: %d枚\n", cached, need);
 
     if (need == 0) {
@@ -203,19 +225,18 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
         return total;
     }
 
-    /* スレッドにタイルを分配 */
     if (nthreads > need) nthreads = need;
     pthread_t *threads   = malloc(sizeof(pthread_t)  * nthreads);
     WorkerArg *args      = malloc(sizeof(WorkerArg)  * nthreads);
     int      **thread_xs = malloc(sizeof(int*)       * nthreads);
     int      **thread_ys = malloc(sizeof(int*)       * nthreads);
 
-    int base = need / nthreads;
-    int rem  = need % nthreads;
-    int pos  = 0;
+    int base_n = need / nthreads;
+    int rem    = need % nthreads;
+    int pos    = 0;
 
     for (int t = 0; t < nthreads; t++) {
-        int n = base + (t < rem ? 1 : 0);
+        int n = base_n + (t < rem ? 1 : 0);
         thread_xs[t] = xs + pos;
         thread_ys[t] = ys + pos;
         args[t].cfg     = cfg;
@@ -225,16 +246,14 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
         pos += n;
     }
 
-    /* スレッド起動 */
     struct timespec ts_start, ts_now;
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
     for (int t = 0; t < nthreads; t++)
         pthread_create(&threads[t], NULL, worker_thread, &args[t]);
 
-    /* 進捗監視(メインスレッド) */
     while (1) {
-        sleep(5);  /* 5秒ごとに進捗表示 */
+        sleep(5);
 
         int fetched = 0, nodata = 0;
         for (int t = 0; t < nthreads; t++) {
@@ -249,8 +268,7 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
 
         char sel[32], srem[32];
         format_elapsed(sel, sizeof(sel), elapsed);
-        format_remaining(srem, sizeof(srem), elapsed,
-                         cached + done, total);
+        format_remaining(srem, sizeof(srem), elapsed, cached + done, total);
 
         printf("  [%s経過 残り約%s] %d/%d"
                " (取得:%d キャッシュ:%d データなし:%d)\n",
@@ -258,10 +276,9 @@ int fetch_mesh(const FetchConfig *cfg, const MeshTileRange *range)
                fetched, cached, nodata);
         fflush(stdout);
 
-        if (done >= need) break;  /* 全スレッド完了 */
+        if (done >= need) break;
     }
 
-    /* スレッド終了待ち */
     int fetched = 0, nodata = 0;
     for (int t = 0; t < nthreads; t++) {
         pthread_join(threads[t], NULL);

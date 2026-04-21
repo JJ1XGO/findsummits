@@ -94,3 +94,9 @@ tests/        # テスト用プログラム（test_*.c）
 ## その他
 他のプロジェクトの参考コードは以下の場所にあります：
 @../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。
+
+### SOTA関連資料
+- SOTAの山岳リスト(JAで始まるものが日本支部のサミット)
+  https://www.sotadata.org.uk/summitslist.csv
+- SOTA日本支部への山岳リスト更新申請書
+  https://www.kawauchi.homeip.mydns.jp/sotajp/wp-content/uploads/2024/03/SOTA-Summit-list-revision-request.xlsx

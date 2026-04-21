@@ -19,16 +19,13 @@
 #include "fetch.h"
 
 /*
- * 1次メッシュの全タイルを1枚の巨大ElevTileに展開する
+ * メッシュ範囲に含まれる全タイルを1枚の巨大ElevTileに展開する
  *
  * bigタイルの座標系:
- *   x=0, y=0                          : 外周ボーダー（海面=0、calloc済み）
- *   x=1〜tile_w*TILE_PIX, y=1〜...    : メッシュデータ本体
- *   x=W-1, y=H-1                      : 外周ボーダー（海面=0、calloc済み）
+ *   x=0, y=0         : 外周ボーダー（海面=0）
+ *   x=1〜, y=1〜     : メッシュデータ本体
  *
- * 外周ボーダーはcallocで0埋め済みのため追加処理不要。
- * Union-Findはボーダーの0標高をメッシュ外の「海面」として扱い、
- * メッシュ端のピークのプロミネンス計算に利用する。
+ * 外周ボーダーはcallocで0埋め済み。
  */
 ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range)
 {
@@ -43,61 +40,22 @@ ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range)
     if (!big) return NULL;
     big->width  = W;
     big->height = H;
-    big->data   = calloc(W * H, sizeof(float));  /* 外周ボーダー=0で初期化 */
+    big->data   = malloc(W * H * sizeof(float));
     if (!big->data) { free(big); return NULL; }
+
+    /* NODATA で初期化 (elev_fill_nodata_dem10b で最後に SEA 変換) */
+    for (uint32_t i = 0; i < W * H; i++)
+        big->data[i] = ELEV_NODATA;
 
     int total = range->tile_w * range->tile_h;
     int done  = 0;
 
     for (int ty = range->y_min; ty <= range->y_max; ty++) {
         for (int tx = range->x_min; tx <= range->x_max; tx++) {
-            /* メッシュ内グリッド位置（0始まり）から bigタイル上の書き込み先を計算 */
-            /* +1 は外周ボーダー1ピクセル分のオフセット */
             int dst_x = (tx - range->x_min) * TILE_PIX + 1;
             int dst_y = (ty - range->y_min) * TILE_PIX + 1;
 
-            /* 8方向オーバーラップ + dem10補完でタイルを読み込む */
-            TileCoord tc = {15, tx, ty};
-            ElevTile *tile = elev_load_with_overlap_8dir_with_dem10(tile_dir, tc);
-
-            /* // ★デバッグ用
-            if (!tile) {
-                printf("  タイル読み込み失敗: z=15 x=%d y=%d\n", tx, ty);
-            } else {
-                printf("  タイル読み込み成功: z=15 x=%d y=%d (サイズ%ux%u)\n",
-                    tx, ty, tile->width, tile->height);
-            } */
-
-            if (tile) {
-                /* 中央256×256部分のみをコピー（オーバーラップ分を除く） */
-                /* elev_load_with_overlap_8dir は258×258を返し、
-                 * メインタイルは (1,1)〜(256,256) に配置される */
-                for (uint32_t py = 0; py < TILE_PIX; py++) {
-                    for (uint32_t px = 0; px < TILE_PIX; px++) {
-                        float elev = elev_get(tile, px + 1, py + 1);
-
-                        /* // ★デバッグ用（最初の1タイルだけ確認）
-                        if (tx == range->x_min && ty == range->y_min && px == 0 && py == 0) {
-                            printf("  最初のピクセル標高値: %f\n", elev);
-                        } */
-
-                        if (elev == ELEV_NODATA || elev < 0.0f)
-                            elev = 0.0f;
-                        big->data[(dst_y + py) * W + (dst_x + px)] = elev;
-                    }
-                }
-                /*
-                 * [修正] 0リセットブロックを削除。
-                 *
-                 * 旧コードはここで dst_y-1 行と dst_x-1 列を 0 にリセットして
-                 * いたが、これは直前のタイルが書き込んだデータを破壊するバグ。
-                 * 例: タイル(gx,gy)のリセットが dst_y-1 = gy*TILE_PIX 行を
-                 * 0にすると、タイル(gx,gy-1)の最終行が消える。
-                 * 外周ボーダーは calloc で既に 0 になっているため、
-                 * リセット処理は不要。
-                 */
-                elev_destroy(tile);
-            }
+            elev_load_tile_into_big(big, dst_x, dst_y, tile_dir, tx, ty);
 
             done++;
             if (done % 500 == 0 || done == total) {
@@ -107,21 +65,24 @@ ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range)
         }
     }
     printf("\n");
+
+    /* dem10b補完 + NODATA/負値→SEA変換 */
+    printf("  dem10b補完中...\n");
+    elev_fill_nodata_dem10b(big, tile_dir, range->x_min, range->y_min);
+
     return big;
 }
 
 /*
  * ピクセル座標から緯度経度を計算する
  *
- * px, py は bigタイル上の座標（外周ボーダーが x=0, y=0）。
- * メッシュデータは x=1, y=1 から始まるため、グローバルタイル座標への
- * 変換では -1 のオフセットが必要。
+ * combined_range に対する big タイル上の座標 (px, py) を入力。
+ * 外周ボーダー 1px のオフセットを差し引いてグローバルタイル座標に変換する。
  */
 void pixel_to_latlon(const MeshTileRange *range,
-                              int px, int py,
-                              double *lat, double *lon)
+                     int px, int py,
+                     double *lat, double *lon)
 {
-    /* [修正] bigタイルの外周ボーダー分（+1オフセット）を差し引く */
     double global_px = range->x_min * TILE_PIX + (px - 1);
     double global_py = range->y_min * TILE_PIX + (py - 1);
     int z = range->z;
@@ -135,6 +96,10 @@ void pixel_to_latlon(const MeshTileRange *range,
 
 /*
  * 1次メッシュを解析してCSVに保存する
+ *
+ * 中心メッシュ + BORDER_TILES タイルオーバーラップ方式:
+ *   境界またぎのコル問題を解消しつつ、メモリ使用量を抑制する。
+ *   Union-Find は拡張範囲全体で実行し、結果は中心メッシュ内のピークのみ出力。
  */
 int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
 {
@@ -143,19 +108,55 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
     struct timespec ts_start, ts_now;
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
-    /* タイル範囲を取得 */
-    MeshTileRange range;
-    if (mesh_to_tile_range(meshcode, 15, &range) != 0)
+    /* 中心メッシュのタイル範囲 */
+    MeshTileRange center_range;
+    if (mesh_to_tile_range(meshcode, 15, &center_range) != 0)
         return -1;
 
-    printf("  タイル範囲: x=%d〜%d y=%d〜%d (%d×%d=%d枚)\n",
-           range.x_min, range.x_max,
-           range.y_min, range.y_max,
-           range.tile_w, range.tile_h,
-           range.tile_w * range.tile_h);
+    /*
+     * 解析範囲: 中心メッシュ + 周囲 BORDER_TILES タイル分のオーバーラップ
+     *
+     * 3×3フルメッシュは ~4B ピクセルになりメモリ不足になるため、
+     * 固定タイル数のパディングで代替する。
+     * BORDER_TILES = 8 ≈ 8 × 1.2km ≈ 10km。
+     * 日本のSOTA 150m突出の場合、キーコルはほぼこの範囲に収まる。
+     * 範囲外はSEA(0)として扱われ、is_tile_top=1 フラグで識別できる。
+     */
+    #define BORDER_TILES 8
+
+    MeshTileRange combined = {
+        .z      = 15,
+        .x_min  = center_range.x_min - BORDER_TILES,
+        .x_max  = center_range.x_max + BORDER_TILES,
+        .y_min  = center_range.y_min - BORDER_TILES,
+        .y_max  = center_range.y_max + BORDER_TILES,
+    };
+    combined.tile_w = combined.x_max - combined.x_min + 1;
+    combined.tile_h = combined.y_max - combined.y_min + 1;
+
+    printf("  解析範囲 (中心+%dタイル): x=%d〜%d y=%d〜%d (%d×%d=%d枚)\n",
+           BORDER_TILES,
+           combined.x_min, combined.x_max,
+           combined.y_min, combined.y_max,
+           combined.tile_w, combined.tile_h,
+           combined.tile_w * combined.tile_h);
+
+    /* 中心メッシュのピクセル境界 (combined big タイル内での座標) */
+    int cx_min = (center_range.x_min - combined.x_min) * TILE_PIX + 1;
+    int cx_max = (center_range.x_max - combined.x_min + 1) * TILE_PIX;
+    int cy_min = (center_range.y_min - combined.y_min) * TILE_PIX + 1;
+    int cy_max = (center_range.y_max - combined.y_min + 1) * TILE_PIX;
+
+    /* タイルをダウンロード (未キャッシュ分のみ) */
+    FetchConfig fetch_cfg = {
+        .tile_dir    = cfg->tile_dir,
+        .max_parallel = 4,
+        .interval_ms  = 200,
+    };
+    fetch_mesh(&fetch_cfg, &combined);
 
     /* 全タイルを結合して巨大イメージを作成 */
-    ElevTile *big = load_mesh_tile(cfg->tile_dir, &range);
+    ElevTile *big = load_mesh_tile(cfg->tile_dir, &combined);
     if (!big) {
         fprintf(stderr, "イメージ作成失敗\n");
         return -1;
@@ -166,12 +167,11 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
            (ts_now.tv_sec - ts_start.tv_sec) +
            (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9);
 
-    /* === デバッグ：巨大イメージに標高が入っているか確認 === */
-    /* [注] メッシュデータは bigタイルの (1,1) から始まるため +1 オフセット */
+    /* 簡易統計 */
     float max_elev = 0.0f;
     int valid_pixels = 0;
-    for (uint32_t y = 1; y <= (uint32_t)(TILE_PIX * range.tile_h); y++) {
-        for (uint32_t x = 1; x <= (uint32_t)(TILE_PIX * range.tile_w); x++) {
+    for (uint32_t y = (uint32_t)cy_min; y <= (uint32_t)cy_max; y++) {
+        for (uint32_t x = (uint32_t)cx_min; x <= (uint32_t)cx_max; x++) {
             float e = big->data[y * big->width + x];
             if (e > 10.0f) {
                 valid_pixels++;
@@ -179,38 +179,20 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
             }
         }
     }
-    printf("  巨大イメージ有効ピクセル: %d / %u   最高標高: %.1fm\n",
-           valid_pixels,
-           (uint32_t)TILE_PIX * range.tile_w * TILE_PIX * range.tile_h,
-           max_elev);
-    /* ==================================================== */
+    printf("  中心メッシュ有効ピクセル: %d   最高標高: %.1fm\n",
+           valid_pixels, max_elev);
 
-    /* Union-Find解析 */
+    /* Union-Find 解析 (3×3 全体) */
     printf("  Union-Find解析開始...\n");
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
-    /*
-     * [修正] ピーク報告範囲を正しく設定。
-     *
-     * bigタイルは (tile_w*TILE_PIX + 2) × (tile_h*TILE_PIX + 2)。
-     * analyze_tile_data は p->x >= main_w または p->y >= main_h の
-     * ピークを除外する（上限チェックのみ）。
-     *
-     * メッシュデータが x=1〜tile_w*TILE_PIX に存在するため:
-     *   main_w = tile_w*TILE_PIX + 1  → x=tile_w*TILE_PIX まで含む
-     *   main_h = tile_h*TILE_PIX + 1
-     *
-     * x=0 の外周ボーダーは calloc で 0 のためピーク検出されない。
-     * 旧コードの -16（端から8ピクセル削り）は不要。
-     */
-    uint32_t effective_w = TILE_PIX * range.tile_w + 1;
-    uint32_t effective_h = TILE_PIX * range.tile_h + 1;
+    uint32_t effective_w = combined.tile_w * TILE_PIX + 1;
+    uint32_t effective_h = combined.tile_h * TILE_PIX + 1;
 
     AnalyzeResult *result = analyze_tile_data(big,
                                                effective_w,
                                                effective_h,
                                                cfg->min_prominence);
-
     elev_destroy(big);
 
     if (!result) {
@@ -219,12 +201,12 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
     }
 
     clock_gettime(CLOCK_MONOTONIC, &ts_now);
-    printf("  解析完了: %.1f秒 / 検出ピーク数: %d\n",
+    printf("  解析完了: %.1f秒 / 全ピーク数: %d\n",
            (ts_now.tv_sec - ts_start.tv_sec) +
            (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9,
            result->peak_cnt);
 
-    /* 結果をCSVに保存 */
+    /* 中心メッシュ内のピークのみCSVに保存 */
     mkdir(cfg->result_dir, 0755);
     char result_path[512];
     snprintf(result_path, sizeof(result_path),
@@ -237,33 +219,39 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
         return -1;
     }
 
-    /* ヘッダー */
     fprintf(fp, "peak_lat,peak_lon,peak_elev,"
                 "col_lat,col_lon,col_elev,"
                 "prominence,is_tile_top\n");
 
+    int out_cnt = 0;
     for (int i = 0; i < result->peak_cnt; i++) {
         PeakResult *p = &result->peaks[i];
 
+        /* 中心メッシュ外のピークは除外 */
+        if (p->peak_x < cx_min || p->peak_x > cx_max ||
+            p->peak_y < cy_min || p->peak_y > cy_max)
+            continue;
+
         double peak_lat, peak_lon;
-        pixel_to_latlon(&range, p->peak_x, p->peak_y,
+        pixel_to_latlon(&combined, p->peak_x, p->peak_y,
                         &peak_lat, &peak_lon);
 
         double col_lat = 0.0, col_lon = 0.0;
         if (!p->is_tile_top)
-            pixel_to_latlon(&range, p->col_x, p->col_y,
+            pixel_to_latlon(&combined, p->col_x, p->col_y,
                             &col_lat, &col_lon);
 
         fprintf(fp, "%.8f,%.8f,%.2f,%.8f,%.8f,%.2f,%.2f,%d\n",
                 peak_lat, peak_lon, p->peak_elev,
                 col_lat, col_lon, p->col_elev,
                 p->prominence, p->is_tile_top);
+        out_cnt++;
     }
 
     fclose(fp);
     analyze_result_destroy(result);
 
-    printf("  結果保存: %s\n", result_path);
+    printf("  結果保存: %s (%d件)\n", result_path, out_cnt);
     printf("メッシュ%d 解析完了\n", meshcode);
     return 0;
 }

@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <png.h>
 #include "elevation.h"
+#include "fetch.h"
 
 static float rgb2elev(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -88,34 +89,60 @@ static uint8_t *load_png_rgb(const char *path,
     return imgbuf;
 }
 
-static void copy_rgb_to_tile(ElevTile *dst,
-                              int dst_x, int dst_y,
-                              const uint8_t *rgb,
-                              uint32_t src_w, uint32_t channels,
-                              int src_x0, int src_y0,
-                              int src_x1, int src_y1)
+/* パス形式: {base}/{z}/{x}/{y}_{dem}.png */
+static void make_tile_path(char *buf, size_t bufsize,
+                            const char *base, int z,
+                            int x, int y, const char *dem)
 {
+    snprintf(buf, bufsize, "%s/%d/%d/%d_%s.png", base, z, x, y, dem);
+}
+
+/*
+ * タイルを読み込んでElevTileの指定領域にコピーする
+ * dem5 a/b/c をピクセル単位で優先順に試し、NODATA は ELEV_NODATA のまま残す
+ */
+static void load_tile_into(ElevTile *dst,
+                            int dst_x, int dst_y,
+                            const char *base,
+                            int tx, int ty,
+                            int src_x0, int src_y0,
+                            int src_x1, int src_y1)
+{
+    char path[512];
+    uint32_t w[3] = {0}, h[3] = {0}, ch[3] = {0};
+    uint8_t *rgb[3] = {NULL, NULL, NULL};
+
+    const char *dems[] = {"a", "b", "c"};
+    for (int d = 0; d < 3; d++) {
+        make_tile_path(path, sizeof(path), base, 15, tx, ty, dems[d]);
+        rgb[d] = load_png_rgb(path, &w[d], &h[d], &ch[d]);
+    }
+
     for (int sy = src_y0; sy < src_y1; sy++) {
         for (int sx = src_x0; sx < src_x1; sx++) {
-            const uint8_t *px = rgb + sy * src_w * channels + sx * channels;
-            float elev = rgb2elev(px[0], px[1], px[2]);
-            if (elev == ELEV_NODATA || elev < ELEV_SEA)
-                elev = ELEV_SEA;
+            float elev = ELEV_NODATA;
+            for (int d = 0; d < 3 && elev == ELEV_NODATA; d++) {
+                if (rgb[d]) {
+                    const uint8_t *px =
+                        rgb[d] + sy * w[d] * ch[d] + sx * ch[d];
+                    float e = rgb2elev(px[0], px[1], px[2]);
+                    if (e != ELEV_NODATA) elev = e;
+                }
+            }
             int dx = dst_x + (sx - src_x0);
             int dy = dst_y + (sy - src_y0);
-            dst->data[dy * dst->width + dx] = elev;
+            dst->data[dy * dst->width + dx] = elev;  /* NODATA は -9999 のまま */
         }
     }
+
+    for (int d = 0; d < 3; d++) free(rgb[d]);
 }
 
 ElevTile *elev_load_png(const char *path)
 {
     uint32_t w, h, ch;
     uint8_t *rgb = load_png_rgb(path, &w, &h, &ch);
-    if (!rgb) {
-
-        return NULL;
-    }
+    if (!rgb) return NULL;
 
     ElevTile *tile = malloc(sizeof(ElevTile));
     tile->width    = w;
@@ -123,105 +150,21 @@ ElevTile *elev_load_png(const char *path)
     tile->data     = malloc(sizeof(float) * w * h);
     if (!tile->data) { free(rgb); free(tile); return NULL; }
 
-    copy_rgb_to_tile(tile, 0, 0, rgb, w, ch, 0, 0, w, h);
-    free(rgb);
-    return tile;
-}
-
-/*
- * タイルパスを組み立てる
- * 形式: {tile_dir}/{x}/{y}_{dem}.png
- */
-static void make_tile_path(char *buf, size_t bufsize,
-                            const char *tile_dir,
-                            int x, int y, const char *dem)
-{
-    snprintf(buf, bufsize, "%s/%d/%d_%s.png", tile_dir, x, y, dem);
-}
-
-/*
- * タイルを読み込んでElevTileの指定領域にコピーする
- * 失敗しても0埋めのまま処理を続ける
- */
-static void load_tile_into(ElevTile *dst,
-                            int dst_x, int dst_y,
-                            const char *tile_dir,
-                            int tx, int ty,
-                            int src_x0, int src_y0,
-                            int src_x1, int src_y1)
-{
-    char path[512];
-    uint32_t w, h, ch;
-    uint8_t *rgb = NULL;
-
-    /* dem5a/b/cの優先順で試す */
-    const char *dems[] = {"a", "b", "c"};
-    for (int d = 0; d < 3 && !rgb; d++) {
-        make_tile_path(path, sizeof(path), tile_dir, tx, ty, dems[d]);
-
-        /* // ★デバッグ用
-        if (tx == 29036 && ty == 12867) {
-            printf("  試しているパス: %s\n", path);
-        } */
-
-        rgb = load_png_rgb(path, &w, &h, &ch);
-        /* // ★デバッグ用
-        if (tx == 29036 && ty == 12867 && d == 0) {
-            if (rgb) {
-                printf("  PNG読み込み成功: %ux%u ch=%u\n", w, h, ch);
-                printf("  先頭ピクセルRGB: %d %d %d\n", rgb[0], rgb[1], rgb[2]);
-            } else {
-                printf("  PNG読み込み失敗!\n");
-            }
-        } */
+    for (uint32_t y = 0; y < h; y++) {
+        for (uint32_t x = 0; x < w; x++) {
+            const uint8_t *px = rgb + y * w * ch + x * ch;
+            tile->data[y * w + x] = rgb2elev(px[0], px[1], px[2]);
+        }
     }
-
-    if (!rgb) return;  /* タイルなし→0埋めのまま */
-
-    copy_rgb_to_tile(dst, dst_x, dst_y, rgb, w, ch,
-                     src_x0, src_y0, src_x1, src_y1);
     free(rgb);
-}
-
-ElevTile *elev_load_with_overlap(const char *tile_dir, TileCoord tc)
-{
-    uint32_t W = TILE_PIX + 1;  /* 257 */
-    uint32_t H = TILE_PIX + 1;  /* 257 */
-
-    ElevTile *tile = malloc(sizeof(ElevTile));
-    tile->width    = W;
-    tile->height   = H;
-    tile->data     = calloc(W * H, sizeof(float));
-    if (!tile->data) { free(tile); return NULL; }
-
-    /* メインタイル: 256×256を(0,0)に配置 */
-    load_tile_into(tile, 0, 0,
-                   tile_dir, tc.x, tc.y,
-                   0, 0, TILE_PIX, TILE_PIX);
-
-    /* 右隣タイル: 左端1列を(256,0)に配置 */
-    load_tile_into(tile, TILE_PIX, 0,
-                   tile_dir, tc.x+1, tc.y,
-                   0, 0, 1, TILE_PIX);
-
-    /* 下隣タイル: 上端1行を(0,256)に配置 */
-    load_tile_into(tile, 0, TILE_PIX,
-                   tile_dir, tc.x, tc.y+1,
-                   0, 0, TILE_PIX, 1);
-
-    /* 右下隣タイル: 左上1ピクセルを(256,256)に配置 */
-    load_tile_into(tile, TILE_PIX, TILE_PIX,
-                   tile_dir, tc.x+1, tc.y+1,
-                   0, 0, 1, 1);
-
     return tile;
 }
 
 /*
- * タイルを8方向オーバーラップで読み込む（推奨版）
- * メインタイルを中心に上下左右＋斜め4方向から必要なピクセルを重ねる
+ * 8方向オーバーラップで読み込む (258×258)
+ * NODATA ピクセルは ELEV_NODATA (-9999) のまま返す
  */
-ElevTile *elev_load_with_overlap_8dir(const char *tile_dir, TileCoord tc)
+ElevTile *elev_load_with_overlap_8dir(const char *base, TileCoord tc)
 {
     uint32_t W = TILE_PIX + 2;  /* 258 */
     uint32_t H = TILE_PIX + 2;  /* 258 */
@@ -230,56 +173,49 @@ ElevTile *elev_load_with_overlap_8dir(const char *tile_dir, TileCoord tc)
     if (!tile) return NULL;
     tile->width  = W;
     tile->height = H;
-    tile->data   = calloc(W * H, sizeof(float));
+    /* NODATA 初期値: 後で dem10 補完または SEA 変換する */
+    tile->data   = malloc(W * H * sizeof(float));
     if (!tile->data) { free(tile); return NULL; }
+    for (uint32_t i = 0; i < W * H; i++)
+        tile->data[i] = ELEV_NODATA;
 
-    /* オフセット +1 で中央にメインタイルを配置 */
-    int offset = 1;
+    int off = 1;  /* メインタイルを (1,1) に配置 */
 
     /* 1. メインタイル (256×256) */
-    load_tile_into(tile, offset, offset,
-                   tile_dir, tc.x, tc.y,
+    load_tile_into(tile, off, off, base, tc.x, tc.y,
                    0, 0, TILE_PIX, TILE_PIX);
 
-    /* 2. 上方向 (y-1) - 下端1行 */
-    load_tile_into(tile, offset, 0,
-                   tile_dir, tc.x, tc.y-1,
+    /* 2. 上 (y-1) - 下端1行 */
+    load_tile_into(tile, off, 0, base, tc.x, tc.y-1,
                    0, TILE_PIX-1, TILE_PIX, TILE_PIX);
 
-    /* 3. 下方向 (y+1) - 上端1行 */
-    load_tile_into(tile, offset, TILE_PIX + offset,
-                   tile_dir, tc.x, tc.y+1,
+    /* 3. 下 (y+1) - 上端1行 */
+    load_tile_into(tile, off, TILE_PIX + off, base, tc.x, tc.y+1,
                    0, 0, TILE_PIX, 1);
 
-    /* 4. 左方向 (x-1) - 右端1列 */
-    load_tile_into(tile, 0, offset,
-                   tile_dir, tc.x-1, tc.y,
+    /* 4. 左 (x-1) - 右端1列 */
+    load_tile_into(tile, 0, off, base, tc.x-1, tc.y,
                    TILE_PIX-1, 0, TILE_PIX, TILE_PIX);
 
-    /* 5. 右方向 (x+1) - 左端1列 */
-    load_tile_into(tile, TILE_PIX + offset, offset,
-                   tile_dir, tc.x+1, tc.y,
+    /* 5. 右 (x+1) - 左端1列 */
+    load_tile_into(tile, TILE_PIX + off, off, base, tc.x+1, tc.y,
                    0, 0, 1, TILE_PIX);
 
-    /* 6. 左上斜め */
-    load_tile_into(tile, 0, 0,
-                   tile_dir, tc.x-1, tc.y-1,
+    /* 6. 左上 */
+    load_tile_into(tile, 0, 0, base, tc.x-1, tc.y-1,
                    TILE_PIX-1, TILE_PIX-1, TILE_PIX, TILE_PIX);
 
-    /* 7. 右上斜め */
-    load_tile_into(tile, TILE_PIX + offset, 0,
-                   tile_dir, tc.x+1, tc.y-1,
+    /* 7. 右上 */
+    load_tile_into(tile, TILE_PIX + off, 0, base, tc.x+1, tc.y-1,
                    0, TILE_PIX-1, 1, TILE_PIX);
 
-    /* 8. 左下斜め */
-    load_tile_into(tile, 0, TILE_PIX + offset,
-                   tile_dir, tc.x-1, tc.y+1,
+    /* 8. 左下 */
+    load_tile_into(tile, 0, TILE_PIX + off, base, tc.x-1, tc.y+1,
                    TILE_PIX-1, 0, TILE_PIX, 1);
 
-    /* 9. 右下斜め */
-    load_tile_into(tile, TILE_PIX + offset, TILE_PIX + offset,
-                   tile_dir, tc.x+1, tc.y+1,
-                   0, 0, 1, 1);
+    /* 9. 右下 */
+    load_tile_into(tile, TILE_PIX + off, TILE_PIX + off,
+                   base, tc.x+1, tc.y+1, 0, 0, 1, 1);
 
     return tile;
 }
@@ -297,63 +233,182 @@ float elev_get(const ElevTile *tile, int x, int y)
 }
 
 /*
- * 8方向オーバーラップ + dem10補完付きでタイルを読み込む
- * dem5a/b/c がすべて失敗した場合、ズームレベル14のdem10で補完する
+ * 8方向オーバーラップ + dem10b補完付きタイル読み込み
+ *
+ * 処理:
+ *   1. dem5 (a/b/c pixel-level fallback) でロード
+ *   2. メイン256×256 内の NODATA ピクセルを dem10b で補完
+ *   3. 残る NODATA と負値を SEA (0) に変換して返す
  */
-ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *tile_dir, TileCoord tc)
+ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *base, TileCoord tc)
 {
-    /* まずdem5で試す */
-    ElevTile *tile = elev_load_with_overlap_8dir(tile_dir, tc);
-    if (tile) {
-        /* dem5で有効なデータがかなり入っていればそのまま返す */
-        int valid = 0;
-        for (uint32_t y = 1; y <= TILE_PIX; y++) {
-            for (uint32_t x = 1; x <= TILE_PIX; x++) {
-                if (elev_get(tile, x, y) > 10.0f) valid++;
-            }
+    ElevTile *tile = elev_load_with_overlap_8dir(base, tc);
+    if (!tile) return NULL;
+
+    /* メイン256×256内の NODATA を数える (offset +1) */
+    int nodata_cnt = 0;
+    for (int py = 1; py <= TILE_PIX; py++)
+        for (int px = 1; px <= TILE_PIX; px++)
+            if (tile->data[py * tile->width + px] == ELEV_NODATA)
+                nodata_cnt++;
+
+    if (nodata_cnt > 0) {
+        /* dem10b タイル: z15→z14 座標変換 */
+        int z14_x = tc.x / 2;
+        int z14_y = tc.y / 2;
+        int ox    = (tc.x % 2) * TILE_PIX;  /* z14タイル内オフセット */
+        int oy    = (tc.y % 2) * TILE_PIX;
+
+        /* キャッシュになければダウンロード */
+        if (!tile_dem10b_is_cached(base, z14_x, z14_y)) {
+            FetchConfig fc = { .tile_dir = base, .max_parallel = 1, .interval_ms = 200 };
+            fetch_dem10b_tile(&fc, z14_x, z14_y);
         }
 
-        // ★デバッグ用
-        // printf("  dem5有効ピクセル数: %d / %d\n", valid, TILE_PIX * TILE_PIX);
+        char dem10_path[512];
+        uint32_t dw, dh, dch;
+        make_tile_path(dem10_path, sizeof(dem10_path), base, 14, z14_x, z14_y, "b");
+        uint8_t *dem10_rgb = load_png_rgb(dem10_path, &dw, &dh, &dch);
 
-        if (valid >= 0) {  /* dem5データをそのまま使う */
-            return tile;
-        }
-        elev_destroy(tile);
-    }
+        if (dem10_rgb) {
+            for (int py = 1; py <= TILE_PIX; py++) {
+                for (int px = 1; px <= TILE_PIX; px++) {
+                    int idx = py * tile->width + px;
+                    if (tile->data[idx] != ELEV_NODATA) continue;
 
-    /* dem5がほとんど無効だった場合、dem10で補完 */
-    printf("  dem5 failed, trying dem10 for tile %d/%d/%d\n", tc.z, tc.x, tc.y);
-
-    /* dem10はズームレベル14なので、座標を変換して取得 */
-    int dem10_x = tc.x / 2;
-    int dem10_y = tc.y / 2;
-    int offset_x = (tc.x % 2) * TILE_PIX;
-    int offset_y = (tc.y % 2) * TILE_PIX;
-
-    TileCoord dem10_tc = {14, dem10_x, dem10_y};
-    ElevTile *dem10_tile = elev_load_with_overlap_8dir(tile_dir, dem10_tc);  /* 仮に8方向で取得 */
-
-    if (!dem10_tile) return NULL;
-
-    /* dem10から対応する256×256部分を抜き出して返す（簡易版） */
-    ElevTile *result = malloc(sizeof(ElevTile));
-    result->width = TILE_PIX + 2;
-    result->height = TILE_PIX + 2;
-    result->data = calloc(result->width * result->height, sizeof(float));
-
-    for (uint32_t y = 0; y < TILE_PIX + 2; y++) {
-        for (uint32_t x = 0; x < TILE_PIX + 2; x++) {
-            int src_x = offset_x + x;
-            int src_y = offset_y + y;
-            if (src_x < dem10_tile->width && src_y < dem10_tile->height) {
-                result->data[y * result->width + x] = elev_get(dem10_tile, src_x, src_y);
-            } else {
-                result->data[y * result->width + x] = 0.0f;
+                    int dpx = ox + (px - 1);
+                    int dpy = oy + (py - 1);
+                    if (dpx < (int)dw && dpy < (int)dh) {
+                        const uint8_t *p =
+                            dem10_rgb + dpy * dw * dch + dpx * dch;
+                        float e = rgb2elev(p[0], p[1], p[2]);
+                        if (e != ELEV_NODATA) tile->data[idx] = e;
+                    }
+                }
             }
+            free(dem10_rgb);
         }
     }
 
-    elev_destroy(dem10_tile);
-    return result;
+    /* NODATA と負値を SEA に変換 */
+    for (uint32_t i = 0; i < tile->width * tile->height; i++) {
+        if (tile->data[i] == ELEV_NODATA || tile->data[i] < ELEV_SEA)
+            tile->data[i] = ELEV_SEA;
+    }
+
+    return tile;
+}
+
+void elev_load_tile_into_big(ElevTile *big, int dst_x, int dst_y,
+                              const char *base, int tx, int ty)
+{
+    load_tile_into(big, dst_x, dst_y, base, tx, ty, 0, 0, TILE_PIX, TILE_PIX);
+}
+
+/*
+ * ビッグタイル内のNODATAピクセルをdem10bで補完し、最後にSEA変換
+ *
+ * ビッグタイルレイアウト:
+ *   px=0, py=0      : 外周ボーダー
+ *   px=1, py=1 〜   : z15タイル (range_x_min, range_y_min) から
+ *
+ * z14タイル単位でまとめてfetch・補完することで重複ダウンロードを防ぐ。
+ */
+void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
+                              int range_x_min, int range_y_min)
+{
+    int tile_w = ((int)big->width  - 2) / TILE_PIX;
+    int tile_h = ((int)big->height - 2) / TILE_PIX;
+
+    int x14_min = range_x_min / 2;
+    int x14_max = (range_x_min + tile_w - 1) / 2;
+    int y14_min = range_y_min / 2;
+    int y14_max = (range_y_min + tile_h - 1) / 2;
+
+    for (int y14 = y14_min; y14 <= y14_max; y14++) {
+        for (int x14 = x14_min; x14 <= x14_max; x14++) {
+            /* このz14タイルが担当するz15範囲(ビッグタイル内) */
+            int x15_lo = (x14 * 2 >= range_x_min) ? x14 * 2 : range_x_min;
+            int x15_hi = (x14 * 2 + 1 <= range_x_min + tile_w - 1)
+                         ? x14 * 2 + 1 : range_x_min + tile_w - 1;
+            int y15_lo = (y14 * 2 >= range_y_min) ? y14 * 2 : range_y_min;
+            int y15_hi = (y14 * 2 + 1 <= range_y_min + tile_h - 1)
+                         ? y14 * 2 + 1 : range_y_min + tile_h - 1;
+
+            int px_lo = (x15_lo - range_x_min) * TILE_PIX + 1;
+            int px_hi = (x15_hi - range_x_min + 1) * TILE_PIX;
+            int py_lo = (y15_lo - range_y_min) * TILE_PIX + 1;
+            int py_hi = (y15_hi - range_y_min + 1) * TILE_PIX;
+
+            /* NODATAが存在するか確認 */
+            int has_nodata = 0;
+            for (int py = py_lo; py <= py_hi && !has_nodata; py++)
+                for (int px = px_lo; px <= px_hi && !has_nodata; px++)
+                    if (big->data[py * (int)big->width + px] == ELEV_NODATA)
+                        has_nodata = 1;
+            if (!has_nodata) continue;
+
+            if (!tile_dem10b_is_cached(base, x14, y14)) {
+                FetchConfig fc = { .tile_dir = base, .max_parallel = 1,
+                                   .interval_ms = 200 };
+                fetch_dem10b_tile(&fc, x14, y14);
+            }
+
+            char dem10_path[512];
+            make_tile_path(dem10_path, sizeof(dem10_path), base, 14, x14, y14, "b");
+            uint32_t dw, dh, dch;
+            uint8_t *dem10_rgb = load_png_rgb(dem10_path, &dw, &dh, &dch);
+            if (!dem10_rgb) continue;
+
+            for (int py = py_lo; py <= py_hi; py++) {
+                for (int px = px_lo; px <= px_hi; px++) {
+                    int idx = py * (int)big->width + px;
+                    if (big->data[idx] != ELEV_NODATA) continue;
+
+                    int z15_tx = range_x_min + (px - 1) / TILE_PIX;
+                    int z15_ty = range_y_min + (py - 1) / TILE_PIX;
+                    int dpx = (z15_tx % 2) * TILE_PIX + (px - 1) % TILE_PIX;
+                    int dpy = (z15_ty % 2) * TILE_PIX + (py - 1) % TILE_PIX;
+                    if (dpx < (int)dw && dpy < (int)dh) {
+                        const uint8_t *p =
+                            dem10_rgb + dpy * dw * dch + dpx * dch;
+                        float e = rgb2elev(p[0], p[1], p[2]);
+                        if (e != ELEV_NODATA) big->data[idx] = e;
+                    }
+                }
+            }
+            free(dem10_rgb);
+        }
+    }
+
+    /* NODATA（ボーダー含む）と負値をSEAに変換 */
+    for (uint32_t i = 0; i < big->width * big->height; i++) {
+        if (big->data[i] == ELEV_NODATA || big->data[i] < ELEV_SEA)
+            big->data[i] = ELEV_SEA;
+    }
+}
+
+/* 後方互換: 4方向オーバーラップ版 (257×257) */
+ElevTile *elev_load_with_overlap(const char *base, TileCoord tc)
+{
+    uint32_t W = TILE_PIX + 1;
+    uint32_t H = TILE_PIX + 1;
+
+    ElevTile *tile = malloc(sizeof(ElevTile));
+    tile->width    = W;
+    tile->height   = H;
+    tile->data     = calloc(W * H, sizeof(float));
+    if (!tile->data) { free(tile); return NULL; }
+
+    load_tile_into(tile, 0, 0, base, tc.x, tc.y, 0, 0, TILE_PIX, TILE_PIX);
+    load_tile_into(tile, TILE_PIX, 0, base, tc.x+1, tc.y, 0, 0, 1, TILE_PIX);
+    load_tile_into(tile, 0, TILE_PIX, base, tc.x, tc.y+1, 0, 0, TILE_PIX, 1);
+    load_tile_into(tile, TILE_PIX, TILE_PIX, base, tc.x+1, tc.y+1, 0, 0, 1, 1);
+
+    /* NODATA を SEA に変換 */
+    for (uint32_t i = 0; i < W * H; i++)
+        if (tile->data[i] == ELEV_NODATA || tile->data[i] < ELEV_SEA)
+            tile->data[i] = ELEV_SEA;
+
+    return tile;
 }
