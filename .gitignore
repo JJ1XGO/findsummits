@@ -55,6 +55,10 @@ dkms.conf
 *.dwo
 src/test_unionfind
 
+# build artifacts
+build/
+/findsummits
+
 # claude code files
 .claude/settings.local.json
 .claude/conversations/

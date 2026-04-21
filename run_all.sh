@@ -9,7 +9,7 @@
 
 MESH_LIST="${1:-tasks/mesh_list_japan.txt}"
 PARALLEL=8
-FINDSUMMITS="./findsummits"
+FINDSUMMITS="./build/findsummits"
 LOG_DIR="/mnt/findsummits/logs"
 
 if [ ! -f "$MESH_LIST" ]; then
