@@ -16,14 +16,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ビルド・テスト
 
 ```bash
-make                    # findsummits バイナリをビルド
-make test_mesh_analyze  # メッシュ解析テスト
-make test_analyze       # タイル解析テスト
-make test_fetch         # タイル取得テスト
-make clean              # 成果物削除
+make                    # build/findsummits をビルド
+make test_mesh_analyze  # build/test_mesh_analyze をビルド
+make test_analyze       # build/test_analyze をビルド
+make test_fetch         # build/test_fetch をビルド
+make clean              # build/ ディレクトリごと削除
 
-./findsummits 4929      # 1次メッシュコード指定で実行
-./test_mesh_analyze     # テスト実行（引数なし）
+./build/findsummits 4929      # 1次メッシュコード指定で実行
+./build/test_mesh_analyze     # テスト実行（引数なし）
 ```
 
 依存: `libcurl`, `libpng`, `libm`, `pthread`（GCC / C99）
@@ -78,8 +78,9 @@ C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummi
 ```
 src/          # ソースファイル（main.c, *.c, *.h）
 scripts/      # Python スクリプト（CSV統合・SOTA突合・XLSX/GeoJSON出力）
-tasks/        # 作業ログ（todo.md, lessons.md）
+params/       # パラメータファイル（メッシュコードリスト等）
 tests/        # テスト用プログラム（test_*.c）
+.claude/manage/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
 以下のパスはパラメータファイルに記述する様にする
 /mnt/findsummits/images/       # 処理範囲を目視確認するためのイメージファイル置き場
 /mnt/findsummits/results/      # 最終O/Pのxlsx,geojson,csv

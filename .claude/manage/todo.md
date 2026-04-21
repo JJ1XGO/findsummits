@@ -23,8 +23,16 @@
 ### Phase 3: Python後処理
 
 - [x] summitslist.csv を `/mnt/findsummits/ref/` に再取得（2026-04-20付 181001行 JA:7211件）
-- [ ] **scripts/merge.py**: 176CSV統合・is_tile_topフラグ処理・summitslist.csv突き合わせ・ZZ/ZZ-XXXダミーコード付与
+- [ ] **scripts/merge.py**: 176CSV統合・summitslist.csv突き合わせ・ZZ/ZZ-XXXダミーコード付与
+  - 突き合わせはズーム15ピクセル座標で行う（tolerance=0で同一ピクセル≒4.8m。tolerance=Nでnピクセル以内）
+  - `--tolerance N`（デフォルト0）をCLI引数で指定可能にする
+  - O/Pは1本のCSV。行の種類は3種：既存SOTAと一致・新規候補(ZZ/ZZ-XXX)・現行SOTAで未検出（削除候補）
+  - is_tile_topフラグは参考値扱い（prominence の信頼度指標）
 - [ ] **scripts/output.py**: XLSX申請書・GeoJSON出力
+
+## 環境設定
+
+- [ ] **sandbox設定移動**: `mv .claude/settings.json .claude/settings.local.json` を実行（settings.jsonは現在空 `{}`、settings.local.jsonに `/mnt/findsummits` の書き込み許可設定を移す）
 
 ## 保留・将来対応
 
