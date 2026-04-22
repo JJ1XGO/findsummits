@@ -1,0 +1,14 @@
+[fetch]
+# 地理院サーバへの問い合わせ時に User-Agent に付加するメールアドレス
+# 実運用では params/fetch_config.ini にコピーしてアドレスを記入してください
+# （fetch_config.ini は .gitignore で管理対象外）
+user_agent_email = your.email@example.com
+
+# 並列ダウンロード数（地理院サーバ負荷軽減のため 4 推奨）
+max_parallel = 4
+
+# リクエスト間インターバル（ミリ秒）
+interval_ms = 100
+
+# 429/503 時の初期バックオフ秒数
+backoff_initial_sec = 60

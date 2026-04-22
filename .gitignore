@@ -59,6 +59,9 @@ src/test_unionfind
 build/
 /findsummits
 
+# fetch 設定（メールアドレス等の個人情報を含むため）
+params/fetch_config.ini
+
 # claude code files
 .claude/settings.local.json
 .claude/conversations/
