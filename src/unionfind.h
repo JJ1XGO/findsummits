@@ -23,13 +23,27 @@ typedef struct {
 } Peak;
 
 /*
+ * root → peak_id のオープンアドレス法ハッシュマップ
+ * キー: root ピクセルインデックス(int32_t, 常に >= 0)
+ * 値  : peak_id(int32_t, 常に >= 0)
+ * 空セルマーカー: key = -1
+ */
+typedef struct {
+    int32_t *keys;
+    int32_t *vals;
+    int      cap;   /* 常に 2 のべき乗 */
+    int      cnt;
+} PeakMap;
+
+/*
  * Union-Find 本体
  */
 typedef struct {
     int32_t *parent;    /* 親のインデックス */
-    int32_t *rank;      /* 木の深さ */
-    int32_t *peak_id;   /* このグループのピークID */
+    int8_t  *rank;      /* 木の深さ（経路圧縮で上限に達しないが 127 でガード） */
     size_t   size;      /* 全ピクセル数 */
+
+    PeakMap  pm;        /* root → peak_id マッピング */
 
     Peak    *peaks;     /* ピーク情報リスト */
     int      peak_cnt;  /* 登録済みピーク数 */
@@ -44,5 +58,8 @@ int        uf_union(UnionFind *uf, int32_t a, int32_t b,
                     float col_elev, int32_t col_x, int32_t col_y);
 int        uf_new_peak(UnionFind *uf, int32_t i,
                        int32_t x, int32_t y, float elev);
+
+/* ハッシュマップ参照（analyze.c からも使用） */
+int        peakmap_get(const PeakMap *pm, int32_t key);
 
 #endif /* UNIONFIND_H */

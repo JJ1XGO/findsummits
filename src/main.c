@@ -9,48 +9,6 @@
 #include <string.h>
 #include "mesh_analyze.h"
 
-static const MeshAnalyzeConfig DEFAULT_CFG = {
-    .tile_dir       = "/mnt/findsummits/tiles",
-    .result_dir     = "/mnt/findsummits/results/csv",
-    .min_prominence = 150.0f,
-};
-
-/*
- * メッシュリストファイルから1次メッシュコードを読み込んで順次解析する
- */
-static int run_from_file(const MeshAnalyzeConfig *cfg, const char *list_path)
-{
-    FILE *fp = fopen(list_path, "r");
-    if (!fp) {
-        fprintf(stderr, "リストファイルを開けません: %s\n", list_path);
-        return 1;
-    }
-
-    char line[64];
-    int total = 0, ok = 0, ng = 0;
-    while (fgets(line, sizeof(line), fp)) {
-        char *p = line;
-        while (*p == ' ' || *p == '\t') p++;
-        if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0')
-            continue;
-
-        int meshcode = atoi(p);
-        if (meshcode < 1000 || meshcode > 9999) {
-            fprintf(stderr, "無効なメッシュコード: %s", line);
-            continue;
-        }
-
-        total++;
-        printf("\n=== [%d] メッシュ%d ===\n", total, meshcode);
-        int ret = mesh_analyze(cfg, meshcode);
-        if (ret == 0) ok++; else ng++;
-    }
-
-    fclose(fp);
-    printf("\n=== 完了: %d件処理 (成功:%d 失敗:%d) ===\n", total, ok, ng);
-    return ng > 0 ? 1 : 0;
-}
-
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
@@ -60,7 +18,7 @@ int main(int argc, char *argv[])
             "  %s <リストファイル>       ファイルから一括解析\n"
             "例:\n"
             "  %s 4929\n"
-            "  %s tasks/mesh_list_japan.txt\n",
+            "  %s params/mesh_list_japan.txt\n",
             argv[0], argv[0], argv[0], argv[0]);
         return 1;
     }
@@ -74,18 +32,52 @@ int main(int argc, char *argv[])
         if (arg[i] < '0' || arg[i] > '9') { is_meshcode = 0; break; }
     }
 
+    MeshAnalyzeConfig cfg = {
+        .tile_dir       = "/mnt/findsummits/tiles",
+        .result_dir     = "/mnt/findsummits/results/csv",
+        .min_prominence = 130.0f,
+        .mesh_set       = NULL,
+    };
+
     if (is_meshcode) {
         int meshcode = atoi(arg);
         printf("対象メッシュ: %d\n\n", meshcode);
-        int ret = mesh_analyze(&DEFAULT_CFG, meshcode);
+
+        /* 単一メッシュ: 1要素の MeshSet（隣接なし→center のみ解析） */
+        MeshSet single_set;
+        single_set.codes = &meshcode;
+        single_set.count = 1;
+        cfg.mesh_set = &single_set;
+
+        int ret = mesh_analyze(&cfg, meshcode);
         if (ret == 0)
             printf("\n解析完了！ 結果は %s/%d.csv に保存されました。\n",
-                   DEFAULT_CFG.result_dir, meshcode);
+                   cfg.result_dir, meshcode);
         else
             fprintf(stderr, "解析に失敗しました。\n");
         return ret;
+
     } else {
         printf("メッシュリスト: %s\n\n", arg);
-        return run_from_file(&DEFAULT_CFG, arg);
+
+        MeshSet set;
+        if (mesh_set_load(&set, arg) < 0) {
+            fprintf(stderr, "リストファイルを読み込めません: %s\n", arg);
+            return 1;
+        }
+        cfg.mesh_set = &set;
+
+        int total = 0, ok = 0, ng = 0;
+        for (int i = 0; i < set.count; i++) {
+            int meshcode = set.codes[i];
+            total++;
+            printf("\n=== [%d/%d] メッシュ%d ===\n", total, set.count, meshcode);
+            int ret = mesh_analyze(&cfg, meshcode);
+            if (ret == 0) ok++; else ng++;
+        }
+
+        mesh_set_destroy(&set);
+        printf("\n=== 完了: %d件処理 (成功:%d 失敗:%d) ===\n", total, ok, ng);
+        return ng > 0 ? 1 : 0;
     }
 }

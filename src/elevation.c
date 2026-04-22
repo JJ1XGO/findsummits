@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <sys/stat.h>
 #include <png.h>
 #include "elevation.h"
-#include "fetch.h"
 
 static float rgb2elev(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -95,6 +95,15 @@ static void make_tile_path(char *buf, size_t bufsize,
                             int x, int y, const char *dem)
 {
     snprintf(buf, bufsize, "%s/%d/%d/%d_%s.png", base, z, x, y, dem);
+}
+
+/* dem10b (z=14) がキャッシュ済みか確認する */
+static int tile_dem10b_is_cached(const char *base, int x14, int y14)
+{
+    char path[512];
+    struct stat st;
+    make_tile_path(path, sizeof(path), base, 14, x14, y14, "b");
+    return stat(path, &st) == 0;
 }
 
 /*
@@ -259,11 +268,8 @@ ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *base, TileCoord tc)
         int ox    = (tc.x % 2) * TILE_PIX;  /* z14タイル内オフセット */
         int oy    = (tc.y % 2) * TILE_PIX;
 
-        /* キャッシュになければダウンロード */
-        if (!tile_dem10b_is_cached(base, z14_x, z14_y)) {
-            FetchConfig fc = { .tile_dir = base, .max_parallel = 1, .interval_ms = 200 };
-            fetch_dem10b_tile(&fc, z14_x, z14_y);
-        }
+        if (!tile_dem10b_is_cached(base, z14_x, z14_y))
+            fprintf(stderr, "警告: dem10b タイル未キャッシュ (%d/%d)\n", z14_x, z14_y);
 
         char dem10_path[512];
         uint32_t dw, dh, dch;
@@ -325,6 +331,8 @@ void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
     int y14_min = range_y_min / 2;
     int y14_max = (range_y_min + tile_h - 1) / 2;
 
+    int missing_dem10b = 0;
+
     for (int y14 = y14_min; y14 <= y14_max; y14++) {
         for (int x14 = x14_min; x14 <= x14_max; x14++) {
             /* このz14タイルが担当するz15範囲(ビッグタイル内) */
@@ -348,11 +356,8 @@ void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
                         has_nodata = 1;
             if (!has_nodata) continue;
 
-            if (!tile_dem10b_is_cached(base, x14, y14)) {
-                FetchConfig fc = { .tile_dir = base, .max_parallel = 1,
-                                   .interval_ms = 200 };
-                fetch_dem10b_tile(&fc, x14, y14);
-            }
+            if (!tile_dem10b_is_cached(base, x14, y14))
+                missing_dem10b++;
 
             char dem10_path[512];
             make_tile_path(dem10_path, sizeof(dem10_path), base, 14, x14, y14, "b");
@@ -380,6 +385,10 @@ void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
             free(dem10_rgb);
         }
     }
+
+    if (missing_dem10b > 0)
+        fprintf(stderr, "警告: dem10b タイル未キャッシュ %d 件 - prefetch_tiles.py を先に実行してください\n",
+                missing_dem10b);
 
     /* NODATA（ボーダー含む）と負値をSEAに変換 */
     for (uint32_t i = 0; i < big->width * big->height; i++) {

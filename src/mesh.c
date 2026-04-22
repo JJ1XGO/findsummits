@@ -10,6 +10,11 @@
 #include <math.h>
 #include "mesh.h"
 
+static int cmp_int(const void *a, const void *b)
+{
+    return *(const int *)a - *(const int *)b;
+}
+
 #define PI 3.14159265358979323846
 
 /*
@@ -82,4 +87,86 @@ int mesh_to_tile_range(int meshcode, int z, MeshTileRange *range)
     range->tile_h = ty_south - ty_north + 1;
 
     return 0;
+}
+
+/*
+ * メッシュコードリストファイルを読み込んで MeshSet を構築する
+ *
+ * list_path: 1行1メッシュコード（4桁整数）のテキストファイル
+ * 戻り値: 読み込んだ件数（>=0）/ -1=エラー
+ */
+int mesh_set_load(MeshSet *set, const char *list_path)
+{
+    FILE *fp = fopen(list_path, "r");
+    if (!fp) {
+        fprintf(stderr, "mesh_set_load: 開けない: %s\n", list_path);
+        return -1;
+    }
+
+    int cap = 256;
+    set->codes = malloc(cap * sizeof(int));
+    if (!set->codes) {
+        fclose(fp);
+        return -1;
+    }
+    set->count = 0;
+
+    char line[64];
+    while (fgets(line, sizeof(line), fp)) {
+        int code;
+        if (sscanf(line, "%d", &code) != 1) continue;
+        if (code < 1000 || code > 9999)     continue;
+        if (set->count == cap) {
+            cap *= 2;
+            int *tmp = realloc(set->codes, cap * sizeof(int));
+            if (!tmp) {
+                free(set->codes);
+                fclose(fp);
+                set->codes = NULL;
+                set->count = 0;
+                return -1;
+            }
+            set->codes = tmp;
+        }
+        set->codes[set->count++] = code;
+    }
+    fclose(fp);
+
+    qsort(set->codes, set->count, sizeof(int), cmp_int);
+    return set->count;
+}
+
+/*
+ * MeshSet に指定コードが含まれるか二分探索で調べる
+ * 戻り値: 1=含む / 0=含まない
+ */
+int mesh_set_contains(const MeshSet *set, int code)
+{
+    int lo = 0, hi = set->count - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (set->codes[mid] == code) return 1;
+        if (set->codes[mid] <  code) lo = mid + 1;
+        else                         hi = mid - 1;
+    }
+    return 0;
+}
+
+void mesh_set_destroy(MeshSet *set)
+{
+    free(set->codes);
+    set->codes = NULL;
+    set->count = 0;
+}
+
+/*
+ * 隣接メッシュコードを計算する
+ * dlat, dlon ∈ {-1, 0, 1}（-1=南/西, +1=北/東）
+ * 有効範囲チェックなし
+ */
+int mesh_neighbor(int code, int dlat, int dlon)
+{
+    int lat_code = code / 100;
+    int lon_code = code % 100;
+    return (lat_code + dlat) * 100 + (lon_code + dlon);
 }

@@ -22,11 +22,27 @@ typedef struct {
     int tile_h;         /* タイル数(Y方向) */
 } MeshTileRange;
 
+/*
+ * 1次メッシュコードのリストを保持する軽量 Set（ソート済み配列 + 二分探索）
+ */
+typedef struct {
+    int *codes;   /* ソート済み */
+    int  count;
+} MeshSet;
+
 /* 関数プロトタイプ */
 int  mesh_to_tile_range(int meshcode, int z, MeshTileRange *range);
 void latlon_to_tile(double lat, double lon, int z,
                     int *tx, int *ty);
 void tile_to_latlon(int z, int tx, int ty,
                     double *lat, double *lon);
+
+/* MeshSet 操作 */
+int  mesh_set_load(MeshSet *set, const char *list_path);
+int  mesh_set_contains(const MeshSet *set, int code);
+void mesh_set_destroy(MeshSet *set);
+
+/* 隣接メッシュコードを計算（dlat, dlon ∈ {-1, 0, 1}、存在チェックなし） */
+int  mesh_neighbor(int code, int dlat, int dlon);
 
 #endif /* MESH_H */

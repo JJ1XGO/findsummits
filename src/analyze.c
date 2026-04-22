@@ -23,10 +23,13 @@ typedef struct {
 
 static int cmp_elev_desc(const void *a, const void *b)
 {
-    float fa = ((Pixel*)a)->elev;
-    float fb = ((Pixel*)b)->elev;
-    if (fa > fb) return -1;
-    if (fa < fb) return  1;
+    const Pixel *pa = a, *pb = b;
+    if (pa->elev > pb->elev) return -1;
+    if (pa->elev < pb->elev) return  1;
+    if (pa->x    < pb->x   ) return -1;  /* x 小=西 優先（決定論化） */
+    if (pa->x    > pb->x   ) return  1;
+    if (pa->y    < pb->y   ) return -1;  /* y 小=北 優先 */
+    if (pa->y    > pb->y   ) return  1;
     return 0;
 }
 
@@ -100,10 +103,9 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
 
         } else if (neighbor_cnt == 1) {
             int32_t root = neighbor_roots[0];
-            if (uf->peak_id[root] >= 0) {
+            if (peakmap_get(&uf->pm, root) >= 0) {
                 /* 有効なピークコンポーネントに合流 */
-                uf->peak_id[i] = uf->peak_id[root];
-                uf->parent[i]  = root;
+                uf->parent[i] = root;
             }
             /* peak_id < 0（海面コンポーネント）への合流は何もしない：
              * このピクセルは独立ピーク候補のまま残す。
@@ -118,12 +120,12 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
             int32_t max_root = -1;
             for (int k = 0; k < neighbor_cnt; k++) {
                 int32_t root = neighbor_roots[k];
-                if (uf->peak_id[root] < 0) continue;  /* 海面コンポーネントは除外 */
+                if (peakmap_get(&uf->pm, root) < 0) continue;  /* 海面コンポーネントは除外 */
                 if (max_root < 0) {
                     max_root = root;
                 } else {
-                    int pid_k   = uf->peak_id[root];
-                    int pid_max = uf->peak_id[max_root];
+                    int pid_k   = peakmap_get(&uf->pm, root);
+                    int pid_max = peakmap_get(&uf->pm, max_root);
                     if (uf->peaks[pid_k].elev > uf->peaks[pid_max].elev)
                         max_root = root;
                 }
@@ -134,13 +136,12 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
                 if (elev > 0.0f)
                     uf_new_peak(uf, i, x, y, elev);
             } else {
-                uf->peak_id[i] = uf->peak_id[max_root];
-                uf->parent[i]  = max_root;
+                uf->parent[i] = max_root;
 
                 for (int k = 0; k < neighbor_cnt; k++) {
                     int32_t root = neighbor_roots[k];
                     if (root == max_root) continue;
-                    if (uf->peak_id[root] < 0) continue;  /* 海面コンポーネントはスキップ */
+                    if (peakmap_get(&uf->pm, root) < 0) continue;  /* 海面コンポーネントはスキップ */
                     uf_union(uf, i, root, elev, x, y);
                 }
             }
@@ -151,6 +152,9 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
     AnalyzeResult *result = malloc(sizeof(AnalyzeResult));
     result->peaks    = malloc(sizeof(PeakResult) * uf->peak_cnt);
     result->peak_cnt = 0;
+
+    int32_t img_w = (int32_t)W;
+    int32_t img_h = (int32_t)H;
 
     for (int pid = 0; pid < uf->peak_cnt; pid++) {
         Peak *p = &uf->peaks[pid];
@@ -171,6 +175,19 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
 
         if (prom < min_prominence) continue;
 
+        int32_t margin = -1;
+        if (!is_top) {
+            int32_t cx = p->col_x, cy = p->col_y;
+            int32_t d0 = cx;
+            int32_t d1 = cy;
+            int32_t d2 = (img_w - 1) - cx;
+            int32_t d3 = (img_h - 1) - cy;
+            margin = d0;
+            if (d1 < margin) margin = d1;
+            if (d2 < margin) margin = d2;
+            if (d3 < margin) margin = d3;
+        }
+
         PeakResult *pr  = &result->peaks[result->peak_cnt++];
         pr->peak_x      = p->x;
         pr->peak_y      = p->y;
@@ -180,6 +197,7 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
         pr->col_elev    = p->col_elev;
         pr->prominence  = prom;
         pr->is_tile_top = is_top;
+        pr->col_margin_px = margin;
     }
 
     free(processed);

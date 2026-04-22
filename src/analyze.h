@@ -18,6 +18,7 @@ typedef struct {
     float   col_elev;
     float   prominence;
     int     is_tile_top;    /* タイル最高峰フラグ(境界またぎ未解決) */
+    int32_t col_margin_px;  /* col から解析領域境界までの最短距離(px)。is_tile_top=1 なら -1 */
 } PeakResult;
 
 typedef struct {

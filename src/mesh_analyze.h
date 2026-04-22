@@ -15,9 +15,10 @@
  * メッシュ解析設定
  */
 typedef struct {
-    const char *tile_dir;       /* タイルキャッシュディレクトリ */
-    const char *result_dir;     /* 結果保存ディレクトリ */
-    float       min_prominence; /* 最小プロミネンス(m) */
+    const char    *tile_dir;       /* タイルキャッシュディレクトリ */
+    const char    *result_dir;     /* 結果保存ディレクトリ */
+    float          min_prominence; /* 最小プロミネンス(m) */
+    const MeshSet *mesh_set;       /* 隣接判定用メッシュリスト */
 } MeshAnalyzeConfig;
 
 /* 関数プロトタイプ */

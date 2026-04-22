@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -O2 -Wall -pthread -I./src
-LIBS = -lcurl -lpng -lm
+LIBS = -lpng -lm
 BUILDDIR = build
 
 # 本番用ソース（main.c を除くコアファイル）
@@ -25,9 +25,6 @@ $(BUILDDIR)/test_mesh_analyze: $(BUILDDIR)/test_mesh_analyze.o $(CORE_OBJS)
 $(BUILDDIR)/test_analyze: $(BUILDDIR)/test_analyze.o $(CORE_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-$(BUILDDIR)/test_fetch: $(BUILDDIR)/test_fetch.o $(CORE_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
-
 $(BUILDDIR)/%.o: src/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -38,9 +35,7 @@ $(BUILDDIR)/test_%.o: tests/test_%.c | $(BUILDDIR)
 findsummits: $(BUILDDIR)/findsummits
 test_mesh_analyze: $(BUILDDIR)/test_mesh_analyze
 test_analyze: $(BUILDDIR)/test_analyze
-test_fetch: $(BUILDDIR)/test_fetch
-
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze test_fetch
+.PHONY: all clean findsummits test_mesh_analyze test_analyze
