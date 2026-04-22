@@ -1,299 +1,381 @@
-# SOTA日本支部 サミット最新化ツール — 実装計画
+# findsummits アーキテクチャ刷新（3×3最小矩形 + 事前prefetch）
 
-作成日: 2026-04-20  
-対象ブランチ: devel
+## Context
 
----
+2026-04-21 のセッションで、以下のアーキテクチャ刷新がユーザーと合意済み（`.claude/handovers/2026-04-22_0015.md`）。
 
-## 1. 現状評価
+- 現行の `BORDER_TILES=8` 方式は過去の合意（3×3 フルメッシュ）違反として正式撤回
+- Key Col 距離の実データ検証（`.claude/manage/keycol_analysis.md`）で、18km バッファでは 150 件（3.3%）取りこぼし・最遠 253km の独立峰あり → 3×3 必須
+- 解析時の libcurl によるタイル取得は廃止し、事前 prefetch (Python) に一本化
+- メモリ削減（`rank` int8・`peak_id` ハッシュマップ）で 3×3 を 62GB RAM 内で並列 2 まで実行可
+- 座標決定論化（`cmp_elev_desc` の 2 次キー x→y）で「同一峰は異なる解析でも同一 global pixel に収束」させ、merge での重複判定を exact match で実施できるようにする
+- 既存 9 メッシュ CSV (`/mnt/findsummits/results/csv/{5238..5440}.csv`) は削除し、新方式で再解析（ユーザー確認済）
 
-### できていること
-- Union-Find による山頂・コル検出（数学的に正確）
-- 8方向オーバーラップで境界ピークを正確に処理
-- DEM5a/b/c → DEM10 フォールバック
-- 並列タイルダウンロード
-- 1次メッシュ → CSV 出力
-
-### 未実装（申請に必須）
-- SOTA 既存サミットリストとの突合（新規/変更/削除の判定）
-- XLSX 出力（申請用）
-- GeoJSON 出力（目視確認用エビデンス）
-- 複数メッシュの統合（重複ピーク除去）
-- パラメータのハードコード問題
-
-### 既知のバグ・懸念
-- `is_tile_top` フラグの扱いが未完成（複数メッシュ統合時に問題）
-- メモリリーク・エラーパス処理が未検証
-- DEM10 フォールバックのオーバーラップ精度が未確認
+目的: 全 176 メッシュを正確かつ効率的に解析し、SOTA 日本支部へ申請できる品質の「新規/変更/削除」候補 CSV を生成できるパイプラインに刷新する。
 
 ---
 
-## 2. アーキテクチャ方針
+## 変更対象ファイル
 
+### C エンジン
+
+| ファイル | 役割 |
+|---|---|
+| `src/unionfind.h/.c` | `rank` int8 化、`peak_id` をハッシュマップ化 |
+| `src/analyze.h/.c` | `cmp_elev_desc` 2 次キー（x→y）、プロミネンス閾値 130m、`col_margin_px` 計算、境界近接判定 |
+| `src/mesh_analyze.h/.c` | 3×3 最小矩形、中心フィルタ撤廃、全ピーク出力、CSV 新列 |
+| `src/mesh.h/.c` | 隣接メッシュコード計算・メッシュリスト Set 判定 |
+| `src/fetch.h/.c` | `fetch_mesh`/`fetch_tile`/`fetch_dem10b_tile` 廃止、キャッシュ確認のみ残す |
+| `src/elevation.c` | `elev_fill_nodata_dem10b` と `elev_load_with_overlap_8dir_with_dem10` から fetch 呼出を除去、未キャッシュ時は警告/エラー |
+| `src/main.c` | メッシュリストを `MeshSet` に読み込み、各メッシュの隣接情報を `mesh_analyze` に渡す |
+
+### Python スクリプト
+
+| ファイル | 役割 |
+|---|---|
+| `scripts/prefetch_tiles.py` (新規) | If-Modified-Since 条件付き取得・並列4・100ms 間隔・UA 明示・429/503 backoff・Last-Modified→mtime 反映 |
+| `scripts/merge.py` (改修) | 期待解析回数判定、`col_elev` 最小・`col_margin_px` 最大採用、`prominence≥150m` 最終判定 |
+
+### 設定・データ
+
+| ファイル | 役割 |
+|---|---|
+| `params/fetch_config.ini.example` (新規、commit) | UA テンプレート |
+| `params/fetch_config.ini` (新規、gitignore) | 実 UA（メールアドレス含む） |
+| `.gitignore` | `params/fetch_config.ini` 追記 |
+| `/mnt/findsummits/results/csv/*.csv` | 削除（BORDER=8 方式の残骸） |
+
+---
+
+## 実装詳細
+
+### 1. `src/unionfind.h/.c` — メモリ削減
+
+**変更**:
+- `int32_t *rank` → `int8_t *rank`（-8GB / 3×3 最大時）
+  - 経路圧縮 union-by-rank で rank が int8 上限（127）に達するケースは実質ない。念のため `rank < 127` の増分ガードを入れる
+- `int32_t *peak_id[N]` → 開放オープンアドレス法ハッシュマップ `PeakMap`
+  - キー: root 画素インデックス（int32_t）、値: peak_id（int32_t）
+  - 実装は `src/unionfind.c` にインラインで持つ（別ファイル化は不要）
+  - 初期容量は全ピーク見込み 200K に対し load factor 0.5 を切るサイズ（262144）から動的成長
+  - `uf_find` 後に root 値を参照する箇所をすべて `peakmap_get(pm, root)` に置換
+  - `uf_union` で loser 側はエントリ削除（任意、放置でも正しさは壊れない）
+  - 非 root への `peak_id` 代入（`analyze.c` 内の 2 箇所）は廃止（もともと未使用）
+
+**公開 API の変更**:
+- 内部の `peak_id` 配列を使う呼出が無いか要確認（grep 済、`analyze.c` のみ）
+- `uf_find` は変更なし
+- `uf_new_peak` は内部で `peakmap_put(root=i, pid)` を呼ぶ
+
+### 2. `src/analyze.h/.c`
+
+**`cmp_elev_desc` の 2 次キー追加**（決定論化）:
+```c
+static int cmp_elev_desc(const void *a, const void *b) {
+    const Pixel *pa = a, *pb = b;
+    if (pa->elev > pb->elev) return -1;
+    if (pa->elev < pb->elev) return  1;
+    if (pa->x   < pb->x   ) return -1;  /* x 小=西 優先 */
+    if (pa->x   > pb->x   ) return  1;
+    if (pa->y   < pb->y   ) return -1;  /* y 小=北 優先 */
+    if (pa->y   > pb->y   ) return  1;
+    return 0;
+}
 ```
-C エンジン（高速計算）
-  タイル取得 → 標高デコード → 山頂/コル検出 → per-mesh CSV
+並行解析間の変換は不要（translation は ordering を保存する）。
 
-Python パイプライン（申請用出力）
-  全 CSV 統合 → SOTA リスト突合 → XLSX / GeoJSON 生成
-```
+**プロミネンス閾値を 130m に**:
+- 現在は呼出側 (`MeshAnalyzeConfig.min_prominence = 150.0f`) から来る
+- merge.py 側で 150m 最終判定するため、C 側は 130m で出力（境界近接で過小評価された候補を取りこぼさないマージン）
+- `main.c` の `DEFAULT_CFG.min_prominence = 130.0f` に変更
 
-**判断理由:**
-- C に XLSX / GeoJSON ライブラリを持ち込むのはコスト大
-- Python 側 (`findsummits4sotaja`) に XLSX/GeoJSON コードが既存
-- 性能が必要な部分（タイル読み込み・Union-Find）は C が適切
+**`col_margin_px` 計算**:
+- `analyze_tile_data` に解析領域の境界情報を引数追加、または「エッジまでの最短距離」を各ピーク結果に含める
+- 実装: PeakResult に `int32_t col_margin_px` を追加。col 座標 (col_x, col_y) から上下左右の画像外周までの 4 方向の最小距離（ピクセル）
+- is_tile_top=1 の場合は `col_margin_px = -1`（無意味）
 
----
-
-## 3. フェーズ一覧
-
-| フェーズ | 内容 | 優先度 | 目安工数 |
-|---------|------|--------|--------|
-| Ph.0 | 基盤整備（設定ファイル・品質確認） | 高 | S |
-| Ph.1 | 複数メッシュ対応・重複除去 | 高 | M |
-| Ph.2 | SOTA リスト突合 | 最高 | M |
-| Ph.3 | XLSX 出力 | 最高 | M |
-| Ph.4 | GeoJSON 出力 | 高 | S |
-| Ph.5 | 統合テスト・実データ検証 | 高 | M |
-
----
-
-## 4. 詳細タスク
-
----
-
-### Phase 0: 基盤整備
-
-**目標:** 後続フェーズの土台を固める。コードのハードコード値を除去し、信頼性を確認する。
-
-#### Task 0-1: 設定ファイル実装
-- **内容:** `config.ini` (INI形式) を導入し、ハードコード値を外出し
-- **外出し対象:**
-  - タイルキャッシュディレクトリ (`/mnt/findsummits/tiles/`)
-  - 結果出力ディレクトリ (`/mnt/findsummits/results/`)
-  - 最小プロミネンス (150m)
-  - タイルダウンロードスレッド数
-  - DEM タイル URL テンプレート
-- **影響ファイル:** `src/main.c`, `src/mesh_analyze.c`, `src/fetch.c`、新規 `src/config.c/h`
-- **テスト:** 設定値が正しく読み込まれることを確認
-
-#### Task 0-2: メモリリーク・エラーハンドリング確認
-- **内容:** `valgrind` または静的解析で主要パスのリークを確認、エラーパスでの `destroy` 漏れを修正
-- **影響ファイル:** `src/elevation.c`, `src/analyze.c`, `src/mesh_analyze.c`
-- **テスト:** `valgrind --leak-check=full ./findsummits 4929` でリーク 0 を確認
-
-#### Task 0-3: DEM10 フォールバックの動作確認
-- **内容:** DEM5 が存在しないタイルで DEM10 が正しく機能するか実データで確認
-- **影響ファイル:** `src/elevation.c`（`elev_load_with_overlap_8dir_with_dem10`）
-- **テスト:** DEM10 が必要なメッシュを指定し、CSV 出力が妥当か目視確認
-
----
-
-### Phase 1: 複数メッシュ対応・重複除去
-
-**目標:** 複数メッシュを一括処理し、境界をまたぐ重複ピークを除去する。
-
-#### Task 1-1: 複数メッシュ一括実行スクリプト
-- **内容:** メッシュコードのリストを受け取り、`findsummits` を順次実行するシェルスクリプト
-- **ファイル:** 新規 `scripts/run_all.sh`
-- **インタフェース:** `./scripts/run_all.sh meshcodes.txt`
-- **テスト:** 隣接する 2 メッシュ（例: 4929 と 4930）を実行し CSV が生成されること
-
-#### Task 1-2: 複数 CSV マージ・重複除去
-- **内容:** Python スクリプトで複数 CSV を統合し、隣接メッシュ境界のピーク重複を除去
-- **ロジック:**
-  - 全 CSV を読み込み、(lat, lon) で近傍検索（半径 50m）
-  - 重複判定: 同一山頂 = 緯度経度が 50m 以内、かつ標高差 < 5m
-  - 重複時はプロミネンスが大きい方を採用
-  - `is_tile_top=1` のピークは重複確認を必須とする
-- **ファイル:** 新規 `scripts/merge_csv.py`
-- **テスト:** 重複が発生する境界ケースで正しく 1 件になること
-
-#### Task 1-3: C 側 — `is_tile_top` フラグの意味を文書化・整理
-- **内容:** `is_tile_top=1` のピークが merge_csv.py でどう扱われるかの仕様を確定し、コメントで明文化
-- **影響ファイル:** `src/mesh_analyze.c`, `src/unionfind.h`
-
----
-
-### Phase 2: SOTA リスト突合
-
-**目標:** 既存 SOTA JA サミットリストと検出結果を突合し、新規/変更/削除を判定する。
-
-#### Task 2-1: SOTA サミットリスト読み込み
-- **内容:** SOTA JA の CSV サミットリストを読み込むモジュール
-- **入力形式:** `/mnt/findsummits/ref/` に置いてある SOTA サミット CSV
-  - 列: SummitCode, SummitName, AltM, Latitude, Longitude, Points 等
-- **ファイル:** 新規 `scripts/sota_list.py`
-- **テスト:** 読み込んだレコード数が既知件数と一致すること
-
-#### Task 2-2: 突合ロジック実装
-- **内容:** 検出結果 CSV と SOTA リストを緯度経度で突合
-- **突合ルール:**
-  - 既存サミットとの最近傍を探索
-  - 距離 ≤ 150m かつ標高差 < 20m → **同一サミット** とみなす
-  - 距離しきい値・標高差しきい値は設定ファイルで調整可能にする
-- **判定結果:**
-  - `NEW`: 検出結果が既存リストにない → 新規候補
-  - `MATCH`: 検出結果が既存リストと一致 → 変更なし
-  - `MOVED`: 既存サミットが検出結果と 150m 超離れている → 座標変更候補
-  - `ELEV_CHANGE`: 同一位置だが標高が変わった → 標高変更候補
-  - `DELETED`: 既存サミットがプロミネンス 150m 未満になった → 削除候補
-- **ファイル:** 新規 `scripts/match_sota.py`
-- **テスト:** テスト用小規模データで 5 種類の判定が正しく出力されること
-
-#### Task 2-3: 突合結果 CSV 出力
-- **内容:** 突合済みの統合 CSV を出力
-- **列:** `match_status, summit_code, summit_name, peak_lat, peak_lon, peak_elev, col_lat, col_lon, col_elev, prominence, orig_lat, orig_lon, orig_elev`
-- **ファイル:** `scripts/match_sota.py`（上記の続き）
-- **出力先:** `/mnt/findsummits/results/csv/matched_summits.csv`
-
----
-
-### Phase 3: XLSX 出力（申請用）
-
-**目標:** SOTA 日本支部の申請フォーマットに従った XLSX ファイルを生成する。
-
-#### Task 3-1: SOTA 申請書フォーマットの仕様確認
-- **内容:** SOTA JA から提供されている申請用テンプレート Excel のシート構成・列定義を確認し文書化
-- **作業:** 既存テンプレートを `/mnt/findsummits/ref/` から確認
-- **成果物:** `tasks/xlsx_spec.md`（列定義・書式ルール）
-
-#### Task 3-2: 新規申請シート生成
-- **内容:** `match_status=NEW` のサミットを申請用 XLSX の「新規」シートに出力
-- **列構成（暫定）:**
-  - SummitCode (空欄 or ZZ/ZZ-XXX)
-  - SummitName (空欄)
-  - AltM
-  - Latitude, Longitude
-  - Peak AltM, Peak Lat, Peak Lon
-  - Col AltM, Col Lat, Col Lon
-  - Prominence
-- **ライブラリ:** `openpyxl`
-- **書式:** プロミネンス < 150m の行を黄色ハイライト（警告用）
-- **ファイル:** 新規 `scripts/output_xlsx.py`
-- **テスト:** 出力された XLSX を Excel/LibreOffice で開いて視覚確認
-
-#### Task 3-3: 変更・削除シート生成
-- **内容:** `match_status=MOVED/ELEV_CHANGE` → 変更シート、`DELETED` → 削除シート
-- **列構成:** 既存値と新値を並べて差分が一目でわかる形式
-- **ファイル:** `scripts/output_xlsx.py`（上記の続き）
-
-#### Task 3-4: MATCH シート（確認用）
-- **内容:** `match_status=MATCH` のサミットを「変更なし」シートとして追加（エビデンス用）
-- **ファイル:** `scripts/output_xlsx.py`
-
----
-
-### Phase 4: GeoJSON 出力（目視確認用）
-
-**目標:** 国土地理院地図で視覚確認できる GeoJSON を生成する。
-
-#### Task 4-1: GeoJSON 仕様確認
-- **内容:** 地理院地図が受け付けるカスタムプロパティ仕様を確認（`findsummits4sotaja` の出力を参考）
-- **確認項目:** `_markerType`, `_iconUrl`, `_iconSize`, `_iconAnchor`, `_color`, `_opacity`, `_weight`
-
-#### Task 4-2: Summit / Peak / Col の Point Feature 生成
-- **内容:** 各サミットについて Point を 3 つ生成
-  - Summit（アイコン付き、SOTA スコア別色分け）
-  - Peak（DEM 上の最高点）
-  - Col（キーコル）
-- **色分け（SOTA スコア）:**
-  - 10点: 赤, 8点: 黄, 6点: 緑, 4点: シアン, 2点: 青, 1点: 紫, NEW: マゼンタ
-- **ファイル:** 新規 `scripts/output_geojson.py`
-
-#### Task 4-3: LineString Feature 生成
-- **内容:** Summit→Peak, Peak→Col の LineString を追加（関係を視覚化）
-- **ファイル:** `scripts/output_geojson.py`
-
-#### Task 4-4: match_status 別マーカー差分化
-- **内容:** `match_status` ごとにアイコン/色を変えて地図上で変更/削除候補が識別できるようにする
-  - NEW: マゼンタ, MOVED: オレンジ, ELEV_CHANGE: 水色, DELETED: グレー, MATCH: スコア色
-- **ファイル:** `scripts/output_geojson.py`
-
----
-
-### Phase 5: 統合テスト・実データ検証
-
-**目標:** 実際の申請に耐えられる品質を確認する。
-
-#### Task 5-1: 九州・四国 メッシュで end-to-end テスト
-- **内容:** 過去に申請した九州・四国のメッシュを使い、フルパイプラインを実行
-- **期待値:** `findsummits4sotaja` の過去結果（`sotaJA_SummitPeakCol_All5.xlsx`）と大きな差異がないこと
-- **許容差:** ピーク座標 ±100m、標高 ±5m、プロミネンス ±20m
-
-#### Task 5-2: 境界ピーク精度確認
-- **内容:** 複数メッシュの境界付近にある既知の山（地図上で確認できる山）が正しく 1 件だけ検出されているか確認
-- **手順:** GeoJSON を地理院地図にドロップして目視
-
-#### Task 5-3: DEM なしエリアの確認
-- **内容:** DEM5 が存在しないメッシュで DEM10 フォールバックが動作し、結果が妥当であることを確認
-
-#### Task 5-4: パイプライン自動実行スクリプト整備
-- **内容:** `make pipeline MESH=4929` 一発で C 解析 → CSV マージ → SOTA 突合 → XLSX/GeoJSON 出力まで実行できるようにする
-- **ファイル:** `Makefile` に `pipeline` ターゲット追加, `scripts/pipeline.sh`
-
----
-
-## 5. ファイル構成（計画後）
-
-```
-findsummits/
-  src/
-    config.c/h            ← Task 0-1: 新規
-    main.c, mesh.c, ...   ← 既存（一部修正）
-  scripts/
-    run_all.sh            ← Task 1-1: 新規
-    merge_csv.py          ← Task 1-2: 新規
-    sota_list.py          ← Task 2-1: 新規
-    match_sota.py         ← Task 2-2/2-3: 新規
-    output_xlsx.py        ← Task 3-2～3-4: 新規
-    output_geojson.py     ← Task 4-2～4-4: 新規
-    pipeline.sh           ← Task 5-4: 新規
-  tasks/
-    todo.md
-    lessons.md
-    xlsx_spec.md          ← Task 3-1: 新規
-  tests/
-    test_*.c              ← 既存
-  plan.md                 ← 本ファイル
-  Makefile                ← pipeline ターゲット追加
+**`PeakResult` 新メンバ**:
+```c
+typedef struct {
+    int32_t peak_x, peak_y;
+    float   peak_elev;
+    int32_t col_x, col_y;
+    float   col_elev;
+    float   prominence;
+    int     is_tile_top;
+    int32_t col_margin_px;   /* 追加: col から combined 境界までの最短距離(px)、is_tile_top=1なら-1 */
+} PeakResult;
 ```
 
+### 3. `src/mesh.h/.c` — 隣接判定ヘルパ
+
+```c
+/* メッシュリストを保持する軽量 Set（整数配列 + 線形/二分探索） */
+typedef struct {
+    int *codes;   /* ソート済み */
+    int  count;
+} MeshSet;
+
+int  mesh_set_load(MeshSet *set, const char *list_path);
+int  mesh_set_contains(const MeshSet *set, int code);
+void mesh_set_destroy(MeshSet *set);
+
+/* 隣接メッシュコードを計算（存在チェックなし） */
+int  mesh_neighbor(int code, int dlat, int dlon);  /* dlat, dlon ∈ {-1, 0, 1} */
+```
+
+1次メッシュコード形式（例: 4929 = lat 32.67-33.33°、lon 129-130°）:
+- `lat_code = code / 100`、`lon_code = code % 100`
+- N 隣接: `lat_code+1`、S 隣接: `lat_code-1`、E: `lon_code+1`、W: `lon_code-1`
+- 日本の対象範囲内では桁あふれなし
+
+### 4. `src/mesh_analyze.h/.c` — 3×3 最小矩形 + 全ピーク出力
+
+**`MeshAnalyzeConfig` 拡張**:
+```c
+typedef struct {
+    const char    *tile_dir;
+    const char    *result_dir;
+    float          min_prominence;     /* 130.0f */
+    const MeshSet *mesh_set;           /* 追加: 隣接判定用 */
+} MeshAnalyzeConfig;
+```
+
+**3×3 最小矩形の計算**:
+```c
+/* 中心メッシュ + 隣接メッシュが存在する方向だけ拡張 */
+MeshTileRange combined = center_range;
+for (int dlat = -1; dlat <= 1; dlat++) {
+    for (int dlon = -1; dlon <= 1; dlon++) {
+        if (dlat == 0 && dlon == 0) continue;
+        int nb = mesh_neighbor(meshcode, dlat, dlon);
+        if (!mesh_set_contains(cfg->mesh_set, nb)) continue;
+        MeshTileRange nb_range;
+        if (mesh_to_tile_range(nb, 15, &nb_range) != 0) continue;
+        if (nb_range.x_min < combined.x_min) combined.x_min = nb_range.x_min;
+        if (nb_range.x_max > combined.x_max) combined.x_max = nb_range.x_max;
+        if (nb_range.y_min < combined.y_min) combined.y_min = nb_range.y_min;
+        if (nb_range.y_max > combined.y_max) combined.y_max = nb_range.y_max;
+    }
+}
+combined.tile_w = combined.x_max - combined.x_min + 1;
+combined.tile_h = combined.y_max - combined.y_min + 1;
+```
+
+**fetch 廃止**:
+- `fetch_mesh(&fetch_cfg, &combined);` を削除
+- 代わりに「prefetch_tiles.py で事前取得済みのはず」というコメント
+- `load_mesh_tile` 内で未キャッシュタイル検出時は明確にエラー終了
+
+**中心メッシュフィルタ廃止・全ピーク出力**:
+- 現行の `if (p->peak_x < cx_min || p->peak_x > cx_max || ...)` チェックを削除
+- combined 内全ピークをそのまま CSV 出力
+- マージは Python 側で行う
+
+**CSV 出力フォーマット変更**（新列追加）:
+```
+peak_lat,peak_lon,peak_elev,col_lat,col_lon,col_elev,prominence,is_tile_top,col_margin_px,center_mesh
+```
+- `center_mesh`: この解析の中心メッシュコード（混在 CSV でも由来がわかる）
+
+### 5. `src/fetch.h/.c`・`src/elevation.c` — キャッシュ専用化
+
+**`fetch.h`**:
+- `fetch_tile`、`fetch_dem10b_tile`、`fetch_mesh` を削除
+- `tile_is_cached`、`tile_dem10b_is_cached`、`make_tile_cache_path` は残す（elevation.c が使う）
+- `FetchConfig` 型は削除
+
+**`fetch.c`**:
+- 削除した関数定義を削除
+- libcurl 依存が残る場合は elevation.c も見直す（fetch 呼出除去）
+
+**`elevation.c`**:
+- `elev_load_with_overlap_8dir_with_dem10` 内の `fetch_dem10b_tile(&fc, z14_x, z14_y);` を削除（テスト用コードなので警告ログに置き換え可）
+- `elev_fill_nodata_dem10b` 内の同 fetch 呼出を削除
+- 未キャッシュのままロード試行し、失敗時は `stderr` に 1 行ログを残して NODATA 継続（解析は続行）
+
+**Makefile**:
+- 現状 `LIBS = -lcurl -lpng -lm`。fetch.c を残したまま libcurl 未使用にするか、fetch.c 完全削除して libcurl を外すか
+- **選択**: fetch.c 完全削除し、`LIBS = -lpng -lm` に変更。キャッシュチェックは elevation.c 内の `stat()` で十分
+
+### 6. `src/main.c`
+
+- 引数がファイルパスなら `MeshSet` を読み込み
+- 引数が単一メッシュコードなら `MeshSet` に 1 件だけ入れて `mesh_analyze` に渡す（隣接は存在しないので center のみ解析）
+- `min_prominence = 130.0f` に変更
+
+### 7. `scripts/prefetch_tiles.py` (新規)
+
+**仕様**:
+- `params/mesh_list_japan.txt` を読み、全メッシュ（＋ 3×3 分の外周タイル）の z15 dem5 と z14 dem10b を事前取得
+- 初回: 各 URL を GET、Last-Modified を保存（ファイル mtime に反映）
+- 2 回目以降: `If-Modified-Since: <mtime>` で条件付き GET
+  - 304 → スキップ（ログ出力のみ）
+  - 200 → 保存・mtime 更新
+  - 404 → 次の DEM 候補（dem5 は a→b→c、それ以外は SEA 扱いなのでスキップ可）
+  - 429/503 → `Retry-After` or 指数バックオフ（初期 60s）
+- 並列: 4（`params/fetch_config.ini` で変更可）
+- 間隔: 各リクエスト間 100ms sleep
+- User-Agent: `findsummits/1.0 (mailto:<config email>)`
+- ログ: `取得 / 304 / 404 / 既キャッシュ` の内訳を集計表示
+
+**CLI**:
+```
+python scripts/prefetch_tiles.py \
+  --mesh-list params/mesh_list_japan.txt \
+  --config params/fetch_config.ini \
+  --tile-dir /mnt/findsummits/tiles
+```
+
+**依存**: `urllib.request` のみで書く（requests/pandas は入れない。前回 pandas 未インストールで詰まった前例あり）
+
+### 8. `params/fetch_config.ini.example` (新規、commit する)
+
+```ini
+[fetch]
+# If-Modified-Since 方式で地理院サーバへ問い合わせる際の連絡先
+# 実運用では params/fetch_config.ini にコピーしてメールを記入
+user_agent_email = your.email@example.com
+
+# 並列数（地理院サーバ負荷軽減のため 4 推奨）
+max_parallel = 4
+
+# リクエスト間インターバル（ミリ秒）
+interval_ms = 100
+
+# 429/503 時の初期バックオフ秒数
+backoff_initial_sec = 60
+```
+
+### 9. `.gitignore` 追記
+
+```
+params/fetch_config.ini
+```
+
+### 10. `scripts/merge.py` 改修
+
+**期待解析回数の計算**:
+- 各メッシュ M について、`expected_count(M) = 1 + 隣接メッシュのうち mesh_list に含まれる数`
+- 解析結果 CSV 群を読み込み、peak を (px, py) = `latlon_to_pixel(peak_lat, peak_lon)` で group
+- group 内のレコード数 == expected_count(peak 所属メッシュ) なら「確定」
+
+**確定判定**:
+- 「全件 `is_tile_top=0`」かつ「レコード数 == expected_count」→ 確定
+- 不足・過剰は `status = "unstable"` で別途出力（調査用）
+
+**重複採用規則**:
+- 重複ピーク群から 1 件を選ぶ:
+  - `col_elev` が最小のレコードを採用（保守的評価）
+  - `col_margin_px` が最大のレコードを優先キーにしても良いが、handover 決定は「col_elev 最小」
+
+**CLI 拡張**:
+- 既存 `--tolerance` は「SOTA リスト突合」用のまま残す（解析結果間は exact match、0 固定）
+- 新規 `--csv-dir` はそのまま
+
+**出力 CSV 列追加**:
+- `col_margin_px`（マージ後の採用値）
+- `analysis_count` / `expected_count`（デバッグ用）
+
+### 11. 既存 CSV の削除
+
+```bash
+rm -rf /mnt/findsummits/results/csv/*.csv
+```
+
 ---
 
-## 6. テスト方針まとめ
+## 影響範囲の注意
 
-| フェーズ | テスト手法 | 合格基準 |
-|---------|----------|--------|
-| Ph.0 | valgrind、手動実行 | メモリリーク 0、CSV 出力正常 |
-| Ph.1 | 隣接 2 メッシュで実行 | 重複ピーク 0、件数一致 |
-| Ph.2 | 小規模テストデータ | 5 種類の match_status が正しく出力 |
-| Ph.3 | Excel/LibreOffice 開く | 列・書式・シート構成が申請要件を満たす |
-| Ph.4 | 地理院地図で GeoJSON ドロップ | 全サミットが地図上に正しく表示 |
-| Ph.5 | 九州・四国 実データ | 過去申請結果と許容差内で一致 |
+- **テスト**: `tests/test_mesh_analyze.c` / `tests/test_fetch.c` は fetch API 変更の影響を受ける。fetch.c を完全削除する場合、test_fetch.c も削除する。
+- **Makefile**: `CORE_SRCS` は `src/*.c` をワイルドカード取得しているので fetch.c 削除で自動反映。`test_fetch` ターゲットのみ手で外す。
+- **ビルド依存**: `-lcurl` を外すなら、後述の prefetch 実装を先に終え、C エンジンだけでフル解析できないことを受け入れる。
 
 ---
 
-## 7. 未決事項・要確認
+## 実装順序（1 PR 分、C → Python の順）
 
-1. **SOTA 申請用 Excel テンプレートの正確な列定義**  
-   → `/mnt/findsummits/ref/` にテンプレートがあるか確認が必要
-
-2. **突合距離しきい値（150m）の妥当性**  
-   → 既存サミットの「公式座標 vs DEM 最高点」の実際の誤差を確認してから調整
-
-3. **SummitCode の採番ルール（新規サミット）**  
-   → SOTA JA 事務局の採番方式に従う必要がある（暫定は ZZ/ZZ-XXX）
-
-4. **複数申請範囲（どの 1 次メッシュを対象とするか）**  
-   → ユーザーが指定するリストが必要
+1. **準備**: 既存 CSV を退避 `mv /mnt/findsummits/results/csv/{5238..5440}.csv /tmp/` → 動作確認後削除
+2. **C エンジン**: `mesh.c` 隣接ヘルパ → `unionfind.c` メモリ最適化 → `analyze.c` cmp+col_margin → `mesh_analyze.c` 3×3+CSV → `elevation.c`/`fetch.c` 削除 → `main.c` MeshSet → ビルド・`test_mesh_analyze` 単体確認
+3. **Config**: `params/fetch_config.ini.example` + `.gitignore`
+4. **Prefetch**: `scripts/prefetch_tiles.py` 書いて小規模（1〜3 メッシュ分）で動作確認
+5. **本番 prefetch**: 全 176 メッシュを事前取得（長時間タスク、別セッションでも可）
+6. **再解析**: 1 メッシュでフル回す → 9 メッシュ分再解析して結果検証 → 全 176
+7. **Merge**: `scripts/merge.py` 改修・確定判定テスト
+8. **コミット**: 論理単位で分割コミット（PR は 1 本）
 
 ---
 
-## 8. 実装の進め方
+## 検証手順
 
-各 Phase を順番に実装し、各 Task 完了時に動作確認を行う。  
-Ph.2 と Ph.3 は依存関係があるため順次実行。  
-Ph.4 は Ph.3 と並行して進めることが可能。
+### ビルド・単体
+```bash
+cd /home/tsu/sota/findsummits
+make clean && make
+./build/findsummits 4929   # 単一メッシュ（隣接は含まれない）で動作確認
+```
 
-**最初に着手する Task:** Task 0-1（設定ファイル）と Task 3-1（XLSX 仕様確認）を並行して行い、全体像を固める。
+### 3×3 動作確認（隣接込み）
+```bash
+# 関東近辺の 9 メッシュを一時リスト化（実地理では周囲全てにメッシュが存在するが、
+# 本テストでは「mesh_list_japan に相当するセット＝この 9 件だけ」と仮定して挙動確認する）
+cat > /tmp/test9.txt <<EOF
+5338
+5339
+5340
+5438
+5439
+5440
+5538
+5539
+5540
+EOF
+./build/findsummits /tmp/test9.txt
+# 中心位置 (5439) の combined 範囲が N/S/E/W/NE/NW/SE/SW 全て拡張されることをログで確認
+# 角位置 (5538) は、このテスト用 MeshSet の中では隣接が NE/E/N の 3 方向だけ存在する
+# →拡張方向が 3 つだけになることを確認（角メッシュ＝最小矩形が縮退するケースの検証）
+```
+
+### Prefetch 動作確認
+```bash
+cp params/fetch_config.ini.example params/fetch_config.ini
+# user_agent_email を自分のアドレスに書き換える
+python scripts/prefetch_tiles.py --mesh-list /tmp/test9.txt --config params/fetch_config.ini \
+    --tile-dir /mnt/findsummits/tiles
+# 2 回目実行で全て 304 になることを確認
+python scripts/prefetch_tiles.py --mesh-list /tmp/test9.txt --config params/fetch_config.ini \
+    --tile-dir /mnt/findsummits/tiles
+```
+
+### 再現性・決定論の確認
+```bash
+# 同一メッシュを 2 回解析して diff が空になることを確認
+./build/findsummits 5339
+cp /mnt/findsummits/results/csv/5339.csv /tmp/5339_a.csv
+./build/findsummits 5339
+diff /tmp/5339_a.csv /mnt/findsummits/results/csv/5339.csv   # 空差分
+```
+
+### Merge 検証
+```bash
+./build/findsummits /tmp/test9.txt
+python scripts/merge.py --csv-dir /mnt/findsummits/results/csv \
+    --summitslist /mnt/findsummits/ref/summitslist.csv \
+    --output /mnt/findsummits/results/merged_test9.csv
+# 中心メッシュ（5439 等）のピークが expected_count = 9 で確定しているか目視
+# 角メッシュ（5538 等）のピークが expected_count = 4 になっているか目視
+```
+
+### 既存 CSV の最終削除（検証 OK 後）
+```bash
+rm -rf /tmp/5238*.csv /tmp/52*.csv  # 退避分
+```
+
+---
+
+## リスク・残課題
+
+- **タイル取得「最後の 1 枚」ハング問題**（lessons.md 既記）は prefetch に移して発生するか別途確認
+- **peak_id ハッシュマップ**の実装バグが出やすい（int32_t キーで -1 を空セルマーカーに使わない・ロードファクタ・リサイズ）。ユニットテスト `test_unionfind.c` を拡張して回す
+- **Union-Find の CPU 並列化**は本刷新では扱わない（未解決）
+- **prefetch 全 176 メッシュ**は数時間〜半日かかる可能性あり。別セッション・バックグラウンド推奨
