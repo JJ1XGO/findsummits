@@ -10,10 +10,29 @@ Key Col 距離分布の実データ検証スクリプト。
 import argparse
 import csv
 import glob
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
+
+
+def _load_dotenv():
+    env_file = Path(__file__).parent.parent / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.split("#")[0].strip()
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+_load_dotenv()
+_DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 
 R_EARTH_KM = 6371.0
 
@@ -189,8 +208,8 @@ def analyze_ja_parent_distance(ja):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--csv-dir", default="/mnt/findsummits/results/csv")
-    ap.add_argument("--summitslist", default="/mnt/findsummits/ref/summitslist.csv")
+    ap.add_argument("--csv-dir", default=str(_DATA_DIR / "results/csv"))
+    ap.add_argument("--summitslist", default=str(_DATA_DIR / "ref/summitslist.csv"))
     args = ap.parse_args()
 
     analyze_mesh_csvs(Path(args.csv_dir))

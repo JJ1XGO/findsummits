@@ -59,6 +59,9 @@ src/test_unionfind
 build/
 /findsummits
 
+# 環境設定（個人のパス等を含むため）
+.env
+
 # fetch 設定（メールアドレス等の個人情報を含むため）
 params/fetch_config.ini
 

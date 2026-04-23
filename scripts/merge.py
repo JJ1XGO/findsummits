@@ -13,14 +13,33 @@ import argparse
 import csv
 import datetime
 import math
+import os
 from pathlib import Path
+
+
+def _load_dotenv():
+    env_file = Path(__file__).parent.parent / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.split("#")[0].strip()
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+_load_dotenv()
+_DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 
 ZOOM = 15
 TILE_PIX = 256
 MIN_PROMINENCE = 150.0
-DEFAULT_CSV_DIR = Path("/mnt/findsummits/results/csv")
-DEFAULT_SUMMITSLIST = Path("/mnt/findsummits/ref/summitslist.csv")
-DEFAULT_OUTPUT = Path("/mnt/findsummits/results/merged.csv")
+DEFAULT_CSV_DIR = _DATA_DIR / "results/csv"
+DEFAULT_SUMMITSLIST = _DATA_DIR / "ref/summitslist.csv"
+DEFAULT_OUTPUT = _DATA_DIR / "results/merged.csv"
 
 
 def latlon_to_pixel(lat, lon):

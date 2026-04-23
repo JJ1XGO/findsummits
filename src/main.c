@@ -4,10 +4,44 @@
  * Copyright (C) 2026 JJ1XGO
  * GPL-3.0
  */
+#define _POSIX_C_SOURCE 200112L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "mesh_analyze.h"
+
+static void load_dotenv(const char *path)
+{
+    FILE *f = fopen(path, "r");
+    if (!f) return;
+    char line[512];
+    while (fgets(line, sizeof(line), f)) {
+        char *p = line;
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0') continue;
+        char *eq = strchr(p, '=');
+        if (!eq) continue;
+        char key[256];
+        int klen = (int)(eq - p);
+        if (klen <= 0 || klen >= (int)sizeof(key)) continue;
+        memcpy(key, p, klen);
+        key[klen] = '\0';
+        for (int i = klen - 1; i >= 0 && (key[i] == ' ' || key[i] == '\t'); i--) key[i] = '\0';
+        char val[256];
+        char *vstart = eq + 1;
+        int vlen = (int)strlen(vstart);
+        if (vlen >= (int)sizeof(val)) vlen = (int)sizeof(val) - 1;
+        memcpy(val, vstart, vlen);
+        val[vlen] = '\0';
+        char *comment = strchr(val, '#');
+        if (comment) *comment = '\0';
+        for (int i = (int)strlen(val) - 1;
+             i >= 0 && (val[i] == ' ' || val[i] == '\t' || val[i] == '\n' || val[i] == '\r');
+             i--) val[i] = '\0';
+        setenv(key, val, 0); /* 既存の環境変数は上書きしない */
+    }
+    fclose(f);
+}
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +57,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    load_dotenv(".env");
+    const char *data_dir = getenv("DATA_DIR");
+    if (!data_dir || data_dir[0] == '\0') data_dir = "/data";
+
+    char tile_dir[512], result_dir[512];
+    snprintf(tile_dir,   sizeof(tile_dir),   "%s/tiles",       data_dir);
+    snprintf(result_dir, sizeof(result_dir), "%s/results/csv", data_dir);
+
     printf("=== SOTA未登録サミット候補探索ツール ===\n");
 
     /* 数字のみならメッシュコード、それ以外はファイルパス */
@@ -33,8 +75,8 @@ int main(int argc, char *argv[])
     }
 
     MeshAnalyzeConfig cfg = {
-        .tile_dir       = "/mnt/findsummits/tiles",
-        .result_dir     = "/mnt/findsummits/results/csv",
+        .tile_dir       = tile_dir,
+        .result_dir     = result_dir,
         .min_prominence = 130.0f,
         .mesh_set       = NULL,
     };
