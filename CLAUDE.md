@@ -19,44 +19,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 make                    # build/findsummits をビルド
 make test_mesh_analyze  # build/test_mesh_analyze をビルド
 make test_analyze       # build/test_analyze をビルド
-make test_fetch         # build/test_fetch をビルド
 make clean              # build/ ディレクトリごと削除
 
-./build/findsummits 4929      # 1次メッシュコード指定で実行
-./build/test_mesh_analyze     # テスト実行（引数なし）
+./build/findsummits 4929                        # 1次メッシュコード指定で実行
+./build/findsummits params/mesh_list_japan.txt  # メッシュリストファイル指定で実行
+./build/test_mesh_analyze                       # テスト実行（引数なし）
 ```
 
-依存: `libcurl`, `libpng`, `libm`, `pthread`（GCC / C99）
+依存: `libpng`, `libm`, `pthread`（GCC / C99）
 
 ## アーキテクチャ
 
 ### データフロー
 
 ```
-入力: 1次メッシュコード（例: 4929）
+（事前準備）
+prefetch_tiles.py でタイルを $DATA_DIR/tiles/ へ取得済み
+  ↓
+入力: 1次メッシュコード（例: 4929）またはメッシュリストファイル
   ↓
 mesh_analyze() [mesh_analyze.c]
-  ├─ fetch_mesh() で不足タイルを並列ダウンロード [fetch.c]
-  ├─ elev_load_with_overlap_8dir_with_dem10() でタイルを読み込み [elevation.c]
+  ├─ 中心メッシュ + 隣接メッシュ（最大3×3）の結合範囲を計算 [mesh.c]
+  ├─ elev_load_with_overlap_8dir_with_dem10() でキャッシュ済みタイルを読み込み [elevation.c]
+  │   （未キャッシュ時はエラー終了）
   └─ 全タイルを1枚の大画像に結合
   ↓
 Union-Find アルゴリズムで山頂・コルを検出 [unionfind.c]
   ↓
-比高 >= 150m でフィルタ
+比高 >= 130m でフィルタ（最終 150m 判定は merge.py で実施）
   ↓
-出力: results/<meshcode>.csv
+出力: $DATA_DIR/results/csv/<meshcode>.csv
 ```
 
 ### 主要モジュール
 
 | モジュール | 役割 |
 |---|---|
-| `mesh.c/h` | 1次メッシュコード ↔ タイル座標変換（ズーム15 Web Mercator） |
-| `elevation.c/h` | PNG タイルデコード（RGB→標高）、8方向オーバーラップ対応 |
-| `fetch.c/h` | libcurl によるタイル取得・`tiles/15/` へのキャッシュ |
+| `mesh.c/h` | 1次メッシュコード ↔ タイル座標変換（ズーム15 Web Mercator）、隣接メッシュ計算・MeshSet |
+| `elevation.c/h` | PNG タイルデコード（RGB→標高）、8方向オーバーラップ対応、キャッシュ参照のみ |
 | `unionfind.c/h` | Union-Find（経路圧縮・rank による union）で山頂グループ管理 |
-| `analyze.c/h` | タイル単体の局所最大点検出・比高計算 |
+| `analyze.c/h` | タイル単体の局所最大点検出・比高計算、`col_margin_px` 算出 |
 | `mesh_analyze.c/h` | メッシュ全体のオーケストレーション・CSV 出力 |
+| `scripts/prefetch_tiles.py` | タイル事前取得（If-Modified-Since 条件付き GET・並列4・429/503 backoff） |
 
 ### 重要な実装詳細
 
@@ -68,8 +72,8 @@ Union-Find アルゴリズムで山頂・コルを検出 [unionfind.c]
 
 ### アーキテクチャ方針（ハイブリッド構成）
 
-- **C エンジン** (`src/`): タイル取得・標高デコード・Union-Find による山頂/コル検出・per-mesh CSV 出力
-- **Python スクリプト** (`scripts/`): 複数 CSV の統合、SOTA リスト突合、XLSX/GeoJSON 生成
+- **C エンジン** (`src/`): 標高デコード・Union-Find による山頂/コル検出・per-mesh CSV 出力（タイル取得は行わない）
+- **Python スクリプト** (`scripts/`): タイル事前取得（prefetch_tiles.py）、複数 CSV の統合、SOTA リスト突合、XLSX/GeoJSON 生成
 
 C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummits4sotaja`（Python）に出力生成コードが既存するため、この分担を採用。性能が必要な計算は C、申請用出力は Python。
 
@@ -77,19 +81,28 @@ C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummi
 
 ```
 src/          # ソースファイル（main.c, *.c, *.h）
-scripts/      # Python スクリプト（CSV統合・SOTA突合・XLSX/GeoJSON出力）
-params/       # パラメータファイル（メッシュコードリスト等）
+scripts/      # Python スクリプト（タイル事前取得・CSV統合・SOTA突合・XLSX/GeoJSON出力）
+  prefetch_tiles.py             # タイル事前取得（params/fetch_config.ini を参照）
+  merge.py                      # 複数CSV統合・SOTA突合
+  analyze_keycol_distance.py    # Keyコル距離分析
+params/       # パラメータファイル
+  mesh_list_japan.txt           # 解析対象メッシュコードリスト
+  fetch_config.ini.example      # UA・並列数設定のテンプレート（コミット済み）
+  fetch_config.ini              # 実設定（gitignore・メールアドレス記入）
 tests/        # テスト用プログラム（test_*.c）
 .claude/manage/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
-以下のパスはパラメータファイルに記述する様にする
-/mnt/findsummits/images/       # 処理範囲を目視確認するためのイメージファイル置き場
-/mnt/findsummits/results/      # 最終O/Pのxlsx,geojson,csv
-/mnt/findsummits/results/csv/  # 一時csv
-/mnt/findsummits/tiles/ # ダウンロード済みタイルのキャッシュ
+.env.example  # DATA_DIR 設定例（コミット済み）
+.env          # 実設定（gitignore）
+
+# 以下のパスは .env の DATA_DIR で設定する（デフォルト: /mnt/findsummits）
+$DATA_DIR/images/       # 処理範囲を目視確認するためのイメージファイル置き場
+$DATA_DIR/results/      # 最終O/Pのxlsx,geojson,csv
+$DATA_DIR/results/csv/  # 一時csv（findsummits が出力するper-mesh CSV）
+$DATA_DIR/tiles/        # ダウンロード済みタイルのキャッシュ
   └─ {z}/     # タイルのURLの命名規則と同様
-     └─ {x}   # タイルのURLの命名規則と同様  
-         └─ {y} # タイルのURLの命名規則と同様
-/mnt/findsummits/ref/       # SOTAの山岳リストなど。本プロジェクト以外の参照データ置き場
+     └─ {x}   # タイルのURLの命名規則と同様
+         └─ {y}
+$DATA_DIR/ref/          # SOTAの山岳リストなど。本プロジェクト以外の参照データ置き場
 ```
 
 ## その他
