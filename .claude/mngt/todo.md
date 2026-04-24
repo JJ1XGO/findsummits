@@ -29,17 +29,21 @@
 - [x] `params/fetch_config.ini.example` 作成、`.gitignore` に実設定を追加
 - [ ] 小規模 9 メッシュでフルパイプ検証（prefetch → C 解析 → merge.py）
   - 対象メッシュ: `params/mesh_5339_neighbors.txt`（5238〜5440 の9メッシュ、5339含む）
-  - [ ] ステップ1: `prefetch_tiles.py` でタイル取得
-    - `cd /workspace && python3 scripts/prefetch_tiles.py params/mesh_5339_neighbors.txt`
-    - `/data/tiles/` に未取得分のみDL（If-Modified-Since で差分）
+  - [x] ステップ1: `prefetch_tiles.py` でタイル取得（dem5完了済み）
+    - dem10b は URL 修正済み（`dem10b_png` → `dem_png`）。`/data/tiles/14/` 残骸削除済み。次回 prefetch で正しく取得される
   - [ ] ステップ2: `findsummits` で9メッシュ解析
-    - `./build/findsummits params/mesh_5339_neighbors.txt`
+    - `make && ./build/findsummits params/mesh_5339_neighbors.txt`
     - 出力: `/data/results/csv/<meshcode>.csv`（9ファイル）
+    - ※ 実行前に dem10b prefetch 推奨: `python3 scripts/prefetch_tiles.py params/mesh_5339_neighbors.txt`
   - [ ] ステップ3: `merge.py` でCSV統合・SOTA突合
     - `python3 scripts/merge.py`
     - プロミネンス ≥ 150m でフィルタ、`ref/summitslist.csv` と突合
     - 出力結果を目視確認
-- [ ] コミット（残り分：fetch_config.ini.example 等）
+- [ ] コミット（今日の修正分を含む）
+  - 整数オーバーフロー修正（analyze.c, unionfind.h/c, elevation.c）
+  - Pixel配列 → インデックス配列によるメモリ削減（analyze.c）
+  - 標高カラーマップをterrain_viz.c配色に統一（mesh_analyze.c）
+  - dem10b URL修正（prefetch_tiles.py）
 
 ## 申請用出力フェーズ（フルパイプ検証後に着手）
 
@@ -112,14 +116,11 @@
 - タイル取得「最後の 1 枚」ハング問題は prefetch に移しての再現性確認
 - Union-Find の CPU 並列化
 
-- **【要調査】dem10b_pngサービスの廃止問題**（2026-04-24確認）
-  - 現状: `dem10b_png` が全404。地理院サービス一覧への記載もなし
-  - キャッシュ残骸: `/data/tiles/14/` の2ファイルはエラーXMLを誤保存したもの → 削除が必要
-  - 実害: dem5（a/b/c）が取得できる範囲では解析に影響なし。dem5が全くない海域・一部離島で影響の可能性
-  - 調査事項:
-    - dem10bの代替サービスが存在するか確認（地理院に問い合わせ or ドキュメント再調査）
-    - dem10bなしで全176メッシュ解析した場合の影響範囲を把握
-    - 代替がなければ `elevation.c` の dem10b フォールバック処理を無効化または警告のみに変更
+- **【解決済み】dem10b URLの誤設定**（2026-04-24修正）
+  - 原因: `prefetch_tiles.py` の URL が `dem10b_png` だったが正しくは `dem_png`
+  - 正しいURL: `https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png`
+  - 修正内容: `GSI_DEM10B_URL` を `dem_png` に変更、動作確認済み（HTTP 200）
+  - キャッシュ残骸: `/data/tiles/14/` に誤保存したエラーXMLが残存 → 次回prefetch前に削除推奨
 - README.md の全体更新（申請用出力フェーズ完了後に実施）
   - 更新に適したタイミング: フルパイプ検証（prefetch → findsummits → merge.py）が通り、
     申請用出力（output_xlsx.py・output_geojson.py）の実装が完了した時点

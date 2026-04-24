@@ -19,39 +19,46 @@
 #include "analyze.h"
 #include "unionfind.h"
 
-/* 標高カラーパレット（標高m → RGB） */
-static const struct { float elev; uint8_t r, g, b; } PALETTE[] = {
-    {    0.0f,  70, 150,  70},  /* 緑（低地）       */
-    {  200.0f, 160, 200,  80},  /* 黄緑             */
-    {  500.0f, 210, 180,  90},  /* 黄茶             */
-    { 1000.0f, 170, 110,  60},  /* 茶               */
-    { 2000.0f, 160, 140, 130},  /* 灰茶             */
-    { 3000.0f, 210, 210, 210},  /* 灰               */
-    { 4000.0f, 255, 255, 255},  /* 白（高山）       */
-};
-#define PALETTE_LEN ((int)(sizeof(PALETTE) / sizeof(PALETTE[0])))
-
+/*
+ * 標高 → RGB変換（tests/terrain_viz.c の elevation_to_color() と同一ロジック）
+ *
+ * big->data では海面/NODATA が 0.0m に統一されているため、
+ * elev <= 0.0 は stops[0](-200m) の色（濃紺）で表示して陸地と区別する。
+ */
 static void elev_to_rgb(float elev, uint8_t *r, uint8_t *g, uint8_t *b)
 {
-    if (elev < -9000.0f) {          /* NODATA → 海の青 */
-        *r = 100; *g = 150; *b = 200; return;
+    static const double stops[] = {
+        -200.0, 0.0, 150.0, 500.0, 650.0, 850.0, 1100.0, 1500.0, 3000.0, 3800.0
+    };
+    static const int colors[][3] = {
+        { 20,  60, 150},  /* 深海：濃紺          */
+        { 65, 150, 210},  /* 海岸線：水色        */
+        {180, 220, 140},  /* 低地：黄緑          */
+        {120, 185,  80},  /* 丘陵：緑            */
+        {190, 160,  90},  /* 山麓：黄茶          */
+        {160, 120,  60},  /* 中山：茶色          */
+        {130,  90,  50},  /* 高山麓：濃茶        */
+        {180, 170, 160},  /* 亜高山：灰色        */
+        {220, 215, 210},  /* 高山帯：明るい灰    */
+        {255, 255, 255},  /* 山頂付近：白        */
+    };
+    static const int n = 10;
+
+    double e = (double)elev;
+
+    /* NODATA(-9999) や海面(0m以下) は stops[0] の濃紺で統一 */
+    if (e < -9000.0 || e <= 0.0) {
+        *r = colors[0][0]; *g = colors[0][1]; *b = colors[0][2]; return;
     }
-    if (elev <= 0.0f) {             /* 海面・負値 → 海の青 */
-        *r = 100; *g = 150; *b = 200; return;
+    if (e >= stops[n - 1]) {
+        *r = colors[n-1][0]; *g = colors[n-1][1]; *b = colors[n-1][2]; return;
     }
-    if (elev >= PALETTE[PALETTE_LEN - 1].elev) {
-        *r = PALETTE[PALETTE_LEN - 1].r;
-        *g = PALETTE[PALETTE_LEN - 1].g;
-        *b = PALETTE[PALETTE_LEN - 1].b;
-        return;
-    }
-    for (int i = 0; i < PALETTE_LEN - 1; i++) {
-        if (elev >= PALETTE[i].elev && elev < PALETTE[i + 1].elev) {
-            float t = (elev - PALETTE[i].elev) /
-                      (PALETTE[i + 1].elev - PALETTE[i].elev);
-            *r = (uint8_t)(PALETTE[i].r + t * (PALETTE[i + 1].r - PALETTE[i].r) + 0.5f);
-            *g = (uint8_t)(PALETTE[i].g + t * (PALETTE[i + 1].g - PALETTE[i].g) + 0.5f);
-            *b = (uint8_t)(PALETTE[i].b + t * (PALETTE[i + 1].b - PALETTE[i].b) + 0.5f);
+    for (int i = 0; i < n - 1; i++) {
+        if (e >= stops[i] && e < stops[i + 1]) {
+            double t = (e - stops[i]) / (stops[i + 1] - stops[i]);
+            *r = (uint8_t)(colors[i][0] + t * (colors[i+1][0] - colors[i][0]) + 0.5);
+            *g = (uint8_t)(colors[i][1] + t * (colors[i+1][1] - colors[i][1]) + 0.5);
+            *b = (uint8_t)(colors[i][2] + t * (colors[i+1][2] - colors[i][2]) + 0.5);
             return;
         }
     }

@@ -24,24 +24,24 @@ typedef struct {
 
 /*
  * root → peak_id のオープンアドレス法ハッシュマップ
- * キー: root ピクセルインデックス(int32_t, 常に >= 0)
+ * キー: root ピクセルインデックス(uint32_t)
  * 値  : peak_id(int32_t, 常に >= 0)
- * 空セルマーカー: key = -1
+ * 空セルマーカー: key = UINT32_MAX
  */
 typedef struct {
-    int32_t *keys;
-    int32_t *vals;
-    int      cap;   /* 常に 2 のべき乗 */
-    int      cnt;
+    uint32_t *keys;
+    int32_t  *vals;
+    int       cap;   /* 常に 2 のべき乗 */
+    int       cnt;
 } PeakMap;
 
 /*
  * Union-Find 本体
  */
 typedef struct {
-    int32_t *parent;    /* 親のインデックス */
-    int8_t  *rank;      /* 木の深さ（経路圧縮で上限に達しないが 127 でガード） */
-    size_t   size;      /* 全ピクセル数 */
+    uint32_t *parent;   /* 親のインデックス（uint32_t: 最大4.3G > 最大N=2.7G） */
+    int8_t   *rank;     /* 木の深さ（経路圧縮で上限に達しないが 127 でガード） */
+    size_t    size;     /* 全ピクセル数 */
 
     PeakMap  pm;        /* root → peak_id マッピング */
 
@@ -53,13 +53,13 @@ typedef struct {
 /* 関数プロトタイプ */
 UnionFind *uf_create(size_t size);
 void       uf_destroy(UnionFind *uf);
-int32_t    uf_find(UnionFind *uf, int32_t i);
-int        uf_union(UnionFind *uf, int32_t a, int32_t b,
+uint32_t   uf_find(UnionFind *uf, uint32_t i);
+int        uf_union(UnionFind *uf, uint32_t a, uint32_t b,
                     float col_elev, int32_t col_x, int32_t col_y);
-int        uf_new_peak(UnionFind *uf, int32_t i,
+int        uf_new_peak(UnionFind *uf, uint32_t i,
                        int32_t x, int32_t y, float elev);
 
 /* ハッシュマップ参照（analyze.c からも使用） */
-int        peakmap_get(const PeakMap *pm, int32_t key);
+int        peakmap_get(const PeakMap *pm, uint32_t key);
 
 #endif /* UNIONFIND_H */

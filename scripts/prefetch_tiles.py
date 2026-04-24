@@ -20,7 +20,7 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 
 GSI_DEM5_URL  = "https://cyberjapandata.gsi.go.jp/xyz/dem5{dem}_png/15/{x}/{y}.png"
-GSI_DEM10B_URL = "https://cyberjapandata.gsi.go.jp/xyz/dem10b_png/14/{x}/{y}.png"
+GSI_DEM10B_URL = "https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/{x}/{y}.png"
 
 
 # ---- メッシュ座標変換 ----

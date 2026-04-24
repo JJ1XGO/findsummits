@@ -12,14 +12,14 @@
 
 #define PEAK_INIT_CAP    1024
 #define PEAKMAP_INIT_CAP 262144   /* 全ピーク見込み 200K × load factor 0.5 */
-#define PEAKMAP_EMPTY    (-1)
+#define PEAKMAP_EMPTY    UINT32_MAX  /* uint32_t空セルマーカー */
 
 /* ---- PeakMap 内部実装 ---- */
 
 static int peakmap_init(PeakMap *pm, int cap)
 {
-    pm->keys = malloc(sizeof(int32_t) * cap);
-    pm->vals = malloc(sizeof(int32_t) * cap);
+    pm->keys = malloc(sizeof(uint32_t) * cap);
+    pm->vals = malloc(sizeof(int32_t)  * cap);
     if (!pm->keys || !pm->vals) {
         free(pm->keys);
         free(pm->vals);
@@ -29,7 +29,7 @@ static int peakmap_init(PeakMap *pm, int cap)
     }
     pm->cap = cap;
     pm->cnt = 0;
-    memset(pm->keys, 0xff, sizeof(int32_t) * cap);  /* 全セルを -1 に初期化 */
+    memset(pm->keys, 0xff, sizeof(uint32_t) * cap);  /* 全セルを UINT32_MAX に初期化 */
     return 0;
 }
 
@@ -44,9 +44,9 @@ static void peakmap_free_internal(PeakMap *pm)
 }
 
 /* grow/put の相互呼び出しを避けるための生挿入ヘルパ（リサイズなし） */
-static void peakmap_insert_raw(PeakMap *pm, int32_t key, int32_t val)
+static void peakmap_insert_raw(PeakMap *pm, uint32_t key, int32_t val)
 {
-    int slot = (uint32_t)key & (uint32_t)(pm->cap - 1);
+    int slot = (int)(key & (uint32_t)(pm->cap - 1));
     while (pm->keys[slot] != PEAKMAP_EMPTY && pm->keys[slot] != key)
         slot = (slot + 1) & (pm->cap - 1);
     if (pm->keys[slot] == PEAKMAP_EMPTY) pm->cnt++;
@@ -56,13 +56,13 @@ static void peakmap_insert_raw(PeakMap *pm, int32_t key, int32_t val)
 
 static int peakmap_grow(PeakMap *pm)
 {
-    int new_cap    = pm->cap * 2;
-    int32_t *old_k = pm->keys;
-    int32_t *old_v = pm->vals;
-    int old_cap    = pm->cap;
+    int       new_cap = pm->cap * 2;
+    uint32_t *old_k   = pm->keys;
+    int32_t  *old_v   = pm->vals;
+    int       old_cap = pm->cap;
 
-    pm->keys = malloc(sizeof(int32_t) * new_cap);
-    pm->vals = malloc(sizeof(int32_t) * new_cap);
+    pm->keys = malloc(sizeof(uint32_t) * new_cap);
+    pm->vals = malloc(sizeof(int32_t)  * new_cap);
     if (!pm->keys || !pm->vals) {
         free(pm->keys);
         free(pm->vals);
@@ -72,7 +72,7 @@ static int peakmap_grow(PeakMap *pm)
     }
     pm->cap = new_cap;
     pm->cnt = 0;
-    memset(pm->keys, 0xff, sizeof(int32_t) * new_cap);
+    memset(pm->keys, 0xff, sizeof(uint32_t) * new_cap);
 
     for (int i = 0; i < old_cap; i++) {
         if (old_k[i] != PEAKMAP_EMPTY)
@@ -83,7 +83,7 @@ static int peakmap_grow(PeakMap *pm)
     return 0;
 }
 
-static int peakmap_put(PeakMap *pm, int32_t key, int32_t val)
+static int peakmap_put(PeakMap *pm, uint32_t key, int32_t val)
 {
     if (pm->cnt * 2 >= pm->cap) {
         if (peakmap_grow(pm) != 0) return -1;
@@ -92,9 +92,9 @@ static int peakmap_put(PeakMap *pm, int32_t key, int32_t val)
     return 0;
 }
 
-int peakmap_get(const PeakMap *pm, int32_t key)
+int peakmap_get(const PeakMap *pm, uint32_t key)
 {
-    int slot = (uint32_t)key & (uint32_t)(pm->cap - 1);
+    int slot = (int)(key & (uint32_t)(pm->cap - 1));
     while (pm->keys[slot] != PEAKMAP_EMPTY) {
         if (pm->keys[slot] == key) return pm->vals[slot];
         slot = (slot + 1) & (pm->cap - 1);
@@ -109,9 +109,9 @@ UnionFind *uf_create(size_t size)
     UnionFind *uf = malloc(sizeof(UnionFind));
     if (!uf) return NULL;
 
-    uf->parent = malloc(sizeof(int32_t) * size);
-    uf->rank   = malloc(sizeof(int8_t)  * size);
-    uf->peaks  = malloc(sizeof(Peak)    * PEAK_INIT_CAP);
+    uf->parent = malloc(sizeof(uint32_t) * size);
+    uf->rank   = malloc(sizeof(int8_t)   * size);
+    uf->peaks  = malloc(sizeof(Peak)     * PEAK_INIT_CAP);
     uf->size     = size;
     uf->peak_cnt = 0;
     uf->peak_cap = PEAK_INIT_CAP;
@@ -127,7 +127,7 @@ UnionFind *uf_create(size_t size)
     }
 
     for (size_t i = 0; i < size; i++) {
-        uf->parent[i] = (int32_t)i;
+        uf->parent[i] = (uint32_t)i;
         uf->rank[i]   = 0;
     }
     return uf;
@@ -143,14 +143,14 @@ void uf_destroy(UnionFind *uf)
     free(uf);
 }
 
-int32_t uf_find(UnionFind *uf, int32_t i)
+uint32_t uf_find(UnionFind *uf, uint32_t i)
 {
     if (uf->parent[i] != i)
         uf->parent[i] = uf_find(uf, uf->parent[i]);
     return uf->parent[i];
 }
 
-int uf_new_peak(UnionFind *uf, int32_t i, int32_t x, int32_t y, float elev)
+int uf_new_peak(UnionFind *uf, uint32_t i, int32_t x, int32_t y, float elev)
 {
     if (uf->peak_cnt >= uf->peak_cap) {
         int new_cap = uf->peak_cap * 2;
@@ -179,11 +179,11 @@ int uf_new_peak(UnionFind *uf, int32_t i, int32_t x, int32_t y, float elev)
  * [修正] peak_id < 0 のノードが渡された場合は早期リターン。
  * analyze.c 側でフィルタしているが念のため防御する。
  */
-int uf_union(UnionFind *uf, int32_t a, int32_t b,
+int uf_union(UnionFind *uf, uint32_t a, uint32_t b,
              float col_elev, int32_t col_x, int32_t col_y)
 {
-    int32_t ra = uf_find(uf, a);
-    int32_t rb = uf_find(uf, b);
+    uint32_t ra = uf_find(uf, a);
+    uint32_t rb = uf_find(uf, b);
 
     if (ra == rb) return -1;
 
@@ -193,8 +193,8 @@ int uf_union(UnionFind *uf, int32_t a, int32_t b,
     /* どちらかが海面コンポーネント（peak_id=-1）なら処理しない */
     if (pid_a < 0 || pid_b < 0) return -1;
 
-    int pid_winner, pid_loser;
-    int32_t r_winner, r_loser;
+    int      pid_winner, pid_loser;
+    uint32_t r_winner, r_loser;
 
     if (uf->peaks[pid_a].elev > uf->peaks[pid_b].elev) {
         pid_winner = pid_a; r_winner = ra;

@@ -352,7 +352,7 @@ void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
             int has_nodata = 0;
             for (int py = py_lo; py <= py_hi && !has_nodata; py++)
                 for (int px = px_lo; px <= px_hi && !has_nodata; px++)
-                    if (big->data[py * (int)big->width + px] == ELEV_NODATA)
+                    if (big->data[(size_t)py * big->width + px] == ELEV_NODATA)
                         has_nodata = 1;
             if (!has_nodata) continue;
 
@@ -367,7 +367,7 @@ void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
 
             for (int py = py_lo; py <= py_hi; py++) {
                 for (int px = px_lo; px <= px_hi; px++) {
-                    int idx = py * (int)big->width + px;
+                    size_t idx = (size_t)py * big->width + px;
                     if (big->data[idx] != ELEV_NODATA) continue;
 
                     int z15_tx = range_x_min + (px - 1) / TILE_PIX;

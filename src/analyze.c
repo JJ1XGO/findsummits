@@ -5,6 +5,7 @@
  * Copyright (C) 2026 JJ1XGO
  * GPL-3.0
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,20 +17,23 @@
 static const int dx[] = { 0,  0, -1,  1, -1,  1, -1,  1 };
 static const int dy[] = {-1,  1,  0,  0, -1, -1,  1,  1 };
 
-typedef struct {
-    int32_t x, y;
-    float   elev;
-} Pixel;
+/* インデックスソート用コンテキスト */
+typedef struct { const float *data; uint32_t W; } SortCtx;
 
-static int cmp_elev_desc(const void *a, const void *b)
+static int cmp_elev_desc(const void *a, const void *b, void *ctx)
 {
-    const Pixel *pa = a, *pb = b;
-    if (pa->elev > pb->elev) return -1;
-    if (pa->elev < pb->elev) return  1;
-    if (pa->x    < pb->x   ) return -1;  /* x 小=西 優先（決定論化） */
-    if (pa->x    > pb->x   ) return  1;
-    if (pa->y    < pb->y   ) return -1;  /* y 小=北 優先 */
-    if (pa->y    > pb->y   ) return  1;
+    const SortCtx *c  = ctx;
+    uint32_t ia = *(const uint32_t *)a;
+    uint32_t ib = *(const uint32_t *)b;
+    float    ea = c->data[ia], eb = c->data[ib];
+    if (ea > eb) return -1;
+    if (ea < eb) return  1;
+    uint32_t xa = ia % c->W, xb = ib % c->W;  /* x 小=西 優先（決定論化） */
+    if (xa < xb) return -1;
+    if (xa > xb) return  1;
+    uint32_t ya = ia / c->W, yb = ib / c->W;  /* y 小=北 優先 */
+    if (ya < yb) return -1;
+    if (ya > yb) return  1;
     return 0;
 }
 
@@ -46,48 +50,43 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
 {
     uint32_t W = tile->width;
     uint32_t H = tile->height;
-    uint32_t N = W * H;
+    size_t   N = (size_t)W * H;
 
-    /* 全ピクセルをリスト化してソート */
-    Pixel *pixels = malloc(sizeof(Pixel) * N);
-    if (!pixels) return NULL;
+    /* ピクセルインデックス配列を標高降順にソート（Pixel構造体より1/3のメモリ） */
+    uint32_t *indices = malloc(sizeof(uint32_t) * N);
+    if (!indices) return NULL;
+    for (size_t i = 0; i < N; i++) indices[i] = (uint32_t)i;
 
-    for (uint32_t y = 0; y < H; y++)
-        for (uint32_t x = 0; x < W; x++) {
-            uint32_t i     = y * W + x;
-            pixels[i].x    = x;
-            pixels[i].y    = y;
-            pixels[i].elev = elev_get(tile, x, y);
-        }
-
-    qsort(pixels, N, sizeof(Pixel), cmp_elev_desc);
+    SortCtx sctx = { tile->data, W };
+    qsort_r(indices, N, sizeof(uint32_t), cmp_elev_desc, &sctx);
 
     UnionFind *uf = uf_create(N);
-    if (!uf) { free(pixels); return NULL; }
+    if (!uf) { free(indices); return NULL; }
 
     int8_t *processed = calloc(N, sizeof(int8_t));
-    if (!processed) { uf_destroy(uf); free(pixels); return NULL; }
+    if (!processed) { uf_destroy(uf); free(indices); return NULL; }
 
     /* 高い順に1ピクセルずつ処理 */
-    for (uint32_t pi = 0; pi < N; pi++) {
-        int32_t x    = pixels[pi].x;
-        int32_t y    = pixels[pi].y;
-        float   elev = pixels[pi].elev;
-        int32_t i    = y * W + x;
+    for (size_t pi = 0; pi < N; pi++) {
+        uint32_t idx  = indices[pi];
+        int32_t  x    = (int32_t)(idx % W);
+        int32_t  y    = (int32_t)(idx / W);
+        float    elev = tile->data[idx];
+        uint32_t i    = (uint32_t)((uint64_t)y * W + x);
 
         processed[i] = 1;
 
-        int32_t neighbor_roots[8];
-        int     neighbor_cnt = 0;
+        uint32_t neighbor_roots[8];
+        int      neighbor_cnt = 0;
 
         for (int d = 0; d < 8; d++) {
             int nx = x + dx[d];
             int ny = y + dy[d];
             if (nx < 0 || nx >= (int)W || ny < 0 || ny >= (int)H) continue;
-            int32_t ni = ny * W + nx;
+            uint32_t ni = (uint32_t)((uint64_t)ny * W + nx);
             if (!processed[ni]) continue;
 
-            int32_t root = uf_find(uf, ni);
+            uint32_t root = uf_find(uf, ni);
 
             int already = 0;
             for (int k = 0; k < neighbor_cnt; k++)
@@ -102,7 +101,7 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
                 uf_new_peak(uf, i, x, y, elev);
 
         } else if (neighbor_cnt == 1) {
-            int32_t root = neighbor_roots[0];
+            uint32_t root = neighbor_roots[0];
             if (peakmap_get(&uf->pm, root) >= 0) {
                 /* 有効なピークコンポーネントに合流 */
                 uf->parent[i] = root;
@@ -117,12 +116,14 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
         } else {
             /* neighbor_cnt >= 2：コル発見。
              * peak_id >= 0 のrootだけを対象にwinner(最高峰)を選ぶ */
-            int32_t max_root = -1;
+            int      max_root_valid = 0;
+            uint32_t max_root = 0;
             for (int k = 0; k < neighbor_cnt; k++) {
-                int32_t root = neighbor_roots[k];
+                uint32_t root = neighbor_roots[k];
                 if (peakmap_get(&uf->pm, root) < 0) continue;  /* 海面コンポーネントは除外 */
-                if (max_root < 0) {
-                    max_root = root;
+                if (!max_root_valid) {
+                    max_root       = root;
+                    max_root_valid = 1;
                 } else {
                     int pid_k   = peakmap_get(&uf->pm, root);
                     int pid_max = peakmap_get(&uf->pm, max_root);
@@ -131,7 +132,7 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
                 }
             }
 
-            if (max_root < 0) {
+            if (!max_root_valid) {
                 /* 全隣接が海面コンポーネント：このピクセルも海面扱い */
                 if (elev > 0.0f)
                     uf_new_peak(uf, i, x, y, elev);
@@ -139,7 +140,7 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
                 uf->parent[i] = max_root;
 
                 for (int k = 0; k < neighbor_cnt; k++) {
-                    int32_t root = neighbor_roots[k];
+                    uint32_t root = neighbor_roots[k];
                     if (root == max_root) continue;
                     if (peakmap_get(&uf->pm, root) < 0) continue;  /* 海面コンポーネントはスキップ */
                     uf_union(uf, i, root, elev, x, y);
@@ -201,7 +202,7 @@ AnalyzeResult *analyze_tile_data(const ElevTile *tile,
     }
 
     free(processed);
-    free(pixels);
+    free(indices);
     uf_destroy(uf);
 
     return result;
