@@ -105,6 +105,7 @@ $DATA_DIR/tiles/        # ダウンロード済みタイルのキャッシュ
   └─ {z}/     # タイルのURLの命名規則と同様
      └─ {x}   # タイルのURLの命名規則と同様
          └─ {y}
+$DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 ```
 
 ## その他
