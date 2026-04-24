@@ -100,7 +100,7 @@ ref/          # 参照データ（git管理）
   summitslist.csv                          # SOTAの山岳リスト（全サミット）
   SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
 tests/        # テスト用プログラム（test_*.c）
-.claude/mngt/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
+.claude/mgmt/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
 .env.example  # DATA_DIR 設定例（コミット済み）
 .env          # 実設定（gitignore）
 

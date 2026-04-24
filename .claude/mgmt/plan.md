@@ -5,7 +5,7 @@
 2026-04-21 のセッションで、以下のアーキテクチャ刷新がユーザーと合意済み（`.claude/handovers/2026-04-22_0015.md`）。
 
 - 現行の `BORDER_TILES=8` 方式は過去の合意（3×3 フルメッシュ）違反として正式撤回
-- Key Col 距離の実データ検証（`.claude/mngt/keycol_analysis.md`）で、18km バッファでは 150 件（3.3%）取りこぼし・最遠 253km の独立峰あり → 3×3 必須
+- Key Col 距離の実データ検証（`.claude/mgmt/keycol_analysis.md`）で、18km バッファでは 150 件（3.3%）取りこぼし・最遠 253km の独立峰あり → 3×3 必須
 - 解析時の libcurl によるタイル取得は廃止し、事前 prefetch (Python) に一本化
 - メモリ削減（`rank` int8・`peak_id` ハッシュマップ）で 3×3 を 62GB RAM 内で並列 2 まで実行可
 - 座標決定論化（`cmp_elev_desc` の 2 次キー x→y）で「同一峰は異なる解析でも同一 global pixel に収束」させ、merge での重複判定を exact match で実施できるようにする
