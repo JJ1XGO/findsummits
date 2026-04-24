@@ -1,7 +1,7 @@
 # Key Col 距離分布 実データ検証レポート
 
 作成日: 2026-04-21
-スクリプト: `scripts/analyze_keycol_distance.py`
+スクリプト: `analysis/analyze_keycol_distance.py`
 
 ## 目的
 
