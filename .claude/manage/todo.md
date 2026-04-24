@@ -25,7 +25,7 @@
 - [x] ビルド・単体テスト確認（5540・5539 単体で動作確認済み）
 - [x] `scripts/prefetch_tiles.py` 新規作成（If-Modified-Since、並列4、backoff、フォールバック a→b→c）（d4c2946・26aaa2c）
 - [x] `scripts/merge.py` 改修（期待解析回数、col_elev 最小、col_margin_px、150m 最終判定）（d4c2946）
-- [ ] 既存 CSV 退避・削除（`/mnt/findsummits/results/csv/*.csv`）← 5339.csv のみ残存
+- [x] 既存 CSV 退避・削除（`/mnt/findsummits/results/csv/*.csv`）← 5339.csv のみ残存
 - [ ] `params/fetch_config.ini.example` 作成、`.gitignore` に実設定を追加
 - [ ] 小規模 9 メッシュでフルパイプ検証（prefetch → C 解析 → merge.py）
 - [ ] コミット（残り分：fetch_config.ini.example 等）
