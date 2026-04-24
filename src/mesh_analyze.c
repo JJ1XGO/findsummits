@@ -19,18 +19,51 @@
 #include "analyze.h"
 #include "unionfind.h"
 
+/* 標高カラーパレット（標高m → RGB） */
+static const struct { float elev; uint8_t r, g, b; } PALETTE[] = {
+    {    0.0f,  70, 150,  70},  /* 緑（低地）       */
+    {  200.0f, 160, 200,  80},  /* 黄緑             */
+    {  500.0f, 210, 180,  90},  /* 黄茶             */
+    { 1000.0f, 170, 110,  60},  /* 茶               */
+    { 2000.0f, 160, 140, 130},  /* 灰茶             */
+    { 3000.0f, 210, 210, 210},  /* 灰               */
+    { 4000.0f, 255, 255, 255},  /* 白（高山）       */
+};
+#define PALETTE_LEN ((int)(sizeof(PALETTE) / sizeof(PALETTE[0])))
+
+static void elev_to_rgb(float elev, uint8_t *r, uint8_t *g, uint8_t *b)
+{
+    if (elev < -9000.0f) {          /* NODATA → 海の青 */
+        *r = 100; *g = 150; *b = 200; return;
+    }
+    if (elev <= 0.0f) {             /* 海面・負値 → 海の青 */
+        *r = 100; *g = 150; *b = 200; return;
+    }
+    if (elev >= PALETTE[PALETTE_LEN - 1].elev) {
+        *r = PALETTE[PALETTE_LEN - 1].r;
+        *g = PALETTE[PALETTE_LEN - 1].g;
+        *b = PALETTE[PALETTE_LEN - 1].b;
+        return;
+    }
+    for (int i = 0; i < PALETTE_LEN - 1; i++) {
+        if (elev >= PALETTE[i].elev && elev < PALETTE[i + 1].elev) {
+            float t = (elev - PALETTE[i].elev) /
+                      (PALETTE[i + 1].elev - PALETTE[i].elev);
+            *r = (uint8_t)(PALETTE[i].r + t * (PALETTE[i + 1].r - PALETTE[i].r) + 0.5f);
+            *g = (uint8_t)(PALETTE[i].g + t * (PALETTE[i + 1].g - PALETTE[i].g) + 0.5f);
+            *b = (uint8_t)(PALETTE[i].b + t * (PALETTE[i + 1].b - PALETTE[i].b) + 0.5f);
+            return;
+        }
+    }
+}
+
 /*
- * 標高データを Terrain-RGB 形式 PNG で出力する（長辺6000px縮小）
- *
- * 国土地理院標高タイル互換エンコード:
- *   x = round(h * 100)
- *   x >= 0: R=x>>16, G=(x>>8)&0xFF, B=x&0xFF
- *   x < 0:  x += 2^24, 同様に分解
- *   NODATA: R=128, G=0, B=0
+ * 標高カラーマップ PNG を出力する（長辺6000px縮小）
+ * 低地=緑 → 中地=黄茶 → 高山=白、NODATA/海=青
  */
 static void save_terrain_rgb_image(const ElevTile *big, const char *path)
 {
-    printf("  Terrain-RGB PNG 出力中: %s\n", path);
+    printf("  標高カラーマップ PNG 出力中: %s\n", path);
 
     uint32_t src_w = big->width;
     uint32_t src_h = big->height;
@@ -66,17 +99,7 @@ static void save_terrain_rgb_image(const ElevTile *big, const char *path)
             uint32_t sy = (uint32_t)((double)y * src_h / dst_h);
             float elev = big->data[sy * src_w + sx];
             uint8_t r, g, b;
-            if (elev < -9000.0f) {
-                r = 128; g = 0; b = 0;
-            } else {
-                int32_t val = (int32_t)(elev * 100.0f + 0.5f);
-                uint32_t x24 = (val < 0)
-                    ? (uint32_t)(val + (1 << 24))
-                    : (uint32_t)val;
-                r = (x24 >> 16) & 0xFF;
-                g = (x24 >>  8) & 0xFF;
-                b =  x24        & 0xFF;
-            }
+            elev_to_rgb(elev, &r, &g, &b);
             row[x * 3 + 0] = r;
             row[x * 3 + 1] = g;
             row[x * 3 + 2] = b;
