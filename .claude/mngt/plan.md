@@ -136,6 +136,7 @@ int  mesh_neighbor(int code, int dlat, int dlon);  /* dlat, dlon ∈ {-1, 0, 1} 
 typedef struct {
     const char    *tile_dir;
     const char    *result_dir;
+    const char    *img_dir;            /* 追加: Terrain-RGB PNG 出力先（NULL=出力しない） */
     float          min_prominence;     /* 130.0f */
     const MeshSet *mesh_set;           /* 追加: 隣接判定用 */
 } MeshAnalyzeConfig;
