@@ -28,6 +28,17 @@
 - [x] 既存 CSV 退避・削除（`/mnt/findsummits/results/csv/*.csv`）← 5339.csv のみ残存
 - [x] `params/fetch_config.ini.example` 作成、`.gitignore` に実設定を追加
 - [ ] 小規模 9 メッシュでフルパイプ検証（prefetch → C 解析 → merge.py）
+  - 対象メッシュ: `params/mesh_5339_neighbors.txt`（5238〜5440 の9メッシュ、5339含む）
+  - [ ] ステップ1: `prefetch_tiles.py` でタイル取得
+    - `cd /workspace && python3 scripts/prefetch_tiles.py params/mesh_5339_neighbors.txt`
+    - `/data/tiles/` に未取得分のみDL（If-Modified-Since で差分）
+  - [ ] ステップ2: `findsummits` で9メッシュ解析
+    - `./build/findsummits params/mesh_5339_neighbors.txt`
+    - 出力: `/data/results/csv/<meshcode>.csv`（9ファイル）
+  - [ ] ステップ3: `merge.py` でCSV統合・SOTA突合
+    - `python3 scripts/merge.py`
+    - プロミネンス ≥ 150m でフィルタ、`ref/summitslist.csv` と突合
+    - 出力結果を目視確認
 - [ ] コミット（残り分：fetch_config.ini.example 等）
 
 ## 申請用出力フェーズ（フルパイプ検証後に着手）
