@@ -1,16 +1,19 @@
 #!/bin/bash
-# run_all.sh - 176メッシュを並列処理するラッパースクリプト
+# run_all.sh - 全メッシュを一括解析するラッパースクリプト
 #
 # 使い方:
-#   ./run_all.sh                    # デフォルト設定で全メッシュ処理
-#   ./run_all.sh tasks/mesh_list_japan.txt
-#
-# 並列数: 8 (16コアの半分)
+#   ./run_all.sh                           # デフォルト設定で全メッシュ処理
+#   ./run_all.sh params/mesh_list_japan.txt
 
-MESH_LIST="${1:-tasks/mesh_list_japan.txt}"
-PARALLEL=8
+MESH_LIST="${1:-params/mesh_list_japan.txt}"
 FINDSUMMITS="./build/findsummits"
-LOG_DIR="/mnt/findsummits/logs"
+
+# .env から DATA_DIR を読む
+if [ -f .env ]; then
+    _DATA_DIR=$(grep '^DATA_DIR=' .env | cut -d= -f2 | tr -d ' \r')
+fi
+DATA_DIR="${_DATA_DIR:-/data}"
+LOG_DIR="$DATA_DIR/logs"
 
 if [ ! -f "$MESH_LIST" ]; then
     echo "メッシュリストが見つかりません: $MESH_LIST" >&2
@@ -24,28 +27,27 @@ fi
 
 mkdir -p "$LOG_DIR"
 
+LOG_FILE="$LOG_DIR/findsummits_$(date +%Y%m%d_%H%M%S).log"
+
 echo "=== 全メッシュ解析開始 ==="
 echo "リスト: $MESH_LIST"
-echo "並列数: $PARALLEL"
+echo "DATA_DIR: $DATA_DIR"
 echo "開始時刻: $(date)"
+echo "ログ: $LOG_FILE"
 echo ""
 
-# メッシュコードを1行1コードとして読み込み、xargs で並列実行
-# 各メッシュのログは /mnt/findsummits/logs/{meshcode}.log に保存
-grep -v '^#' "$MESH_LIST" | grep -v '^[[:space:]]*$' | \
-    xargs -P "$PARALLEL" -I{} sh -c \
-        '"$0" {} > "$1/{}.log" 2>&1 && echo "[OK] {}  " || echo "[NG] {}  "' \
-        "$FINDSUMMITS" "$LOG_DIR"
+# リスト全体を1プロセスに渡す（隣接判定用MeshSetが正しく構築される）
+"$FINDSUMMITS" "$MESH_LIST" 2>&1 | tee "$LOG_FILE"
+EXIT_CODE=${PIPESTATUS[0]}
 
 echo ""
 echo "=== 全メッシュ解析完了 ==="
 echo "終了時刻: $(date)"
-echo "ログ: $LOG_DIR/"
 
-# 失敗したメッシュを報告
-NG_COUNT=$(ls "$LOG_DIR"/*.log 2>/dev/null | xargs grep -l "解析失敗\|解析に失敗" 2>/dev/null | wc -l)
+NG_COUNT=$(grep -c "解析失敗\|解析に失敗" "$LOG_FILE" 2>/dev/null || echo 0)
 if [ "$NG_COUNT" -gt 0 ]; then
     echo "失敗メッシュ数: $NG_COUNT"
-    ls "$LOG_DIR"/*.log | xargs grep -l "解析失敗\|解析に失敗" 2>/dev/null | \
-        sed 's|.*/||;s|\.log||' | sort
+    grep "解析失敗\|解析に失敗" "$LOG_FILE"
 fi
+
+exit $EXIT_CODE
