@@ -89,6 +89,9 @@ params/       # パラメータファイル
   mesh_list_japan.txt           # 解析対象メッシュコードリスト
   fetch_config.ini.example      # UA・並列数設定のテンプレート（コミット済み）
   fetch_config.ini              # 実設定（gitignore・メールアドレス記入）
+ref/          # 参照データ（git管理）
+  summitslist.csv                          # SOTAの山岳リスト（全サミット）
+  SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
 tests/        # テスト用プログラム（test_*.c）
 .claude/manage/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
 .env.example  # DATA_DIR 設定例（コミット済み）
@@ -102,7 +105,6 @@ $DATA_DIR/tiles/        # ダウンロード済みタイルのキャッシュ
   └─ {z}/     # タイルのURLの命名規則と同様
      └─ {x}   # タイルのURLの命名規則と同様
          └─ {y}
-$DATA_DIR/ref/          # SOTAの山岳リストなど。本プロジェクト以外の参照データ置き場
 ```
 
 ## その他
