@@ -209,7 +209,7 @@ def fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_in
 
 PROGRESS_INTERVAL = 1000
 
-def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initial, lock, counters):
+def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initial, lock, counters, start_time, total_jobs):
     while True:
         try:
             job = job_queue.get_nowait()
@@ -225,7 +225,7 @@ def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initia
                     counters[key][bucket] += 1
                     if status == "err":
                         print(f"  [ERR] {msg}", file=sys.stderr)
-                _print_progress_if_needed(counters, lock=None)
+                _print_progress_if_needed(counters, start_time, total_jobs)
         else:
             status, msg = fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial)
             with lock:
@@ -233,7 +233,7 @@ def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initia
                 counters["dem10b"][bucket] += 1
                 if status == "err":
                     print(f"  [ERR] {msg}", file=sys.stderr)
-                _print_progress_if_needed(counters, lock=None)
+                _print_progress_if_needed(counters, start_time, total_jobs)
         job_queue.task_done()
 
 
@@ -241,14 +241,29 @@ def _total_done(counters):
     return sum(sum(c.values()) for c in counters.values())
 
 
-def _print_progress_if_needed(counters, lock):
+def _fmt_hms(seconds):
+    seconds = int(seconds)
+    h, rem = divmod(seconds, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
+def _print_progress_if_needed(counters, start_time, total_jobs):
     done = _total_done(counters)
     if done % PROGRESS_INTERVAL == 0:
         ok  = sum(c["ok"]  for c in counters.values())
         s304= sum(c["304"] for c in counters.values())
         s404= sum(c["404"] for c in counters.values())
         err = sum(c["err"] for c in counters.values())
-        print(f"  進捗: {done} 件処理済み | 取得:{ok} 変更なし:{s304} 存在なし:{s404} エラー:{err}",
+        elapsed = time.time() - start_time
+        if done > 0 and elapsed > 0:
+            rate = done / elapsed
+            remaining = (total_jobs - done) / rate if rate > 0 else 0
+            time_str = f" | 経過:{_fmt_hms(elapsed)} 残り:{_fmt_hms(remaining)}"
+        else:
+            time_str = ""
+        pct = done / total_jobs * 100 if total_jobs > 0 else 0
+        print(f"  進捗: {done}/{total_jobs} ({pct:.1f}%) | 取得:{ok} 変更なし:{s304} 存在なし:{s404} エラー:{err}{time_str}",
               flush=True)
 
 
@@ -345,6 +360,8 @@ def main():
     for job in jobs:
         job_queue.put(job)
 
+    start_time = time.time()
+    total_jobs = len(jobs)
     lock = threading.Lock()
     counters = {
         "dem5a":  {"ok": 0, "304": 0, "404": 0, "err": 0},
@@ -357,7 +374,7 @@ def main():
     for _ in range(max_parallel):
         t = threading.Thread(
             target=worker,
-            args=(job_queue, None, args.tile_dir, user_agent, interval_ms, backoff_init, lock, counters),
+            args=(job_queue, None, args.tile_dir, user_agent, interval_ms, backoff_init, lock, counters, start_time, total_jobs),
             daemon=True,
         )
         t.start()
