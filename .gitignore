@@ -70,3 +70,4 @@ params/fetch_config.ini
 .claude/conversations/
 .claude/sessions/
 .claude/skills/.cache/
+.claude/handovers/
