@@ -61,9 +61,10 @@ int main(int argc, char *argv[])
     const char *data_dir = getenv("DATA_DIR");
     if (!data_dir || data_dir[0] == '\0') data_dir = "/data";
 
-    char tile_dir[512], result_dir[512];
+    char tile_dir[512], result_dir[512], img_dir[512];
     snprintf(tile_dir,   sizeof(tile_dir),   "%s/tiles",       data_dir);
     snprintf(result_dir, sizeof(result_dir), "%s/results/csv", data_dir);
+    snprintf(img_dir,    sizeof(img_dir),    "%s/images",      data_dir);
 
     printf("=== SOTA未登録サミット候補探索ツール ===\n");
 
@@ -77,6 +78,7 @@ int main(int argc, char *argv[])
     MeshAnalyzeConfig cfg = {
         .tile_dir       = tile_dir,
         .result_dir     = result_dir,
+        .img_dir        = img_dir,
         .min_prominence = 130.0f,
         .mesh_set       = NULL,
     };

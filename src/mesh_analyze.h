@@ -17,6 +17,7 @@
 typedef struct {
     const char    *tile_dir;       /* タイルキャッシュディレクトリ */
     const char    *result_dir;     /* 結果保存ディレクトリ */
+    const char    *img_dir;        /* Terrain-RGB PNG 出力先（NULL=出力しない） */
     float          min_prominence; /* 最小プロミネンス(m) */
     const MeshSet *mesh_set;       /* 隣接判定用メッシュリスト */
 } MeshAnalyzeConfig;

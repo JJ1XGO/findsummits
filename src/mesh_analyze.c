@@ -11,11 +11,84 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <math.h>
+#include <stdint.h>
+#include <png.h>
 #include "mesh_analyze.h"
 #include "mesh.h"
 #include "elevation.h"
 #include "analyze.h"
 #include "unionfind.h"
+
+/*
+ * 標高データを Terrain-RGB 形式 PNG で出力する（長辺6000px縮小）
+ *
+ * 国土地理院標高タイル互換エンコード:
+ *   x = round(h * 100)
+ *   x >= 0: R=x>>16, G=(x>>8)&0xFF, B=x&0xFF
+ *   x < 0:  x += 2^24, 同様に分解
+ *   NODATA: R=128, G=0, B=0
+ */
+static void save_terrain_rgb_image(const ElevTile *big, const char *path)
+{
+    printf("  Terrain-RGB PNG 出力中: %s\n", path);
+
+    uint32_t src_w = big->width;
+    uint32_t src_h = big->height;
+    uint32_t dst_w, dst_h;
+    if (src_w > src_h) {
+        dst_w = 6000;
+        dst_h = (uint32_t)((double)src_h * 6000.0 / src_w + 0.5);
+    } else {
+        dst_h = 6000;
+        dst_w = (uint32_t)((double)src_w * 6000.0 / src_h + 0.5);
+    }
+    printf("  元サイズ: %ux%u → 出力サイズ: %ux%u\n", src_w, src_h, dst_w, dst_h);
+
+    FILE *fp = fopen(path, "wb");
+    if (!fp) { fprintf(stderr, "  画像ファイル作成失敗: %s\n", path); return; }
+
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_infop info  = png_create_info_struct(png);
+    if (setjmp(png_jmpbuf(png))) {
+        png_destroy_write_struct(&png, &info);
+        fclose(fp); return;
+    }
+    png_init_io(png, fp);
+    png_set_IHDR(png, info, dst_w, dst_h, 8,
+                 PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_write_info(png, info);
+
+    uint8_t *row = malloc(dst_w * 3);
+    for (uint32_t y = 0; y < dst_h; y++) {
+        for (uint32_t x = 0; x < dst_w; x++) {
+            uint32_t sx = (uint32_t)((double)x * src_w / dst_w);
+            uint32_t sy = (uint32_t)((double)y * src_h / dst_h);
+            float elev = big->data[sy * src_w + sx];
+            uint8_t r, g, b;
+            if (elev < -9000.0f) {
+                r = 128; g = 0; b = 0;
+            } else {
+                int32_t val = (int32_t)(elev * 100.0f + 0.5f);
+                uint32_t x24 = (val < 0)
+                    ? (uint32_t)(val + (1 << 24))
+                    : (uint32_t)val;
+                r = (x24 >> 16) & 0xFF;
+                g = (x24 >>  8) & 0xFF;
+                b =  x24        & 0xFF;
+            }
+            row[x * 3 + 0] = r;
+            row[x * 3 + 1] = g;
+            row[x * 3 + 2] = b;
+        }
+        png_write_row(png, row);
+    }
+    free(row);
+    png_write_end(png, NULL);
+    png_destroy_write_struct(&png, &info);
+    fclose(fp);
+    printf("  → PNG出力完了\n");
+}
 
 /*
  * メッシュ範囲に含まれる全タイルを1枚の巨大ElevTileに展開する
@@ -155,6 +228,14 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
     printf("  タイル読み込み完了: %.1f秒\n",
            (ts_now.tv_sec - ts_start.tv_sec) +
            (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9);
+
+    /* Terrain-RGB イメージ出力 */
+    if (cfg->img_dir) {
+        mkdir(cfg->img_dir, 0755);
+        char img_path[512];
+        snprintf(img_path, sizeof(img_path), "%s/%d_terrain.png", cfg->img_dir, meshcode);
+        save_terrain_rgb_image(big, img_path);
+    }
 
     /* 簡易統計（中心メッシュ範囲） */
     int cx_min = (center_range.x_min - combined.x_min) * TILE_PIX + 1;
