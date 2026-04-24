@@ -53,7 +53,7 @@
   - 変更シート: `match_status=MOVED/ELEV_CHANGE`（既存値と新値を並列表示）
   - 削除シート: `match_status=DELETED`
   - 変更なしシート: `match_status=MATCH`（エビデンス用）
-- [ ] SOTA 申請用テンプレート（`/mnt/findsummits/ref/`）の列定義を事前確認
+- [ ] SOTA 申請用テンプレート（`ref/SOTA-Summit-list-revision-request.xlsx`）の列定義を事前確認
 - [ ] prominence < 150m の行を黄色ハイライト（警告用）
 - [ ] Excel/LibreOffice で開いて視覚確認
 
