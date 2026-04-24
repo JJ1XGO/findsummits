@@ -207,6 +207,8 @@ def fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_in
 
 # ---- ワーカースレッド ----
 
+PROGRESS_INTERVAL = 1000
+
 def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initial, lock, counters):
     while True:
         try:
@@ -223,6 +225,7 @@ def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initia
                     counters[key][bucket] += 1
                     if status == "err":
                         print(f"  [ERR] {msg}", file=sys.stderr)
+                _print_progress_if_needed(counters, lock=None)
         else:
             status, msg = fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial)
             with lock:
@@ -230,7 +233,23 @@ def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initia
                 counters["dem10b"][bucket] += 1
                 if status == "err":
                     print(f"  [ERR] {msg}", file=sys.stderr)
+                _print_progress_if_needed(counters, lock=None)
         job_queue.task_done()
+
+
+def _total_done(counters):
+    return sum(sum(c.values()) for c in counters.values())
+
+
+def _print_progress_if_needed(counters, lock):
+    done = _total_done(counters)
+    if done % PROGRESS_INTERVAL == 0:
+        ok  = sum(c["ok"]  for c in counters.values())
+        s304= sum(c["304"] for c in counters.values())
+        s404= sum(c["404"] for c in counters.values())
+        err = sum(c["err"] for c in counters.values())
+        print(f"  進捗: {done} 件処理済み | 取得:{ok} 変更なし:{s304} 存在なし:{s404} エラー:{err}",
+              flush=True)
 
 
 # ---- サマリー生成 ----
