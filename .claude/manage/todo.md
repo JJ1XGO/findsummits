@@ -30,6 +30,51 @@
 - [ ] 小規模 9 メッシュでフルパイプ検証（prefetch → C 解析 → merge.py）
 - [ ] コミット（残り分：fetch_config.ini.example 等）
 
+## 申請用出力フェーズ（フルパイプ検証後に着手）
+
+- [ ] **着手前に設計を確認**: plan_v1.md の Ph.2〜Ph.5 の設計（別スクリプト構成）が現在のアーキテクチャ（merge.py 統合など）に合っているか Sonnet と相談してから実装を始める
+
+### SOTA突合（merge.py 拡張）
+
+- [ ] match_status 判定を merge.py に実装
+  - `NEW`: 検出結果が既存リストにない → 新規候補
+  - `MATCH`: 既存サミットと座標・標高が一致 → 変更なし
+  - `MOVED`: 既存サミットが検出結果と 150m 超離れている → 座標変更候補
+  - `ELEV_CHANGE`: 同一位置だが標高差あり → 標高変更候補
+  - `DELETED`: 既存サミットが prominence < 150m になった → 削除候補
+  - 突合しきい値: 距離 ≤ 150m かつ標高差 < 20m で同一サミットとみなす
+- [ ] 解析範囲内サミットのみ deleted 対象とするフィルタ（deleted スコープ問題の解決）
+- [ ] 突合結果の列: `match_status, summit_code, summit_name, peak_lat, peak_lon, peak_elev, col_lat, col_lon, col_elev, prominence, orig_lat, orig_lon, orig_elev`
+
+### XLSX出力（output_xlsx.py 新規）
+
+- [ ] openpyxl で申請用 XLSX を生成
+  - 新規シート: `match_status=NEW` のサミット
+  - 変更シート: `match_status=MOVED/ELEV_CHANGE`（既存値と新値を並列表示）
+  - 削除シート: `match_status=DELETED`
+  - 変更なしシート: `match_status=MATCH`（エビデンス用）
+- [ ] SOTA 申請用テンプレート（`/mnt/findsummits/ref/`）の列定義を事前確認
+- [ ] prominence < 150m の行を黄色ハイライト（警告用）
+- [ ] Excel/LibreOffice で開いて視覚確認
+
+### GeoJSON出力（output_geojson.py 新規）
+
+- [ ] Summit/Peak/Col ごとに Point Feature を生成
+  - match_status 別アイコン/色: NEW=マゼンタ, MOVED=オレンジ, ELEV_CHANGE=水色, DELETED=グレー, MATCH=スコア色
+  - SOTA スコア別色（MATCH のみ）: 10点=赤, 8点=黄, 6点=緑, 4点=シアン, 2点=青, 1点=紫
+- [ ] Summit→Peak, Peak→Col の LineString を追加（関係を視覚化）
+- [ ] 地理院地図にドロップして目視確認
+
+### 統合テスト
+
+- [ ] 九州・四国メッシュで end-to-end テスト
+  - `findsummits4sotaja` の過去結果（`sotaJA_SummitPeakCol_All5.xlsx`）と比較
+  - 許容差: ピーク座標 ±100m、標高 ±5m、プロミネンス ±20m
+- [ ] 複数メッシュ境界付近の既知の山が GeoJSON で正しく 1 件表示されることを確認
+- [ ] DEM5 なしメッシュで DEM10 フォールバックの結果が妥当か確認
+
+---
+
 ## 突合仕様（要確認）
 
 - [ ] **deleted の地理的スコープ問題**
