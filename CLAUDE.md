@@ -86,11 +86,12 @@ C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummi
 
 ```
 src/          # ソースファイル（main.c, *.c, *.h）
-scripts/      # Python スクリプト（タイル事前取得・CSV統合・SOTA突合・XLSX/GeoJSON出力）
+scripts/      # 本番パイプライン用スクリプト
   prefetch_tiles.py             # タイル事前取得（params/fetch_config.ini を参照）
   merge.py                      # 複数CSV統合・SOTA突合
-  analyze_keycol_distance.py    # Keyコル距離分析
   run_all.sh                    # 全メッシュ一括解析ラッパー
+analysis/     # 検証・解析用スクリプト（本番パイプライン外）
+  analyze_keycol_distance.py    # Keyコル距離分析
 params/       # パラメータファイル
   mesh_list_japan.txt           # 解析対象メッシュコードリスト
   fetch_config.ini.example      # UA・並列数設定のテンプレート（コミット済み）
