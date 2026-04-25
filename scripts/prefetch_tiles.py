@@ -5,19 +5,19 @@ prefetch_tiles.py - 国土地理院標高タイルを事前一括取得する
 3×3最小矩形解析の前に実行して、全タイルをキャッシュしておく。
 If-Modified-Since を使って更新分のみダウンロードする。
 
-依存: urllib.request (標準ライブラリのみ)
+依存: requests
 """
 import argparse
 import configparser
 import datetime
+import email.utils
 import math
 import os
 import sys
 import time
 import threading
 import queue
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError, URLError
+import requests
 
 GSI_DEM5_URL  = "https://cyberjapandata.gsi.go.jp/xyz/dem5{dem}_png/15/{x}/{y}.png"
 GSI_DEM10B_URL = "https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/{x}/{y}.png"
@@ -140,43 +140,37 @@ def fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial):
     # If-Modified-Since: キャッシュ済みならファイルの mtime を使う
     if os.path.exists(path):
         mtime = os.path.getmtime(path)
-        import email.utils
         headers["If-Modified-Since"] = email.utils.formatdate(mtime, usegmt=True)
 
     backoff = backoff_initial
     for attempt in range(5):
         time.sleep(interval_ms / 1000.0)
         try:
-            req = Request(url, headers=headers)
-            with urlopen(req, timeout=30) as resp:
-                data = resp.read()
-                last_mod = resp.headers.get("Last-Modified")
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                with open(path, "wb") as f:
-                    f.write(data)
-                if last_mod:
-                    import email.utils
-                    try:
-                        ts = email.utils.parsedate_to_datetime(last_mod).timestamp()
-                        os.utime(path, (ts, ts))
-                    except Exception:
-                        pass
-                return ("ok", None)
-
-        except HTTPError as e:
-            if e.code == 304:
+            resp = requests.get(url, headers=headers, timeout=30)
+            if resp.status_code == 304:
                 return ("304", None)
-            if e.code == 404:
+            if resp.status_code == 404:
                 return ("404", None)
-            if e.code in (429, 503):
-                retry_after = e.headers.get("Retry-After")
+            if resp.status_code in (429, 503):
+                retry_after = resp.headers.get("Retry-After")
                 wait = int(retry_after) if retry_after and retry_after.isdigit() else backoff
                 time.sleep(wait)
                 backoff = min(backoff * 2, 600)
                 continue
-            return ("err", f"HTTP {e.code}: {url}")
+            resp.raise_for_status()
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as f:
+                f.write(resp.content)
+            last_mod = resp.headers.get("Last-Modified")
+            if last_mod:
+                try:
+                    ts = email.utils.parsedate_to_datetime(last_mod).timestamp()
+                    os.utime(path, (ts, ts))
+                except Exception:
+                    pass
+            return ("ok", None)
 
-        except (URLError, OSError) as e:
+        except requests.exceptions.RequestException as e:
             if attempt < 4:
                 time.sleep(backoff)
                 backoff = min(backoff * 2, 600)

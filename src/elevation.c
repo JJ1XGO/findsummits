@@ -265,8 +265,8 @@ ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *base, TileCoord tc)
         /* dem10b タイル: z15→z14 座標変換 */
         int z14_x = tc.x / 2;
         int z14_y = tc.y / 2;
-        int ox    = (tc.x % 2) * TILE_PIX;  /* z14タイル内オフセット */
-        int oy    = (tc.y % 2) * TILE_PIX;
+        int ox    = (tc.x % 2) * (TILE_PIX / 2);  /* z14タイル内オフセット (dem10bは256px = z15の2タイル分) */
+        int oy    = (tc.y % 2) * (TILE_PIX / 2);
 
         if (!tile_dem10b_is_cached(base, z14_x, z14_y))
             fprintf(stderr, "警告: dem10b タイル未キャッシュ (%d/%d)\n", z14_x, z14_y);
@@ -282,8 +282,8 @@ ElevTile *elev_load_with_overlap_8dir_with_dem10(const char *base, TileCoord tc)
                     int idx = py * tile->width + px;
                     if (tile->data[idx] != ELEV_NODATA) continue;
 
-                    int dpx = ox + (px - 1);
-                    int dpy = oy + (py - 1);
+                    int dpx = ox + (px - 1) / 2;
+                    int dpy = oy + (py - 1) / 2;
                     if (dpx < (int)dw && dpy < (int)dh) {
                         const uint8_t *p =
                             dem10_rgb + dpy * dw * dch + dpx * dch;
@@ -372,8 +372,8 @@ void elev_fill_nodata_dem10b(ElevTile *big, const char *base,
 
                     int z15_tx = range_x_min + (px - 1) / TILE_PIX;
                     int z15_ty = range_y_min + (py - 1) / TILE_PIX;
-                    int dpx = (z15_tx % 2) * TILE_PIX + (px - 1) % TILE_PIX;
-                    int dpy = (z15_ty % 2) * TILE_PIX + (py - 1) % TILE_PIX;
+                    int dpx = (z15_tx % 2) * (TILE_PIX / 2) + (px - 1) % TILE_PIX / 2;
+                    int dpy = (z15_ty % 2) * (TILE_PIX / 2) + (py - 1) % TILE_PIX / 2;
                     if (dpx < (int)dw && dpy < (int)dh) {
                         const uint8_t *p =
                             dem10_rgb + dpy * dw * dch + dpx * dch;
