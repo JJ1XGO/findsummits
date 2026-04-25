@@ -71,3 +71,4 @@ params/fetch_config.ini
 .claude/sessions/
 .claude/skills/.cache/
 .claude/handovers/
+.claude/bash_history
