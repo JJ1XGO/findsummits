@@ -18,6 +18,7 @@ typedef struct {
     const char    *tile_dir;       /* タイルキャッシュディレクトリ */
     const char    *result_dir;     /* 結果保存ディレクトリ */
     const char    *img_dir;        /* Terrain-RGB PNG 出力先（NULL=出力しない） */
+    const char    *log_dir;        /* ログ出力先（NULL=出力しない） */
     float          min_prominence; /* 最小プロミネンス(m) */
     const MeshSet *mesh_set;       /* 隣接判定用メッシュリスト */
 } MeshAnalyzeConfig;
@@ -25,7 +26,7 @@ typedef struct {
 /* 関数プロトタイプ */
 int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode);
 /* 外部から巨大イメージを作成して使うための関数（視覚化用） */
-ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range);
+ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range, FILE *logfp);
 /* ピクセル座標から緯度経度を計算する（外部から使用可能） */
 void pixel_to_latlon(const MeshTileRange *range, int px, int py, double *lat, double *lon);
 #endif /* MESH_ANALYZE_H */

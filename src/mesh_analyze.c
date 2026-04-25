@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <math.h>
@@ -19,6 +20,21 @@
 #include "analyze.h"
 #include "unionfind.h"
 
+/* stdout と logfp（非NULL時）の両方に書き出す */
+static void mlog(FILE *logfp, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    if (logfp) {
+        va_start(ap, fmt);
+        vfprintf(logfp, fmt, ap);
+        va_end(ap);
+        fflush(logfp);
+    }
+}
+
 /*
  * 標高 → RGB変換（tests/terrain_viz.c の elevation_to_color() と同一ロジック）
  *
@@ -27,29 +43,40 @@
  */
 static void elev_to_rgb(float elev, uint8_t *r, uint8_t *g, uint8_t *b)
 {
+    /* 陸地: 0m超〜5500m+、海面: 0m以下(-1m固定)、NODATA: -6000m固定 */
     static const double stops[] = {
-        -200.0, 0.0, 150.0, 500.0, 650.0, 850.0, 1100.0, 1500.0, 3000.0, 3800.0
+        -6000.0, -2500.0, -1.0, 0.0, 100.0, 150.0, 300.0, 800.0,
+        1000.0, 2500.0, 3000.0, 3500.0, 4000.0, 5000.0, 5500.0
     };
     static const int colors[][3] = {
-        { 20,  60, 150},  /* 深海：濃紺          */
-        { 65, 150, 210},  /* 海岸線：水色        */
-        {180, 220, 140},  /* 低地：黄緑          */
-        {120, 185,  80},  /* 丘陵：緑            */
-        {190, 160,  90},  /* 山麓：黄茶          */
-        {160, 120,  60},  /* 中山：茶色          */
-        {130,  90,  50},  /* 高山麓：濃茶        */
-        {180, 170, 160},  /* 亜高山：灰色        */
-        {220, 215, 210},  /* 高山帯：明るい灰    */
-        {255, 255, 255},  /* 山頂付近：白        */
+        {  9,  56, 191},  /* -6000m: #0938BF 濃い青   */
+        { 80, 217, 251},  /* -2500m: #50D9FB 明るい青 */
+        {183, 229, 250},  /*    -1m: #B7E5FA 薄い青   */
+        { 31,  72,   6},  /*     0m: #1F4806 濃い緑   */
+        {104, 227, 107},  /*   100m: #68E36B 明るい緑 */
+        {152, 214, 133},  /*   150m: #98D685 黄緑     */
+        {249, 239, 205},  /*   300m: #F9EFCD 薄黄     */
+        {224, 187, 125},  /*   800m: #E0BB7D 茶色     */
+        {211, 166,  45},  /*  1000m: #D3A62D 濃い茶  */
+        {153, 118,  24},  /*  2500m: #997618 暗い茶  */
+        {112,  91,  16},  /*  3000m: #705B10 濃い茶  */
+        { 95,  81,  13},  /*  3500m: #5F510D 濃褐色  */
+        {165, 100,  83},  /*  4000m: #A56453 赤茶    */
+        { 92,  29,   9},  /*  5000m: #5C1D09 黒茶    */
+        {255, 250, 250},  /*  5500m: #FFFAFA 白/snow */
     };
-    static const int n = 10;
+    static const int n = 15;
 
     double e = (double)elev;
 
-    /* NODATA(-9999) や海面(0m以下) は stops[0] の濃紺で統一 */
-    if (e < -9000.0 || e <= 0.0) {
+    /* NODATA(-9999) → 最深海色 */
+    if (e < -9000.0) {
         *r = colors[0][0]; *g = colors[0][1]; *b = colors[0][2]; return;
     }
+    /* big->data では海面・NODATA が 0.0m に変換済みのため
+     * 0m以下は -1m（薄い青）として扱い陸地と区別する */
+    if (e <= 0.0) e = -1.0;
+
     if (e >= stops[n - 1]) {
         *r = colors[n-1][0]; *g = colors[n-1][1]; *b = colors[n-1][2]; return;
     }
@@ -68,9 +95,9 @@ static void elev_to_rgb(float elev, uint8_t *r, uint8_t *g, uint8_t *b)
  * 標高カラーマップ PNG を出力する（長辺6000px縮小）
  * 低地=緑 → 中地=黄茶 → 高山=白、NODATA/海=青
  */
-static void save_terrain_rgb_image(const ElevTile *big, const char *path)
+static void save_terrain_rgb_image(const ElevTile *big, const char *path, FILE *logfp)
 {
-    printf("  標高カラーマップ PNG 出力中: %s\n", path);
+    mlog(logfp, "  標高カラーマップ PNG 出力中: %s\n", path);
 
     uint32_t src_w = big->width;
     uint32_t src_h = big->height;
@@ -82,10 +109,10 @@ static void save_terrain_rgb_image(const ElevTile *big, const char *path)
         dst_h = 6000;
         dst_w = (uint32_t)((double)src_w * 6000.0 / src_h + 0.5);
     }
-    printf("  元サイズ: %ux%u → 出力サイズ: %ux%u\n", src_w, src_h, dst_w, dst_h);
+    mlog(logfp, "  元サイズ: %ux%u → 出力サイズ: %ux%u\n", src_w, src_h, dst_w, dst_h);
 
     FILE *fp = fopen(path, "wb");
-    if (!fp) { fprintf(stderr, "  画像ファイル作成失敗: %s\n", path); return; }
+    if (!fp) { mlog(logfp, "  画像ファイル作成失敗: %s\n", path); return; }
 
     png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     png_infop info  = png_create_info_struct(png);
@@ -117,7 +144,7 @@ static void save_terrain_rgb_image(const ElevTile *big, const char *path)
     png_write_end(png, NULL);
     png_destroy_write_struct(&png, &info);
     fclose(fp);
-    printf("  → PNG出力完了\n");
+    mlog(logfp, "  → PNG出力完了\n");
 }
 
 /*
@@ -129,14 +156,14 @@ static void save_terrain_rgb_image(const ElevTile *big, const char *path)
  *
  * 外周ボーダーはcallocで0埋め済み。
  */
-ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range)
+ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range, FILE *logfp)
 {
     uint32_t W = (uint32_t)range->tile_w * TILE_PIX + 2;
     uint32_t H = (uint32_t)range->tile_h * TILE_PIX + 2;
 
-    printf("  イメージサイズ: %u x %u ピクセル (外周ボーダー込み)\n", W, H);
-    printf("  メモリ: %.1f MB\n",
-           (double)W * H * sizeof(float) / 1024 / 1024);
+    mlog(logfp, "  イメージサイズ: %u x %u ピクセル (外周ボーダー込み)\n", W, H);
+    mlog(logfp, "  メモリ: %.1f MB\n",
+         (double)W * H * sizeof(float) / 1024 / 1024);
 
     ElevTile *big = malloc(sizeof(ElevTile));
     if (!big) return NULL;
@@ -167,9 +194,10 @@ ElevTile *load_mesh_tile(const char *tile_dir, const MeshTileRange *range)
         }
     }
     printf("\n");
+    if (logfp) fprintf(logfp, "  タイル読み込み: %d/%d\n", done, total);
 
     /* dem10b補完 + NODATA/負値→SEA変換 */
-    printf("  dem10b補完中...\n");
+    mlog(logfp, "  dem10b補完中...\n");
     elev_fill_nodata_dem10b(big, tile_dir, range->x_min, range->y_min);
 
     return big;
@@ -206,7 +234,15 @@ void pixel_to_latlon(const MeshTileRange *range,
  */
 int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
 {
-    printf("メッシュ%d 解析開始\n", meshcode);
+    FILE *logfp = NULL;
+    if (cfg->log_dir) {
+        mkdir(cfg->log_dir, 0755);
+        char log_path[512];
+        snprintf(log_path, sizeof(log_path), "%s/%d.log", cfg->log_dir, meshcode);
+        logfp = fopen(log_path, "w");
+    }
+
+    mlog(logfp, "メッシュ%d 解析開始\n", meshcode);
 
     struct timespec ts_start, ts_now;
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
@@ -240,31 +276,32 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
     combined.tile_w = combined.x_max - combined.x_min + 1;
     combined.tile_h = combined.y_max - combined.y_min + 1;
 
-    printf("  解析範囲 (3×3最小矩形): x=%d〜%d y=%d〜%d (%d×%d=%d枚)\n",
-           combined.x_min, combined.x_max,
-           combined.y_min, combined.y_max,
-           combined.tile_w, combined.tile_h,
-           combined.tile_w * combined.tile_h);
+    mlog(logfp, "  解析範囲 (3×3最小矩形): x=%d〜%d y=%d〜%d (%d×%d=%d枚)\n",
+         combined.x_min, combined.x_max,
+         combined.y_min, combined.y_max,
+         combined.tile_w, combined.tile_h,
+         combined.tile_w * combined.tile_h);
 
     /* タイルを結合して巨大イメージを作成
      * ※タイルは prefetch_tiles.py で事前取得済みであること */
-    ElevTile *big = load_mesh_tile(cfg->tile_dir, &combined);
+    ElevTile *big = load_mesh_tile(cfg->tile_dir, &combined, logfp);
     if (!big) {
-        fprintf(stderr, "イメージ作成失敗\n");
+        mlog(logfp, "イメージ作成失敗\n");
+        if (logfp) fclose(logfp);
         return -1;
     }
 
     clock_gettime(CLOCK_MONOTONIC, &ts_now);
-    printf("  タイル読み込み完了: %.1f秒\n",
-           (ts_now.tv_sec - ts_start.tv_sec) +
-           (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9);
+    mlog(logfp, "  タイル読み込み完了: %.1f秒\n",
+         (ts_now.tv_sec - ts_start.tv_sec) +
+         (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9);
 
     /* Terrain-RGB イメージ出力 */
     if (cfg->img_dir) {
         mkdir(cfg->img_dir, 0755);
         char img_path[512];
         snprintf(img_path, sizeof(img_path), "%s/%d_terrain.png", cfg->img_dir, meshcode);
-        save_terrain_rgb_image(big, img_path);
+        save_terrain_rgb_image(big, img_path, logfp);
     }
 
     /* 簡易統計（中心メッシュ範囲） */
@@ -284,11 +321,11 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
             }
         }
     }
-    printf("  中心メッシュ有効ピクセル: %d   最高標高: %.1fm\n",
-           valid_pixels, max_elev);
+    mlog(logfp, "  中心メッシュ有効ピクセル: %d   最高標高: %.1fm\n",
+         valid_pixels, max_elev);
 
     /* Union-Find 解析（combined 全体） */
-    printf("  Union-Find解析開始...\n");
+    mlog(logfp, "  Union-Find解析開始...\n");
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
     AnalyzeResult *result = analyze_tile_data(big,
@@ -298,15 +335,16 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
     elev_destroy(big);
 
     if (!result) {
-        fprintf(stderr, "解析失敗\n");
+        mlog(logfp, "解析失敗\n");
+        if (logfp) fclose(logfp);
         return -1;
     }
 
     clock_gettime(CLOCK_MONOTONIC, &ts_now);
-    printf("  解析完了: %.1f秒 / 全ピーク数: %d\n",
-           (ts_now.tv_sec - ts_start.tv_sec) +
-           (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9,
-           result->peak_cnt);
+    mlog(logfp, "  解析完了: %.1f秒 / 全ピーク数: %d\n",
+         (ts_now.tv_sec - ts_start.tv_sec) +
+         (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9,
+         result->peak_cnt);
 
     /* 全ピークをCSVに保存（中心メッシュフィルタなし） */
     mkdir(cfg->result_dir, 0755);
@@ -316,8 +354,9 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
 
     FILE *fp = fopen(result_path, "w");
     if (!fp) {
-        fprintf(stderr, "結果ファイルを開けません: %s\n", result_path);
+        mlog(logfp, "結果ファイルを開けません: %s\n", result_path);
         analyze_result_destroy(result);
+        if (logfp) fclose(logfp);
         return -1;
     }
 
@@ -348,7 +387,8 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
     fclose(fp);
     analyze_result_destroy(result);
 
-    printf("  結果保存: %s (%d件)\n", result_path, out_cnt);
-    printf("メッシュ%d 解析完了\n", meshcode);
+    mlog(logfp, "  結果保存: %s (%d件)\n", result_path, out_cnt);
+    mlog(logfp, "メッシュ%d 解析完了\n", meshcode);
+    if (logfp) fclose(logfp);
     return 0;
 }

@@ -35,6 +35,9 @@
     - `make && ./build/findsummits params/mesh_5339_neighbors.txt`
     - 出力: `/data/results/csv/<meshcode>.csv`（9ファイル）
     - ※ 実行前に dem10b prefetch 推奨: `python3 scripts/prefetch_tiles.py params/mesh_5339_neighbors.txt`
+  - [ ] **【事前決定必須】ステップ3実行前に以下を確認・決定する**
+    - [ ] **deleted の地理的スコープ問題**: 現実装では解析対象メッシュ外のサミットも deleted に入ってしまう。解析範囲内のサミットのみ対象とするフィルタを実装するか、しないかを決める
+    - [ ] **stability フィールドの扱い**: summitslist.csv の confirmed/unstable を申請書の status 列にそのまま使って良いか確認する
   - [ ] ステップ3: `merge.py` でCSV統合・SOTA突合
     - `python3 scripts/merge.py`
     - プロミネンス ≥ 150m でフィルタ、`ref/summitslist.csv` と突合
@@ -119,10 +122,11 @@
 
 1. ~~**dem10b未取得タイルの調査・対応**~~: **完了（2026-04-25）** → GSI側 HTTP 404（未整備）が原因。取得漏れなし。対応不要。
 2. ~~**terrain PNG チェッカーボード・水平垂直線バグ**~~: **完了（2026-04-25）** → dem10b座標変換バグ（elevation.c）修正により両方解消。5440・5239で目視確認済み。
-3. **ログ出力の1メッシュ1ファイル化**: `mesh_analyze()` にFILEポインタを渡し `$DATA_DIR/logs/<meshcode>.log` に保存（Cコード修正）
-4. **terrain PNG カラーマップ変更**: todo.md下部の仕様参照
-5. **小規模9メッシュ フルパイプ検証**: ステップ2（findsummits 9メッシュ）→ ステップ3（merge.py）
-6. **merge.py CSV統合・SOTA突合**: `python3 scripts/merge.py`
+3. ~~**ログ出力の1メッシュ1ファイル化**~~: **完了** — `MeshAnalyzeConfig.log_dir` 追加、`$DATA_DIR/logs/<meshcode>.log` に出力（stdout との tee）
+4. ~~**terrain PNG カラーマップ変更**~~: **完了** — 緑→茶→白グラデーション、海面を薄青で表示。5339で目視確認済み
+5. **【事前決定】フルパイプ検証ステップ3の前提確認**: deleted スコープ問題・stability フィールドの扱いを決める
+6. **小規模9メッシュ フルパイプ検証**: ステップ2（findsummits 9メッシュ）→ ステップ3（merge.py）
+7. **merge.py CSV統合・SOTA突合**: `python3 scripts/merge.py`
 
 ---
 
