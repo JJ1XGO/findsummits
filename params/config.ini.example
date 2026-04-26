@@ -1,0 +1,3 @@
+[paths]
+# データディレクトリ（claude-container使わない人はホストのパスを設定）
+DATA_DIR = /path/to/your/data

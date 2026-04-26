@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    load_dotenv(".env");
+    load_dotenv("params/config.ini");
     const char *data_dir = getenv("DATA_DIR");
     if (!data_dir || data_dir[0] == '\0') data_dir = "/data";
 

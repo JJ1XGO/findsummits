@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     int meshcode  = atoi(argv[1]);
     int save_image = (argc >= 3 && strcmp(argv[2], "--save-image") == 0);
 
-    load_dotenv(".env");
+    load_dotenv("params/config.ini");
     const char *data_dir = getenv("DATA_DIR");
     if (!data_dir || data_dir[0] == '\0') data_dir = "/data";
 

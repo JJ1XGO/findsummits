@@ -8,9 +8,9 @@
 MESH_LIST="${1:-params/mesh_list_japan.txt}"
 FINDSUMMITS="./build/findsummits"
 
-# .env から DATA_DIR を読む
-if [ -f .env ]; then
-    _DATA_DIR=$(grep '^DATA_DIR=' .env | cut -d= -f2 | tr -d ' \r')
+# params/config.ini から DATA_DIR を読む
+if [ -f params/config.ini ]; then
+    _DATA_DIR=$(grep -i '^DATA_DIR\s*=' params/config.ini | head -1 | cut -d= -f2- | tr -d ' \r')
 fi
 DATA_DIR="${_DATA_DIR:-/data}"
 LOG_DIR="$DATA_DIR/logs"

@@ -94,6 +94,8 @@ analysis/     # 検証・解析用スクリプト（本番パイプライン外�
   analyze_keycol_distance.py    # Keyコル距離分析
 params/       # パラメータファイル
   mesh_list_japan.txt           # 解析対象メッシュコードリスト
+  config.ini.example            # DATA_DIR 設定テンプレート（コミット済み）
+  config.ini                    # 実設定（gitignore）: DATA_DIR を記入
   fetch_config.ini.example      # UA・並列数設定のテンプレート（コミット済み）
   fetch_config.ini              # 実設定（gitignore・メールアドレス記入）
 ref/          # 参照データ（git管理）
@@ -101,10 +103,11 @@ ref/          # 参照データ（git管理）
   SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
 tests/        # テスト用プログラム（test_*.c）
 .claude/mgmt/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
-.env.example  # DATA_DIR 設定例（コミット済み）
-.env          # 実設定（gitignore）
+.claude-container  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
 
-# 以下のパスは .env の DATA_DIR で設定する（デフォルト: /mnt/findsummits）
+# 以下のパスは params/config.ini の DATA_DIR で設定する
+# - claude-container 使用時: DATA_DIR = /data（コンテナ内パス）
+# - 非コンテナ時: DATA_DIR = /path/to/your/data（ホストのデータパス）
 $DATA_DIR/images/       # Terrain-RGB PNG（findsummits が自動出力: <meshcode>_terrain.png）
 $DATA_DIR/results/      # 最終O/Pのxlsx,geojson,csv
 $DATA_DIR/results/csv/  # 一時csv（findsummits が出力するper-mesh CSV）

@@ -21,32 +21,24 @@ import os
 from pathlib import Path
 
 
-def _load_dotenv():
-    env_file = Path(__file__).parent.parent / ".env"
-    if not env_file.exists():
-        return
-    for line in env_file.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, val = line.partition("=")
-        key = key.strip()
-        val = val.split("#")[0].strip()
-        if key and key not in os.environ:
-            os.environ[key] = val
-
-_load_dotenv()
-_DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 _PROJECT_DIR = Path(__file__).parent.parent
 _CONFIG_PATH = _PROJECT_DIR / "params/fetch_config.ini"
+_MAIN_CONFIG_PATH = _PROJECT_DIR / "params/config.ini"
 
 def _load_config():
     cfg = configparser.ConfigParser()
+    if _MAIN_CONFIG_PATH.exists():
+        cfg.read(_MAIN_CONFIG_PATH)
     if _CONFIG_PATH.exists():
         cfg.read(_CONFIG_PATH)
     return cfg
 
 _config = _load_config()
+
+if "DATA_DIR" not in os.environ and _config.has_option("paths", "DATA_DIR"):
+    os.environ["DATA_DIR"] = _config.get("paths", "DATA_DIR")
+
+_DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 
 ZOOM = 15
 TILE_PIX = 256

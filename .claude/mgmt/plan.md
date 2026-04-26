@@ -40,9 +40,11 @@
 
 | ファイル | 役割 |
 |---|---|
+| `params/config.ini.example` (新規、commit) | DATA_DIR 設定テンプレート |
+| `params/config.ini` (新規、gitignore) | 実設定（DATA_DIR）。旧 `.env` を置換 |
 | `params/fetch_config.ini.example` (新規、commit) | UA テンプレート |
 | `params/fetch_config.ini` (新規、gitignore) | 実 UA（メールアドレス含む） |
-| `.gitignore` | `params/fetch_config.ini` 追記 |
+| `.gitignore` | `params/config.ini`・`params/fetch_config.ini` 追記 |
 | `/mnt/findsummits/results/csv/*.csv` | 削除（BORDER=8 方式の残骸） |
 
 ---
