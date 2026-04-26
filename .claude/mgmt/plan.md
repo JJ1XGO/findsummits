@@ -246,6 +246,12 @@ interval_ms = 100
 
 # 429/503 時の初期バックオフ秒数
 backoff_initial_sec = 60
+
+[merge]
+# SOTAリストとの突合許容距離（ズーム15ピクセル、チェビシェフ距離）
+# 緯度35°付近の目安: 1px ≒ 4m、150m ≒ 38px
+# 0 = 完全一致のみ
+tolerance_px = 0
 ```
 
 ### 9. `.gitignore` 追記
@@ -263,7 +269,7 @@ params/fetch_config.ini
 
 **確定判定**:
 - 「全件 `is_tile_top=0`」かつ「レコード数 == expected_count」→ 確定
-- 不足・過剰は `status = "unstable"` で別途出力（調査用）
+- 不足・過剰は `stability = "unstable"` で別途出力（調査用）
 
 **重複採用規則**:
 - 重複ピーク群から 1 件を選ぶ:
@@ -271,12 +277,28 @@ params/fetch_config.ini
   - `col_margin_px` が最大のレコードを優先キーにしても良いが、handover 決定は「col_elev 最小」
 
 **CLI 拡張**:
-- 既存 `--tolerance` は「SOTA リスト突合」用のまま残す（解析結果間は exact match、0 固定）
-- 新規 `--csv-dir` はそのまま
+- `--tolerance`（`tolerance_px`）は `params/fetch_config.ini` の `[merge]` セクションから読み込みデフォルト値とする。コマンドラインで上書き可
+- `--mesh-list` を指定すると `mesh_bbox()` で解析範囲のbboxを計算し、その範囲内のサミットのみ突合対象にする（deleted スコープ問題の対処）
+- `--summitslist` のデフォルトはプロジェクトdir直下の `ref/summitslist.csv`（`Path(__file__).parent.parent / "ref/summitslist.csv"`）
 
-**出力 CSV 列追加**:
+**出力 CSV 列**:
+```
+match_status, stability, summit_code, summit_name, sota_alt_m,
+peak_lat, peak_lon, peak_elev,
+col_lat, col_lon, col_elev,
+prominence, is_tile_top, col_margin_px,
+analysis_count, expected_count
+```
+- `match_status`: SOTAリストとの突合結果（`matched` / `new` / `deleted`）
+- `stability`: 解析品質（`confirmed` / `unstable` / `-`）
+  - confirmed: 全解析で is_tile_top=0 かつ解析回数=期待値
+  - unstable: is_tile_top=1 が含まれる、または解析回数不一致
+  - `-`: deleted（解析結果なし）
 - `col_margin_px`（マージ後の採用値）
 - `analysis_count` / `expected_count`（デバッグ用）
+
+**最終的な申請判断**（stability の扱い）:
+- match_status と stability は独立した軸。申請書での最終判断（unstable をどう扱うか等）は申請書作成フェーズ（output_xlsx.py）で行う
 
 ### 11. 既存 CSV の削除
 
@@ -360,11 +382,12 @@ diff /tmp/5339_a.csv /mnt/findsummits/results/csv/5339.csv   # 空差分
 ### Merge 検証
 ```bash
 ./build/findsummits /tmp/test9.txt
-python scripts/merge.py --csv-dir /mnt/findsummits/results/csv \
-    --summitslist /mnt/findsummits/ref/summitslist.csv \
-    --output /mnt/findsummits/results/merged_test9.csv
+python scripts/merge.py \
+    --mesh-list params/mesh_5339_neighbors.txt \
+    --output /data/results/merged.csv
 # 中心メッシュ（5439 等）のピークが expected_count = 9 で確定しているか目視
 # 角メッシュ（5538 等）のピークが expected_count = 4 になっているか目視
+# matched / new / deleted の件数、unstable の割合を確認
 ```
 
 ### 既存 CSV の最終削除（検証 OK 後）

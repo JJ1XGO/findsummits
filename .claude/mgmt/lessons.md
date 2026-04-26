@@ -45,6 +45,10 @@
 
 - **【解決済み】dem10b URL誤設定（2026-04-24修正）**: `prefetch_tiles.py` の `GSI_DEM10B_URL` が `dem10b_png` というサービス名になっていたが、正しくは `dem_png`。参照元: https://maps.gsi.go.jp/development/ichiran.html#dem。修正後 HTTP 200 確認済み。`/data/tiles/14/` に残っていた残骸ファイル（誤URLで取得したエラーXML）は削除済み。次回 prefetch で正しいdem10bタイルが取得される。
 
+## プロセス
+
+- **plan.mdを常に最新に保つ**: プロジェクトは plan.md を基準に進める。実装変更・設計変更があった場合は todo.md だけでなく plan.md も必ず更新する。plan.mdが古くなると「設計と実装の乖離」が生じ、次セッション以降の判断が狂う。
+
 ## 設計・仕様
 
 - **出力列に複数の概念を混在させない**: merge.py の旧 status 列は「突合結果」（matched/new/deleted）と「解析品質」（confirmed/unstable）が混在していた。申請書作成時に判別できなくなるため、概念ごとに列を分ける（match_status / stability）。
