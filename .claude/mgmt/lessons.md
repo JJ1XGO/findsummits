@@ -45,6 +45,14 @@
 
 - **【解決済み】dem10b URL誤設定（2026-04-24修正）**: `prefetch_tiles.py` の `GSI_DEM10B_URL` が `dem10b_png` というサービス名になっていたが、正しくは `dem_png`。参照元: https://maps.gsi.go.jp/development/ichiran.html#dem。修正後 HTTP 200 確認済み。`/data/tiles/14/` に残っていた残骸ファイル（誤URLで取得したエラーXML）は削除済み。次回 prefetch で正しいdem10bタイルが取得される。
 
+## 設計・仕様
+
+- **出力列に複数の概念を混在させない**: merge.py の旧 status 列は「突合結果」（matched/new/deleted）と「解析品質」（confirmed/unstable）が混在していた。申請書作成時に判別できなくなるため、概念ごとに列を分ける（match_status / stability）。
+
+- **設定値は初回から設定ファイルに入れる**: tolerance_px のように「結果を見て調整したい」パラメータは、最初から設定ファイル（fetch_config.ini）に入れておく。コマンドライン引数のデフォルト値を直接書くと、後から「設定ファイルで管理して」と言われる。
+
+- **パスはプロジェクトディレクトリからの相対で**: DATA_DIR（環境依存）配下にソースコード付属のデータ（ref/summitslist.csv）を置く設定は誤り。`Path(__file__).parent.parent` でプロジェクトルートを参照する。
+
 ## Patterns to Avoid
 *避けるべきパターンを記述すること。ファイルの中身を勝手に消さない。
 

@@ -34,18 +34,13 @@
   - [x] ステップ2: `findsummits` で9メッシュ解析（2026-04-25完了）
     - 出力: `/data/results/csv/<meshcode>.csv`（9ファイル）合計4006ピーク
     - ※ 実行前に dem10b prefetch 推奨: `python3 scripts/prefetch_tiles.py params/mesh_5339_neighbors.txt`
-  - [ ] **【事前決定必須】ステップ3実行前に以下を確認・決定する**
-    - [ ] **deleted の地理的スコープ問題**: 現実装では解析対象メッシュ外のサミットも deleted に入ってしまう。解析範囲内のサミットのみ対象とするフィルタを実装するか、しないかを決める
-    - [ ] **stability フィールドの扱い**: summitslist.csv の confirmed/unstable を申請書の status 列にそのまま使って良いか確認する
+  - [x] **【事前決定】ステップ3実行前の確認・決定（2026-04-26完了）**
+    - [x] **deleted の地理的スコープ問題**: mesh_bbox() によるbboxフィルタを実装。--mesh-list 指定時のみ有効
+    - [x] **出力列の設計**: status 列を match_status（matched/new/deleted）と stability（confirmed/unstable/-）に分離。最終的な申請判断は申請書作成フェーズで行う
   - [ ] ステップ3: `merge.py` でCSV統合・SOTA突合
-    - `python3 scripts/merge.py`
-    - プロミネンス ≥ 150m でフィルタ、`ref/summitslist.csv` と突合
-    - 出力結果を目視確認
-- [ ] コミット（今日の修正分を含む）
-  - 整数オーバーフロー修正（analyze.c, unionfind.h/c, elevation.c）
-  - Pixel配列 → インデックス配列によるメモリ削減（analyze.c）
-  - 標高カラーマップをterrain_viz.c配色に統一（mesh_analyze.c）
-  - dem10b URL修正（prefetch_tiles.py）
+    - `python3 scripts/merge.py --mesh-list params/mesh_5339_neighbors.txt`
+    - プロミネンス ≥ 150m でフィルタ、`ref/summitslist.csv` と突合（bboxフィルタ適用）
+    - 出力結果を目視確認（matched/new/deleted の件数、unstable の割合）
 
 ## 申請用出力フェーズ（フルパイプ検証後に着手）
 
@@ -92,13 +87,12 @@
 
 ---
 
-## 突合仕様（要確認）
+## 突合仕様（決定済み 2026-04-26）
 
-- [ ] **deleted の地理的スコープ問題**
-  　現実装は JA 全サミットを突合に投入するため、解析対象メッシュ外のサミットも
-  　deleted に入ってしまう。解析範囲内のサミットのみ対象に絞るフィルタが必要か確認する。
-- [ ] **stability フィールドの申請書での扱い**
-  　confirmed/unstable のまま申請書 status 列に使って良いか確認する。
+- [x] **deleted の地理的スコープ問題**: mesh_bbox() で --mesh-list のbbox内サミットのみ突合対象に絞る
+- [x] **出力列設計**: match_status（matched/new/deleted）と stability（confirmed/unstable/-）を分離
+  　最終的な申請判断（unstable をどう扱うか等）は申請書作成フェーズ（output_xlsx.py）で行う
+- [ ] **tolerance_px の調整**: 現在 0px（完全一致）。ステップ3の結果を見て値を決定する
 
 ## 将来実装候補
 
