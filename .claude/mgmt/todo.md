@@ -31,9 +31,8 @@
   - 対象メッシュ: `params/mesh_5339_neighbors.txt`（5238〜5440 の9メッシュ、5339含む）
   - [x] ステップ1: `prefetch_tiles.py` でタイル取得（dem5完了済み）
     - dem10b は URL 修正済み（`dem10b_png` → `dem_png`）。`/data/tiles/14/` 残骸削除済み。次回 prefetch で正しく取得される
-  - [ ] ステップ2: `findsummits` で9メッシュ解析
-    - `make && ./build/findsummits params/mesh_5339_neighbors.txt`
-    - 出力: `/data/results/csv/<meshcode>.csv`（9ファイル）
+  - [x] ステップ2: `findsummits` で9メッシュ解析（2026-04-25完了）
+    - 出力: `/data/results/csv/<meshcode>.csv`（9ファイル）合計4006ピーク
     - ※ 実行前に dem10b prefetch 推奨: `python3 scripts/prefetch_tiles.py params/mesh_5339_neighbors.txt`
   - [ ] **【事前決定必須】ステップ3実行前に以下を確認・決定する**
     - [ ] **deleted の地理的スコープ問題**: 現実装では解析対象メッシュ外のサミットも deleted に入ってしまう。解析範囲内のサミットのみ対象とするフィルタを実装するか、しないかを決める
@@ -116,7 +115,7 @@
 
 ## インフラ対応
 
-- [ ] **swap領域を増やす**: 現在7.73GB。5339解析時にmax90.8%（≒56.9GB）使用しswapに入った可能性が高い。全国解析で同様ケースが繰り返されるため、16〜32GBへの拡張を推奨。
+- [x] **swap領域を増やす**: `/swapfile`（32GB, NVMe）を追加。合計39.7GB。`/etc/fstab`に追記済み。（2026-04-25）
 
 ## 次セッション以降の優先順
 

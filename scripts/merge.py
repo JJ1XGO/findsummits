@@ -2,14 +2,18 @@
 """
 merge.py: 解析CSV統合 + summitslist.csv突き合わせ
 
-出力CSV の status 列:
-  confirmed - 確定ピーク（全解析で is_tile_top=0、解析回数=期待値）
-  unstable  - 不安定ピーク（is_tile_top=1 が含まれる、または解析回数不一致）
-  existing  - 現行SOTAサミットと一致したピーク
-  new       - 新規候補（ZZ/ZZ-XXXダミーコード付与）
-  deleted   - 現行SOTAサミットで未検出（削除候補）
+出力CSV の列:
+  match_status - SOTAリストとの突合結果
+    matched  - 現行SOTAサミットと一致したピーク
+    new      - 新規候補（ZZ/ZZ-XXXダミーコード付与）
+    deleted  - 現行SOTAサミットで未検出（削除候補）
+  stability - 解析品質
+    confirmed - 確定ピーク（全解析で is_tile_top=0、解析回数=期待値）
+    unstable  - 不安定ピーク（is_tile_top=1 が含まれる、または解析回数不一致）
+    -         - 削除候補（解析結果なし）
 """
 import argparse
+import configparser
 import csv
 import datetime
 import math
@@ -33,12 +37,23 @@ def _load_dotenv():
 
 _load_dotenv()
 _DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
+_PROJECT_DIR = Path(__file__).parent.parent
+_CONFIG_PATH = _PROJECT_DIR / "params/fetch_config.ini"
+
+def _load_config():
+    cfg = configparser.ConfigParser()
+    if _CONFIG_PATH.exists():
+        cfg.read(_CONFIG_PATH)
+    return cfg
+
+_config = _load_config()
 
 ZOOM = 15
 TILE_PIX = 256
 MIN_PROMINENCE = 150.0
+DEFAULT_TOLERANCE = _config.getint("merge", "tolerance_px", fallback=0)
 DEFAULT_CSV_DIR = _DATA_DIR / "results/csv"
-DEFAULT_SUMMITSLIST = _DATA_DIR / "ref/summitslist.csv"
+DEFAULT_SUMMITSLIST = _PROJECT_DIR / "ref/summitslist.csv"
 DEFAULT_OUTPUT = _DATA_DIR / "results/merged.csv"
 
 
@@ -56,6 +71,15 @@ def chebyshev(px1, py1, px2, py2):
 
 def mesh_neighbor(code, dlat, dlon):
     return (code // 100 + dlat) * 100 + (code % 100 + dlon)
+
+
+def mesh_bbox(mesh_set):
+    """メッシュセットから地理的bbox (lat_min, lat_max, lon_min, lon_max) を計算"""
+    lat_min = min(c // 100 for c in mesh_set) * (2 / 3)
+    lat_max = (max(c // 100 for c in mesh_set) + 1) * (2 / 3)
+    lon_min = min(c % 100 for c in mesh_set) + 100
+    lon_max = max(c % 100 for c in mesh_set) + 1 + 100
+    return lat_min, lat_max, lon_min, lon_max
 
 
 def load_mesh_set(path):
@@ -220,7 +244,8 @@ def build_rows(matched, new_peaks, deleted):
 
     for peak, summit in matched:
         rows.append({
-            "status":          peak["stability"],
+            "match_status":    "matched",
+            "stability":       peak["stability"],
             "summit_code":     summit["SummitCode"],
             "summit_name":     summit["SummitName"],
             "sota_alt_m":      summit["AltM"],
@@ -240,7 +265,8 @@ def build_rows(matched, new_peaks, deleted):
     new_peaks_sorted = sorted(new_peaks, key=lambda p: (p["px"], p["py"]))
     for i, peak in enumerate(new_peaks_sorted):
         rows.append({
-            "status":          peak["stability"],
+            "match_status":    "new",
+            "stability":       peak["stability"],
             "summit_code":     f"ZZ/ZZ-{i:03d}",
             "summit_name":     "",
             "sota_alt_m":      "",
@@ -259,7 +285,8 @@ def build_rows(matched, new_peaks, deleted):
 
     for summit in deleted:
         rows.append({
-            "status":          "deleted",
+            "match_status":    "deleted",
+            "stability":       "-",
             "summit_code":     summit["SummitCode"],
             "summit_name":     summit["SummitName"],
             "sota_alt_m":      summit["AltM"],
@@ -280,7 +307,7 @@ def build_rows(matched, new_peaks, deleted):
 
 
 FIELDNAMES = [
-    "status", "summit_code", "summit_name", "sota_alt_m",
+    "match_status", "stability", "summit_code", "summit_name", "sota_alt_m",
     "peak_lat", "peak_lon", "peak_elev",
     "col_lat", "col_lon", "col_elev",
     "prominence", "is_tile_top", "col_margin_px",
@@ -291,8 +318,8 @@ FIELDNAMES = [
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--tolerance",   type=int, default=0,
-                        help="SOTAリスト突合の許容距離（ズーム15ピクセル、チェビシェフ距離）デフォルト: 0")
+    parser.add_argument("--tolerance",   type=int, default=DEFAULT_TOLERANCE,
+                        help=f"SOTAリスト突合の許容距離（ズーム15ピクセル、チェビシェフ距離）デフォルト: {DEFAULT_TOLERANCE} (params/fetch_config.ini の merge.tolerance_px)")
     parser.add_argument("--mesh-list",   type=Path, default=None,
                         help="メッシュコードリスト（期待解析回数計算に使用）")
     parser.add_argument("--csv-dir",     type=Path, default=DEFAULT_CSV_DIR)
@@ -316,6 +343,13 @@ def main():
     print(f"summitslist.csvロード: {args.summitslist}")
     summits = load_summits(args.summitslist)
     print(f"  {len(summits)} サミット (JA・有効)")
+    if mesh_set:
+        lat_min, lat_max, lon_min, lon_max = mesh_bbox(mesh_set)
+        summits = [s for s in summits
+                   if lat_min <= s["Latitude"] <= lat_max
+                   and lon_min <= s["Longitude"] <= lon_max]
+        print(f"  → bboxフィルタ後: {len(summits)} サミット "
+              f"(lat {lat_min:.3f}–{lat_max:.3f}, lon {lon_min:.3f}–{lon_max:.3f})")
 
     print(f"突き合わせ (tolerance={args.tolerance}px ≒ {args.tolerance * 4.8:.0f}m)")
     matched, new_peaks, deleted = match_peaks(peaks, summits, args.tolerance)

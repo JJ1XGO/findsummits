@@ -12,3 +12,9 @@ interval_ms = 100
 
 # 429/503 時の初期バックオフ秒数
 backoff_initial_sec = 60
+
+[merge]
+# SOTAリストとの突合許容距離（ズーム15ピクセル、チェビシェフ距離）
+# 緯度35°付近の目安: 1px ≒ 4m、150m ≒ 38px
+# 0 = 完全一致のみ
+tolerance_px = 0
