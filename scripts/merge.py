@@ -252,6 +252,8 @@ def build_rows(matched, new_peaks, deleted):
             "col_margin_px":   peak["col_margin_px"],
             "analysis_count":  peak["analysis_count"],
             "expected_count":  peak["expected_count"],
+            "orig_lat":        summit["Latitude"],
+            "orig_lon":        summit["Longitude"],
         })
 
     new_peaks_sorted = sorted(new_peaks, key=lambda p: (p["px"], p["py"]))
@@ -273,6 +275,8 @@ def build_rows(matched, new_peaks, deleted):
             "col_margin_px":   peak["col_margin_px"],
             "analysis_count":  peak["analysis_count"],
             "expected_count":  peak["expected_count"],
+            "orig_lat":        "",
+            "orig_lon":        "",
         })
 
     for summit in deleted:
@@ -293,6 +297,8 @@ def build_rows(matched, new_peaks, deleted):
             "col_margin_px":   "",
             "analysis_count":  "",
             "expected_count":  "",
+            "orig_lat":        "",
+            "orig_lon":        "",
         })
 
     return rows
@@ -304,6 +310,7 @@ FIELDNAMES = [
     "col_lat", "col_lon", "col_elev",
     "prominence", "is_tile_top", "col_margin_px",
     "analysis_count", "expected_count",
+    "orig_lat", "orig_lon",
 ]
 
 
@@ -319,35 +326,48 @@ def main():
     parser.add_argument("--output",      type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
+    log_dir = _DATA_DIR / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = log_dir / f"merge_{log_ts}.log"
+    log_file = open(log_path, "w")
+
+    def log(msg=""):
+        print(msg)
+        print(msg, file=log_file)
+
+    start_time = datetime.datetime.now()
+    log(f"merge.py 開始: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
     mesh_set = load_mesh_set(args.mesh_list)
     if mesh_set:
-        print(f"メッシュリスト: {args.mesh_list} ({len(mesh_set)} 件)")
+        log(f"メッシュリスト: {args.mesh_list} ({len(mesh_set)} 件)")
 
-    print(f"ピークCSVロード: {args.csv_dir}")
+    log(f"ピークCSVロード: {args.csv_dir}")
     raw_peaks = load_peaks(args.csv_dir)
-    print(f"  {len(raw_peaks)} レコード（重複含む）")
+    log(f"  {len(raw_peaks)} レコード（重複含む）")
 
     peaks = merge_duplicates(raw_peaks, mesh_set)
     confirmed = sum(1 for p in peaks if p["stability"] == "confirmed")
     unstable  = sum(1 for p in peaks if p["stability"] == "unstable")
-    print(f"  重複マージ後: {len(peaks)} ピーク（確定:{confirmed} 不安定:{unstable}）")
+    log(f"  重複マージ後: {len(peaks)} ピーク（確定:{confirmed} 不安定:{unstable}）")
 
-    print(f"summitslist.csvロード: {args.summitslist}")
+    log(f"summitslist.csvロード: {args.summitslist}")
     summits = load_summits(args.summitslist)
-    print(f"  {len(summits)} サミット (JA・有効)")
+    log(f"  {len(summits)} サミット (JA・有効)")
     if mesh_set:
         lat_min, lat_max, lon_min, lon_max = mesh_bbox(mesh_set)
         summits = [s for s in summits
                    if lat_min <= s["Latitude"] <= lat_max
                    and lon_min <= s["Longitude"] <= lon_max]
-        print(f"  → bboxフィルタ後: {len(summits)} サミット "
-              f"(lat {lat_min:.3f}–{lat_max:.3f}, lon {lon_min:.3f}–{lon_max:.3f})")
+        log(f"  → bboxフィルタ後: {len(summits)} サミット "
+            f"(lat {lat_min:.3f}–{lat_max:.3f}, lon {lon_min:.3f}–{lon_max:.3f})")
 
-    print(f"突き合わせ (tolerance={args.tolerance}px ≒ {args.tolerance * 4.8:.0f}m)")
+    log(f"突き合わせ (tolerance={args.tolerance}px ≒ {args.tolerance * 4.8:.0f}m)")
     matched, new_peaks, deleted = match_peaks(peaks, summits, args.tolerance)
-    print(f"  既存一致:         {len(matched)}")
-    print(f"  新規候補:         {len(new_peaks)}")
-    print(f"  未検出(削除候補): {len(deleted)}")
+    log(f"  既存一致:         {len(matched)}")
+    log(f"  新規候補:         {len(new_peaks)}")
+    log(f"  未検出(削除候補): {len(deleted)}")
 
     rows = build_rows(matched, new_peaks, deleted)
 
@@ -357,7 +377,19 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"出力: {args.output} ({len(rows)} 行)")
+    end_time = datetime.datetime.now()
+    elapsed = (end_time - start_time).total_seconds()
+    log(f"出力: {args.output} ({len(rows)} 行)")
+    log()
+    log("=== 結果サマリー ===")
+    log(f"ピーク: {len(peaks)}件（確定:{confirmed} / 不安定:{unstable}）")
+    log(f"突き合わせ (tolerance={args.tolerance}px ≒ {args.tolerance * 4.8:.0f}m):")
+    log(f"  matched (既存一致):  {len(matched)}件")
+    log(f"  new     (新規候補):  {len(new_peaks)}件")
+    log(f"  deleted (削除候補):  {len(deleted)}件")
+    log(f"出力: {args.output} ({len(rows)}行)")
+    log(f"merge.py 終了: {end_time.strftime('%Y-%m-%d %H:%M:%S')} (所要時間: {elapsed:.1f}秒)")
+    log_file.close()
 
 
 if __name__ == "__main__":
