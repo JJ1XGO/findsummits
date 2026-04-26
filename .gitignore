@@ -70,6 +70,13 @@ params/fetch_config.ini
 __pycache__/
 *.pyc
 
+# LibreOffice lock files
+.~lock.*
+
+# bug-system generated files
+.claude/mgmt/bug-system/bug_tracker.xlsx
+.claude/mgmt/bug-system/reports/bug_tracker.xlsx
+
 # claude code files
 .claude/settings.local.json
 .claude/conversations/
