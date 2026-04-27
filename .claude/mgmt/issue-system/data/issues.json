@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-04-27",
-    "counter": 7
+    "counter": 9
   },
   "issues": [
     {
@@ -127,6 +127,42 @@
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "フルパイプ検証前に仕様を詰めても実行時の問題で仕様変更になりやすいため後回し",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-008",
+      "title": "申請用出力フェーズ着手前の設計確認（plan_v1.md との整合確認）",
+      "description": "plan_v1.md の Ph.2〜Ph.5 設計（別スクリプト構成）が現在のアーキテクチャ（merge.py 統合・output_xlsx.py / output_geojson.py 分離構成）に合っているかを確認・整合させる。ISSUE-003（output_xlsx.py）・ISSUE-004（output_geojson.py）の前提条件であり、着手前に必ず実施する。",
+      "type": "設計",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-04-27",
+      "stage": "HLD",
+      "status": "未対応",
+      "assignee": "JJ1XGO",
+      "resolution": null,
+      "notes": "plan_v1.md: .claude/mgmt/plan_v1.md",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-009",
+      "title": "新規サミット仮コードへの地域コード自動付与",
+      "description": "現在は仮コードが ZZ/ZZ-001 形式の連番。座標から都道府県を判定し、SOTA JA のアソシエーション/リージョンコード（北海道・本州・四国・九州）を仮コードに反映できるか実装を検討する。",
+      "type": "機能追加",
+      "priority": "低",
+      "category": "merge.py",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-04-27",
+      "stage": "HLD",
+      "status": "未対応",
+      "assignee": "JJ1XGO",
+      "resolution": null,
+      "notes": "将来実装候補。フルパイプ検証・申請用出力フェーズ完了後に検討。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
