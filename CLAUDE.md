@@ -131,6 +131,19 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 詳細な運用手順・コマンド一覧は `.claude/mgmt/bug-system/CLAUDE.md` を参照。
 
+## 課題管理ルール
+
+**開発タスク（機能追加・改善・調査・設計）は `.claude/mgmt/issue-system/issue.py` で管理する。**  
+バグ（欠陥）は `bug.py`、開発課題は `issue.py` と使い分けること。
+
+1. 新規の開発タスクが発生したら `.claude/mgmt/issue-system/issue.py` で登録する
+2. 作業開始時は `update --status 対応中` でステータスを更新する
+3. 実装完了後は `close` コマンドでステータスを「対応完了」にする
+4. ユーザーが確認完了後、`verify` コマンドでステータスを「解決済」にする
+5. `stage` フィールドは次ステージ移行の判断材料として活用する
+
+詳細な運用手順・コマンド一覧は `.claude/mgmt/issue-system/CLAUDE.md` を参照。
+
 ## その他
 他のプロジェクトの参考コードは以下の場所にあります：
 @../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。
