@@ -21,6 +21,7 @@ Claude Codeから自然言語で操作するためのスクリプト
   title         → タイトル
   description   → 説明
   stage         → 発生源ステージ  [URD/SRS/HLD/LLD/COD/UT/IT/ST/OPS]
+  found_stage   → 発生ステージ    [URD/SRS/HLD/LLD/COD/UT/IT/ST/OPS]
   category      → カテゴリ
   found_in      → 発生プログラム
   cause         → 原因プログラム
@@ -91,6 +92,7 @@ def new_bug_dict(bug_id):
         "description":   None,
         "reporter":      None,
         "found_date":    date.today().isoformat(),
+        "found_stage":   None,
         "category":      None,
         "found_in":      None,
         "repro":         None,
@@ -155,6 +157,7 @@ def cmd_show(args):
     print(f"    {bug.get('description') or '-'}")
     print(f"\n  報告者        : {bug.get('reporter') or '-'}")
     print(f"  発見日        : {bug.get('found_date') or '-'}")
+    print(f"  発生ステージ  : {bug.get('found_stage') or '-'}")
     print(f"  カテゴリ      : {bug.get('category') or '-'}")
     print(f"  発生プログラム: {bug.get('found_in') or '-'}")
     print(f"  再現性        : {bug.get('repro') or '-'}")
@@ -193,6 +196,7 @@ def cmd_add(args):
             "severity":    args.severity  or "中",
             "assignee":    args.assignee,
             "reporter":    args.reporter,
+            "found_stage": args.found_stage,
             "stage":       args.stage,
             "category":    args.category,
             "found_in":    args.found_in,
@@ -231,6 +235,7 @@ def cmd_add(args):
         "title":       ask("タイトル"),
         "description": ask("説明",           required=False),
         "reporter":    ask("報告者",         required=False),
+        "found_stage": ask("発生ステージ",   choices=VALID_STAGES,     required=False),
         "category":    ask("カテゴリ",       choices=VALID_CATEGORIES, required=False),
         "found_in":    ask("発生プログラム", required=False),
         "repro":       ask("再現性",         required=False),
@@ -273,16 +278,17 @@ def cmd_update(args):
             bug["resolved_date"] = date.today().isoformat()
 
     for field, val in [
-        ("severity",   args.severity),
-        ("assignee",   args.assignee),
-        ("stage",      args.stage),
-        ("category",   args.category),
-        ("found_in",   args.found_in),
-        ("cause",      args.cause),
-        ("repro",      args.repro),
-        ("description",args.description),
-        ("resolution", args.resolution),
-        ("notes",      args.notes),
+        ("severity",    args.severity),
+        ("assignee",    args.assignee),
+        ("found_stage", args.found_stage),
+        ("stage",       args.stage),
+        ("category",    args.category),
+        ("found_in",    args.found_in),
+        ("cause",       args.cause),
+        ("repro",       args.repro),
+        ("description", args.description),
+        ("resolution",  args.resolution),
+        ("notes",       args.notes),
     ]:
         if val is not None:
             changed.append(f"{field}: {bug.get(field)} → {val}")
@@ -307,7 +313,7 @@ def cmd_close(args):
     a.status = "対応完了"
     a.actor = args.actor
     a.comment = args.comment
-    a.severity = a.assignee = a.stage = a.category = None
+    a.severity = a.assignee = a.found_stage = a.stage = a.category = None
     a.found_in = a.cause = a.repro = a.description = a.resolution = a.notes = None
     cmd_update(a)
 
@@ -413,6 +419,7 @@ def cmd_export(args):
         ("説明",         "description",   44),
         ("報告者",       "reporter",      14),
         ("発見日",       "found_date",    14),
+        ("発生ステージ", "found_stage",   16),
         ("カテゴリ",     "category",      16),
         ("発生プログラム","found_in",      20),
         ("再現性",       "repro",         10),
@@ -448,9 +455,10 @@ def cmd_export(args):
     from openpyxl.worksheet.datavalidation import DataValidation
     last_row = len(bugs) + 1
 
-    status_col   = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "status")
-    severity_col = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "severity")
-    stage_col    = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "stage")
+    status_col      = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "status")
+    severity_col    = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "severity")
+    found_stage_col = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "found_stage")
+    stage_col       = next(i for i, (_, f, _) in enumerate(columns, 1) if f == "stage")
 
     def make_dv(choices, col_letter, last_row):
         dv = DataValidation(
@@ -462,9 +470,10 @@ def cmd_export(args):
         dv.sqref = f"{col_letter}2:{col_letter}{last_row}"
         return dv
 
-    ws1.add_data_validation(make_dv(VALID_STATUSES,   get_column_letter(status_col),   last_row))
-    ws1.add_data_validation(make_dv(VALID_SEVERITIES, get_column_letter(severity_col), last_row))
-    ws1.add_data_validation(make_dv(VALID_STAGES,     get_column_letter(stage_col),    last_row))
+    ws1.add_data_validation(make_dv(VALID_STATUSES,   get_column_letter(status_col),      last_row))
+    ws1.add_data_validation(make_dv(VALID_SEVERITIES, get_column_letter(severity_col),    last_row))
+    ws1.add_data_validation(make_dv(VALID_STAGES,     get_column_letter(found_stage_col), last_row))
+    ws1.add_data_validation(make_dv(VALID_STAGES,     get_column_letter(stage_col),       last_row))
 
     # ── シート2: サマリー ──────────────────────────────────────
     ws2 = wb.create_sheet("サマリー")
@@ -626,10 +635,11 @@ def main():
     # add
     pa = sub.add_parser("add", help="新規バグを登録 (--title 指定で非対話、省略で対話形式)")
     pa.add_argument("--title")
-    pa.add_argument("--status",      choices=VALID_STATUSES)
-    pa.add_argument("--severity",    choices=VALID_SEVERITIES)
-    pa.add_argument("--stage",       choices=VALID_STAGES)
-    pa.add_argument("--category",    choices=VALID_CATEGORIES)
+    pa.add_argument("--status",       choices=VALID_STATUSES)
+    pa.add_argument("--severity",     choices=VALID_SEVERITIES)
+    pa.add_argument("--found_stage",  choices=VALID_STAGES)
+    pa.add_argument("--stage",        choices=VALID_STAGES)
+    pa.add_argument("--category",     choices=VALID_CATEGORIES)
     pa.add_argument("--found_in")
     pa.add_argument("--cause")
     pa.add_argument("--assignee")
@@ -642,10 +652,11 @@ def main():
     # update
     pu = sub.add_parser("update", help="バグを更新")
     pu.add_argument("id")
-    pu.add_argument("--status",    choices=VALID_STATUSES)
-    pu.add_argument("--severity",  choices=VALID_SEVERITIES)
-    pu.add_argument("--stage",     choices=VALID_STAGES)
-    pu.add_argument("--category",  choices=VALID_CATEGORIES)
+    pu.add_argument("--status",      choices=VALID_STATUSES)
+    pu.add_argument("--severity",    choices=VALID_SEVERITIES)
+    pu.add_argument("--found_stage", choices=VALID_STAGES)
+    pu.add_argument("--stage",       choices=VALID_STAGES)
+    pu.add_argument("--category",    choices=VALID_CATEGORIES)
     pu.add_argument("--found_in")
     pu.add_argument("--cause")
     pu.add_argument("--repro")
