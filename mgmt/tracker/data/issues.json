@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-04-27",
-    "counter": 9
+    "last_updated": "2026-04-28",
+    "counter": 11
   },
   "issues": [
     {
@@ -178,6 +178,42 @@
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "将来実装候補。フルパイプ検証・申請用出力フェーズ完了後に検討。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-010",
+      "title": "セットアップ手順の整備（README・requirements.txt・.gitignore・CLAUDE.md）",
+      "description": ".venv仮想環境の導入に伴い、新規参加者がすぐに使い始められるよう以下を整備する。① scripts/requirements.txt 新規作成、② .gitignore に .venv/ 追記、③ README.md にセットアップ手順・プロジェクト概要を記載、④ CLAUDE.md に .venv/bin/python3 使用の旨を追記",
+      "type": "改善",
+      "priority": "中",
+      "category": "設定",
+      "reporter": null,
+      "created_date": "2026-04-28",
+      "stage": "OPS",
+      "status": "未対応",
+      "assignee": "JJ1XGO",
+      "resolution": "requirements.txt・.gitignore・CLAUDE.md は小規模な編集。README.md は現状に合わせて内容を整理してから更新する",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-011",
+      "title": "リリースブランチ運用ルールをCLAUDE.mdに明記",
+      "description": "devel→mainの直接マージ禁止、release/*ブランチを介す運用ルールをプロジェクトCLAUDE.mdに追記する",
+      "type": "改善",
+      "priority": "中",
+      "category": "設定",
+      "reporter": null,
+      "created_date": "2026-04-28",
+      "stage": "OPS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "CLAUDE.mdのルールと制約セクションに追記",
+      "notes": null,
       "resolved_date": null,
       "verified_date": null,
       "history": []

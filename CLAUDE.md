@@ -102,7 +102,7 @@ ref/          # 参照データ（git管理）
   summitslist.csv                          # SOTAの山岳リスト（全サミット）
   SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
 tests/        # テスト用プログラム（test_*.c）
-.claude/mgmt/  # 管理ドキュメント（todo.md, lessons.md, plan.md）
+mgmt/          # 管理ドキュメント（lessons.md, plan.md, tracker/）※ devel ブランチのみ・main には含めない
 .claude-container  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
 
 # 以下のパスは params/config.ini の DATA_DIR で設定する
@@ -123,26 +123,26 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 **バグ・欠陥を発見しても、すぐに修正を始めてはならない。必ず以下のフローを守ること。**
 
 1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する（1件見つけるたびに都度登録しない）
-2. ユーザーに確認を取ってから `python3 .claude/mgmt/tracker/track.py bug add` で登録する
+2. ユーザーに確認を取ってから `python3 mgmt/tracker/track.py bug add` で登録する
 3. 原因がわかっている場合は `--resolution` に対応方針まで記入してから登録する
 4. 登録完了後、修正作業の承認を得てから着手する
 5. 修正完了後は `bug close` コマンドでステータスを「対応完了」にする（解決済にしない）
 6. ユーザーが確認完了後、`bug verify` コマンドでステータスを「解決済」にする
 
-詳細な運用手順・コマンド一覧は `.claude/mgmt/tracker/CLAUDE.md` を参照。
+詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
 ## 課題管理ルール
 
-**開発タスク（機能追加・改善・調査・設計）は `python3 .claude/mgmt/tracker/track.py issue` で管理する。**  
+**開発タスク（機能追加・改善・調査・設計）は `python3 mgmt/tracker/track.py issue` で管理する。**  
 バグ（欠陥）は `track.py bug`、開発課題は `track.py issue` と使い分けること。
 
-1. 新規の開発タスクが発生したら `python3 .claude/mgmt/tracker/track.py issue add` で登録する
+1. 新規の開発タスクが発生したら `python3 mgmt/tracker/track.py issue add` で登録する
 2. 作業開始時は `issue update --status 対応中` でステータスを更新する
 3. 実装完了後は `issue close` コマンドでステータスを「対応完了」にする
 4. ユーザーが確認完了後、`issue verify` コマンドでステータスを「解決済」にする
 5. `stage` フィールドは次ステージ移行の判断材料として活用する
 
-詳細な運用手順・コマンド一覧は `.claude/mgmt/tracker/CLAUDE.md` を参照。
+詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
 ## その他
 他のプロジェクトの参考コードは以下の場所にあります：

@@ -73,9 +73,9 @@ __pycache__/
 # LibreOffice lock files
 .~lock.*
 
-# bug-system generated files
-.claude/mgmt/bug-system/bug_tracker.xlsx
-.claude/mgmt/bug-system/reports/bug_tracker.xlsx
+# mgmt generated files (廃止済みbug-system残骸)
+mgmt/bug-system/bug_tracker.xlsx
+mgmt/bug-system/reports/bug_tracker.xlsx
 
 # claude code files
 .claude/settings.local.json
