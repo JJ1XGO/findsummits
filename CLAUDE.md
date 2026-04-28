@@ -144,6 +144,15 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
+## ブランチ運用ルール
+
+- `devel → main` の直接マージ禁止
+- リリース時は必ず `release/*` ブランチを介す:
+  1. `git checkout -b release/vX.X`
+  2. `git rm -r mgmt/`
+  3. `git commit -m "chore: リリース用にmgmt/除外"`
+  4. `git checkout main && git merge release/vX.X`
+
 ## その他
 他のプロジェクトの参考コードは以下の場所にあります：
 @../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。
