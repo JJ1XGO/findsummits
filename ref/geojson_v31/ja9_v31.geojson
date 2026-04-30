@@ -1,0 +1,6037 @@
+﻿{
+	"type": "FeatureCollection",
+	"features": [
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6619,
+					 36.0676
+				]
+			},
+			"properties": {
+				"name": "JA/FI-001(赤兎山)",
+				"読み":"Akausagiyama",
+				"標高":"1629m 10pt ",
+				"GL":"PM86hb",
+				"市郡区":"C#2905 / C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6219,
+					 36.0464
+				]
+			},
+			"properties": {
+				"name": "JA/FI-002(経ヶ岳)",
+				"読み":"Kyougadake",
+				"標高":"1625m 10pt ",
+				"GL":"PM86hb",
+				"市郡区":"C#2905 / C#2906 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7222,
+					 35.9928
+				]
+			},
+			"properties": {
+				"name": "JA/FI-003(石徹白(三角点))",
+				"読み":"Itoshiro",
+				"標高":"1609m 10pt ",
+				"GL":"PM85ix",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6374,
+					 36.0983
+				]
+			},
+			"properties": {
+				"name": "JA/FI-004(鉢伏山)",
+				"読み":"Hachibuseyama",
+				"標高":"1549m 10pt ",
+				"GL":"PM86hc",
+				"市郡区":"C#2906 / C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6013,
+					 35.9343
+				]
+			},
+			"properties": {
+				"name": "JA/FI-005(荒島岳)",
+				"読み":"Arashimadake",
+				"標高":"1523m 10pt ",
+				"GL":"PM85hw",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4392,
+					 35.8861
+				]
+			},
+			"properties": {
+				"name": "JA/FI-006(部子山)",
+				"読み":"Hekosan",
+				"標高":"1464m 8pt ",
+				"GL":"PM85fv",
+				"市郡区":"C#2905 / G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5059,
+					 35.8095
+				]
+			},
+			"properties": {
+				"name": "JA/FI-007(姥ヶ岳)",
+				"読み":"Ubagatake",
+				"標高":"1454m 8pt ",
+				"GL":"PM85gt",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7189,
+					 35.8099
+				]
+			},
+			"properties": {
+				"name": "JA/FI-008(平家岳)",
+				"読み":"Heikegadake",
+				"標高":"1442m 8pt ",
+				"GL":"PM85it",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4649,
+					 35.8866
+				]
+			},
+			"properties": {
+				"name": "JA/FI-009(銀杏峯)",
+				"読み":"Genanpo",
+				"標高":"1441m 8pt ",
+				"GL":"PM85fv",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6685,
+					 35.9569
+				]
+			},
+			"properties": {
+				"name": "JA/FI-010(朝日前坂(三角点))",
+				"読み":"Asahimaezaka",
+				"標高":"1328m 8pt ",
+				"GL":"PM85iw",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5868,
+					 35.9032
+				]
+			},
+			"properties": {
+				"name": "JA/FI-011(縫ケ原(三角点))",
+				"読み":"Yarigahara",
+				"標高":"1317m 8pt ",
+				"GL":"PM85hv",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6253,
+					 35.8472
+				]
+			},
+			"properties": {
+				"name": "JA/FI-012(御伊勢(三角点))",
+				"読み":"Oise",
+				"標高":"1286m 8pt ",
+				"GL":"PM85hu",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4851,
+					 35.7768
+				]
+			},
+			"properties": {
+				"name": "JA/FI-013(杉谷(三角点))",
+				"読み":"Sugitani",
+				"標高":"1282m 8pt ",
+				"GL":"PM85fs",
+				"市郡区":"C#2905 / G#19003B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8111,
+					 35.8908
+				]
+			},
+			"properties": {
+				"name": "JA/FI-014(点1270(鮭ケ洞（三角点）近傍))",
+				"読み":"P1270",
+				"標高":"1270m 8pt ",
+				"GL":"PM85jv",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7463,
+					 35.8394
+				]
+			},
+			"properties": {
+				"name": "JA/FI-015(面谷上(三角点))",
+				"読み":"Omouyakami",
+				"標高":"1246m 8pt ",
+				"GL":"PM85iu",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4365,
+					 35.8498
+				]
+			},
+			"properties": {
+				"name": "JA/FI-016(桐ケ平(三角点))",
+				"読み":"Horagadaira",
+				"標高":"1218m 8pt ",
+				"GL":"PM85fu",
+				"市郡区":"G#29002B / C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5657,
+					 35.8664
+				]
+			},
+			"properties": {
+				"name": "JA/FI-017(堂ヶ辻山)",
+				"読み":"Dougatsujiyama",
+				"標高":"1205m 8pt ",
+				"GL":"PM85gu",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.602,
+					 35.8168
+				]
+			},
+			"properties": {
+				"name": "JA/FI-018(下髪(三角点))",
+				"読み":"Shimohige",
+				"標高":"1201m 8pt ",
+				"GL":"PM85ht",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7995,
+					 35.8536
+				]
+			},
+			"properties": {
+				"name": "JA/FI-019(東市布(三角点))",
+				"読み":"Higashiichinuno",
+				"標高":"1193m 8pt ",
+				"GL":"PM85ju",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6527,
+					 35.8656
+				]
+			},
+			"properties": {
+				"name": "JA/FI-020(紐谷又(三角点))",
+				"読み":"Himoyamata",
+				"標高":"1190m 8pt ",
+				"GL":"PM85hu",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5366,
+					 35.8784
+				]
+			},
+			"properties": {
+				"name": "JA/FI-021(道斉山)",
+				"読み":"Dousaisan",
+				"標高":"1188m 8pt ",
+				"GL":"PM85gv",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6301,
+					 35.8214
+				]
+			},
+			"properties": {
+				"name": "JA/FI-022(点1180)",
+				"読み":"P1180",
+				"標高":"1180m 8pt ",
+				"GL":"PM85ht",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7298,
+					 35.897
+				]
+			},
+			"properties": {
+				"name": "JA/FI-023(大谷１(三角点))",
+				"読み":"Ootani1",
+				"標高":"1161m 8pt ",
+				"GL":"PM85iv",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4156,
+					 36.1311
+				]
+			},
+			"properties": {
+				"name": "JA/FI-024(点1091)",
+				"読み":"P1091",
+				"標高":"1091m 6pt ",
+				"GL":"PM86ed",
+				"市郡区":"C#2910 / C#2906 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.667,
+					 35.8905
+				]
+			},
+			"properties": {
+				"name": "JA/FI-025(鷲鞍岳)",
+				"読み":"Washikuradake",
+				"標高":"1010m 6pt ",
+				"GL":"PM85iv",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9721,
+					 35.5005
+				]
+			},
+			"properties": {
+				"name": "JA/FI-026(大御影山)",
+				"読み":"Oomikageyama",
+				"標高":"950m 6pt ",
+				"GL":"PM75xm",
+				"市郡区":"G#29010B / C#2312 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5348,
+					 35.8406
+				]
+			},
+			"properties": {
+				"name": "JA/FI-027(天谷(三角点))",
+				"読み":"Amagaya",
+				"標高":"929m 6pt ",
+				"GL":"PM85gu",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0245,
+					 35.5897
+				]
+			},
+			"properties": {
+				"name": "JA/FI-028(野坂岳)",
+				"読み":"Nosakadake",
+				"標高":"913m 6pt ",
+				"GL":"PM85ao",
+				"市郡区":"C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3657,
+					 36.166
+				]
+			},
+			"properties": {
+				"name": "JA/FI-029(小倉谷山)",
+				"読み":"Ogurataniyama",
+				"標高":"911m 6pt ",
+				"GL":"PM86ed",
+				"市郡区":"C#2910 / C#3006 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4572,
+					 35.9669
+				]
+			},
+			"properties": {
+				"name": "JA/FI-030(飯降山)",
+				"読み":"Iifuriyama",
+				"標高":"884m 6pt ",
+				"GL":"PM85fx",
+				"市郡区":"C#2901 / C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0253,
+					 35.5638
+				]
+			},
+			"properties": {
+				"name": "JA/FI-031(芦谷山)",
+				"読み":"Ashitaniyama",
+				"標高":"866m 6pt ",
+				"GL":"PM85an",
+				"市郡区":"C#2902 / G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3946,
+					 36.047
+				]
+			},
+			"properties": {
+				"name": "JA/FI-032(仙尾山)",
+				"読み":"Sennooyama",
+				"標高":"826m 4pt ",
+				"GL":"PM86eb",
+				"市郡区":"G#29011A / C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.668,
+					 35.3572
+				]
+			},
+			"properties": {
+				"name": "JA/FI-033(八ヶ峰)",
+				"読み":"Hachigamine",
+				"標高":"800m 4pt ",
+				"GL":"PM75ui",
+				"市郡区":"G#29003C / C#2214 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2074,
+					 35.8592
+				]
+			},
+			"properties": {
+				"name": "JA/FI-034(日野山)",
+				"読み":"Hinosan",
+				"標高":"794m 4pt ",
+				"GL":"PM85cu",
+				"市郡区":"C#2909 / G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9451,
+					 35.5522
+				]
+			},
+			"properties": {
+				"name": "JA/FI-035(点789(雲谷山近傍))",
+				"読み":"P789",
+				"標高":"789m 4pt ",
+				"GL":"PM75xn",
+				"市郡区":"G#29010B / G#29012A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2729,
+					 35.8238
+				]
+			},
+			"properties": {
+				"name": "JA/FI-036(点775)",
+				"読み":"P775",
+				"標高":"775m 4pt ",
+				"GL":"PM85dt",
+				"市郡区":"G#29002B / G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4357,
+					 36.0502
+				]
+			},
+			"properties": {
+				"name": "JA/FI-037(保田経ヶ岳)",
+				"読み":"HotaKyogatake",
+				"標高":"765m 4pt ",
+				"GL":"PM86fb",
+				"市郡区":"G#29011A / C#2906 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0102,
+					 35.7099
+				]
+			},
+			"properties": {
+				"name": "JA/FI-038(西方が岳)",
+				"読み":"Saifougatake",
+				"標高":"764m 4pt ",
+				"GL":"PM85ar",
+				"市郡区":"G#29010B / C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2516,
+					 35.7614
+				]
+			},
+			"properties": {
+				"name": "JA/FI-039(点762)",
+				"読み":"P762",
+				"標高":"762m 4pt ",
+				"GL":"PM85ds",
+				"市郡区":"G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.134,
+					 35.7213
+				]
+			},
+			"properties": {
+				"name": "JA/FI-040(鉢伏山)",
+				"読み":"Hachibuseyama",
+				"標高":"762m 4pt ",
+				"GL":"PM85br",
+				"市郡区":"G#29008D / C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1489,
+					 35.7946
+				]
+			},
+			"properties": {
+				"name": "JA/FI-041(高頭山)",
+				"読み":"Takatsumuriyama",
+				"標高":"746m 4pt ",
+				"GL":"PM85bt",
+				"市郡区":"G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.333,
+					 35.9739
+				]
+			},
+			"properties": {
+				"name": "JA/FI-042(一乗山)",
+				"読み":"Ichijyosan",
+				"標高":"741m 4pt ",
+				"GL":"PM85dx",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2726,
+					 35.8572
+				]
+			},
+			"properties": {
+				"name": "JA/FI-043(唐木岳)",
+				"読み":"Karakidake",
+				"標高":"738m 4pt ",
+				"GL":"PM85du",
+				"市郡区":"C#2909 / G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3254,
+					 35.8239
+				]
+			},
+			"properties": {
+				"name": "JA/FI-044(点735)",
+				"読み":"P735",
+				"標高":"735m 4pt ",
+				"GL":"PM85dt",
+				"市郡区":"G#29008D / G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3019,
+					 35.8305
+				]
+			},
+			"properties": {
+				"name": "JA/FI-045(段ノ岳)",
+				"読み":"Dannodake",
+				"標高":"728m 4pt ",
+				"GL":"PM85dt",
+				"市郡区":"G#29002B / G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.7626,
+					 35.4511
+				]
+			},
+			"properties": {
+				"name": "JA/FI-046(多田ヶ岳)",
+				"読み":"Tadagatake",
+				"標高":"712m 4pt ",
+				"GL":"PM75vk",
+				"市郡区":"C#2904 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3206,
+					 35.9053
+				]
+			},
+			"properties": {
+				"name": "JA/FI-047(山田(三角点))",
+				"読み":"Yamada",
+				"標高":"701m 4pt ",
+				"GL":"PM85dv",
+				"市郡区":"G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4579,
+					 36.0165
+				]
+			},
+			"properties": {
+				"name": "JA/FI-048(南畑岳(三角点))",
+				"読み":"Minamihatadake",
+				"標高":"700m 4pt ",
+				"GL":"PM86fa",
+				"市郡区":"C#2905 / C#2906 / C#2901",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0088,
+					 35.9878
+				]
+			},
+			"properties": {
+				"name": "JA/FI-049(六所山)",
+				"読み":"Rokusyosan",
+				"標高":"698m 4pt ",
+				"GL":"PM85ax",
+				"市郡区":"C#2901 / G#29009F ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.4838,
+					 35.5052
+				]
+			},
+			"properties": {
+				"name": "JA/FI-050(青葉山)",
+				"読み":"Aobasan",
+				"標高":"693m 4pt ",
+				"GL":"PM75rm",
+				"市郡区":"G#29003B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0047,
+					 35.9995
+				]
+			},
+			"properties": {
+				"name": "JA/FI-051(鞍掛山)",
+				"読み":"Kurakakeyama",
+				"標高":"690m 4pt ",
+				"GL":"PM85ax",
+				"市郡区":"G#29009F / C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.5697,
+					 35.4077
+				]
+			},
+			"properties": {
+				"name": "JA/FI-052(白滝(三角点))",
+				"読み":"Shirataki",
+				"標高":"671m 4pt ",
+				"GL":"PM75sj",
+				"市郡区":"G#29003C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1601,
+					 35.5882
+				]
+			},
+			"properties": {
+				"name": "JA/FI-053(奥麻生村(三角点))",
+				"読み":"Okuasoumura",
+				"標高":"662m 4pt ",
+				"GL":"PM85bo",
+				"市郡区":"C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.084,
+					 36.0793
+				]
+			},
+			"properties": {
+				"name": "JA/FI-054(国見岳)",
+				"読み":"Kunimidake",
+				"標高":"656m 4pt ",
+				"GL":"PM86bb",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3469,
+					 35.8662
+				]
+			},
+			"properties": {
+				"name": "JA/FI-055(砥村(三角点))",
+				"読み":"Toishimura",
+				"標高":"652m 4pt ",
+				"GL":"PM85eu",
+				"市郡区":"G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3997,
+					 35.9742
+				]
+			},
+			"properties": {
+				"name": "JA/FI-056(草間岳)",
+				"読み":"Kusamadake",
+				"標高":"652m 4pt ",
+				"GL":"PM85ex",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1337,
+					 35.6397
+				]
+			},
+			"properties": {
+				"name": "JA/FI-057(女牛房(三角点))",
+				"読み":"Nyogobou",
+				"標高":"647m 2pt ",
+				"GL":"PM85bp",
+				"市郡区":"C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0579,
+					 36.057
+				]
+			},
+			"properties": {
+				"name": "JA/FI-058(金毘羅山)",
+				"読み":"Konpirasan",
+				"標高":"624m 2pt ",
+				"GL":"PM86ab",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.305,
+					 35.8738
+				]
+			},
+			"properties": {
+				"name": "JA/FI-059(七ツ岳(三角点))",
+				"読み":"Nanatsudake",
+				"標高":"620m 2pt ",
+				"GL":"PM85du",
+				"市郡区":"C#2909 / G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.7337,
+					 35.5574
+				]
+			},
+			"properties": {
+				"name": "JA/FI-060(久須夜ヶ岳)",
+				"読み":"Kusuyagadake",
+				"標高":"619m 2pt ",
+				"GL":"PM75un",
+				"市郡区":"C#2904 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.6601,
+					 35.4519
+				]
+			},
+			"properties": {
+				"name": "JA/FI-061(飯盛山)",
+				"読み":"Hanseizan",
+				"標高":"584m 2pt ",
+				"GL":"PM75tk",
+				"市郡区":"C#2904 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0256,
+					 35.9027
+				]
+			},
+			"properties": {
+				"name": "JA/FI-062(若須岳)",
+				"読み":"Wakasudake",
+				"標高":"564m 2pt ",
+				"GL":"PM85av",
+				"市郡区":"G#29009F / C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9747,
+					 35.5985
+				]
+			},
+			"properties": {
+				"name": "JA/FI-063(御岳山)",
+				"読み":"Otakesan",
+				"標高":"548m 2pt ",
+				"GL":"PM75xo",
+				"市郡区":"G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3164,
+					 36.0509
+				]
+			},
+			"properties": {
+				"name": "JA/FI-064(吉野ヶ岳)",
+				"読み":"Yoshinogatake",
+				"標高":"547m 2pt ",
+				"GL":"PM86db",
+				"市郡区":"G#29011A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1009,
+					 35.9001
+				]
+			},
+			"properties": {
+				"name": "JA/FI-065(鬼ヶ岳)",
+				"読み":"Onigatake",
+				"標高":"533m 2pt ",
+				"GL":"PM85bv",
+				"市郡区":"C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0134,
+					 35.6674
+				]
+			},
+			"properties": {
+				"name": "JA/FI-066(三内山)",
+				"読み":"Miuchiyama",
+				"標高":"521m 2pt ",
+				"GL":"PM85aq",
+				"市郡区":"G#29010B / C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.6103,
+					 35.4172
+				]
+			},
+			"properties": {
+				"name": "JA/FI-067(点520)",
+				"読み":"P520",
+				"標高":"520m 2pt ",
+				"GL":"PM75tk",
+				"市郡区":"G#29003C / C#2904 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.832,
+					 35.5224
+				]
+			},
+			"properties": {
+				"name": "JA/FI-068(海士坂村(三角点))",
+				"読み":"Amasakamura",
+				"標高":"512m 2pt ",
+				"GL":"PM75vm",
+				"市郡区":"C#2904 / G#29012A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2196,
+					 35.8022
+				]
+			},
+			"properties": {
+				"name": "JA/FI-069(杣山)",
+				"読み":"Somayama",
+				"標高":"492m 1pt ",
+				"GL":"PM85ct",
+				"市郡区":"G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.4604,
+					 35.5439
+				]
+			},
+			"properties": {
+				"name": "JA/FI-070(大山(三角点))",
+				"読み":"Ooyama",
+				"標高":"489m 1pt ",
+				"GL":"PM75rn",
+				"市郡区":"G#29003B / C#2203 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.6109,
+					 35.5065
+				]
+			},
+			"properties": {
+				"name": "JA/FI-071(和田山(三角点))",
+				"読み":"Wadayama",
+				"標高":"478m 1pt ",
+				"GL":"PM75tm",
+				"市郡区":"G#29003C / G#29003B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3988,
+					 35.9942
+				]
+			},
+			"properties": {
+				"name": "JA/FI-072(仏谷(三角点))",
+				"読み":"Hotokedani",
+				"標高":"464m 1pt ",
+				"GL":"PM85ex",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.8643,
+					 35.5351
+				]
+			},
+			"properties": {
+				"name": "JA/FI-073(鏡山)",
+				"読み":"Kagamiyama",
+				"標高":"451m 1pt ",
+				"GL":"PM75wm",
+				"市郡区":"G#29012A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9875,
+					 35.6671
+				]
+			},
+			"properties": {
+				"name": "JA/FI-074(寺山)",
+				"読み":"Terayama",
+				"標高":"418m 1pt ",
+				"GL":"PM75xq",
+				"市郡区":"G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0872,
+					 35.808
+				]
+			},
+			"properties": {
+				"name": "JA/FI-075(アマゴゼ山)",
+				"読み":"Amagozeyama",
+				"標高":"400m 1pt ",
+				"GL":"PM85bt",
+				"市郡区":"G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.8686,
+					 35.6012
+				]
+			},
+			"properties": {
+				"name": "JA/FI-076(梅丈岳)",
+				"読み":"Baijyodake",
+				"標高":"400m 1pt ",
+				"GL":"PM75wo",
+				"市郡区":"G#29012A / G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1038,
+					 35.6838
+				]
+			},
+			"properties": {
+				"name": "JA/FI-077(田結(三角点))",
+				"読み":"Tai",
+				"標高":"360m 1pt ",
+				"GL":"PM85bq",
+				"市郡区":"C#2902 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0784,
+					 36.0149
+				]
+			},
+			"properties": {
+				"name": "JA/FI-078(金毘羅山)",
+				"読み":"Konpirayama",
+				"標高":"347m 1pt ",
+				"GL":"PM86aa",
+				"市郡区":"G#29009F ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2256,
+					 35.9384
+				]
+			},
+			"properties": {
+				"name": "JA/FI-079(三里山)",
+				"読み":"Sanriyama",
+				"標高":"346m 1pt ",
+				"GL":"PM85cw",
+				"市郡区":"C#2907 / C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.5116,
+					 35.5446
+				]
+			},
+			"properties": {
+				"name": "JA/FI-080(点340(音海（三角点）近傍))",
+				"読み":"P340",
+				"標高":"340m 1pt ",
+				"GL":"PM75sn",
+				"市郡区":"G#29003B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9525,
+					 35.6208
+				]
+			},
+			"properties": {
+				"name": "JA/FI-081(天王山)",
+				"読み":"Tennouzan",
+				"標高":"331m 1pt ",
+				"GL":"PM75xo",
+				"市郡区":"G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9661,
+					 35.7235
+				]
+			},
+			"properties": {
+				"name": "JA/FI-082(点308)",
+				"読み":"P308",
+				"標高":"308m 1pt ",
+				"GL":"PM75xr",
+				"市郡区":"G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2836,
+					 35.9986
+				]
+			},
+			"properties": {
+				"name": "JA/FI-083(大谷(三角点))",
+				"読み":"Ootani",
+				"標高":"297m 1pt ",
+				"GL":"PM85dx",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1353,
+					 35.9967
+				]
+			},
+			"properties": {
+				"name": "JA/FI-084(乙坂山)",
+				"読み":"Ossakayama",
+				"標高":"290m 1pt ",
+				"GL":"PM85bx",
+				"市郡区":"C#2901 / G#29009F ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1294,
+					 35.9488
+				]
+			},
+			"properties": {
+				"name": "JA/FI-085(三床山)",
+				"読み":"Mitokoyama",
+				"標高":"280m 1pt ",
+				"GL":"PM85bw",
+				"市郡区":"C#2907 / G#29009F ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.096,
+					 35.9788
+				]
+			},
+			"properties": {
+				"name": "JA/FI-086(烏ヶ岳近傍)",
+				"読み":"Near_Karasugatake",
+				"標高":"270m 1pt ",
+				"GL":"PM85bx",
+				"市郡区":"G#29009F ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4234,
+					 35.8374
+				]
+			},
+			"properties": {
+				"name": "JA/FI-087(岳ノ谷(三角点))",
+				"読み":"Takenoya",
+				"標高":"1182m 8pt ",
+				"GL":"PM85fu",
+				"市郡区":"G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4892,
+					 35.8511
+				]
+			},
+			"properties": {
+				"name": "JA/FI-088(巣原(三角点))",
+				"読み":"Suhara",
+				"標高":"1143m 8pt ",
+				"GL":"PM85fu",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6187,
+					 35.9829
+				]
+			},
+			"properties": {
+				"name": "JA/FI-089(大林（三角点近傍）)",
+				"読み":"Near_Oobayashi",
+				"標高":"1000m 6pt ",
+				"GL":"PM85hx",
+				"市郡区":"C#2905 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4463,
+					 35.9228
+				]
+			},
+			"properties": {
+				"name": "JA/FI-090(点810)",
+				"読み":"P810",
+				"標高":"810m 4pt ",
+				"GL":"PM85fw",
+				"市郡区":"G#29002B / C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4511,
+					 36.1011
+				]
+			},
+			"properties": {
+				"name": "JA/FI-091(水無山)",
+				"読み":"Mizunashiyama",
+				"標高":"784m 4pt ",
+				"GL":"PM86fc",
+				"市郡区":"C#2906 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2347,
+					 35.8496
+				]
+			},
+			"properties": {
+				"name": "JA/FI-092(大山)",
+				"読み":"Ooyama",
+				"標高":"717m 4pt ",
+				"GL":"PM85cu",
+				"市郡区":"C#2909 / G#29008D ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3971,
+					 35.9161
+				]
+			},
+			"properties": {
+				"name": "JA/FI-093(平生(三角点))",
+				"読み":"Hirao",
+				"標高":"705m 4pt ",
+				"GL":"PM85ev",
+				"市郡区":"G#29002B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0849,
+					 35.8424
+				]
+			},
+			"properties": {
+				"name": "JA/FI-094(矢良巣岳)",
+				"読み":"Yarasudake",
+				"標高":"480m 1pt ",
+				"GL":"PM85bu",
+				"市郡区":"G#29008D / C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.0221,
+					 35.8786
+				]
+			},
+			"properties": {
+				"name": "JA/FI-095(天城（三角点近傍）)",
+				"読み":"Near_Amagi",
+				"標高":"470m 1pt ",
+				"GL":"PM85av",
+				"市郡区":"C#2909 / G#29008D / G#29009F",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.2664,
+					 35.8996
+				]
+			},
+			"properties": {
+				"name": "JA/FI-096(点386)",
+				"読み":"P386",
+				"標高":"386m 1pt ",
+				"GL":"PM85dv",
+				"市郡区":"C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.224,
+					 35.9905
+				]
+			},
+			"properties": {
+				"name": "JA/FI-097(文殊山)",
+				"読み":"Monjyusan",
+				"標高":"366m 1pt ",
+				"GL":"PM85cx",
+				"市郡区":"C#2907 / C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.885,
+					 35.4997
+				]
+			},
+			"properties": {
+				"name": "JA/FI-098(白屋(三角点))",
+				"読み":"Shiroya",
+				"標高":"340m 1pt ",
+				"GL":"PM75wl",
+				"市郡区":"G#29012A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.647,
+					 35.5348
+				]
+			},
+			"properties": {
+				"name": "JA/FI-099(大島)",
+				"読み":"Ooshima",
+				"標高":"247m 1pt ",
+				"GL":"PM75tm",
+				"市郡区":"G#29003C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1811,
+					 35.8992
+				]
+			},
+			"properties": {
+				"name": "JA/FI-100(村国山)",
+				"読み":"Murakuniyama",
+				"標高":"239m 1pt ",
+				"GL":"PM85cv",
+				"市郡区":"C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.8167,
+					 35.6371
+				]
+			},
+			"properties": {
+				"name": "JA/FI-101(常神浦(三角点))",
+				"読み":"Tsunekamiura",
+				"標高":"238m 1pt ",
+				"GL":"PM75vp",
+				"市郡区":"G#29012A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.1542,
+					 35.8806
+				]
+			},
+			"properties": {
+				"name": "JA/FI-102(妙法寺山)",
+				"読み":"Myohoujiyama",
+				"標高":"235m 1pt ",
+				"GL":"PM85bv",
+				"市郡区":"C#2909 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.186,
+					 36.0151
+				]
+			},
+			"properties": {
+				"name": "JA/FI-103(城山)",
+				"読み":"Shiroyama",
+				"標高":"202m 1pt ",
+				"GL":"PM86ca",
+				"市郡区":"C#2901 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.51,
+					 35.5255
+				]
+			},
+			"properties": {
+				"name": "JA/FI-104(点195)",
+				"読み":"P195",
+				"標高":"195m 1pt ",
+				"GL":"PM75sm",
+				"市郡区":"G#29003B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.8056,
+					 35.638
+				]
+			},
+			"properties": {
+				"name": "JA/FI-105(御神島)",
+				"読み":"Okamijima",
+				"標高":"195m 1pt ",
+				"GL":"PM75vp",
+				"市郡区":"G#29012A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.9001,
+					 35.6207
+				]
+			},
+			"properties": {
+				"name": "JA/FI-106(岳山)",
+				"読み":"Dakeyama",
+				"標高":"190m 1pt ",
+				"GL":"PM75wo",
+				"市郡区":"G#29010B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 135.4915,
+					 35.5276
+				]
+			},
+			"properties": {
+				"name": "JA/FI-107(ダンノ鼻)",
+				"読み":"Dannohana",
+				"標高":"161m 1pt ",
+				"GL":"PM75rm",
+				"市郡区":"G#29003B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6514,
+					 36.0905
+				]
+			},
+			"properties": {
+				"name": "JA/IK-001(大長山)",
+				"読み":"Oochousan",
+				"標高":"1671m 10pt ",
+				"GL":"PM86hc",
+				"市郡区":"C#3010 / C#2906 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.685,
+					 36.2205
+				]
+			},
+			"properties": {
+				"name": "JA/IK-002(ショウガ山)",
+				"読み":"Shougasan",
+				"標高":"1624m 10pt ",
+				"GL":"PM86if",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6863,
+					 36.2042
+				]
+			},
+			"properties": {
+				"name": "JA/IK-003(点1609)",
+				"読み":"P1609",
+				"標高":"1609m 10pt ",
+				"GL":"PM86ie",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4933,
+					 36.1621
+				]
+			},
+			"properties": {
+				"name": "JA/IK-004(大日山)",
+				"読み":"Dainichizan",
+				"標高":"1368m 8pt ",
+				"GL":"PM86fd",
+				"市郡区":"C#3003 / C#3006 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7418,
+					 36.2703
+				]
+			},
+			"properties": {
+				"name": "JA/IK-005(山毛欅尾山)",
+				"読み":"Bunaoyama",
+				"標高":"1365m 8pt ",
+				"GL":"PM86ig",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5562,
+					 36.1778
+				]
+			},
+			"properties": {
+				"name": "JA/IK-006(白木山(三角点))",
+				"読み":"Shirakiyama",
+				"標高":"1317m 8pt ",
+				"GL":"PM86ge",
+				"市郡区":"C#3003 / C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7155,
+					 36.3732
+				]
+			},
+			"properties": {
+				"name": "JA/IK-007(口三方岳)",
+				"読み":"Kuchisanboudake",
+				"標高":"1269m 8pt ",
+				"GL":"PM86ii",
+				"市郡区":"C#3010 / C#3001 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6155,
+					 36.2658
+				]
+			},
+			"properties": {
+				"name": "JA/IK-008(鷲走ヶ岳)",
+				"読み":"Wassougatake",
+				"標高":"1097m 6pt ",
+				"GL":"PM86hg",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3639,
+					 36.1886
+				]
+			},
+			"properties": {
+				"name": "JA/IK-009(富士写ヶ岳)",
+				"読み":"Fujishagadake",
+				"標高":"942m 6pt ",
+				"GL":"PM86ee",
+				"市郡区":"C#3006 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.6437,
+					 36.3663
+				]
+			},
+			"properties": {
+				"name": "JA/IK-010(点691)",
+				"読み":"P691",
+				"標高":"691m 4pt ",
+				"GL":"PM86hi",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4181,
+					 36.2215
+				]
+			},
+			"properties": {
+				"name": "JA/IK-011(大溝ノ上(三角点))",
+				"読み":"Oomizonoue",
+				"標高":"689m 4pt ",
+				"GL":"PM86ff",
+				"市郡区":"C#3006 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5485,
+					 36.2843
+				]
+			},
+			"properties": {
+				"name": "JA/IK-013(大倉岳)",
+				"読み":"Ookuradake",
+				"標高":"651m 4pt ",
+				"GL":"PM86gg",
+				"市郡区":"C#3003 / C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8131,
+					 36.7819
+				]
+			},
+			"properties": {
+				"name": "JA/IK-014(宝達山)",
+				"読み":"Houdatsusan",
+				"標高":"637m 2pt ",
+				"GL":"PM86js",
+				"市郡区":"G#30007E ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.3301,
+					 36.2014
+				]
+			},
+			"properties": {
+				"name": "JA/IK-015(水坪山)",
+				"読み":"Mizutsuboyama",
+				"標高":"630m 2pt ",
+				"GL":"PM86de",
+				"市郡区":"C#3006 / C#2910 / C#2908",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.4972,
+					 36.2763
+				]
+			},
+			"properties": {
+				"name": "JA/IK-016(動山)",
+				"読み":"Yurugiyama",
+				"標高":"604m 2pt ",
+				"GL":"PM86fg",
+				"市郡区":"C#3003 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9608,
+					 37.3863
+				]
+			},
+			"properties": {
+				"name": "JA/IK-017(高洲山)",
+				"読み":"Koushuuzan",
+				"標高":"570m 2pt ",
+				"GL":"PM87lj",
+				"市郡区":"C#3004 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9709,
+					 36.9655
+				]
+			},
+			"properties": {
+				"name": "JA/IK-018(石動山)",
+				"読み":"Sekidousan",
+				"標高":"564m 2pt ",
+				"GL":"PM86lx",
+				"市郡区":"G#30003G ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5945,
+					 36.3907
+				]
+			},
+			"properties": {
+				"name": "JA/IK-019(明神山)",
+				"読み":"Myoujinyama",
+				"標高":"513m 2pt ",
+				"GL":"PM86hj",
+				"市郡区":"C#3010 / C#3011 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.1625,
+					 37.4285
+				]
+			},
+			"properties": {
+				"name": "JA/IK-020(宝立山近傍)",
+				"読み":"Houryuuzan",
+				"標高":"471m 1pt ",
+				"GL":"PM87nk",
+				"市郡区":"C#3004 / C#3005 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.1329,
+					 37.4733
+				]
+			},
+			"properties": {
+				"name": "JA/IK-021(猫ヶ岳)",
+				"読み":"Nekogadake",
+				"標高":"412m 1pt ",
+				"GL":"PM87nl",
+				"市郡区":"C#3005 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7994,
+					 37.228
+				]
+			},
+			"properties": {
+				"name": "JA/IK-022(桑塚山)",
+				"読み":"Kuwatsukayama",
+				"標高":"409m 1pt ",
+				"GL":"PM87jf",
+				"市郡区":"G#30009A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.82,
+					 37.21
+				]
+			},
+			"properties": {
+				"name": "JA/IK-023(河内岳)",
+				"読み":"Kawachidake",
+				"標高":"399m 1pt ",
+				"GL":"PM87jf",
+				"市郡区":"G#30007C / G#30009A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8291,
+					 37.3535
+				]
+			},
+			"properties": {
+				"name": "JA/IK-024(佐比野山)",
+				"読み":"Sahinoyama",
+				"標高":"388m 1pt ",
+				"GL":"PM87ji",
+				"市郡区":"C#3004 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7326,
+					 36.1611
+				]
+			},
+			"properties": {
+				"name": "JA/IK-025(点2080)",
+				"読み":"P2080",
+				"標高":"2080m 10pt ",
+				"GL":"PM86id",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7989,
+					 36.2239
+				]
+			},
+			"properties": {
+				"name": "JA/IK-026(陥破山(三角点))",
+				"読み":"Kanbayama",
+				"標高":"1774m 10pt ",
+				"GL":"PM86jf",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7399,
+					 36.3889
+				]
+			},
+			"properties": {
+				"name": "JA/IK-027(成ヶ峰)",
+				"読み":"Narugamine",
+				"標高":"1056m 6pt ",
+				"GL":"PM86ij",
+				"市郡区":"C#3001 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.5909,
+					 36.3114
+				]
+			},
+			"properties": {
+				"name": "JA/IK-028(数瀬(三角点))",
+				"読み":"Kazuse",
+				"標高":"684m 4pt ",
+				"GL":"PM86hh",
+				"市郡区":"C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7469,
+					 36.5312
+				]
+			},
+			"properties": {
+				"name": "JA/IK-029(戸室山)",
+				"読み":"Tomuroyama",
+				"標高":"548m 2pt ",
+				"GL":"PM86im",
+				"市郡区":"C#3001 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8911,
+					 37.362
+				]
+			},
+			"properties": {
+				"name": "JA/IK-030(気勝山)",
+				"読み":"Kekachiyama",
+				"標高":"343m 1pt ",
+				"GL":"PM87ki",
+				"市郡区":"C#3004 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7745,
+					 37.3254
+				]
+			},
+			"properties": {
+				"name": "JA/IK-031(サビヤ山)",
+				"読み":"Sabiyayama",
+				"標高":"342m 1pt ",
+				"GL":"PM87jh",
+				"市郡区":"C#3004 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8512,
+					 37.0061
+				]
+			},
+			"properties": {
+				"name": "JA/IK-032(眉丈が丘休憩所)",
+				"読み":"Bijyougaokakyukeijyo",
+				"標高":"224m 1pt ",
+				"GL":"PM87ka",
+				"市郡区":"G#30003G / G#30007C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9747,
+					 37.119
+				]
+			},
+			"properties": {
+				"name": "JA/IK-033(四村塚山)",
+				"読み":"Yomuradukayama",
+				"標高":"197m 1pt ",
+				"GL":"PM87lc",
+				"市郡区":"C#3002 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6198,
+					 36.576
+				]
+			},
+			"properties": {
+				"name": "JA/TY-001(立山大汝山)",
+				"読み":"TateyamaOonanjiyama",
+				"標高":"3015m 10pt ",
+				"GL":"PM86tn",
+				"市郡区":"G#28004C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.617,
+					 36.6233
+				]
+			},
+			"properties": {
+				"name": "JA/TY-002(剱岳)",
+				"読み":"Tsurugidake",
+				"標高":"2999m 10pt ",
+				"GL":"PM86to",
+				"市郡区":"G#28004B / G#28004C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6028,
+					 36.4264
+				]
+			},
+			"properties": {
+				"name": "JA/TY-003(水晶岳(黒岳))",
+				"読み":"Suishoudake/Kurodake",
+				"標高":"2986m 10pt ",
+				"GL":"PM86tk",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5448,
+					 36.4688
+				]
+			},
+			"properties": {
+				"name": "JA/TY-004(薬師岳)",
+				"読み":"Yakushidake",
+				"標高":"2926m 10pt ",
+				"GL":"PM86sl",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.607,
+					 36.5647
+				]
+			},
+			"properties": {
+				"name": "JA/TY-005(龍王岳)",
+				"読み":"Ryuuoudake",
+				"標高":"2872m 10pt ",
+				"GL":"PM86tn",
+				"市郡区":"G#28004C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.7458,
+					 36.7576
+				]
+			},
+			"properties": {
+				"name": "JA/TY-006(旭岳)",
+				"読み":"Asahidake",
+				"標高":"2867m 10pt ",
+				"GL":"PM86us",
+				"市郡区":"C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6844,
+					 36.5381
+				]
+			},
+			"properties": {
+				"name": "JA/TY-007(針ノ木岳)",
+				"読み":"Harinokidake",
+				"標高":"2821m 10pt ",
+				"GL":"PM86um",
+				"市郡区":"G#28004C / C#0912 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.7547,
+					 36.6872
+				]
+			},
+			"properties": {
+				"name": "JA/TY-008(唐松岳)",
+				"読み":"Karamatsudake",
+				"標高":"2696m 10pt ",
+				"GL":"PM86vq",
+				"市郡区":"C#2807 / G#09005F ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5122,
+					 36.421
+				]
+			},
+			"properties": {
+				"name": "JA/TY-009(北ノ俣岳(上ノ岳))",
+				"読み":"Kitanomatadake/Kaminodake",
+				"標高":"2662m 10pt ",
+				"GL":"PM86sk",
+				"市郡区":"C#2801 / C#1917 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.587,
+					 36.5419
+				]
+			},
+			"properties": {
+				"name": "JA/TY-010(鷲岳)",
+				"読み":"Washidake",
+				"標高":"2617m 10pt ",
+				"GL":"PM86tn",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5808,
+					 36.5983
+				]
+			},
+			"properties": {
+				"name": "JA/TY-011(奥大日岳近傍)",
+				"読み":"Okudainichidake",
+				"標高":"2611m 10pt ",
+				"GL":"PM86so",
+				"市郡区":"G#28004C / G#28004B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.583,
+					 36.5151
+				]
+			},
+			"properties": {
+				"name": "JA/TY-012(越中沢岳)",
+				"読み":"Ecchuuzawadake",
+				"標高":"2591m 10pt ",
+				"GL":"PM86sm",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.7299,
+					 36.8267
+				]
+			},
+			"properties": {
+				"name": "JA/TY-013(朝日岳)",
+				"読み":"Asahidake",
+				"標高":"2418m 10pt ",
+				"GL":"PM86ut",
+				"市郡区":"G#28003A / C#0816 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5858,
+					 36.6896
+				]
+			},
+			"properties": {
+				"name": "JA/TY-014(釜谷山)",
+				"読み":"Kamatanyama",
+				"標高":"2415m 10pt ",
+				"GL":"PM86tq",
+				"市郡区":"C#2807 / C#2804 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6207,
+					 36.6503
+				]
+			},
+			"properties": {
+				"name": "JA/TY-015(白八ゲ山)",
+				"読み":"Shirahageyama",
+				"標高":"2388m 10pt ",
+				"GL":"PM86tp",
+				"市郡区":"C#2807 / G#28004B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6611,
+					 36.6118
+				]
+			},
+			"properties": {
+				"name": "JA/TY-016(黒部別山)",
+				"読み":"Kurobebetsusan",
+				"標高":"2353m 10pt ",
+				"GL":"PM86to",
+				"市郡区":"G#28004C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.7185,
+					 36.6811
+				]
+			},
+			"properties": {
+				"name": "JA/TY-017(餓鬼山)",
+				"読み":"Gakiyama",
+				"標高":"2128m 10pt ",
+				"GL":"PM86uq",
+				"市郡区":"C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.478,
+					 36.5399
+				]
+			},
+			"properties": {
+				"name": "JA/TY-018(鍬崎山)",
+				"読み":"Kuwasakiyama",
+				"標高":"2090m 10pt ",
+				"GL":"PM86rm",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6112,
+					 36.7239
+				]
+			},
+			"properties": {
+				"name": "JA/TY-019(滝倉山)",
+				"読み":"Sannabikiyama/Takikurayama",
+				"標高":"2029m 10pt ",
+				"GL":"PM86tr",
+				"市郡区":"C#2807 / C#2804 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5846,
+					 36.7519
+				]
+			},
+			"properties": {
+				"name": "JA/TY-020(越中駒ヶ岳)",
+				"読み":"Ecchuukomagatake",
+				"標高":"2003m 10pt ",
+				"GL":"PM86ts",
+				"市郡区":"C#2804 / C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6777,
+					 36.7259
+				]
+			},
+			"properties": {
+				"name": "JA/TY-021(百貫山)",
+				"読み":"Hyakukanyama",
+				"標高":"1970m 10pt ",
+				"GL":"PM86ur",
+				"市郡区":"C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7895,
+					 36.3205
+				]
+			},
+			"properties": {
+				"name": "JA/TY-022(大笠山)",
+				"読み":"Oogasayama",
+				"標高":"1822m 10pt ",
+				"GL":"PM86jh",
+				"市郡区":"C#2810 / C#3010 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.4268,
+					 36.5146
+				]
+			},
+			"properties": {
+				"name": "JA/TY-023(鉢伏山)",
+				"読み":"Hachibuseyama",
+				"標高":"1782m 10pt ",
+				"GL":"PM86rm",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.4058,
+					 36.4708
+				]
+			},
+			"properties": {
+				"name": "JA/TY-024(瀬戸谷山)",
+				"読み":"Setodanyama",
+				"標高":"1699m 10pt ",
+				"GL":"PM86ql",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.3774,
+					 36.4856
+				]
+			},
+			"properties": {
+				"name": "JA/TY-025(西笠山)",
+				"読み":"Nishikasayama",
+				"標高":"1697m 10pt ",
+				"GL":"PM86ql",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0489,
+					 36.3789
+				]
+			},
+			"properties": {
+				"name": "JA/TY-026(金剛堂山)",
+				"読み":"Kongoudouzan",
+				"標高":"1650m 10pt ",
+				"GL":"PM86mj",
+				"市郡区":"C#2810 / C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6877,
+					 36.8967
+				]
+			},
+			"properties": {
+				"name": "JA/TY-027(初雪山)",
+				"読み":"Hatsuyukiyama",
+				"標高":"1610m 10pt ",
+				"GL":"PM86uv",
+				"市郡区":"G#28003A ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8037,
+					 36.3653
+				]
+			},
+			"properties": {
+				"name": "JA/TY-028(大門山)",
+				"読み":"Daimonzan",
+				"標高":"1572m 10pt ",
+				"GL":"PM86ji",
+				"市郡区":"C#2810 / C#3001 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0156,
+					 36.3505
+				]
+			},
+			"properties": {
+				"name": "JA/TY-029(向平)",
+				"読み":"Mukaibira",
+				"標高":"1455m 8pt ",
+				"GL":"PM86mi",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8433,
+					 36.4041
+				]
+			},
+			"properties": {
+				"name": "JA/TY-030(猿ヶ山)",
+				"読み":"Sarugayama",
+				"標高":"1448m 8pt ",
+				"GL":"PM86kj",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5068,
+					 36.6904
+				]
+			},
+			"properties": {
+				"name": "JA/TY-031(大倉山)",
+				"読み":"Ookurayama",
+				"標高":"1443m 8pt ",
+				"GL":"PM86sq",
+				"市郡区":"C#2804 / G#28004B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6472,
+					 36.8316
+				]
+			},
+			"properties": {
+				"name": "JA/TY-032(点1397(朴ノ木（三角点）近傍))",
+				"読み":"P1397",
+				"標高":"1397m 8pt ",
+				"GL":"PM86tt",
+				"市郡区":"G#28003A / C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8727,
+					 36.4279
+				]
+			},
+			"properties": {
+				"name": "JA/TY-033(袴腰山)",
+				"読み":"Hakamakoshiyama",
+				"標高":"1165m 8pt ",
+				"GL":"PM86kk",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9429,
+					 36.4774
+				]
+			},
+			"properties": {
+				"name": "JA/TY-034(高清水山)",
+				"読み":"Takashouzuyama",
+				"標高":"1145m 8pt ",
+				"GL":"PM86ll",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.1958,
+					 36.4675
+				]
+			},
+			"properties": {
+				"name": "JA/TY-035(点1128(西新山近傍))",
+				"読み":"P1128",
+				"標高":"1128m 8pt ",
+				"GL":"PM86ol",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8489,
+					 36.3636
+				]
+			},
+			"properties": {
+				"name": "JA/TY-036(タカンボウ山)",
+				"読み":"Takanbouyama",
+				"標高":"1120m 8pt ",
+				"GL":"PM86ki",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9986,
+					 36.448
+				]
+			},
+			"properties": {
+				"name": "JA/TY-037(入谷山(葡萄原))",
+				"読み":"Iritaniyama(Budouhara)",
+				"標高":"1102m 8pt ",
+				"GL":"PM86lk",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0391,
+					 36.4931
+				]
+			},
+			"properties": {
+				"name": "JA/TY-038(高峰)",
+				"読み":"Takamine",
+				"標高":"1071m 6pt ",
+				"GL":"PM86ml",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8904,
+					 36.4336
+				]
+			},
+			"properties": {
+				"name": "JA/TY-039(鍋床山)",
+				"読み":"Nabetokoyama",
+				"標高":"1066m 6pt ",
+				"GL":"PM86kk",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9511,
+					 36.4152
+				]
+			},
+			"properties": {
+				"name": "JA/TY-040(御世佛山)",
+				"読み":"Miyobutsuyama",
+				"標高":"1031m 6pt ",
+				"GL":"PM86lj",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9166,
+					 36.417
+				]
+			},
+			"properties": {
+				"name": "JA/TY-041(高坪山)",
+				"読み":"Takatuboyama",
+				"標高":"1014m 6pt ",
+				"GL":"PM86lk",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.058,
+					 36.4732
+				]
+			},
+			"properties": {
+				"name": "JA/TY-042(三ケ峰)",
+				"読み":"Mitsugamine",
+				"標高":"1012m 6pt ",
+				"GL":"PM86ml",
+				"市郡区":"C#2810 / C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0073,
+					 36.4819
+				]
+			},
+			"properties": {
+				"name": "JA/TY-043(大明神山(北峰))",
+				"読み":"Daimyoujinnyama(Kitamine)",
+				"標高":"1007m 6pt ",
+				"GL":"PM86ml",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0318,
+					 36.5412
+				]
+			},
+			"properties": {
+				"name": "JA/TY-044(鍬先(三角点))",
+				"読み":"Kuwasaki",
+				"標高":"987m 6pt ",
+				"GL":"PM86mm",
+				"市郡区":"C#2810 / C#2808 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8339,
+					 36.4376
+				]
+			},
+			"properties": {
+				"name": "JA/TY-045(中尾)",
+				"読み":"Nakao",
+				"標高":"980m 6pt ",
+				"GL":"PM86kk",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.2123,
+					 36.4834
+				]
+			},
+			"properties": {
+				"name": "JA/TY-046(大谷の頭)",
+				"読み":"Ootaninokashira",
+				"標高":"961m 6pt ",
+				"GL":"PM86ol",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.796,
+					 36.5128
+				]
+			},
+			"properties": {
+				"name": "JA/TY-047(医王山(奥医王山))",
+				"読み":"Iouzen/Okuiouzen",
+				"標高":"939m 6pt ",
+				"GL":"PM86jm",
+				"市郡区":"C#2810 / C#3001 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0086,
+					 36.5194
+				]
+			},
+			"properties": {
+				"name": "JA/TY-048(鉢巻山)",
+				"読み":"Hachimakiyama",
+				"標高":"863m 6pt ",
+				"GL":"PM86mm",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.046,
+					 36.5064
+				]
+			},
+			"properties": {
+				"name": "JA/TY-049(峯山)",
+				"読み":"Muneyama",
+				"標高":"854m 6pt ",
+				"GL":"PM86mm",
+				"市郡区":"C#2801 / C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0799,
+					 36.4935
+				]
+			},
+			"properties": {
+				"name": "JA/TY-050(袖山)",
+				"読み":"Sodeyama",
+				"標高":"852m 6pt ",
+				"GL":"PM86ml",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.201,
+					 36.5138
+				]
+			},
+			"properties": {
+				"name": "JA/TY-051(張出谷(三角点))",
+				"読み":"Haridedani",
+				"標高":"780m 4pt ",
+				"GL":"PM86om",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.256,
+					 36.5413
+				]
+			},
+			"properties": {
+				"name": "JA/TY-052(小佐波御前山)",
+				"読み":"Osanami_Gozenyama",
+				"標高":"754m 4pt ",
+				"GL":"PM86pm",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.266,
+					 36.5177
+				]
+			},
+			"properties": {
+				"name": "JA/TY-053(薄波山)",
+				"読み":"Usunamiyama",
+				"標高":"754m 4pt ",
+				"GL":"PM86pm",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.7835,
+					 36.6162
+				]
+			},
+			"properties": {
+				"name": "JA/TY-054(松根山)",
+				"読み":"Matsuneyama",
+				"標高":"308m 1pt ",
+				"GL":"PM86jo",
+				"市郡区":"C#2809 / C#3001 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.0153,
+					 36.79
+				]
+			},
+			"properties": {
+				"name": "JA/TY-055(二上山)",
+				"読み":"Futagamiyama",
+				"標高":"274m 1pt ",
+				"GL":"PM86ms",
+				"市郡区":"C#2802 / C#2805 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6254,
+					 36.6414
+				]
+			},
+			"properties": {
+				"name": "JA/TY-056(池ノ平山)",
+				"読み":"Ikenotairayama",
+				"標高":"2561m 10pt ",
+				"GL":"PM86tp",
+				"市郡区":"C#2807 / G#28004B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.645,
+					 36.6387
+				]
+			},
+			"properties": {
+				"name": "JA/TY-057(仙人山)",
+				"読み":"Senninyama",
+				"標高":"2211m 10pt ",
+				"GL":"PM86tp",
+				"市郡区":"C#2807 / G#28004C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.4117,
+					 36.4975
+				]
+			},
+			"properties": {
+				"name": "JA/TY-058(祐延山)",
+				"読み":"Sukenobeyama",
+				"標高":"1689m 10pt ",
+				"GL":"PM86ql",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/101.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6134,
+					 36.7578
+				]
+			},
+			"properties": {
+				"name": "JA/TY-059(点1391)",
+				"読み":"P1391",
+				"標高":"1391m 8pt ",
+				"GL":"PM86ts",
+				"市郡区":"C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.452,
+					 36.6024
+				]
+			},
+			"properties": {
+				"name": "JA/TY-060(大辻山)",
+				"読み":"Ootsujiyama",
+				"標高":"1361m 8pt ",
+				"GL":"PM86ro",
+				"市郡区":"G#28004C / G#28004B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.6354,
+					 36.8011
+				]
+			},
+			"properties": {
+				"name": "JA/TY-061(瘤杉山)",
+				"読み":"Kobusugiyama",
+				"標高":"1353m 8pt ",
+				"GL":"PM86tt",
+				"市郡区":"C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.1957,
+					 36.4462
+				]
+			},
+			"properties": {
+				"name": "JA/TY-062(唐堀山)",
+				"読み":"Karahoriyama",
+				"標高":"1159m 8pt ",
+				"GL":"PM86ok",
+				"市郡区":"C#2801 / C#1917 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/104.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.9264,
+					 36.4354
+				]
+			},
+			"properties": {
+				"name": "JA/TY-063(越形山)",
+				"読み":"Koshikatayama",
+				"標高":"933m 6pt ",
+				"GL":"PM86lk",
+				"市郡区":"C#2810 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.4701,
+					 36.7028
+				]
+			},
+			"properties": {
+				"name": "JA/TY-064(白倉山)",
+				"読み":"Shirokurayama",
+				"標高":"878m 6pt ",
+				"GL":"PM86rq",
+				"市郡区":"C#2804 / G#28004B ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/103.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.306,
+					 36.5385
+				]
+			},
+			"properties": {
+				"name": "JA/TY-065(小糸山)",
+				"読み":"Koitoyama",
+				"標高":"780m 4pt ",
+				"GL":"PM86pm",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.649,
+					 36.7402
+				]
+			},
+			"properties": {
+				"name": "JA/TY-066(東鐘釣山)",
+				"読み":"Higashikanetsuriyama",
+				"標高":"759m 4pt ",
+				"GL":"PM86tr",
+				"市郡区":"C#2807 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/828.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.5921,
+					 36.8886
+				]
+			},
+			"properties": {
+				"name": "JA/TY-067(大谷山)",
+				"読み":"Ootaniyama",
+				"標高":"558m 2pt ",
+				"GL":"PM86tv",
+				"市郡区":"G#28003A / G#28003C ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/102.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 137.1016,
+					 36.5453
+				]
+			},
+			"properties": {
+				"name": "JA/TY-068(狢峯近傍)",
+				"読み":"Near_Mujinamine",
+				"標高":"480m 1pt ",
+				"GL":"PM86nn",
+				"市郡区":"C#2801 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		},
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "Point",
+				"coordinates": [
+					 136.8697,
+					 36.7064
+				]
+			},
+			"properties": {
+				"name": "JA/TY-069(稲葉山)",
+				"読み":"Inabayama",
+				"標高":"347m 1pt ",
+				"GL":"PM86kq",
+				"市郡区":"C#2809 ",
+				"登山日":"",
+				"メモ":"",
+				"_markerType": "Icon",
+				"_iconUrl": "https://maps.gsi.go.jp/portal/sys/v4/symbols/826.png",
+				"_iconSize": [
+					16,
+					16
+				],
+				"_iconAnchor": [
+					8,
+					8
+				]
+			}
+		}
+	]
+}
