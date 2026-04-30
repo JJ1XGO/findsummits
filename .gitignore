@@ -69,6 +69,7 @@ params/fetch_config.ini
 # Python
 __pycache__/
 *.pyc
+venv/
 
 # LibreOffice lock files
 .~lock.*
