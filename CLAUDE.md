@@ -98,9 +98,17 @@ params/       # パラメータファイル
   config.ini                    # 実設定（gitignore）: DATA_DIR を記入
   fetch_config.ini.example      # UA・並列数設定のテンプレート（コミット済み）
   fetch_config.ini              # 実設定（gitignore・メールアドレス記入）
+docs/         # 設計ドキュメント（git管理・devel/main 両ブランチ）
+  00_GLOSSARY.md                           # 用語集
+  01_URD.md                                # ユーザー要件定義書
+  02_SRS.md                                # ソフトウェア要件仕様書
+  environment.md                           # 環境定義
+  decisions/                               # アーキテクチャ決定記録（ADR）
+    research/                              # ADR 決定前の設計調査資料
 ref/          # 参照データ（git管理）
   summitslist.csv                          # SOTAの山岳リスト（全サミット）
   SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
+  SOURCES.md                               # 参照資料の出典一覧
 tests/        # テスト用プログラム（test_*.c）
 mgmt/          # 管理ドキュメント（lessons.md, plan.md, tracker/）※ devel ブランチのみ・main には含めない
 .claude-container  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
@@ -117,6 +125,82 @@ $DATA_DIR/tiles/        # ダウンロード済みタイルのキャッシュ
          └─ {y}
 $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 ```
+
+## 開発ドキュメント管理
+
+### 各ステージの成果物
+
+ウォーターフォール方式（URD→SRS→HLD→LLD→COD→UT→IT→ST→OPS）で開発を進める。各ステージの成果物を `docs/` に作成する。
+
+| ステージ | 成果物ファイル |
+|---------|--------------|
+| URD | `docs/01_URD.md` |
+| SRS | `docs/02_SRS.md` |
+| HLD | `docs/03_HLD.md` |
+| LLD | `docs/04_LLD.md` |
+| COD | `src/*.c`, `scripts/*.py` |
+| UT  | `docs/05_UT.md` |
+| IT  | `docs/06_IT.md` |
+| ST  | `docs/07_ST.md` |
+| OPS | `docs/08_OPS.md` |
+
+常駐ドキュメント（ステージ不問）:
+- `docs/00_GLOSSARY.md` — 用語集（全文書から参照）
+- `docs/environment.md` — 環境定義
+- `ref/SOURCES.md` — 参照資料の出典一覧
+- `docs/decisions/ADR-*.md` — アーキテクチャ決定記録
+- `docs/decisions/research/` — ADR 決定前の設計調査資料
+
+`docs/` は devel・main 両ブランチに含める。`mgmt/` は devel ブランチのみ（リリース時に `git rm -r mgmt/` で除外）。
+
+### ドキュメントフォーマット標準
+
+各文書のヘッダーテーブル:
+
+```
+| 項目 | 内容 |
+|---|---|
+| 作成日 | YYYY-MM-DD |
+| 最終更新日 | YYYY-MM-DD |
+| ステータス | ドラフト / 確定 |
+```
+
+- バージョン番号は記載しない（git で管理）
+- 本文冒頭に目次（Markdown アンカーリンク）を設ける
+- 用語定義は冒頭 blockquote ではなく番号付きセクション「N. 用語定義」として記載する
+- 外部資料への参照は本文中にインライン注記のみ（例: `（参照: [SOURCES.md](../ref/SOURCES.md)）`）。別途「参照資料」セクションは作らない
+
+### ADR 管理ルール
+
+**いつ作るか**: アーキテクチャ上の重要な判断（実装方針・技術選択・スコープ決定）をしたとき。
+
+**命名規則**: `docs/decisions/ADR-NNN-kebab-case-description.md`（NNN は3桁連番）
+
+**フォーマット**:
+
+```markdown
+| 状態 | 採用・実装済み / 採用・未実装 / 検討中 / 却下 |
+| 決定日 | YYYY-MM-DD |
+
+## Context
+## Decision
+## Alternatives
+## Consequences
+```
+
+**参照ルール**:
+- ADR は自己完結した文書とする
+- 参照可能なファイル: `docs/` 配下・`ref/` 配下・`CLAUDE.md`
+- **`mgmt/` への参照は禁止**（devel ブランチ専用のため main で参照できない）
+- 詳細な調査資料が必要な場合は `docs/decisions/research/` に置き ADR から参照する
+
+**調査資料（research/）**:
+- ADR の意思決定に至る検討過程・比較分析・Opus 相談内容等を記録する
+- 内容は生の検討資料として整形不要
+- 命名: `docs/decisions/research/<説明的な名前>.md`
+
+**URD/SRS との相互参照**:
+- URD のスコープ外・制約の根拠が ADR にある場合は URD からリンクを付ける
 
 ## 欠陥管理ルール（必須）
 
