@@ -1,0 +1,391 @@
+# findsummits - ソフトウェア要件仕様書 (SRS)
+
+| 項目 | 内容 |
+|---|---|
+| 文書バージョン | 0.1（雛形・TBDあり） |
+| 作成日 | 2026-04-30 |
+| ステータス | ドラフト |
+| 参照 URD | [`01_URD.md`](01_URD.md) v1.0 |
+
+> **用語定義**: 本文書内の専門用語の定義は [`00_GLOSSARY.md`](00_GLOSSARY.md) を参照。
+
+---
+
+## 1. 目的・範囲
+
+本文書は [`01_URD.md`](01_URD.md) に定めるユーザー要件（UR-001〜UR-010）を実現するための
+ソフトウェア要件を規定する。
+
+**対象システム**: findsummits（C エンジン + Python スクリプト群）  
+**対象バージョン**: 1.0（予定）  
+**対象外**: 実装詳細（HLD/LLD）、テスト仕様（UAT）
+
+---
+
+## 2. 用語定義
+
+[`00_GLOSSARY.md`](00_GLOSSARY.md) を参照。
+
+---
+
+## 3. システムアーキテクチャ概要
+
+C + Python ハイブリッド構成（ADR-001）。
+
+```
+prefetch_tiles.py    タイル事前取得（Python）
+       ↓
+findsummits (C)      標高デコード・Union-Find 山頂/コル検出
+       ↓  per-mesh CSV  ($DATA_DIR/results/csv/<meshcode>.csv)
+merge.py (Python)    CSV 統合・SOTA 突合
+       ↓  merged.csv   ($DATA_DIR/results/merged.csv)
+output_xlsx.py       申請書 XLSX 生成（Python）
+output_geojson.py    GeoJSON 生成（Python）
+```
+
+**C / Python 境界**: per-mesh CSV ファイル。  
+詳細は [`decisions/ADR-001-hybrid-c-python-architecture.md`](decisions/ADR-001-hybrid-c-python-architecture.md) を参照。
+
+---
+
+## 4. 機能要件
+
+### フェーズ1: タイル取得・標高デコード
+
+#### FR-001: 標高タイル事前取得
+
+- **対応 UR**: UR-001, UR-010
+- 国土地理院の標高タイル（ズームレベル15、256×256px PNG）を `$DATA_DIR/tiles/` に取得・キャッシュする
+- DEM 種別ごとに次のディレクトリ階層で保存する: `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png`
+- `If-Modified-Since` ヘッダーによる条件付き GET を使用し、差分取得に対応する
+- HTTP 429/503 受信時はエクスポネンシャルバックオフでリトライする
+- User-Agent は `findsummits/1.0 (mailto:<メールアドレス>)` 形式とし、`params/fetch_config.ini` で設定する
+- リクエスト間隔（ms）は `params/fetch_config.ini` の `interval_ms` で設定する
+- 並列ワーカー数は `params/fetch_config.ini` の `max_parallel` で設定する（デフォルト: 4）
+
+#### FR-002: DEM 階層フォールバック
+
+- **対応 UR**: UR-001
+- 標高値の取得優先順位: DEM5a → DEM5b → DEM5c → DEM10b
+- DEM5a/5b/5c はズームレベル 15（5m 解像度相当）
+- DEM10b はズームレベル 14（10m 解像度相当）。ズームレベル 14 タイルを 2×2 ピクセルに展開してレベル 15 グリッドに合わせる
+- タイルが存在しない（HTTP 404）または有効値が存在しない場合は次の DEM 種別を試みる
+- 詳細は [`decisions/ADR-002-dem-hierarchy-fallback.md`](decisions/ADR-002-dem-hierarchy-fallback.md) を参照
+
+#### FR-003: 標高デコード・NODATA 処理
+
+- **対応 UR**: UR-001
+- RGB → 標高変換: `elev = (R×65536 + G×256 + B) / 100.0`（単位: m）
+- NODATA センチネル: `(R=128, G=0, B=0)` → `-9999.0f`
+- 解析中は NODATA を山頂検出・プロミネンス計算から除外する
+
+---
+
+### フェーズ2: 山頂・コル検出
+
+#### FR-004: 3×3 メッシュ結合解析
+
+- **対応 UR**: UR-001, UR-007
+- 対象メッシュを中心に最大 3×3（最大 9 メッシュ）を結合して解析する
+- 結合範囲の外周に 1px 幅の海面ボーダー（0m）を付加し、メッシュ端を海岸線とみなす
+- 出力は中心メッシュ内のピークのみ（周辺 8 メッシュは Keyコル検出専用）
+- 詳細は [`decisions/ADR-003-3x3-mesh-analysis.md`](decisions/ADR-003-3x3-mesh-analysis.md) を参照
+
+#### FR-005: 局所最大点検出
+
+- **対応 UR**: UR-001, UR-002
+- 8 近傍比較による局所最大点をピーク候補とする
+- Union-Find（経路圧縮・rank による union）でピークをグループ管理する
+
+#### FR-006: Keyコル検出・プロミネンス計算
+
+- **対応 UR**: UR-002, UR-005
+- 各ピークに対してプロミネンスを規定するコル（Keyコル）を検出する
+- プロミネンス = ピーク標高 − Keyコル標高
+- Keyコルが解析範囲外の場合は `is_tile_top=1` を付与し、プロミネンスを暫定値とする
+
+#### FR-007: プロミネンスフィルタ・per-mesh CSV 出力
+
+- **対応 UR**: UR-001, UR-005
+- C エンジン内での一次フィルタ: プロミネンス ≥ 130m（最終判定は Python 側で 150m）
+- 出力先: `$DATA_DIR/results/csv/<meshcode>.csv`
+- **出力カラム**（C エンジン出力、ヘッダー行あり）:
+
+| カラム | 型 | 精度 | 説明 |
+|---|---|---|---|
+| peak_lat | float | 小数点8桁 | ピーク緯度 |
+| peak_lon | float | 小数点8桁 | ピーク経度 |
+| peak_elev | float | 小数点2桁 | ピーク標高（m） |
+| col_lat | float | 小数点8桁 | Keyコル緯度（is_tile_top=1 時は 0.0） |
+| col_lon | float | 小数点8桁 | Keyコル経度（is_tile_top=1 時は 0.0） |
+| col_elev | float | 小数点2桁 | Keyコル標高（m） |
+| prominence | float | 小数点2桁 | プロミネンス（m） |
+| is_tile_top | int | 0/1 | 解析範囲内で Keyコル未発見の場合 1 |
+| col_margin_px | int | — | Keyコルがメッシュ端から何 px 離れているか |
+| center_mesh | int | — | 解析中心メッシュコード（4桁） |
+
+---
+
+### フェーズ3: SOTA 突合・差分分類
+
+#### FR-008: per-mesh CSV 統合
+
+- **対応 UR**: UR-003
+- `$DATA_DIR/results/csv/` 配下の全 per-mesh CSV を読み込み、重複排除して統合する
+- プロミネンス最終フィルタ: ≥ 150m
+
+#### FR-009: SOTAリスト突合・match_status 判定
+
+- **対応 UR**: UR-003
+- `ref/summitslist.csv` の JA プレフィックスサミットと突合する
+- 突合は Chebyshev 距離（ズームレベル 15 ピクセル単位）で行い、許容距離は `params/fetch_config.ini` の `merge.tolerance_px` で設定する
+- **match_status 値**:
+  - `matched`: 現行 SOTA サミットと位置が一致したピーク
+  - `new`: 解析結果にあるが SOTA リストに未登録（新規候補）
+  - `deleted`: SOTA リストにあるが解析結果で未検出（削除候補）
+- **stability 値**:
+  - `confirmed`: 解析回数=期待値かつ is_tile_top=0 のみ
+  - `unstable`: is_tile_top=1 が含まれる、または解析回数不一致
+  - `-`: 削除候補（解析結果なし）
+- match_status 判定の詳細ロジック: **[TBD-05: ISSUE-002 実装時に確定]**
+
+#### FR-010: 削除候補のスコープ
+
+- **対応 UR**: UR-003
+- `--mesh-list` で指定されたメッシュセットの地理的 bbox 内に座標がある SOTA サミットのみを削除候補の対象とする（解析対象外メッシュのサミットを誤って削除候補にしない）
+
+---
+
+### フェーズ4: 申請用出力生成
+
+#### FR-011: 申請書 XLSX 生成
+
+- **対応 UR**: UR-004
+- SOTA日本支部指定のフォーマット（`ref/SOTA-Summit-list-revision-request.xlsx` テンプレート）に準拠した XLSX ファイルを生成する
+- 出力先: `$DATA_DIR/results/submission.xlsx`
+- テンプレート構造:
+  - 1シート構成
+  - カラム: アクション / 既存山岳ID または県名 / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
+- アクション値の対応:
+  - `追加`: match_status=new のサミット
+  - `変更`: match_status=matched かつ座標・標高に差異があるサミット
+  - `削除`: match_status=deleted のサミット
+- **出力シート構成**: **[TBD-02: 1シートにアクション混在 vs 3シート分割の方針を決定すること]**
+- **各アクションで使用するカラムの詳細マッピング**: **[TBD-02: テンプレート精読後に確定]**
+
+#### FR-012: エビデンス CSV 生成
+
+- **対応 UR**: UR-005
+- merge.py が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
+- 出力先: `$DATA_DIR/results/merged.csv`
+- **出力カラム**（merge.py 出力）:
+
+| カラム | 説明 |
+|---|---|
+| match_status | SOTAリスト突合結果（matched/new/deleted） |
+| stability | 解析品質（confirmed/unstable/-） |
+| summit_code | SOTAサミットコード（例: JA/TK-001）、新規は ZZ/ZZ-XXX ダミー |
+| summit_name | サミット名（SOTA リストから） |
+| sota_alt_m | SOTA リスト登録標高（m） |
+| peak_lat | 検出ピーク緯度 |
+| peak_lon | 検出ピーク経度 |
+| peak_elev | 検出ピーク標高（m） |
+| col_lat | Keyコル緯度 |
+| col_lon | Keyコル経度 |
+| col_elev | Keyコル標高（m） |
+| prominence | プロミネンス（m） |
+| is_tile_top | 独立峰フラグ（1=Keyコル未確定） |
+| col_margin_px | Keyコルのメッシュ端マージン（px） |
+| analysis_count | このピークが含まれた解析回数 |
+| expected_count | このピークが含まれるべき期待解析回数 |
+| orig_lat | SOTA リスト登録緯度 |
+| orig_lon | SOTA リスト登録経度 |
+
+#### FR-013: GeoJSON 生成
+
+- **対応 UR**: UR-006
+- 入力: `$DATA_DIR/results/merged.csv`
+- 出力先: `$DATA_DIR/results/merged.geojson`
+- **フィーチャ構成**:
+  - Point: 各ピーク。match_status で色分け（matched=緑 #00AA00 / new=マゼンタ #FF00FF / deleted=灰 #888888）
+  - LineString: matched 行のみ、検出ピーク → SOTA 元座標を結ぶ（座標ずれ確認用）
+- **Point プロパティ**:
+  - `match_status`, `summit_code`, `summit_name`, `peak_elev`, `prominence`, `stability`, `icon` (地理院地図アイコン URL)
+- **GeoJSON 属性の詳細定義**: **[TBD-03: ISSUE-008 設計確認後に確定]**
+
+#### FR-014: 独立峰対応（レベル14 広域再解析）
+
+- **対応 UR**: UR-007
+- `is_tile_top=1` のピークに対して、ズームレベル 14 で広域再解析を行いプロミネンスを確定させる
+- 実装方針: レベル 15 タイルを読み込んで結合時に max pooling でレベル 14 化する（別途タイル取得不要）
+- **詳細仕様**: **[TBD-01: ADR-004 の実装設計完了後に確定]**
+  - 座標変換ロジック（ズーム15→14 変換）
+  - col_margin_px への影響
+  - 1px ボーダーの地理的幅変化の許容判断
+  - 257×257 オーバーラップの max pooling 時の処理
+- 詳細は [`decisions/ADR-004-level14-max-pooling-isolated-peaks.md`](decisions/ADR-004-level14-max-pooling-isolated-peaks.md) を参照
+
+---
+
+## 5. 非機能要件
+
+#### NFR-001: 精度（プロミネンス判定）
+
+- **対応 UR**: UR-002
+- プロミネンス ≥ 150m をサミット候補として出力すること
+- C エンジンの一次フィルタは 130m（境界付近の精度マージン確保のため）
+- 最終 150m 判定は merge.py で実施
+
+#### NFR-002: メモリ使用量
+
+- **対応 UR**: UR-001
+- 実測値（9メッシュ最大解析時）: Union-Find 解析ピーク 90.8%（≒56.9GB）、物理メモリ 62.72GB + スワップ 39.7GB で動作確認済み
+- 全国 176 メッシュ逐次実行時は中心付近（5339 等）でスワップ使用が発生しうる。許容範囲内とする。
+
+#### NFR-003: 再現性（決定論的出力）
+
+- **対応 UR**: UR-009
+- 同一タイルキャッシュ・同一パラメータで実行した場合、出力 CSV の内容が一致すること
+- ピークのソート順を決定論化するために `cmp_elev_desc` に 2次キー（x→y）を設ける
+
+#### NFR-004: アクセスマナー
+
+- **対応 UR**: UR-010
+- User-Agent: `findsummits/1.0 (mailto:<メールアドレス>)` 形式（必須）
+- リクエスト間隔: `params/fetch_config.ini` の `interval_ms`（デフォルト: 100ms）
+- HTTP 429/503 受信時はバックオフを行いリトライする
+
+#### NFR-005: 処理時間目標
+
+- **対応 UR**: UR-001
+- **[TBD-04: 全国 176 メッシュ処理の実績データ取得後に設定]**
+- 参考: 1 メッシュ当たり数分〜十数分（メッシュの地形・解析範囲による）
+
+#### NFR-006: 可搬性・環境
+
+- **対応 UR**: UR-008
+- 動作環境は [`environment.md`](environment.md) に定める特定マシン上のみを前提とする
+- サーバー構成・マルチユーザー運用は対象外
+
+---
+
+## 6. 外部インターフェース仕様
+
+### 6.1 入力: 地理院標高タイル
+
+| 項目 | 仕様 |
+|---|---|
+| 形式 | PNG（RGB エンコード） |
+| ズームレベル | DEM5a/5b/5c: 15 / DEM10b: 14 |
+| タイルサイズ | 256×256 px |
+| RGB→標高変換 | `elev = (R×65536 + G×256 + B) / 100.0` |
+| NODATA | R=128, G=0, B=0 → -9999.0m |
+| タイル URL パターン | `https://cyberjapandata.gsi.go.jp/xyz/{dem}/{z}/{x}/{y}.png` |
+| キャッシュ保存先 | `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png` |
+
+### 6.2 入力: SOTA サミットリスト CSV
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `ref/summitslist.csv` |
+| 取得元 | https://www.sotadata.org.uk/summitslist.csv |
+| 対象レコード | SummitCode が `JA` で始まるもの |
+| 使用カラム | SummitCode, SummitName, AltM, Latitude, Longitude（その他は無視） |
+
+### 6.3 出力: 申請書 XLSX
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/submission.xlsx` |
+| テンプレート | `ref/SOTA-Summit-list-revision-request.xlsx` |
+| カラム構成 | FR-011 参照 |
+| シート構成 | **[TBD-02]** |
+
+### 6.4 出力: エビデンス CSV
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/merged.csv` |
+| エンコーディング | UTF-8 |
+| 区切り文字 | カンマ |
+| カラム | FR-012 参照 |
+
+### 6.5 出力: GeoJSON
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/merged.geojson` |
+| 座標参照系 | WGS84（EPSG:4326） |
+| フィーチャ構成 | FR-013 参照 |
+
+### 6.6 内部インターフェース: per-mesh CSV（C → Python 境界）
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/csv/<meshcode>.csv` |
+| エンコーディング | UTF-8 |
+| カラム | FR-007 参照 |
+
+---
+
+## 7. 依存関係・環境
+
+環境詳細は [`environment.md`](environment.md) を参照。
+
+### C エンジン (`src/`)
+
+| 依存 | バージョン |
+|---|---|
+| GCC | C99 準拠 |
+| libpng | システム提供 |
+| libm | システム提供 |
+| pthread | システム提供 |
+
+### Python スクリプト (`scripts/`)
+
+| 依存 | 用途 |
+|---|---|
+| Python 3 | スクリプト実行 |
+| openpyxl | XLSX 生成 |
+| requests | タイル取得（prefetch_tiles.py） |
+
+---
+
+## 8. 制約・前提条件
+
+URD セクション 4 より:
+
+- 標高データは国土地理院タイルのみ使用（DEM5a/5b/5c/DEM10b の優先順）
+- プロミネンス判定基準は SOTA ルール（≥ 150m）に従う
+- 申請書フォーマットは SOTA 日本支部指定の XLSX テンプレートに従う
+- 解析対象は日本国内の 1 次メッシュ全 176 メッシュ
+- タイル取得時はインターネット接続が必要（解析・出力生成はオフライン可）
+- 地理院サーバへのアクセスはガイドラインに従い User-Agent 明示・リクエスト間隔を守る
+- 本ツールは開発者本人の特定マシン上での動作を前提とする（[`environment.md`](environment.md) 参照）
+
+---
+
+## 9. スコープ外
+
+URD セクション 5 より:
+
+- 日本以外の SOTA 申請
+- DEM1a（データ量が DEM5 の 25 倍、精度向上が僅少なため採用しない）
+- SOTA 申請書の提出・承認プロセス（ツールは申請書生成まで。提出は手動）
+- リアルタイム処理（バッチ処理のみ）
+- 地形の現地確認（目視確認は GeoJSON を使って地図上で行う）
+
+---
+
+## 10. TBD 一覧
+
+今後埋める必要がある未確定項目。
+
+| ID | 箇所 | 内容 | 埋める条件 |
+|---|---|---|---|
+| TBD-01 | FR-014 | 独立峰レベル 14 再解析の詳細仕様（座標変換・col_margin_px・ボーダー・オーバーラップ） | ADR-004 実装設計着手前に確定 |
+| TBD-02 | FR-011, 6.3 | XLSX シート構成（1シート混在 vs アクション別3シート分割）と各アクションのカラムマッピング | 申請書テンプレート・提出方法の確認後 |
+| TBD-03 | FR-013, 6.5 | GeoJSON フィーチャプロパティの完全定義 | ISSUE-008 設計確認後 |
+| TBD-04 | NFR-005 | 全国 176 メッシュ処理時間目標 | フルパイプライン実行後に実績から設定 |
+| TBD-05 | FR-009 | match_status 判定ロジックの詳細（座標一致の優先順位、同距離の場合の扱い等） | ISSUE-002 実装時 |
+| TBD-06 | FR-001〜FR-014 | パイプライン分割粒度（1コマンド一気通貫 vs タイル取得・解析・出力生成の3段階分離） | SRS 策定中に決定 |
