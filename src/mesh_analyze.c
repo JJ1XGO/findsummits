@@ -259,6 +259,10 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
      * 常に固定9メッシュになるとは限らない（最小矩形の最適化）。
      */
     MeshTileRange combined = center_range;
+    int lat_code_min = meshcode / 100;
+    int lat_code_max = meshcode / 100;
+    int lon_code_min = meshcode % 100;
+    int lon_code_max = meshcode % 100;
     for (int dlat = -1; dlat <= 1; dlat++) {
         for (int dlon = -1; dlon <= 1; dlon++) {
             if (dlat == 0 && dlon == 0) continue;
@@ -271,6 +275,11 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
             if (nb_range.x_max > combined.x_max) combined.x_max = nb_range.x_max;
             if (nb_range.y_min < combined.y_min) combined.y_min = nb_range.y_min;
             if (nb_range.y_max > combined.y_max) combined.y_max = nb_range.y_max;
+            int nb_lat = nb / 100, nb_lon = nb % 100;
+            if (nb_lat < lat_code_min) lat_code_min = nb_lat;
+            if (nb_lat > lat_code_max) lat_code_max = nb_lat;
+            if (nb_lon < lon_code_min) lon_code_min = nb_lon;
+            if (nb_lon > lon_code_max) lon_code_max = nb_lon;
         }
     }
     combined.tile_w = combined.x_max - combined.x_min + 1;
@@ -346,7 +355,15 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
          (ts_now.tv_nsec - ts_start.tv_nsec) / 1e9,
          result->peak_cnt);
 
-    /* 全ピークをCSVに保存（中心メッシュフィルタなし） */
+    /* mesh_set の地理的範囲内のピークのみ CSV に保存
+     * フリンジ（端タイルの境界外ピクセル）で検出されたピークを除外する。
+     * フリンジデータ自体は Keyコル検出に必要なため Union-Find では保持し、
+     * 出力段階（C側）でフィルタする。 */
+    double geo_lat_south = lat_code_min       * 2.0 / 3.0;
+    double geo_lat_north = (lat_code_max + 1) * 2.0 / 3.0;
+    double geo_lon_west  =  lon_code_min + 100.0;
+    double geo_lon_east  =  lon_code_max + 101.0;
+
     mkdir(cfg->result_dir, 0755);
     char result_path[512];
     snprintf(result_path, sizeof(result_path),
@@ -364,12 +381,18 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
                 "col_lat,col_lon,col_elev,"
                 "prominence,is_tile_top,col_margin_px,center_mesh\n");
 
+    int out_cnt = 0;
     for (int i = 0; i < result->peak_cnt; i++) {
         PeakResult *p = &result->peaks[i];
 
         double peak_lat, peak_lon;
         pixel_to_latlon(&combined, p->peak_x, p->peak_y,
                         &peak_lat, &peak_lon);
+
+        /* mesh_set 地理範囲外のピークはスキップ */
+        if (peak_lat <  geo_lat_south || peak_lat >= geo_lat_north ||
+            peak_lon <  geo_lon_west  || peak_lon >= geo_lon_east)
+            continue;
 
         double col_lat = 0.0, col_lon = 0.0;
         if (!p->is_tile_top)
@@ -381,9 +404,8 @@ int mesh_analyze(const MeshAnalyzeConfig *cfg, int meshcode)
                 col_lat, col_lon, p->col_elev,
                 p->prominence, p->is_tile_top,
                 p->col_margin_px, meshcode);
+        out_cnt++;
     }
-
-    int out_cnt = result->peak_cnt;
     fclose(fp);
     analyze_result_destroy(result);
 

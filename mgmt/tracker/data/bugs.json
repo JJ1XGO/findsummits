@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-04-27",
-    "counter": 13
+    "last_updated": "2026-05-02",
+    "counter": 14
   },
   "bugs": [
     {
@@ -382,6 +382,42 @@
       "resolved_date": null,
       "verified_date": null,
       "history": []
+    },
+    {
+      "id": "BUG-014",
+      "title": "combined 画像の地理境界外ピークが CSV に混入する",
+      "description": "タイル座標のフロア演算により combined 画像の端タイルが地理的メッシュ境界より約17px外側へはみ出しており、そのはみ出し部分で検出されたピークが CSV に混入する。9メッシュ解析の検証で analysis_count=2/3 の異常ピーク34件として確認。",
+      "reporter": null,
+      "found_date": "2026-05-02",
+      "found_stage": "IT",
+      "category": "解析エンジン",
+      "found_in": "src/mesh_analyze.c",
+      "repro": "毎回",
+      "severity": "中",
+      "status": "対応完了",
+      "assignee": null,
+      "stage": "COD",
+      "cause": "src/mesh_analyze.c",
+      "resolution": "CSV 出力ループで mesh_set 地理範囲外ピークをスキップ（C 側フィルタ）",
+      "notes": null,
+      "resolved_date": "2026-05-02",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-05-02T14:00:49",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-02T14:01:32",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "src/mesh_analyze.c のCSV出力ループに mesh_set 地理範囲フィルタを追加。combined ループで lat/lon コード min/max を追跡し、ピーク出力時に geo_lat_south/north/lon_west/east で境界外ピークをスキップ。ビルド確認済み（警告なし）。findsummits 再実行による動作確認はユーザーが verify 時に実施。"
+        }
+      ]
     }
   ]
 }
