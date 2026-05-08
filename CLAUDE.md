@@ -65,6 +65,7 @@ Union-Find アルゴリズムで山頂・コルを検出 [unionfind.c]
 | `analyze.c/h` | タイル単体の局所最大点検出・比高計算、`col_margin_px` 算出 |
 | `mesh_analyze.c/h` | メッシュ全体のオーケストレーション・Terrain-RGB PNG 出力・CSV 出力 |
 | `scripts/prefetch_tiles.py` | タイル事前取得（If-Modified-Since 条件付き GET・並列4・429/503 backoff） |
+| `scripts/preprocess_pref_boundaries.py` | N03 行政区域 GeoJSON を都道府県/振興局レベルに dissolve して軽量化（初回のみ実行） |
 
 ### 重要な実装詳細
 
@@ -78,7 +79,7 @@ Union-Find アルゴリズムで山頂・コルを検出 [unionfind.c]
 ### アーキテクチャ方針（ハイブリッド構成）
 
 - **C エンジン** (`src/`): 標高デコード・Union-Find による山頂/コル検出・Terrain-RGB PNG 出力・per-mesh CSV 出力（タイル取得は行わない）
-- **Python スクリプト** (`scripts/`): タイル事前取得（prefetch_tiles.py）、複数 CSV の統合、SOTA リスト突合、XLSX/GeoJSON 生成
+- **Python スクリプト** (`scripts/`): タイル事前取得（prefetch_tiles.py）、N03 行政区域前処理（preprocess_pref_boundaries.py・初回のみ）、複数 CSV の統合、SOTA リスト突合、XLSX/GeoJSON 生成
 
 C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummits4sotaja`（Python）に出力生成コードが既存するため、この分担を採用。性能が必要な計算は C、申請用出力は Python。
 
@@ -88,7 +89,8 @@ C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummi
 src/          # ソースファイル（main.c, *.c, *.h）
 scripts/      # 本番パイプライン用スクリプト
   prefetch_tiles.py             # タイル事前取得（params/fetch_config.ini を参照）
-  merge.py                      # 複数CSV統合・SOTA突合
+  preprocess_pref_boundaries.py # N03行政区域前処理（初回のみ: $DATA_DIR/ref/N03-2026_regions.geojson 生成）
+  merge.py                      # 複数CSV統合・SOTA突合・都道府県ベース仮コード割り振り
   run_all.sh                    # 全メッシュ一括解析ラッパー
 analysis/     # 検証・解析用スクリプト（本番パイプライン外）
   analyze_keycol_distance.py    # Keyコル距離分析
