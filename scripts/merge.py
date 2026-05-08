@@ -5,7 +5,7 @@ merge.py: 解析CSV統合 + summitslist.csv突き合わせ
 出力CSV の列:
   match_status - SOTAリストとの突合結果
     matched  - 現行SOTAサミットと一致したピーク
-    new      - 新規候補（ZZ/ZZ-XXXダミーコード付与）
+    new      - 新規候補（都道府県ベース仮コード JA(x)/<area>-A<seq> 付与、未判定は ZZ/ZZ-A<seq>）
     deleted  - 現行SOTAサミットで未検出（削除候補）
   stability - 解析品質
     confirmed - 確定ピーク（全解析で is_tile_top=0、解析回数=期待値）
@@ -16,6 +16,7 @@ import argparse
 import configparser
 import csv
 import datetime
+import json
 import math
 import os
 from pathlib import Path
@@ -47,6 +48,7 @@ DEFAULT_TOLERANCE = _config.getint("merge", "tolerance_px", fallback=0)
 DEFAULT_CSV_DIR = _DATA_DIR / "results/csv"
 DEFAULT_SUMMITSLIST = _PROJECT_DIR / "ref/summitslist.csv"
 DEFAULT_OUTPUT = _DATA_DIR / "results/merged.csv"
+_DEFAULT_REGIONS_FILE = _DATA_DIR / "ref/N03-2026_regions.geojson"
 
 
 def latlon_to_pixel(lat, lon):
@@ -200,6 +202,50 @@ def load_summits(summitslist_path):
     return summits
 
 
+def load_regions(path):
+    """N03 前処理済み GeoJSON を読み込み、shapely ジオメトリのリストを返す。ファイルがなければ None。"""
+    if path is None or not Path(path).exists():
+        return None
+    try:
+        from shapely.geometry import shape
+    except ImportError:
+        raise SystemExit("--regions-file を使うには shapely が必要です: pip install shapely")
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    regions = []
+    for feat in data.get("features", []):
+        props = feat["properties"]
+        regions.append({
+            "geometry":  shape(feat["geometry"]),
+            "assoc":     props["assoc"],
+            "area_code": props["area_code"],
+        })
+    return regions
+
+
+def assign_temp_summit_code(lat, lon, regions, counters):
+    """
+    ピーク座標から都道府県/振興局を特定して仮サミットコードを生成する。
+    regions が None または座標が未判定の場合は ZZ/ZZ-A<seq> を返す。
+    counters は {(assoc, area_code): int} の dict（呼び出し元が管理）。
+    """
+    if regions:
+        try:
+            from shapely.geometry import Point
+        except ImportError:
+            pass
+        else:
+            pt = Point(lon, lat)
+            for r in regions:
+                if r["geometry"].contains(pt):
+                    key = (r["assoc"], r["area_code"])
+                    counters[key] = counters.get(key, 0) + 1
+                    return f"{r['assoc']}/{r['area_code']}-A{counters[key]:03d}"
+    key = ("ZZ", "ZZ")
+    counters[key] = counters.get(key, 0) + 1
+    return f"ZZ/ZZ-A{counters[key]:03d}"
+
+
 def match_peaks(peaks, summits, tolerance):
     """
     解析ピークと既存SOTAサミットを突き合わせる。
@@ -231,7 +277,7 @@ def match_peaks(peaks, summits, tolerance):
     return matched, new_peaks, deleted
 
 
-def build_rows(matched, new_peaks, deleted):
+def build_rows(matched, new_peaks, deleted, regions=None):
     rows = []
 
     for peak, summit in matched:
@@ -256,12 +302,14 @@ def build_rows(matched, new_peaks, deleted):
             "orig_lon":        summit["Longitude"],
         })
 
+    counters = {}
     new_peaks_sorted = sorted(new_peaks, key=lambda p: (p["px"], p["py"]))
-    for i, peak in enumerate(new_peaks_sorted):
+    for peak in new_peaks_sorted:
+        code = assign_temp_summit_code(peak["peak_lat"], peak["peak_lon"], regions, counters)
         rows.append({
             "match_status":    "new",
             "stability":       peak["stability"],
-            "summit_code":     f"ZZ/ZZ-{i:03d}",
+            "summit_code":     code,
             "summit_name":     "",
             "sota_alt_m":      "",
             "peak_lat":        peak["peak_lat"],
@@ -317,13 +365,17 @@ FIELDNAMES = [
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--tolerance",   type=int, default=DEFAULT_TOLERANCE,
+    parser.add_argument("--tolerance",    type=int, default=DEFAULT_TOLERANCE,
                         help=f"SOTAリスト突合の許容距離（ズーム15ピクセル、チェビシェフ距離）デフォルト: {DEFAULT_TOLERANCE} (params/fetch_config.ini の merge.tolerance_px)")
-    parser.add_argument("--mesh-list",   type=Path, default=None,
+    parser.add_argument("--mesh-list",    type=Path, default=None,
                         help="メッシュコードリスト（期待解析回数計算に使用）")
-    parser.add_argument("--csv-dir",     type=Path, default=DEFAULT_CSV_DIR)
-    parser.add_argument("--summitslist", type=Path, default=DEFAULT_SUMMITSLIST)
-    parser.add_argument("--output",      type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--csv-dir",      type=Path, default=DEFAULT_CSV_DIR)
+    parser.add_argument("--summitslist",  type=Path, default=DEFAULT_SUMMITSLIST)
+    parser.add_argument("--output",       type=Path, default=DEFAULT_OUTPUT)
+    _default_regions = _DEFAULT_REGIONS_FILE if _DEFAULT_REGIONS_FILE.exists() else None
+    parser.add_argument("--regions-file", type=Path, default=_default_regions,
+                        help=f"N03前処理済みGeoJSON（都道府県/振興局境界）。省略または未存在時は ZZ/ZZ-A<seq>。"
+                             f"デフォルト: {_DEFAULT_REGIONS_FILE}")
     args = parser.parse_args()
 
     log_dir = _DATA_DIR / "logs"
@@ -338,6 +390,12 @@ def main():
 
     start_time = datetime.datetime.now()
     log(f"merge.py 開始: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    regions = load_regions(args.regions_file)
+    if regions:
+        log(f"都道府県境界: {args.regions_file} ({len(regions)} 地域)")
+    else:
+        log("都道府県境界: 未使用（新規ピークは ZZ/ZZ-A<seq> 形式）")
 
     mesh_set = load_mesh_set(args.mesh_list)
     if mesh_set:
@@ -369,7 +427,7 @@ def main():
     log(f"  新規候補:         {len(new_peaks)}")
     log(f"  未検出(削除候補): {len(deleted)}")
 
-    rows = build_rows(matched, new_peaks, deleted)
+    rows = build_rows(matched, new_peaks, deleted, regions)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w", newline="") as f:

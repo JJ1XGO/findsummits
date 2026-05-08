@@ -90,6 +90,20 @@
 
 ---
 
+### 国土数値情報 N03 行政区域
+
+| 項目 | 内容 |
+|---|---|
+| タイトル | 国土数値情報 行政区域データ（N03-2026） |
+| 提供元 | [国土交通省 国土数値情報ダウンロードサービス](https://nlftp.mlit.go.jp/) |
+| URL | https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html |
+| ファイル形式 | GeoJSON（全国版、約 765MB） |
+| 主要属性 | `N03_001`=都道府県名、`N03_002`=北海道振興局名 |
+| 利用規約 | 国土数値情報利用規約（https://nlftp.mlit.go.jp/ksj/other/agreement.html） |
+| 本プロジェクトでの利用形態 | merge.py での新規ピーク都道府県/振興局判定に使用。`scripts/preprocess_pref_boundaries.py` で都道府県/振興局単位に dissolve してから参照（`$DATA_DIR/ref/N03-2026_regions.geojson`）。ファイルサイズが大きいため git 管理外（.gitignore）。 |
+
+---
+
 ### 日本の国土にかかる第1次地域区画
 
 | 項目 | 内容 |

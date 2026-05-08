@@ -335,7 +335,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 |---|---|
 | match_status | SOTAリスト突合結果（matched/new/deleted） |
 | stability | 解析品質（confirmed/unstable/-） |
-| summit_code | SOTAサミットコード（例: JA/TK-001）、新規は ZZ/ZZ-XXX ダミー |
+| summit_code | SOTAサミットコード（例: JA/TK-001）、新規は都道府県ベース仮コード（例: JA/TK-A001）または ZZ/ZZ-A001（海上・未判定） |
 | summit_name | サミット名（SOTA リストから） |
 | sota_alt_m | SOTA リスト登録標高（m） |
 | peak_lat | 検出ピーク緯度 |
@@ -524,6 +524,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | Python 3 | スクリプト実行 |
 | openpyxl | XLSX 生成（output.py） |
 | requests | タイル取得（prefetch_tiles.py） |
+| shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） |
 
 ---
 

@@ -71,6 +71,9 @@ __pycache__/
 *.pyc
 venv/
 
+# 国土数値情報 N03 行政区域 GeoJSON（ファイルサイズが大きいため）
+ref/N03-*.geojson
+
 # LibreOffice lock files
 .~lock.*
 

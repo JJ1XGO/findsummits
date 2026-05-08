@@ -1,6 +1,6 @@
 # 環境定義
 
-> 最終更新: 2026-04-30
+> 最終更新: 2026-05-09
 
 ## ホスト環境
 
@@ -24,3 +24,11 @@
 | メモリ | 62.72 GiB |
 | データディスク (`/data`) | ホストの `/mnt/findsummits` をマウント（457.38 GiB ext4） |
 | Shell | bash 5.3.9 |
+
+## Python パッケージ（スクリプト実行に必要）
+
+| パッケージ | 用途 | インストール |
+|---|---|---|
+| openpyxl | XLSX 生成（output.py） | `pip install openpyxl` |
+| requests | タイル取得（prefetch_tiles.py） | `pip install requests` |
+| shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） | `pip install shapely` |
