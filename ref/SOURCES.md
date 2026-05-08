@@ -61,7 +61,19 @@
 | 提供元 | OpenStreetMap contributors |
 | 利用規約 | Open Database License (ODbL) — https://www.openstreetmap.org/copyright |
 | 帰属表示義務 | 利用成果物に `© OpenStreetMap contributors` の表示が必要 |
-| 本プロジェクトでの利用形態 | HTML ビューアの背景地図タイルとして使用（国土地理院地図との切り替え用） |
+| 本プロジェクトでの利用形態 | HTML ビューアの背景地図タイルとして使用（国土地理院地図・OpenTopoMap との切り替え用） |
+
+---
+
+## OpenTopoMap（地図タイル）
+
+| 項目 | 内容 |
+|---|---|
+| 提供元 | OpenTopoMap contributors |
+| 利用規約 | CC-BY-SA — https://opentopomap.org/about#verwendung |
+| データソース | OpenStreetMap データ（ODbL）+ SRTM 標高データ |
+| 帰属表示義務 | 利用成果物に `© OpenTopoMap contributors` の表示が必要 |
+| 本プロジェクトでの利用形態 | HTML ビューアの背景地図タイルとして使用（等高線・山名確認用） |
 
 ---
 

@@ -229,11 +229,11 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
   - `match_status`, `summit_code`, `summit_name`, `peak_elev`, `prominence`, `stability`, `icon` (地理院地図アイコン URL)
 - **GeoJSON 属性の詳細定義**: **[TBD-03: ISSUE-008 設計確認後に確定]**
 - **HTML ビューア仕様**:
-  - Leaflet.js（CDN）+ 背景タイル切り替え機能（国土地理院標準地図・OSM）を持つ
+  - Leaflet.js（CDN）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - GeoJSON は外部参照（`merged.geojson` を相対パスで `fetch()`）
   - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要
   - GitHub Pages では静的ホスティングのみで動作
-  - 地図帰属表示: Leaflet の attribution に `© 国土地理院` および `© OpenStreetMap contributors` を必ず含める
+  - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
 
 #### FR-014: 独立峰対応（レベル14 広域再解析）
 
@@ -341,7 +341,7 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 | フィーチャ構成 | FR-013 参照 |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
 | 地図ライブラリ | Leaflet.js（CDN 参照） |
-| 背景タイル | 国土地理院標準地図・OSM（切り替え可能） |
+| 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
 | GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を fetch） |
 | ローカル閲覧 | HTTP サーバ（`python3 -m http.server`）が必要 |
 | GitHub Pages | 静的ホスティングのみで動作 |
