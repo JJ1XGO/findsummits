@@ -3,8 +3,8 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-08 |
-| ステータス | ドラフト（TBD残4件） |
+| 最終更新日 | 2026-05-09 |
+| ステータス | ドラフト（TBD残3件） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
 ---
@@ -25,14 +25,15 @@
      - [FR-006: Keyコル検出・プロミネンス計算](#fr-006-keyコル検出プロミネンス計算)
      - [FR-007: プロミネンスフィルタ・per-mesh CSV 出力](#fr-007-プロミネンスフィルタper-mesh-csv-出力)
      - [FR-015: 標高地形図出力](#fr-015-標高地形図出力)
+     - [FR-016: アクティベーションエリア計算](#fr-016-アクティベーションエリア計算)
    - [フェーズ3: SOTA 突合・差分分類](#フェーズ3-sota-突合差分分類)
      - [FR-008: per-mesh CSV 統合](#fr-008-per-mesh-csv-統合)
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
      - [FR-010: 削除候補のスコープ](#fr-010-削除候補のスコープ)
+     - [FR-013: GeoJSON・HTML ビューア生成](#fr-013-geojsonhtml-ビューア生成)
    - [フェーズ4: 申請用出力生成](#フェーズ4-申請用出力生成)
      - [FR-011: 申請書 XLSX 生成](#fr-011-申請書-xlsx-生成)
      - [FR-012: エビデンス CSV 生成](#fr-012-エビデンス-csv-生成)
-     - [FR-013: GeoJSON・HTML ビューア生成](#fr-013-geojsonhtml-ビューア生成)
      - [FR-014: 独立峰対応（レベル14 広域再解析）](#fr-014-独立峰対応レベル14-広域再解析)
 5. [非機能要件](#5-非機能要件)
    - [NFR-001: 精度（プロミネンス判定）](#nfr-001-精度プロミネンス判定)
@@ -50,6 +51,7 @@
    - [6.5 出力: GeoJSON・HTML ビューア](#65-出力-geojsonhtml-ビューア)
    - [6.6 内部インターフェース: per-mesh CSV（C → Python 境界）](#66-内部インターフェース-per-mesh-csvc--python-境界)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
+   - [6.8 内部インターフェース: アクティベーションエリア GeoJSON（C → Python 境界）](#68-内部インターフェース-アクティベーションエリア-geojsonc--python-境界)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
 9. [スコープ外](#9-スコープ外)
@@ -64,7 +66,7 @@
 
 **対象システム**: findsummits（C エンジン + Python スクリプト群）  
 **対象バージョン**: 1.0（予定）  
-**対象外**: 実装詳細（HLD/LLD）、テスト仕様（UAT）
+**対象外**: 実装詳細（HLD/LLD）、テスト仕様（UT/IT/ST）
 
 ---
 
@@ -76,20 +78,27 @@
 
 ## 3. システムアーキテクチャ概要
 
-C + Python ハイブリッド構成（ADR-001）。
+C + Python ハイブリッド構成（ADR-001）。3ステップの運用フローで使用する。
 
 ```
-prefetch_tiles.py    タイル事前取得（Python）
+【ステップ1: タイル取得】
+prefetch_tiles.py    タイル事前取得（フェーズ1）
        ↓
-findsummits (C)      標高デコード・Union-Find 山頂/コル検出
-       ↓  per-mesh CSV  ($DATA_DIR/results/csv/<meshcode>.csv)
-merge.py (Python)    CSV 統合・SOTA 突合
-       ↓  merged.csv   ($DATA_DIR/results/merged.csv)
-output_xlsx.py       申請書 XLSX 生成（Python）
-output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
+【ステップ2: 解析・突合・確認】（GeoJSON/HTML で結果を確認してから次ステップへ）
+findsummits (C)      山頂・コル検出・アクティベーションエリア計算（フェーズ2）
+       ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
+       ├─ per-peak activation area  ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
+       └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
+merge.py (Python)    SOTA 突合・差分分類（フェーズ3）
+       ├─ merged.csv         ($DATA_DIR/results/merged.csv)
+       ├─ merged.geojson     ← 目視確認用 GeoJSON
+       └─ merged_viewer.html ← 目視確認用 静的 HTML ビューア
+【ステップ3: 申請書生成】（確認済みの場合のみ実行）
+output.py (Python)   申請書 XLSX 生成（フェーズ4）
+       └─ submission.xlsx
 ```
 
-**C / Python 境界**: per-mesh CSV ファイル。  
+**C / Python 境界**: per-mesh CSV および アクティベーションエリア GeoJSON ファイル。  
 詳細は [`decisions/ADR-001-hybrid-c-python-architecture.md`](decisions/ADR-001-hybrid-c-python-architecture.md) を参照。
 
 ---
@@ -134,7 +143,8 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 - **対応 UR**: UR-001, UR-007
 - 対象メッシュを中心に最大 3×3（最大 9 メッシュ）を結合して解析する
 - 結合範囲の外周に 1px 幅の海面ボーダー（0m）を付加し、メッシュ端を海岸線とみなす
-- 出力は中心メッシュ内のピークのみ（周辺 8 メッシュは Keyコル検出専用）
+- per-mesh CSV には mesh_set の地理的範囲内のピークを出力する（周辺 8 メッシュは Keyコル検出専用であり、その範囲外のピークは除外する）
+- 全176メッシュを逐次実行すると、同一ピークが複数の解析（最大9回）に含まれる。merge.py での重複排除後に `analysis_count`（実際の解析回数）と `expected_count`（期待解析回数）で安定性を評価する（FR-009 参照）
 - 詳細は [`decisions/ADR-003-3x3-mesh-analysis.md`](decisions/ADR-003-3x3-mesh-analysis.md) を参照
 
 #### FR-005: 局所最大点検出
@@ -180,6 +190,17 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 - `$DATA_DIR/images/` ディレクトリが存在しない場合は自動生成する
 - 詳細は 6.7 を参照
 
+#### FR-016: アクティベーションエリア計算
+
+- **対応 UR**: UR-003, UR-006
+- C エンジンは per-mesh CSV と同時にアクティベーションエリア GeoJSON を生成する
+- **アクティベーションエリアの定義**: SOTA ルールに従い、ピークから標高差 25m 以内（`elev ≥ peak_elev − 25.0m`）の連続エリア
+- **計算方法**: ピーク位置を起点として Flood Fill を実行し、閾値以上の連続ピクセルを抽出する
+- 内部ピクセル群の輪郭を GeoJSON Polygon（座標列）として出力する（座標簡略化可）
+- Flood Fill が解析範囲（mesh_set 地理的範囲）外で途切れた場合は `area_truncated: true` フラグを付与する（is_tile_top と同様の扱い）
+- 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
+- 詳細は 6.8 を参照
+
 ---
 
 ### フェーズ3: SOTA 突合・差分分類
@@ -194,25 +215,85 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 
 - **対応 UR**: UR-003
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
-- 突合は Chebyshev 距離（ズームレベル 15 ピクセル単位）で行い、許容距離は `params/fetch_config.ini` の `merge.tolerance_px` で設定する
+- 突合は各ピークのアクティベーションエリア（FR-016）を用いた point-in-polygon 判定で行う
+- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションエリア内に複数 SOTA サミットは数学的に存在しない
 - **match_status 値**:
-  - `matched`: 現行 SOTA サミットと位置が一致したピーク
-  - `new`: 解析結果にあるが SOTA リストに未登録（新規候補）
-  - `deleted`: SOTA リストにあるが解析結果で未検出（削除候補）
+  - `matched`: 検出ピークのアクティベーションエリア内に既存 SOTA サミット座標が存在する
+  - `new`: 検出ピークのアクティベーションエリア内に既存 SOTA サミット座標が存在しない（prominence ≥ 150m を満たす新規候補）
+  - `deleted`: いずれの検出ピークのアクティベーションエリアにも含まれない既存 SOTA サミット
 - **stability 値**:
   - `confirmed`: 解析回数=期待値かつ is_tile_top=0 のみ
   - `unstable`: is_tile_top=1 が含まれる、または解析回数不一致
   - `-`: 削除候補（解析結果なし）
-- **match_status 判定の詳細ロジック**:
-  - 各ピークに対し、tolerance_px 以下の Chebyshev 距離（ズームレベル 15 ピクセル単位、1px ≒ 4.8m）で最近傍のサミットを matched と判定する
-  - 同距離で複数候補がある場合は SOTA リストの行順（先着順）で最初に見つかったものを採用する
-  - Prominence < 150m のピークは matched 判定の対象外とする
-  - 1 つのサミットに複数のピークが tolerance 範囲内に入る場合は距離が最小のピークとマッチする（そのサミットは以降の判定から除外）
 
 #### FR-010: 削除候補のスコープ
 
 - **対応 UR**: UR-003
 - `--mesh-list` で指定されたメッシュセットの地理的 bbox 内に座標がある SOTA サミットのみを削除候補の対象とする（解析対象外メッシュのサミットを誤って削除候補にしない）
+
+#### FR-013: GeoJSON・HTML ビューア生成
+
+- **対応 UR**: UR-006
+- **生成スクリプト**: merge.py（フェーズ3 で GeoJSON と HTML を同時生成する）
+- 入力: `$DATA_DIR/results/merged.csv` および `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
+- **出力先**:
+  - `$DATA_DIR/results/merged.geojson`（GeoJSON）
+  - `$DATA_DIR/results/merged_viewer.html`（静的 HTML ビューア）
+- **フィーチャ構成**（match_status 別）:
+
+| match_status | フィーチャ |
+|---|---|
+| matched | Point（ピーク）+ Polygon（アクティベーションエリア）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
+| new | Point（ピーク）+ Polygon（アクティベーションエリア）+ Point（Keyコル）+ LineString（ピーク→Keyコル） |
+| deleted | Point（SOTA サミット）のみ |
+
+- **各フィーチャのプロパティ**:
+
+**Point: 検出ピーク**
+- `type`: "peak"
+- `match_status`: matched / new
+- `summit_code`: SOTA サミットコード（matched のみ）
+- `summit_name`: サミット名（matched のみ）
+- `peak_elev`: 検出標高（m）
+- `prominence`: プロミネンス（m）
+- `stability`: confirmed / unstable
+- `is_tile_top`: 0 / 1
+
+**Polygon: アクティベーションエリア**
+- `type`: "activation_area"
+- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
+- `area_truncated`: true / false（Flood Fill が解析範囲外で途切れた場合 true）
+
+**Point: Keyコル**
+- `type`: "col"
+- `col_elev`: Keyコル標高（m）
+- is_tile_top=1 の場合は含めない（col_lat/col_lon が 0.0 のため）
+
+**Point: 既存 SOTA サミット**
+- `type`: "sota_summit"
+- `match_status`: matched / deleted
+- `summit_code`: SOTA サミットコード
+- `summit_name`: サミット名
+- `sota_alt_m`: SOTA 登録標高（m）
+
+**LineString: ピーク → Keyコル**
+- `type`: "prominence_range"
+- is_tile_top=1 の場合は生成しない
+
+**LineString: ピーク → SOTA サミット**
+- `type`: "coord_diff"
+- matched のみ生成
+
+- **HTML ビューア仕様**:
+  - `scripts/viewer.html` を固定テンプレートとしてソースコードに同梱する
+  - `merge.py` は `merged.geojson` を生成し、`scripts/viewer.html` を `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
+  - Leaflet.js（CDN）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
+  - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで `fetch()`）
+  - ピーク Point クリック時に対応するアクティベーションエリアポリゴンをハイライト表示する（matched: 赤 #FF0000 / new: 橙 #FF8800）
+  - `area_truncated: true` のアクティベーションエリアは警告色（橙 #FF8800）で表示する
+  - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要（`fetch()` の CORS 制限のため）
+  - GitHub Pages では静的ホスティングのみで動作
+  - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
 
 ---
 
@@ -270,26 +351,6 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 | expected_count | このピークが含まれるべき期待解析回数 |
 | orig_lat | SOTA リスト登録緯度 |
 | orig_lon | SOTA リスト登録経度 |
-
-#### FR-013: GeoJSON・HTML ビューア生成
-
-- **対応 UR**: UR-006
-- 入力: `$DATA_DIR/results/merged.csv`
-- **出力先**:
-  - `$DATA_DIR/results/merged.geojson`（GeoJSON）
-  - `$DATA_DIR/results/merged_viewer.html`（静的 HTML ビューア）
-- **フィーチャ構成**:
-  - Point: 各ピーク。match_status で色分け（matched=緑 #00AA00 / new=マゼンタ #FF00FF / deleted=灰 #888888）
-  - LineString: matched 行のみ、検出ピーク → SOTA 元座標を結ぶ（座標ずれ確認用）
-- **Point プロパティ**:
-  - `match_status`, `summit_code`, `summit_name`, `peak_elev`, `prominence`, `stability`, `icon` (地理院地図アイコン URL)
-- **GeoJSON 属性の詳細定義**: **[TBD-03: ISSUE-008 設計確認後に確定]**
-- **HTML ビューア仕様**:
-  - Leaflet.js（CDN）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
-  - GeoJSON は外部参照（`merged.geojson` を相対パスで `fetch()`）
-  - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要
-  - GitHub Pages では静的ホスティングのみで動作
-  - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
 
 #### FR-014: 独立峰対応（レベル14 広域再解析）
 
@@ -400,10 +461,12 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 
 | 項目 | 仕様 |
 |---|---|
+| 生成スクリプト | merge.py（フェーズ3） |
 | GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャ構成 | FR-013 参照 |
+| フィーチャ構成 | FR-013 参照（アクティベーションエリアポリゴン含む） |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
+| HTML テンプレート | `scripts/viewer.html`（ソースコード同梱の固定テンプレート） |
 | 地図ライブラリ | Leaflet.js（CDN 参照） |
 | 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
 | GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を fetch） |
@@ -428,6 +491,17 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 | 色分け | 標高 15 段階グラデーション（NODATA: 濃い青 / 海面: 薄い青 / 低地: 緑 / 中地: 黄茶 / 高山: 白） |
 | 生成タイミング | `findsummits` 実行時（per-mesh CSV と同時） |
 
+### 6.8 内部インターフェース: アクティベーションエリア GeoJSON（C → Python 境界）
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson` |
+| 形式 | GeoJSON（RFC 7946） |
+| 座標参照系 | WGS84（EPSG:4326） |
+| フィーチャタイプ | Polygon（各ピーク 1 フィーチャ） |
+| プロパティ | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
+| 生成タイミング | `findsummits` 実行時（per-mesh CSV と同時） |
+
 ---
 
 ## 7. 依存関係・環境
@@ -448,7 +522,7 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 | 依存 | 用途 |
 |---|---|
 | Python 3 | スクリプト実行 |
-| openpyxl | XLSX 生成 |
+| openpyxl | XLSX 生成（output.py） |
 | requests | タイル取得（prefetch_tiles.py） |
 
 ---
@@ -488,5 +562,4 @@ URD セクション 5 より:
 |---|---|---|---|
 | TBD-01 | FR-014 | 独立峰レベル 14 再解析の詳細仕様（座標変換・col_margin_px・ボーダー・オーバーラップ） | ADR-004 実装設計着手前に確定 |
 | TBD-02 | FR-011 | 「その他」アクションの使用条件 | 申請書テンプレートの運用確認後に確定 |
-| TBD-03 | FR-013, 6.5 | GeoJSON フィーチャプロパティの完全定義 | ISSUE-008 設計確認後 |
 | TBD-04 | NFR-005 | 全国 176 メッシュ処理時間目標 | フルパイプライン実行後に実績から設定 |
