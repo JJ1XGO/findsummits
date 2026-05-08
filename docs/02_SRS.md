@@ -31,6 +31,7 @@
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
      - [FR-010: 削除候補のスコープ](#fr-010-削除候補のスコープ)
      - [FR-013: GeoJSON・HTML ビューア生成](#fr-013-geojsonhtml-ビューア生成)
+     - [FR-017: N03 行政区域前処理（データ準備）](#fr-017-n03-行政区域前処理データ準備)
    - [フェーズ4: 申請用出力生成](#フェーズ4-申請用出力生成)
      - [FR-011: 申請書 XLSX 生成](#fr-011-申請書-xlsx-生成)
      - [FR-012: エビデンス CSV 生成](#fr-012-エビデンス-csv-生成)
@@ -52,6 +53,7 @@
    - [6.6 内部インターフェース: per-mesh CSV（C → Python 境界）](#66-内部インターフェース-per-mesh-csvc--python-境界)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
    - [6.8 内部インターフェース: アクティベーションゾーン GeoJSON（C → Python 境界）](#68-内部インターフェース-アクティベーションゾーン-geojsonc--python-境界)
+   - [6.9 入力: N03 前処理済み GeoJSON（merge.py 参照）](#69-入力-n03-前処理済み-geojsonmergepy-参照)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
 9. [スコープ外](#9-スコープ外)
@@ -81,6 +83,10 @@
 C + Python ハイブリッド構成（ADR-001）。3ステップの運用フローで使用する。
 
 ```
+【事前準備（初回のみ実行）】
+preprocess_pref_boundaries.py  N03 行政区域前処理（都道府県/振興局ポリゴン生成）
+       └─ $DATA_DIR/ref/N03-2026_regions.geojson  ← merge.py が参照
+
 【ステップ1: タイル取得】
 prefetch_tiles.py    タイル事前取得（フェーズ1）
        ↓
@@ -230,6 +236,17 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 - **対応 UR**: UR-003
 - `--mesh-list` で指定されたメッシュセットの地理的 bbox 内に座標がある SOTA サミットのみを削除候補の対象とする（解析対象外メッシュのサミットを誤って削除候補にしない）
+
+#### FR-017: N03 行政区域前処理（データ準備）
+
+- **対応 UR**: UR-003, UR-004
+- `preprocess_pref_boundaries.py` は国土数値情報 N03 行政区域 GeoJSON を都道府県/振興局レベルに dissolve して軽量化する
+- **実行タイミング**: 初回のみ（merge.py 実行前に一度だけ実施）
+- **入力**: `$DATA_DIR/ref/N03-2026.geojson`（国土数値情報 N03-2026 全国行政区域 GeoJSON、ユーザーが配置）
+- **出力**: `$DATA_DIR/ref/N03-2026_regions.geojson`（都道府県/振興局単位ポリゴン、47都道府県 + 北海道14振興局 = 計61地域）
+- **利用用途**: merge.py（FR-009）が新規ピークの座標を point-in-polygon 判定し、SOTA エリアコードを付与するために使用する
+- **フォールバック**: N03 前処理済みファイルが存在しない場合、merge.py は新規ピークに `ZZ/ZZ-A<seq>` を付与して続行する（エラー終了しない）
+- 出典: [`ref/SOURCES.md`](../ref/SOURCES.md)（国土数値情報 N03 行政区域）
 
 #### FR-013: GeoJSON・HTML ビューア生成
 
@@ -501,6 +518,18 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | フィーチャタイプ | Polygon（各ピーク 1 フィーチャ） |
 | プロパティ | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
 | 生成タイミング | `findsummits` 実行時（per-mesh CSV と同時） |
+
+### 6.9 入力: N03 前処理済み GeoJSON（merge.py 参照）
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/ref/N03-2026_regions.geojson` |
+| 形式 | GeoJSON（RFC 7946） |
+| 座標参照系 | WGS84（EPSG:4326） |
+| フィーチャ数 | 61（47都道府県 + 北海道14振興局） |
+| プロパティ | `assoc`（JA/JA5/JA6/JA8）、`area_code`（例: TK、IS）、`region_name`（都道府県名/振興局名） |
+| 生成方法 | `scripts/preprocess_pref_boundaries.py`（FR-017）を実行して生成 |
+| 省略時の動作 | ファイル未存在の場合、merge.py は新規ピークに `ZZ/ZZ-A<seq>` を付与して続行 |
 
 ---
 
