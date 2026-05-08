@@ -26,7 +26,7 @@
 | DEM5a / DEM5b / DEM5c | 国土地理院の5mメッシュ数値標高モデル（ズームレベル15）。5aが最優先、なければ5b、5cの順でフォールバック。 |
 | DEM10b | 国土地理院の10mメッシュ数値標高モデル（ズームレベル14）。DEM5が取得できない場合の最終フォールバック。 |
 | 標高タイル | 地理院タイルのうち標高データを提供するもの。RGB 値に標高をエンコードした 256×256px PNG。 |
-| SOTA | Summits On The Air。アマチュア無線の運用活動。本プロジェクトはSOTA日本支部（JA）の山岳リスト更新申請を目的とする。 |
+| SOTA | [Summits On The Air](https://www.sota.org.uk/)。アマチュア無線の運用活動。本プロジェクトは[SOTA日本支部](https://www.kawauchi.homeip.mydns.jp/sotajp/)（JA）の山岳リスト更新申請を目的とする。 |
 
 ## 出力物関連
 
