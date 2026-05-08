@@ -232,6 +232,7 @@ output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
   - GeoJSON は外部参照（`merged.geojson` を相対パスで `fetch()`）
   - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要
   - GitHub Pages では静的ホスティングのみで動作
+  - 地図帰属表示: Leaflet の attribution に `© 国土地理院` を必ず含める
 
 #### FR-014: 独立峰対応（レベル14 広域再解析）
 
