@@ -115,12 +115,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 - **対応 UR**: UR-001, UR-010
 - 国土地理院の標高タイル（ズームレベル15、256×256px PNG）を `$DATA_DIR/tiles/` に取得・キャッシュする
-- DEM 種別ごとに次のディレクトリ階層で保存する: `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png`
-- `If-Modified-Since` ヘッダーによる条件付き GET を使用し、差分取得に対応する
-- HTTP 429/503 受信時はエクスポネンシャルバックオフでリトライする
-- User-Agent は `findsummits/1.0 (mailto:<メールアドレス>)` 形式とし、`params/fetch_config.ini` で設定する
-- リクエスト間隔（ms）は `params/fetch_config.ini` の `interval_ms` で設定する
-- 並列ワーカー数は `params/fetch_config.ini` の `max_parallel` で設定する（デフォルト: 4）
+- DEM 種別ごとに次のディレクトリ階層で保存する: `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png`（`{dem}` は DEM 種別の最後1桁: `a`=DEM5a、`b`=DEM5b/DEM10b、`c`=DEM5c。DEM5b と DEM10b はズームレベル（z=15/14）で区別）
+- キャッシュ済みタイルの再取得時は `If-Modified-Since` ヘッダーを付与してリクエストし、サーバー側に更新がない場合（HTTP 304）はダウンロードをスキップする
+- サーバーから「リクエスト過多（HTTP 429）」または「一時利用不可（HTTP 503）」が返された場合、待機時間を倍々に増やしながら（エクスポネンシャルバックオフ）リトライする
+- タイル取得の HTTP リクエストに、ツール名と連絡先メールアドレスを含む識別子（User-Agent: `findsummits/1.0 (mailto:<メールアドレス>)`）を付与する（地理院サーバー側でアクセス元を特定・問い合わせできるようにするため）。メールアドレスはパラメータファイルに記入する（詳細は HLD 参照）
+- リクエスト間隔はパラメータファイルで設定する（詳細は HLD 参照）
+- タイルを並列で取得する（並列数はパラメータファイルで設定する、既定値: 4）
 
 #### FR-017: N03 行政区域前処理（データ準備）
 
@@ -442,8 +442,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | タイルサイズ | 256×256 px |
 | RGB→標高変換 | `elev = (R×65536 + G×256 + B) / 100.0` |
 | NODATA | R=128, G=0, B=0 → -9999.0m |
-| タイル URL パターン | `https://cyberjapandata.gsi.go.jp/xyz/{dem}/{z}/{x}/{y}.png` |
-| キャッシュ保存先 | `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png` |
+| タイル URL パターン | `https://cyberjapandata.gsi.go.jp/xyz/{dem}/{z}/{x}/{y}.png`（`{dem}` は URL サービス名。詳細は HLD 参照） |
+| キャッシュ保存先 | `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png`（`{dem}` は DEM 種別の最後1桁: `a`/`b`/`c`） |
 
 ### 6.2 入力: SOTA サミットリスト CSV
 
