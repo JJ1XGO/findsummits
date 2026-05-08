@@ -25,7 +25,7 @@
      - [FR-006: Keyコル検出・プロミネンス計算](#fr-006-keyコル検出プロミネンス計算)
      - [FR-007: プロミネンスフィルタ・per-mesh CSV 出力](#fr-007-プロミネンスフィルタper-mesh-csv-出力)
      - [FR-015: 標高地形図出力](#fr-015-標高地形図出力)
-     - [FR-016: アクティベーションエリア計算](#fr-016-アクティベーションエリア計算)
+     - [FR-016: アクティベーションゾーン計算](#fr-016-アクティベーションゾーン計算)
    - [フェーズ3: SOTA 突合・差分分類](#フェーズ3-sota-突合差分分類)
      - [FR-008: per-mesh CSV 統合](#fr-008-per-mesh-csv-統合)
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
@@ -51,7 +51,7 @@
    - [6.5 出力: GeoJSON・HTML ビューア](#65-出力-geojsonhtml-ビューア)
    - [6.6 内部インターフェース: per-mesh CSV（C → Python 境界）](#66-内部インターフェース-per-mesh-csvc--python-境界)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
-   - [6.8 内部インターフェース: アクティベーションエリア GeoJSON（C → Python 境界）](#68-内部インターフェース-アクティベーションエリア-geojsonc--python-境界)
+   - [6.8 内部インターフェース: アクティベーションゾーン GeoJSON（C → Python 境界）](#68-内部インターフェース-アクティベーションゾーン-geojsonc--python-境界)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
 9. [スコープ外](#9-スコープ外)
@@ -85,7 +85,7 @@ C + Python ハイブリッド構成（ADR-001）。3ステップの運用フロ�
 prefetch_tiles.py    タイル事前取得（フェーズ1）
        ↓
 【ステップ2: 解析・突合・確認】（GeoJSON/HTML で結果を確認してから次ステップへ）
-findsummits (C)      山頂・コル検出・アクティベーションエリア計算（フェーズ2）
+findsummits (C)      山頂・コル検出・アクティベーションゾーン計算（フェーズ2）
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
        ├─ per-peak activation area  ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
@@ -98,7 +98,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
        └─ submission.xlsx
 ```
 
-**C / Python 境界**: per-mesh CSV および アクティベーションエリア GeoJSON ファイル。  
+**C / Python 境界**: per-mesh CSV および アクティベーションゾーン GeoJSON ファイル。  
 詳細は [`decisions/ADR-001-hybrid-c-python-architecture.md`](decisions/ADR-001-hybrid-c-python-architecture.md) を参照。
 
 ---
@@ -190,11 +190,11 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - `$DATA_DIR/images/` ディレクトリが存在しない場合は自動生成する
 - 詳細は 6.7 を参照
 
-#### FR-016: アクティベーションエリア計算
+#### FR-016: アクティベーションゾーン計算
 
 - **対応 UR**: UR-003, UR-006
-- C エンジンは per-mesh CSV と同時にアクティベーションエリア GeoJSON を生成する
-- **アクティベーションエリアの定義**: SOTA ルールに従い、ピークから標高差 25m 以内（`elev ≥ peak_elev − 25.0m`）の連続エリア
+- C エンジンは per-mesh CSV と同時にアクティベーションゾーン GeoJSON を生成する
+- **アクティベーションゾーンの定義**: SOTA ルールに従い、ピークから標高差 25m 以内（`elev ≥ peak_elev − 25.0m`）の連続エリア
 - **計算方法**: ピーク位置を起点として Flood Fill を実行し、閾値以上の連続ピクセルを抽出する
 - 内部ピクセル群の輪郭を GeoJSON Polygon（座標列）として出力する（座標簡略化可）
 - Flood Fill が解析範囲（mesh_set 地理的範囲）外で途切れた場合は `area_truncated: true` フラグを付与する（is_tile_top と同様の扱い）
@@ -215,12 +215,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 - **対応 UR**: UR-003
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
-- 突合は各ピークのアクティベーションエリア（FR-016）を用いた point-in-polygon 判定で行う
-- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションエリア内に複数 SOTA サミットは数学的に存在しない
+- 突合は各ピークのアクティベーションゾーン（FR-016）を用いた point-in-polygon 判定で行う
+- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
 - **match_status 値**:
-  - `matched`: 検出ピークのアクティベーションエリア内に既存 SOTA サミット座標が存在する
-  - `new`: 検出ピークのアクティベーションエリア内に既存 SOTA サミット座標が存在しない（prominence ≥ 150m を満たす新規候補）
-  - `deleted`: いずれの検出ピークのアクティベーションエリアにも含まれない既存 SOTA サミット
+  - `matched`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する
+  - `new`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在しない（prominence ≥ 150m を満たす新規候補）
+  - `deleted`: いずれの検出ピークのアクティベーションゾーンにも含まれない既存 SOTA サミット
 - **stability 値**:
   - `confirmed`: 解析回数=期待値かつ is_tile_top=0 のみ
   - `unstable`: is_tile_top=1 が含まれる、または解析回数不一致
@@ -243,8 +243,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 | match_status | フィーチャ |
 |---|---|
-| matched | Point（ピーク）+ Polygon（アクティベーションエリア）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
-| new | Point（ピーク）+ Polygon（アクティベーションエリア）+ Point（Keyコル）+ LineString（ピーク→Keyコル） |
+| matched | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
+| new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ LineString（ピーク→Keyコル） |
 | deleted | Point（SOTA サミット）のみ |
 
 - **各フィーチャのプロパティ**:
@@ -259,7 +259,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - `stability`: confirmed / unstable
 - `is_tile_top`: 0 / 1
 
-**Polygon: アクティベーションエリア**
+**Polygon: アクティベーションゾーン**
 - `type`: "activation_area"
 - `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
 - `area_truncated`: true / false（Flood Fill が解析範囲外で途切れた場合 true）
@@ -289,8 +289,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - `merge.py` は `merged.geojson` を生成し、`scripts/viewer.html` を `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
   - Leaflet.js（CDN）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで `fetch()`）
-  - ピーク Point クリック時に対応するアクティベーションエリアポリゴンをハイライト表示する（matched: 赤 #FF0000 / new: 橙 #FF8800）
-  - `area_truncated: true` のアクティベーションエリアは警告色（橙 #FF8800）で表示する
+  - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 #FF0000 / new: 橙 #FF8800）
+  - `area_truncated: true` のアクティベーションゾーンは警告色（橙 #FF8800）で表示する
   - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要（`fetch()` の CORS 制限のため）
   - GitHub Pages では静的ホスティングのみで動作
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
@@ -464,7 +464,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | 生成スクリプト | merge.py（フェーズ3） |
 | GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャ構成 | FR-013 参照（アクティベーションエリアポリゴン含む） |
+| フィーチャ構成 | FR-013 参照（アクティベーションゾーンポリゴン含む） |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
 | HTML テンプレート | `scripts/viewer.html`（ソースコード同梱の固定テンプレート） |
 | 地図ライブラリ | Leaflet.js（CDN 参照） |
@@ -491,7 +491,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | 色分け | 標高 15 段階グラデーション（NODATA: 濃い青 / 海面: 薄い青 / 低地: 緑 / 中地: 黄茶 / 高山: 白） |
 | 生成タイミング | `findsummits` 実行時（per-mesh CSV と同時） |
 
-### 6.8 内部インターフェース: アクティベーションエリア GeoJSON（C → Python 境界）
+### 6.8 内部インターフェース: アクティベーションゾーン GeoJSON（C → Python 境界）
 
 | 項目 | 仕様 |
 |---|---|
