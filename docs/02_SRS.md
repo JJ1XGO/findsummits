@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-04-30 |
+| 最終更新日 | 2026-05-08 |
 | ステータス | ドラフト（TBDあり） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
@@ -53,7 +53,7 @@ findsummits (C)      標高デコード・Union-Find 山頂/コル検出
 merge.py (Python)    CSV 統合・SOTA 突合
        ↓  merged.csv   ($DATA_DIR/results/merged.csv)
 output_xlsx.py       申請書 XLSX 生成（Python）
-output_geojson.py    GeoJSON 生成（Python）
+output_geojson.py    GeoJSON + 静的 HTML ビューア生成（Python）
 ```
 
 **C / Python 境界**: per-mesh CSV ファイル。  
@@ -214,17 +214,24 @@ output_geojson.py    GeoJSON 生成（Python）
 | orig_lat | SOTA リスト登録緯度 |
 | orig_lon | SOTA リスト登録経度 |
 
-#### FR-013: GeoJSON 生成
+#### FR-013: GeoJSON・HTML ビューア生成
 
 - **対応 UR**: UR-006
 - 入力: `$DATA_DIR/results/merged.csv`
-- 出力先: `$DATA_DIR/results/merged.geojson`
+- **出力先**:
+  - `$DATA_DIR/results/merged.geojson`（GeoJSON）
+  - `$DATA_DIR/results/merged_viewer.html`（静的 HTML ビューア）
 - **フィーチャ構成**:
   - Point: 各ピーク。match_status で色分け（matched=緑 #00AA00 / new=マゼンタ #FF00FF / deleted=灰 #888888）
   - LineString: matched 行のみ、検出ピーク → SOTA 元座標を結ぶ（座標ずれ確認用）
 - **Point プロパティ**:
   - `match_status`, `summit_code`, `summit_name`, `peak_elev`, `prominence`, `stability`, `icon` (地理院地図アイコン URL)
 - **GeoJSON 属性の詳細定義**: **[TBD-03: ISSUE-008 設計確認後に確定]**
+- **HTML ビューア仕様**:
+  - Leaflet.js（CDN）+ 国土地理院標準タイルを背景レイヤーとして使用
+  - GeoJSON は外部参照（`merged.geojson` を相対パスで `fetch()`）
+  - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要
+  - GitHub Pages では静的ホスティングのみで動作
 
 #### FR-014: 独立峰対応（レベル14 広域再解析）
 
@@ -323,13 +330,19 @@ output_geojson.py    GeoJSON 生成（Python）
 | 区切り文字 | カンマ |
 | カラム | FR-012 参照 |
 
-### 6.5 出力: GeoJSON
+### 6.5 出力: GeoJSON・HTML ビューア
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `$DATA_DIR/results/merged.geojson` |
+| GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャ構成 | FR-013 参照 |
+| HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
+| 地図ライブラリ | Leaflet.js（CDN 参照） |
+| 背景タイル | 国土地理院標準地図 |
+| GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を fetch） |
+| ローカル閲覧 | HTTP サーバ（`python3 -m http.server`）が必要 |
+| GitHub Pages | 静的ホスティングのみで動作 |
 
 ### 6.6 内部インターフェース: per-mesh CSV（C → Python 境界）
 
@@ -386,7 +399,7 @@ URD セクション 5 より:
 - DEM1a（データ量が DEM5 の 25 倍、精度向上が僅少なため採用しない）
 - SOTA 申請書の提出・承認プロセス（ツールは申請書生成まで。提出は手動）
 - リアルタイム処理（バッチ処理のみ）
-- 地形の現地確認（目視確認は GeoJSON を使って地図上で行う）
+- 地形の現地確認（目視確認は GeoJSON または HTML ビューアを使って地図上で行う）
 
 ---
 
