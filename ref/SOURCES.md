@@ -22,7 +22,7 @@
 | タイトル | SOTA日本支部 山岳データ登録変更申請書 |
 | 提供元 | [SOTA日本山岳リスト](https://www.kawauchi.homeip.mydns.jp/sotajp/) |
 | 取得元URL | https://www.kawauchi.homeip.mydns.jp/sotajp/wp-content/uploads/2024/03/SOTA-Summit-list-revision-request.xlsx |
-| 備考 | 申請書テンプレート。新規・変更・削除の各シートに記入して申請する。 |
+| 備考 | 申請書テンプレート。1シート構成。アクション列に追加・変更・削除・その他を選択して申請する。 |
 
 ---
 
