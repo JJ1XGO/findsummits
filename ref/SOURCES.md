@@ -54,6 +54,17 @@
 
 ---
 
+## OpenStreetMap（地図タイル）
+
+| 項目 | 内容 |
+|---|---|
+| 提供元 | OpenStreetMap contributors |
+| 利用規約 | Open Database License (ODbL) — https://www.openstreetmap.org/copyright |
+| 帰属表示義務 | 利用成果物に `© OpenStreetMap contributors` の表示が必要 |
+| 本プロジェクトでの利用形態 | HTML ビューアの背景地図タイルとして使用（国土地理院地図との切り替え用） |
+
+---
+
 ## 参照文書（ファイル未格納）
 
 ### 日本の国土にかかる第1次地域区画
