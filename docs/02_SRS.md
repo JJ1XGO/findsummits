@@ -536,7 +536,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 環境詳細は [`environment.md`](environment.md) を参照。
 
-### C エンジン (`src/`)
+### 解析エンジン（C）
 
 | 依存 | バージョン |
 |---|---|
@@ -545,14 +545,14 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | libm | システム提供 |
 | pthread | システム提供 |
 
-### Python スクリプト (`scripts/`)
+### Python スクリプト
 
 | 依存 | 用途 |
 |---|---|
 | Python 3 | スクリプト実行 |
-| openpyxl | XLSX 生成（output.py） |
-| requests | タイル取得（prefetch_tiles.py） |
-| shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） |
+| openpyxl | XLSX 生成（FR-011） |
+| requests | タイル取得（FR-001） |
+| shapely | 都道府県/振興局判定（FR-009・FR-017） |
 
 ---
 
