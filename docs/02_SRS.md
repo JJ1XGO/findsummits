@@ -50,10 +50,10 @@
    - [6.3 出力: 申請書 XLSX](#63-出力-申請書-xlsx)
    - [6.4 出力: エビデンス CSV](#64-出力-エビデンス-csv)
    - [6.5 出力: GeoJSON・HTML ビューア](#65-出力-geojsonhtml-ビューア)
-   - [6.6 内部インターフェース: per-mesh CSV（C → Python 境界）](#66-内部インターフェース-per-mesh-csvc--python-境界)
+   - [6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）](#66-内部インターフェース-per-mesh-csvフェーズ2--フェーズ3-境界)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
-   - [6.8 内部インターフェース: アクティベーションゾーン GeoJSON（C → Python 境界）](#68-内部インターフェース-アクティベーションゾーン-geojsonc--python-境界)
-   - [6.9 入力: N03 前処理済み GeoJSON（merge.py 参照）](#69-入力-n03-前処理済み-geojsonmergepy-参照)
+   - [6.8 内部インターフェース: アクティベーションゾーン GeoJSON（フェーズ2 → フェーズ3 境界）](#68-内部インターフェース-アクティベーションゾーン-geojsonフェーズ2--フェーズ3-境界)
+   - [6.9 入力: N03 前処理済み GeoJSON](#69-入力-n03-前処理済み-geojson)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
 9. [スコープ外](#9-スコープ外)
@@ -215,7 +215,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - ピクセル群の外周輪郭を GeoJSON Polygon として出力する
 - Flood Fill が中心メッシュの地理的範囲外で途切れた場合、未確定フラグを付与する（FR-006 の is_tile_top と同様の扱い）
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
-- 詳細は [6.8 内部インターフェース: アクティベーションゾーン GeoJSON](#68-内部インターフェース-アクティベーションゾーン-geojsonc--python-境界) を参照
+- 詳細は [6.8 内部インターフェース: アクティベーションゾーン GeoJSON](#68-内部インターフェース-アクティベーションゾーン-geojsonフェーズ2--フェーズ3-境界) を参照
 
 ---
 
@@ -477,19 +477,19 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 | 項目 | 仕様 |
 |---|---|
-| 生成スクリプト | merge.py（フェーズ3） |
+| 生成 | フェーズ3 処理 |
 | GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャ構成 | FR-013 参照（アクティベーションゾーンポリゴン含む） |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
-| HTML テンプレート | `scripts/viewer.html`（ソースコード同梱の固定テンプレート） |
-| 地図ライブラリ | Leaflet.js（CDN 参照） |
+| HTML テンプレート | HTML テンプレートファイル（詳細は HLD） |
+| 地図ライブラリ | 地図表示ライブラリ（CDN 経由） |
 | 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
-| GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を fetch） |
-| ローカル閲覧 | HTTP サーバ（`python3 -m http.server`）が必要 |
+| GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を相対パスで読み込み） |
+| ローカル閲覧 | ローカル HTTP サーバが必要 |
 | GitHub Pages | 静的ホスティングのみで動作 |
 
-### 6.6 内部インターフェース: per-mesh CSV（C → Python 境界）
+### 6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）
 
 | 項目 | 仕様 |
 |---|---|
@@ -502,12 +502,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `$DATA_DIR/images/<meshcode>_terrain.png` |
-| 形式 | PNG（RGB 8bit） |
+| 形式 | PNG |
 | 解像度 | 長辺 6000px に縮小（アスペクト比保持） |
-| 色分け | 標高 15 段階グラデーション（NODATA: 濃い青 / 海面: 薄い青 / 低地: 緑 / 中地: 黄茶 / 高山: 白） |
+| 色分け | 標高に応じたグラデーション（詳細は HLD） |
 | 生成タイミング | `findsummits` 実行時（per-mesh CSV と同時） |
 
-### 6.8 内部インターフェース: アクティベーションゾーン GeoJSON（C → Python 境界）
+### 6.8 内部インターフェース: アクティベーションゾーン GeoJSON（フェーズ2 → フェーズ3 境界）
 
 | 項目 | 仕様 |
 |---|---|
@@ -518,7 +518,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | プロパティ | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
 | 生成タイミング | `findsummits` 実行時（per-mesh CSV と同時） |
 
-### 6.9 入力: N03 前処理済み GeoJSON（merge.py 参照）
+### 6.9 入力: N03 前処理済み GeoJSON
 
 | 項目 | 仕様 |
 |---|---|
@@ -527,8 +527,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャ数 | 61（47都道府県 + 北海道14振興局） |
 | プロパティ | `assoc`（JA/JA5/JA6/JA8）、`area_code`（例: TK、IS）、`region_name`（都道府県名/振興局名） |
-| 生成方法 | `scripts/preprocess_pref_boundaries.py`（FR-017）を実行して生成 |
-| 省略時の動作 | ファイル未存在の場合、merge.py は新規ピークに `ZZ/ZZ-A<seq>` を付与して続行 |
+| 生成方法 | 前処理スクリプト（FR-017）を実行して生成 |
+| 省略時の動作 | ファイル未存在の場合、フェーズ3 処理は新規ピークに `ZZ/ZZ-A<seq>` を付与して続行 |
 
 ---
 
