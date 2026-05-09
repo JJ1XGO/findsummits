@@ -329,7 +329,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - `変更`: match_status=matched かつ座標・標高に差異があるサミット
   - `削除`: match_status=deleted のサミット
   - `その他`: **[TBD-02: 使用条件・該当ケースを別途確認]**
-- **各アクションで使用するカラムのマッピング**（テンプレート列 A〜J）:
+- 各アクションで使用するカラムのマッピング（テンプレート列 A〜J）:
 
 | アクション | A: 山岳ID/県名 | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -343,9 +343,9 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-012: エビデンス CSV 生成
 
 - **対応 UR**: [UR-005](01_URD.md#ur-005)
-- merge.py が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
+- フェーズ3 が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
 - 出力先: `$DATA_DIR/results/merged.csv`
-- **出力カラム**（merge.py 出力）:
+- **出力カラム**:
 
 | カラム | 説明 |
 |---|---|
@@ -361,7 +361,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | col_lon | Keyコル経度 |
 | col_elev | Keyコル標高（m） |
 | prominence | プロミネンス（m） |
-| is_tile_top | 独立峰フラグ（1=Keyコル未確定） |
+| is_tile_top | 未確定フラグ（0/1、FR-006 参照） |
 | col_margin_px | Keyコルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
