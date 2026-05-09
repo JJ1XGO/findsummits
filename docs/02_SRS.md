@@ -4,7 +4,7 @@
 |---|---|
 | 作成日 | 2026-04-30 |
 | 最終更新日 | 2026-05-09 |
-| ステータス | ドラフト（TBD残3件） |
+| ステータス | ドラフト（TBD残3件・フェーズ再構成済み） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
 ---
@@ -27,15 +27,16 @@
      - [FR-007: プロミネンスフィルタ・per-mesh CSV 出力](#fr-007-プロミネンスフィルタper-mesh-csv-出力)
      - [FR-015: 標高地形図出力](#fr-015-標高地形図出力)
      - [FR-016: アクティベーションゾーン計算](#fr-016-アクティベーションゾーン計算)
-   - [フェーズ3: SOTA 突合・差分分類](#フェーズ3-sota-突合差分分類)
+   - [フェーズ3: 統合・広域再解析](#フェーズ3-統合広域再解析)
      - [FR-008: per-mesh CSV 統合](#fr-008-per-mesh-csv-統合)
+     - [FR-018: per-mesh activation.geojson 統合](#fr-018-per-mesh-activationgeojson-統合)
+     - [FR-014: 独立峰対応（レベル14 広域再解析）](#fr-014-独立峰対応レベル14-広域再解析)
+   - [フェーズ4: 突合・申請用出力生成](#フェーズ4-突合申請用出力生成)
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
      - [FR-010: 削除候補のスコープ](#fr-010-削除候補のスコープ)
      - [FR-013: GeoJSON・HTML ビューア生成](#fr-013-geojsonhtml-ビューア生成)
-   - [フェーズ4: 申請用出力生成](#フェーズ4-申請用出力生成)
      - [FR-011: 申請書 XLSX 生成](#fr-011-申請書-xlsx-生成)
      - [FR-012: エビデンス CSV 生成](#fr-012-エビデンス-csv-生成)
-     - [FR-014: 独立峰対応（レベル14 広域再解析）](#fr-014-独立峰対応レベル14-広域再解析)
 5. [非機能要件](#5-非機能要件)
    - [NFR-001: 精度（プロミネンス判定）](#nfr-001-精度プロミネンス判定)
    - [NFR-002: メモリ使用量](#nfr-002-メモリ使用量)
@@ -93,7 +94,7 @@ findsummits (C)      ピーク・コル検出・アクティベーションゾ�
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
        ├─ per-peak activation area  ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
-merge.py (Python)    SOTA 突合・差分分類（フェーズ3）
+merge.py (Python)    統合・広域再解析・SOTA 突合（フェーズ3〜4）
        ├─ merged.csv         ($DATA_DIR/results/merged.csv)
        ├─ merged.geojson     ← 目視確認用 GeoJSON
        └─ merged_viewer.html ← 目視確認用 静的 HTML ビューア
@@ -187,7 +188,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-007: プロミネンスフィルタ・per-mesh CSV 出力
 
 - **対応 UR**: [UR-001](01_URD.md#ur-001), [UR-005](01_URD.md#ur-005)
-- フェーズ2 で検出したピークとKeyコルの情報を per-mesh CSV として出力する。フェーズ3（[FR-008](#fr-008-per-mesh-csv-統合重複排除)）での最終判定（プロミネンス ≥ 150m）に備えて、一次フィルタとしてプロミネンス ≥ 130m を超えたピークのみを出力する
+- フェーズ2 で検出したピークとKeyコルの情報を per-mesh CSV として出力する。フェーズ3（[FR-008](#fr-008-per-mesh-csv-統合)）での最終判定（プロミネンス ≥ 150m）に備えて、一次フィルタとしてプロミネンス ≥ 130m を超えたピークのみを出力する
 - 一次フィルタ: プロミネンス ≥ 130m（最終判定はフェーズ3 で 150m）
 - 出力先: `$DATA_DIR/results/csv/<meshcode>.csv`
 - **出力カラム**（ヘッダー行あり）:
@@ -222,13 +223,13 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **アクティベーションゾーンの定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
 - **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する
 - ピクセル群の外周輪郭を GeoJSON Polygon として出力する
-- Flood Fill が解析対象メッシュ全体の地理的範囲外で途切れた場合、`area_truncated=true` フラグを付与する（ゾーンが実際より小さく計算されている可能性を示す）。[FR-009](#fr-009-sotaリスト突合match_status-判定) での突合判定では距離による補完判定を併用する
+- Flood Fill が解析対象メッシュ全体の地理的範囲外で途切れた場合、`area_truncated=true` フラグを付与する（ゾーンが実際より小さく計算されている可能性を示す）。フェーズ3 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域再解析してゾーンを再計算する
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
 - 詳細は [6.8 内部インターフェース: アクティベーションゾーン GeoJSON](#68-内部インターフェース-アクティベーションゾーン-geojsonフェーズ2--フェーズ3-境界) を参照
 
 ---
 
-### フェーズ3: SOTA 突合・差分分類
+### フェーズ3: 統合・広域再解析
 
 #### FR-008: per-mesh CSV 統合
 
@@ -241,11 +242,42 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - `stability`: `is_tile_top` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`
 - プロミネンス最終フィルタ: ≥ 150m（FR-007 の 130m フィルタ通過済みのレコードに適用）
 
+#### FR-018: per-mesh activation.geojson 統合
+
+- **対応 UR**: [UR-003](01_URD.md#ur-003), [UR-006](01_URD.md#ur-006)
+- **入力**: `$DATA_DIR/results/csv/` 配下の per-mesh `<meshcode>_activation.geojson`。メッシュコードリストが指定された場合はそのメッシュの GeoJSON のみ読み込む（省略時は全 GeoJSON）
+- フェーズ2（[FR-016](#fr-016-アクティベーションゾーン計算)）で出力された per-mesh `*_activation.geojson` を1つの統合 GeoJSON にまとめる
+- 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon は FR-008 の重複排除で採用された代表レコードのものを採用し、他は捨てる
+- 出力先: `$DATA_DIR/results/merged_activation.geojson`
+- 統合後の GeoJSON は [FR-014](#fr-014-独立峰対応レベル14-広域再解析) の入力として使用する
+
+#### FR-014: 独立峰対応（レベル14 広域再解析）
+
+- **対応 UR**: [UR-007](01_URD.md#ur-007)
+- **入力**: FR-008 が出力した統合済み CSV および FR-018 が出力した `$DATA_DIR/results/merged_activation.geojson`
+- **再解析トリガー**: 以下のいずれかのフラグを持つピークを対象とする
+  - `is_tile_top=1`（Keyコルが 3×3 解析範囲外 → プロミネンス未確定）
+  - `area_truncated=true`（アクティベーションゾーンが解析範囲外で途切れ → ゾーン不完全）
+- 対象ピークについて、ズームレベル 14 で広域再解析を行い、プロミネンスの確定とアクティベーションゾーンの完全計算を行う
+- 実装方針: レベル 15 タイルを読み込んで結合時に max pooling（低解像度化による広域カバー）でレベル 14 化する（別途タイル取得不要）
+- **出力**: 再解析結果で統合済み CSV と `merged_activation.geojson` の該当レコードを上書きする。再解析後は対象ピークの `is_tile_top` および `area_truncated` フラグが解消されていること
+- **詳細仕様**: **[TBD-01: ADR-004 の実装設計完了後に確定]**
+  - 座標変換ロジック（ズーム15→14 変換）
+  - col_margin_px への影響
+  - 1px ボーダーの地理的幅変化の許容判断
+  - 257×257 オーバーラップの max pooling 時の処理
+- 詳細は [`decisions/ADR-004-level14-max-pooling-isolated-peaks.md`](decisions/ADR-004-level14-max-pooling-isolated-peaks.md) を参照
+
+---
+
+### フェーズ4: 突合・申請用出力生成
+
 #### FR-009: SOTAリスト突合・match_status 判定
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
+- **入力**: FR-014 処理後の統合済み CSV（`$DATA_DIR/results/merged.csv`）および統合済み activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。この時点で全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
-- 突合は各ピークのアクティベーションゾーン（FR-016）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
+- 突合は各ピークのアクティベーションゾーン（FR-016 → FR-018 → FR-014 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
 - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
 - match_status 値:
   - `matched`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する
@@ -264,8 +296,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-013: GeoJSON・HTML ビューア生成
 
 - **対応 UR**: [UR-006](01_URD.md#ur-006)
-- フェーズ3 で GeoJSON と HTML を同時生成する
-- 入力: `$DATA_DIR/results/merged.csv` および `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
+- フェーズ4 で GeoJSON と HTML を同時生成する
+- 入力: `$DATA_DIR/results/merged.csv` および `$DATA_DIR/results/merged_activation.geojson`
 - **出力先**:
   - `$DATA_DIR/results/merged.geojson`（GeoJSON）
   - `$DATA_DIR/results/merged_viewer.html`（静的 HTML ビューア）
@@ -316,7 +348,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 - **HTML ビューア仕様**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
-  - フェーズ3 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
+  - フェーズ4 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
   - 地図表示ライブラリ（CDN 経由）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで読み込み）
   - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
@@ -324,10 +356,6 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - ローカルでの閲覧にはローカル HTTP サーバが必要（外部参照の CORS 制限のため）
   - GitHub Pages では静的ホスティングのみで動作
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
-
----
-
-### フェーズ4: 申請用出力生成
 
 #### FR-011: 申請書 XLSX 生成
 
@@ -357,7 +385,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-012: エビデンス CSV 生成
 
 - **対応 UR**: [UR-005](01_URD.md#ur-005)
-- フェーズ3 が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
+- フェーズ3〜4 が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
 - 出力先: `$DATA_DIR/results/merged.csv`
 - **出力カラム**:
 
@@ -382,18 +410,6 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | orig_lat | SOTA リスト登録緯度 |
 | orig_lon | SOTA リスト登録経度 |
 
-#### FR-014: 独立峰対応（レベル14 広域再解析）
-
-- **対応 UR**: [UR-007](01_URD.md#ur-007)
-- 未確定フラグが 1 のピークに対して、ズームレベル 14 で広域再解析を行いプロミネンスを確定させる
-- 実装方針: レベル 15 タイルを読み込んで結合時に max pooling（低解像度化による広域カバー）でレベル 14 化する（別途タイル取得不要）
-- **詳細仕様**: **[TBD-01: ADR-004 の実装設計完了後に確定]**
-  - 座標変換ロジック（ズーム15→14 変換）
-  - col_margin_px への影響
-  - 1px ボーダーの地理的幅変化の許容判断
-  - 257×257 オーバーラップの max pooling 時の処理
-- 詳細は [`decisions/ADR-004-level14-max-pooling-isolated-peaks.md`](decisions/ADR-004-level14-max-pooling-isolated-peaks.md) を参照
-
 ---
 
 ## 5. 非機能要件
@@ -403,7 +419,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **対応 UR**: [UR-002](01_URD.md#ur-002)
 - プロミネンス ≥ 150m をサミット候補として出力すること
 - 一次フィルタは 130m（境界付近の精度マージン確保のため）
-- 最終 150m 判定はフェーズ3 で実施
+- 最終 150m 判定は FR-008（フェーズ3）で実施
 
 #### NFR-002: メモリ使用量
 
@@ -491,7 +507,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 | 項目 | 仕様 |
 |---|---|
-| 生成 | フェーズ3 処理 |
+| 生成 | フェーズ4 処理 |
 | GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャ構成 | [FR-013 参照](#fr-013-geojsonhtml-ビューア生成)（アクティベーションゾーンポリゴン含む） |
@@ -542,7 +558,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | フィーチャ数 | 61（47都道府県 + 北海道14振興局） |
 | プロパティ | `assoc`（JA/JA5/JA6/JA8）、`area_code`（例: TK、IS）、`region_name`（都道府県名/振興局名） |
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成 |
-| 省略時の動作 | ファイル未存在の場合、フェーズ3 処理は新規ピークに `ZZ/ZZ-A<seq>` を付与して続行 |
+| 省略時の動作 | ファイル未存在の場合、フェーズ4 処理は新規ピークに `ZZ/ZZ-A<seq>` を付与して続行 |
 
 ---
 
