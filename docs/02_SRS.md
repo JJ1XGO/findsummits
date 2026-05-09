@@ -250,7 +250,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-013: GeoJSON・HTML ビューア生成
 
 - **対応 UR**: [UR-006](01_URD.md#ur-006)
-- **生成スクリプト**: merge.py（フェーズ3 で GeoJSON と HTML を同時生成する）
+- フェーズ3 で GeoJSON と HTML を同時生成する
 - 入力: `$DATA_DIR/results/merged.csv` および `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
 - **出力先**:
   - `$DATA_DIR/results/merged.geojson`（GeoJSON）
@@ -273,17 +273,17 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - `peak_elev`: 検出標高（m）
 - `prominence`: プロミネンス（m）
 - `stability`: confirmed / unstable
-- `is_tile_top`: 0 / 1
+- `is_tile_top`: 未確定フラグ（0/1）
 
 **Polygon: アクティベーションゾーン**
 - `type`: "activation_area"
 - `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
-- `area_truncated`: true / false（Flood Fill が解析範囲外で途切れた場合 true）
+- `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
 
 **Point: Keyコル**
 - `type`: "col"
 - `col_elev`: Keyコル標高（m）
-- is_tile_top=1 の場合は含めない（col_lat/col_lon が 0.0 のため）
+- 未確定フラグが 1 の場合は含めない
 
 **Point: 既存 SOTA サミット**
 - `type`: "sota_summit"
@@ -294,20 +294,20 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 **LineString: ピーク → Keyコル**
 - `type`: "prominence_range"
-- is_tile_top=1 の場合は生成しない
+- 未確定フラグが 1 の場合は生成しない
 
 **LineString: ピーク → SOTA サミット**
 - `type`: "coord_diff"
 - matched のみ生成
 
 - **HTML ビューア仕様**:
-  - `scripts/viewer.html` を固定テンプレートとしてソースコードに同梱する
-  - `merge.py` は `merged.geojson` を生成し、`scripts/viewer.html` を `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
-  - Leaflet.js（CDN）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
-  - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで `fetch()`）
-  - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 #FF0000 / new: 橙 #FF8800）
-  - `area_truncated: true` のアクティベーションゾーンは警告色（橙 #FF8800）で表示する
-  - ローカルでの閲覧には HTTP サーバ（`python3 -m http.server`）が必要（`fetch()` の CORS 制限のため）
+  - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
+  - フェーズ3 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
+  - 地図表示ライブラリ（CDN 経由）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
+  - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで読み込み）
+  - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
+  - 未確定フラグ付きのアクティベーションゾーンは警告色（橙）で表示する
+  - ローカルでの閲覧にはローカル HTTP サーバが必要（外部参照の CORS 制限のため）
   - GitHub Pages では静的ホスティングのみで動作
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
 
