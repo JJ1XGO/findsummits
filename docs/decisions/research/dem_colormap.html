@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEM カラースキーム色見本</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a24;
+    --surface2: #1e2433;
+    --border: #2a3148;
+    --text: #e8ecf4;
+    --text-muted: #7a85a0;
+    --accent: #4fc3f7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  header h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 300;
+  }
+
+  .schemes-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.8rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .scheme-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+
+  .scheme-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .scheme-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent)22;
+  }
+
+  .gradient-bar {
+    height: 48px;
+    width: 100%;
+    position: relative;
+  }
+
+  .gradient-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.3));
+  }
+
+  .scheme-info {
+    padding: 1rem 1.2rem;
+  }
+
+  .scheme-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+
+  .scheme-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .scheme-tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 99px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .scheme-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.5;
+    margin-bottom: 0.9rem;
+  }
+
+  .stops-row {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .stop-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .stop-chip:hover { color: var(--text); }
+
+  .stop-swatch {
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 99px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    white-space: nowrap;
+    z-index: 999;
+  }
+
+  .copied-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+    padding-left: 0.2rem;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .section-label:first-of-type { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DEM Color Schemes</h1>
+  <p>デジタル標高地形図 カラースキーム色見本　— 色コードをクリックでコピー</p>
+</header>
+
+<div id="app"></div>
+
+<div class="copied-toast" id="toast">コピーしました</div>
+
+<script>
+const schemes = [
+  {
+    category: "🌍 地形古典系",
+    items: [
+      {
+        name: "Hypsometric Classic",
+        tag: "定番",
+        desc: "深海→平地→高山の伝統的な地形図配色。国土地理院などでも広く使われる標準スタイル。",
+        stops: [
+          { label: "深海", color: "#08306b" },
+          { label: "浅海", color: "#2166ac" },
+          { label: "海岸", color: "#74add1" },
+          { label: "平野", color: "#d9f0a3" },
+          { label: "丘陵", color: "#78c679" },
+          { label: "山地", color: "#31a354" },
+          { label: "高山", color: "#c9973a" },
+          { label: "岩峰", color: "#a63603" },
+          { label: "雪線", color: "#f7f7f7" },
+        ]
+      },
+      {
+        name: "SRTM Earth",
+        tag: "NASA風",
+        desc: "NASAのSRTMデータでよく使われる彩色。海洋の青から砂漠のオレンジ、森林の緑、山岳の白まで。",
+        stops: [
+          { label: "深海", color: "#003366" },
+          { label: "浅瀬", color: "#006994" },
+          { label: "砂浜", color: "#c2a35a" },
+          { label: "草原", color: "#7ab648" },
+          { label: "森林", color: "#3a7d2c" },
+          { label: "山麓", color: "#8b6914" },
+          { label: "岩稜", color: "#c8a882" },
+          { label: "積雪", color: "#ffffff" },
+        ]
+      },
+    ]
+  },
+  {
+    category: "🎨 モダン・ビジュアライゼーション系",
+    items: [
+      {
+        name: "Viridis Terrain",
+        tag: "知覚均一",
+        desc: "色盲に配慮した知覚均一カラーマップ。印刷・画面両対応で視認性が高い。データ可視化の現代標準。",
+        stops: [
+          { label: "最低", color: "#440154" },
+          { label: "低地", color: "#31688e" },
+          { label: "中間", color: "#35b779" },
+          { label: "高地", color: "#fde725" },
+        ]
+      },
+      {
+        name: "Plasma Ridge",
+        tag: "高コントラスト",
+        desc: "熱放射をイメージした鮮烈な色調。急峻な地形差を強調したいプレゼン・論文向け。",
+        stops: [
+          { label: "最低", color: "#0d0887" },
+          { label: "低地", color: "#7e03a8" },
+          { label: "中間", color: "#cc4778" },
+          { label: "高地", color: "#f89540" },
+          { label: "最高", color: "#f0f921" },
+        ]
+      },
+      {
+        name: "Cividis Topo",
+        tag: "ユニバーサル",
+        desc: "色覚多様性に完全対応。青灰から黄緑へのグラデーションで、どの閲覧環境でも正確に伝わる。",
+        stops: [
+          { label: "最低", color: "#00204d" },
+          { label: "低地", color: "#31446b" },
+          { label: "中間", color: "#666870" },
+          { label: "高地", color: "#a5934b" },
+          { label: "最高", color: "#ffea46" },
+        ]
+      },
+    ]
+  },
+  {
+    category: "🗾 日本・アジア地形系",
+    items: [
+      {
+        name: "Japan Topo",
+        tag: "国産風",
+        desc: "日本の地形に合わせた配色。本州の平野・丘陵から3000m級の山岳まで自然に表現できる。",
+        stops: [
+          { label: "海洋", color: "#1a4f72" },
+          { label: "沿岸", color: "#5ba3c9" },
+          { label: "低地", color: "#e8f5c8" },
+          { label: "台地", color: "#a8d08d" },
+          { label: "山地", color: "#6aa84f" },
+          { label: "亜高山", color: "#b5651d" },
+          { label: "高山", color: "#8b7355" },
+          { label: "頂上", color: "#f0ebe3" },
+        ]
+      },
+      {
+        name: "Monsoon Asia",
+        tag: "熱帯〜温帯",
+        desc: "熱帯雨林から雪山まで、アジアモンスーン地域の多様な植生・地形を反映した彩色。",
+        stops: [
+          { label: "深海", color: "#004c6d" },
+          { label: "浅海", color: "#378dbf" },
+          { label: "沿岸低地", color: "#c8e6a0" },
+          { label: "熱帯林", color: "#228b22" },
+          { label: "常緑林", color: "#145214" },
+          { label: "高原", color: "#cd853f" },
+          { label: "岩稜", color: "#8b6914" },
+          { label: "万年雪", color: "#e8e8e8" },
+        ]
+      },
+    ]
+  },
+  {
+    category: "🌙 ダーク・スタイリッシュ系",
+    items: [
+      {
+        name: "Midnight Relief",
+        tag: "ダーク",
+        desc: "暗背景向けの高級感ある彩色。ダッシュボード・Webマップ・プレゼンに映える。",
+        stops: [
+          { label: "深海", color: "#020b18" },
+          { label: "浅海", color: "#0a2a4a" },
+          { label: "低地", color: "#1a3a2a" },
+          { label: "丘陵", color: "#2d5a27" },
+          { label: "山地", color: "#5a7a3a" },
+          { label: "高山", color: "#9a8060" },
+          { label: "岩峰", color: "#c8b890" },
+          { label: "雪", color: "#e8e4dc" },
+        ]
+      },
+      {
+        name: "Neon Altitude",
+        tag: "サイバー",
+        desc: "SF・ゲーム的なデジタル地形表現。技術的・近未来的な文脈でのデータビジュアライゼーション向け。",
+        stops: [
+          { label: "最低", color: "#000022" },
+          { label: "低地", color: "#001a4d" },
+          { label: "中低", color: "#003366" },
+          { label: "中間", color: "#006666" },
+          { label: "中高", color: "#009966" },
+          { label: "高地", color: "#00cc44" },
+          { label: "最高", color: "#ccff00" },
+        ]
+      },
+    ]
+  },
+  {
+    category: "🏔️ 特殊用途系",
+    items: [
+      {
+        name: "Mono Relief",
+        tag: "単色陰影",
+        desc: "単色の陰影起伏表現。他の主題図と重ねて使うベースレイヤーとして最適。白黒印刷にも対応。",
+        stops: [
+          { label: "最低", color: "#1a1a1a" },
+          { label: "低", color: "#4a4a4a" },
+          { label: "中低", color: "#787878" },
+          { label: "中", color: "#a8a8a8" },
+          { label: "中高", color: "#cccccc" },
+          { label: "高", color: "#e8e8e8" },
+          { label: "最高", color: "#ffffff" },
+        ]
+      },
+      {
+        name: "Bathymetry Deep",
+        tag: "海底地形",
+        desc: "海底地形専用の青系グラデーション。深海底から大陸棚・陸棚縁辺まで段階的に表現。",
+        stops: [
+          { label: "超深海", color: "#000033" },
+          { label: "深海", color: "#001a66" },
+          { label: "中深層", color: "#003399" },
+          { label: "深層", color: "#0055b3" },
+          { label: "中層", color: "#0077cc" },
+          { label: "浅層", color: "#33aadd" },
+          { label: "大陸棚", color: "#88ccee" },
+          { label: "沿岸", color: "#cceeee" },
+        ]
+      },
+    ]
+  },
+];
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function buildGradient(stops) {
+  const colors = stops.map((s,i) => `${s.color} ${Math.round(i/(stops.length-1)*100)}%`).join(', ');
+  return `linear-gradient(to right, ${colors})`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast(`コピー: ${text}`));
+}
+
+const app = document.getElementById('app');
+let html = '';
+
+schemes.forEach(section => {
+  html += `<div class="section-label">${section.category}</div>`;
+  html += `<div class="schemes-grid">`;
+  section.items.forEach((scheme, si) => {
+    const gradient = buildGradient(scheme.stops);
+    const stopsHtml = scheme.stops.map(s =>
+      `<div class="stop-chip" onclick="copyText('${s.color}')" title="${hexToRgb(s.color)}">
+        <div class="stop-swatch" style="background:${s.color};border:1px solid rgba(255,255,255,0.15)"></div>
+        <span>${s.label}</span>
+        <span style="color:#4fc3f7;margin-left:2px">${s.color}</span>
+      </div>`
+    ).join('');
+
+    html += `
+    <div class="scheme-card">
+      <div class="gradient-bar" style="background:${gradient}"></div>
+      <div class="scheme-info">
+        <div class="scheme-header">
+          <span class="scheme-name">${scheme.name}</span>
+          <span class="scheme-tag">${scheme.tag}</span>
+        </div>
+        <div class="scheme-desc">${scheme.desc}</div>
+        <div class="stops-row">${stopsHtml}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+});
+
+app.innerHTML = html;
+</script>
+</body>
+</html>
