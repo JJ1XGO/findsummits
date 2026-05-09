@@ -199,12 +199,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-015: 標高地形図出力
 
 - **対応 UR**: [UR-001](01_URD.md#ur-001)（解析結果の目視確認補助）
-- C エンジンは per-mesh CSV と同時に標高地形図（`$DATA_DIR/images/<meshcode>_terrain.png`）を生成する
-- 出力形式: PNG（RGB 8bit）
+- per-mesh CSV と同時に標高地形図（`$DATA_DIR/images/<meshcode>_terrain.png`）を生成する
+- 出力形式: PNG
 - 解像度: 長辺 6000px に縮小（アスペクト比保持）
-- 色分け: 標高を 15 段階のグラデーションで表現（NODATA は濃い青で表示）
+- 色分け: 標高に応じたグラデーションで表現（NODATA は識別可能な色で表示）
 - `$DATA_DIR/images/` ディレクトリが存在しない場合は自動生成する
-- 詳細は 6.7 を参照
+- 詳細は [6.7 出力: 標高地形図](#67-出力-標高地形図terrain-rgb-png) を参照
 
 #### FR-016: アクティベーションゾーン計算
 
