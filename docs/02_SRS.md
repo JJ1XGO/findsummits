@@ -179,21 +179,21 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-007: プロミネンスフィルタ・per-mesh CSV 出力
 
 - **対応 UR**: [UR-001](01_URD.md#ur-001), [UR-005](01_URD.md#ur-005)
-- C エンジン内での一次フィルタ: プロミネンス ≥ 130m（最終判定は Python 側で 150m）
+- 一次フィルタ: プロミネンス ≥ 130m（最終判定はフェーズ3 で 150m）
 - 出力先: `$DATA_DIR/results/csv/<meshcode>.csv`
-- **出力カラム**（C エンジン出力、ヘッダー行あり）:
+- **出力カラム**（ヘッダー行あり）:
 
 | カラム | 型 | 精度 | 説明 |
 |---|---|---|---|
 | peak_lat | float | 小数点8桁 | ピーク緯度 |
 | peak_lon | float | 小数点8桁 | ピーク経度 |
 | peak_elev | float | 小数点2桁 | ピーク標高（m） |
-| col_lat | float | 小数点8桁 | Keyコル緯度（is_tile_top=1 時は 0.0） |
-| col_lon | float | 小数点8桁 | Keyコル経度（is_tile_top=1 時は 0.0） |
+| col_lat | float | 小数点8桁 | Keyコル緯度（未確定フラグが 1 の場合は 0.0） |
+| col_lon | float | 小数点8桁 | Keyコル経度（未確定フラグが 1 の場合は 0.0） |
 | col_elev | float | 小数点2桁 | Keyコル標高（m） |
 | prominence | float | 小数点2桁 | プロミネンス（m） |
-| is_tile_top | int | 0/1 | 解析範囲内で Keyコル未発見の場合 1 |
-| col_margin_px | int | — | Keyコルがメッシュ端から何 px 離れているか |
+| is_tile_top | int | 0/1 | Keyコルが解析範囲外の場合 1（未確定フラグ） |
+| col_margin_px | int | — | Keyコルとメッシュ端との距離（ピクセル単位） |
 | center_mesh | int | — | 解析中心メッシュコード（4桁） |
 
 #### FR-015: 標高地形図出力
