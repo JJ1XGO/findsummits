@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-09",
-    "counter": 14
+    "counter": 15
   },
   "issues": [
     {
@@ -274,6 +274,24 @@
       "id": "ISSUE-014",
       "title": "削除候補サミットの最近接検出ピーク特定",
       "description": "deleted サミットが「どの検出ピークに最も近いか」をデータとして持ち、HTML ビューアと申請書で活用できるようにする。merge.py で全検出ピークとのハバーサイン距離を計算し最近接ピークを特定。追加カラム: dominant_peak_code / dominant_peak_dist_m。GeoJSON に LineString 追加。SRS コンテンツレビュー時（FR-009・FR-012・FR-013・FR-011）に合わせて仕様化・更新する。",
+      "type": "機能追加",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-09",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-015",
+      "title": "HTML ビューアでの山岳名入力・ブラウザ完結出力",
+      "description": "GitHub Pages 上の HTML ビューアで山岳名（JP/EN）を入力し、申請書 XLSX・CSV・GeoJSON をブラウザ内で完結生成・ダウンロードできるようにする。XLSX 生成は SheetJS（JS ライブラリ）を使用。入力した名称は localStorage に保持し、次回アクセス時も復元する。GeoJSON に申請書生成に必要な全データを含めることが前提。SRS コンテンツレビュー時（FR-013・FR-011・FR-012）に仕様化・更新する。",
       "type": "機能追加",
       "priority": "中",
       "category": null,
