@@ -1,0 +1,436 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.303,
+          40.6559
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/AM-001",
+        "name": "JA/AM-001(岩木山)",
+        "alt_m": 1625,
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.2853,
+          36.9551
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/FS-001",
+        "name": "JA/FS-001(燧ヶ岳)",
+        "alt_m": 2356,
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.3536,
+          37.0475
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/FS-002",
+        "name": "JA/FS-002(会津駒ヶ岳)",
+        "alt_m": 2133,
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          134.5138,
+          35.354
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/HG-001",
+        "name": "JA/HG-001(氷ノ山(須賀ノ山))",
+        "alt_m": 1510,
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.001,
+          39.8526
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/IT-001",
+        "name": "JA/IT-001(岩手山)",
+        "alt_m": 2038,
+        "role": "parent+target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6607,
+          37.8332
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/NI-007",
+        "name": "JA/NI-007(大日岳)",
+        "alt_m": 2128,
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          137.648,
+          36.2892
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/NN-001",
+        "name": "JA/NN-001(奥穂高岳)",
+        "alt_m": 3190,
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          137.634,
+          35.3983
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/NN-074",
+        "name": "JA/NN-074(点1940(波合山(三角点)近傍))",
+        "alt_m": 1940,
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.9075,
+          34.1736
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/NR-001",
+        "name": "JA/NR-001(八経ヶ岳)",
+        "alt_m": 1915,
+        "role": "parent+target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.3759,
+          36.7986
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/TG-001",
+        "name": "JA/TG-001(白根山)",
+        "alt_m": 2578,
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.5463,
+          35.3712
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/TT-001",
+        "name": "JA/TT-001(大山(剣ヶ峰))",
+        "alt_m": 1729,
+        "role": "parent+target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.0488,
+          39.0994
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/YM-001",
+        "name": "JA/YM-001(鳥海山(新山))",
+        "alt_m": 2236,
+        "role": "parent+target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.2388,
+          35.6743
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/YN-001",
+        "name": "JA/YN-001(北岳)",
+        "alt_m": 3193,
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.6708,
+          35.8686
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/YN-012",
+        "name": "JA/YN-012(北奥千丈岳)",
+        "alt_m": 2601,
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            133.5463,
+            35.3712
+          ],
+          [
+            135.9075,
+            34.1736
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/TT-001",
+        "to": "JA/NR-001",
+        "dist_km": 253.5,
+        "bearing_deg": 121.0,
+        "direction": "E-W"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.0488,
+            39.0994
+          ],
+          [
+            139.2853,
+            36.9551
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/YM-001",
+        "to": "JA/FS-001",
+        "dist_km": 247.6,
+        "bearing_deg": 195.9,
+        "direction": "N-S"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            135.9075,
+            34.1736
+          ],
+          [
+            137.634,
+            35.3983
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/NR-001",
+        "to": "JA/NN-074",
+        "dist_km": 208.3,
+        "bearing_deg": 48.7,
+        "direction": "E-W"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            139.3759,
+            36.7986
+          ],
+          [
+            138.6708,
+            35.8686
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/TG-001",
+        "to": "JA/YN-012",
+        "dist_km": 121.2,
+        "bearing_deg": 211.6,
+        "direction": "N-S"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            141.001,
+            39.8526
+          ],
+          [
+            140.0488,
+            39.0994
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/IT-001",
+        "to": "JA/YM-001",
+        "dist_km": 117.0,
+        "bearing_deg": 224.6,
+        "direction": "N-S"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.303,
+            40.6559
+          ],
+          [
+            141.001,
+            39.8526
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/AM-001",
+        "to": "JA/IT-001",
+        "dist_km": 107.2,
+        "bearing_deg": 146.2,
+        "direction": "N-S"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            139.6607,
+            37.8332
+          ],
+          [
+            139.3536,
+            37.0475
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/NI-007",
+        "to": "JA/FS-002",
+        "dist_km": 91.5,
+        "bearing_deg": 197.3,
+        "direction": "N-S"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            134.5138,
+            35.354
+          ],
+          [
+            133.5463,
+            35.3712
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/HG-001",
+        "to": "JA/TT-001",
+        "dist_km": 87.8,
+        "bearing_deg": 271.5,
+        "direction": "E-W"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            137.648,
+            36.2892
+          ],
+          [
+            138.2388,
+            35.6743
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/NN-001",
+        "to": "JA/YN-001",
+        "dist_km": 86.6,
+        "bearing_deg": 142.0,
+        "direction": "N-S"
+      }
+    }
+  ]
+}
