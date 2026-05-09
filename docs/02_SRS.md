@@ -187,6 +187,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-007: プロミネンスフィルタ・per-mesh CSV 出力
 
 - **対応 UR**: [UR-001](01_URD.md#ur-001), [UR-005](01_URD.md#ur-005)
+- フェーズ2 で検出したピークとKeyコルの情報を per-mesh CSV として出力する。フェーズ3（[FR-008](#fr-008-per-mesh-csv-統合重複排除)）での最終判定（プロミネンス ≥ 150m）に備えて、一次フィルタとしてプロミネンス ≥ 130m を超えたピークのみを出力する
 - 一次フィルタ: プロミネンス ≥ 130m（最終判定はフェーズ3 で 150m）
 - 出力先: `$DATA_DIR/results/csv/<meshcode>.csv`
 - **出力カラム**（ヘッダー行あり）:
@@ -201,7 +202,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | col_elev | float | 小数点2桁 | Keyコル標高（m） |
 | prominence | float | 小数点2桁 | プロミネンス（m） |
 | is_tile_top | int | 0/1 | Keyコルが解析範囲外の場合 1（未確定フラグ） |
-| col_margin_px | int | — | Keyコルとメッシュ端との距離（ピクセル単位） |
+| col_margin_px | int | — | Keyコルから解析範囲（結合画像）の端（4辺）までの最短距離（ピクセル単位）。小さいほど信頼性が低い |
 | center_mesh | int | — | 解析中心メッシュコード（4桁） |
 
 #### FR-015: 標高地形図出力
