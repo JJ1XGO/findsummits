@@ -209,13 +209,13 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-016: アクティベーションゾーン計算
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003), [UR-006](01_URD.md#ur-006)
-- C エンジンは per-mesh CSV と同時にアクティベーションゾーン GeoJSON を生成する
-- **アクティベーションゾーンの定義**: SOTA ルールに従い、ピークから標高差 25m 以内（`elev ≥ peak_elev − 25.0m`）の連続エリア
-- **計算方法**: ピーク位置を起点として Flood Fill を実行し、閾値以上の連続ピクセルを抽出する
-- 内部ピクセル群の輪郭を GeoJSON Polygon（座標列）として出力する（座標簡略化可）
-- Flood Fill が解析範囲（mesh_set 地理的範囲）外で途切れた場合は `area_truncated: true` フラグを付与する（is_tile_top と同様の扱い）
+- per-mesh CSV と同時にアクティベーションゾーン GeoJSON を生成する
+- **アクティベーションゾーンの定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
+- **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する
+- ピクセル群の外周輪郭を GeoJSON Polygon として出力する
+- Flood Fill が中心メッシュの地理的範囲外で途切れた場合、未確定フラグを付与する（FR-006 の is_tile_top と同様の扱い）
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
-- 詳細は 6.8 を参照
+- 詳細は [6.8 内部インターフェース: アクティベーションゾーン GeoJSON](#68-内部インターフェース-アクティベーションゾーン-geojsonc--python-境界) を参照
 
 ---
 
