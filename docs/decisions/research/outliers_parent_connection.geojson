@@ -1,0 +1,148 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.5463,
+          35.3712
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/TT-001",
+        "name": "JA/TT-001(大山(剣ヶ峰))",
+        "alt_m": "1729m 10pt ",
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.0488,
+          39.0994
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/YM-001",
+        "name": "JA/YM-001(鳥海山(新山))",
+        "alt_m": "2236m 10pt ",
+        "role": "target"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.9075,
+          34.1736
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/NR-001",
+        "name": "JA/NR-001(八経ヶ岳)",
+        "alt_m": "1915m 10pt ",
+        "role": "target+parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.2853,
+          36.9551
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/FS-001",
+        "name": "JA/FS-001(燧ヶ岳)",
+        "alt_m": "2356m 10pt ",
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          137.634,
+          35.3983
+        ]
+      },
+      "properties": {
+        "SummitCode": "JA/NN-074",
+        "name": "JA/NN-074(点1940(波合山(三角点)近傍))",
+        "alt_m": "1940m 10pt ",
+        "role": "parent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            133.5463,
+            35.3712
+          ],
+          [
+            135.9075,
+            34.1736
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/TT-001",
+        "to": "JA/NR-001",
+        "label": "大山 → 八経ヶ岳 (253.5km)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.0488,
+            39.0994
+          ],
+          [
+            139.2853,
+            36.9551
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/YM-001",
+        "to": "JA/FS-001",
+        "label": "鳥海山 → 燧ヶ岳 (247.6km)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            135.9075,
+            34.1736
+          ],
+          [
+            137.634,
+            35.3983
+          ]
+        ]
+      },
+      "properties": {
+        "from": "JA/NR-001",
+        "to": "JA/NN-074",
+        "label": "八経ヶ岳 → 点1940 (208.3km)"
+      }
+    }
+  ]
+}
