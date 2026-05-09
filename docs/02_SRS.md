@@ -233,8 +233,13 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-008: per-mesh CSV 統合
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
-- `$DATA_DIR/results/csv/` 配下の全 per-mesh CSV を読み込み、重複排除して統合する
-- プロミネンス最終フィルタ: ≥ 150m
+- **入力**: `$DATA_DIR/results/csv/` 配下の全 per-mesh CSV（メッシュコードリストによるフィルタは行わない）
+- 同一ピーク座標（ズームレベル15 タイル座標が一致）のレコードを同一ピークとして重複排除し、統合する
+  - 複数解析のうち `(未確定フラグ=0, Keyコル標高が最も高い)` レコードを代表に採用する（保守的評価）
+  - `analysis_count`: 重複排除前の出現回数（実際の解析回数）
+  - `expected_count`: メッシュコードリスト（オプション）をもとに算出する期待解析回数。リストが省略された場合は空欄
+  - `stability`: `is_tile_top` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`
+- プロミネンス最終フィルタ: ≥ 150m（FR-007 の 130m フィルタ通過済みのレコードに適用）
 
 #### FR-009: SOTAリスト突合・match_status 判定
 
