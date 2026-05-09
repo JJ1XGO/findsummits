@@ -45,7 +45,7 @@
 | タイル列 x | `floor( (lon + 180) / 360 × 2^z )` |
 | タイル行 y | `floor( (1 − ln(tan(lat·π/180) + 1/cos(lat·π/180)) / π) / 2 × 2^z )` |
 
-（参照: [地理院タイルの仕様](https://maps.gsi.go.jp/development/siyou.html)）
+（参照: [緯度経度からタイル座標への変換（TrailNote）](https://www.trail-note.net/tech/coordinate/)）
 
 ---
 
