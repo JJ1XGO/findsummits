@@ -160,7 +160,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - 対象メッシュを中心に最大 3×3（最大 9 メッシュ）を結合して解析する
 - 結合範囲の外周に 1px 幅の海面ボーダー（0m）を付加し、メッシュ端を海岸線とみなす
 - 中心メッシュの地理的範囲内のピークのみを per-mesh CSV に出力する（周辺 8 メッシュは Keyコル検出専用であり、その範囲外のピークは除外する）
-- 全176メッシュを逐次実行すると、同一ピークが複数の解析（最大9回）に含まれる。フェーズ3 の重複排除後に `analysis_count`（実際の解析回数）と `expected_count`（期待解析回数）で安定性を評価する（FR-009 参照）
+- 全176メッシュを逐次実行すると、同一ピークが複数の解析（最大9回）に含まれる。フェーズ3 の重複排除後に `analysis_count`（実際の解析回数）と `expected_count`（期待解析回数）で安定性を評価する（[FR-009 参照](#fr-009-sotaリスト突合match_status-判定)）
 - 詳細は [`decisions/ADR-003-3x3-mesh-analysis.md`](decisions/ADR-003-3x3-mesh-analysis.md) を参照
 
 #### FR-005: 局所最大点検出
@@ -174,7 +174,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **対応 UR**: [UR-002](01_URD.md#ur-002), [UR-005](01_URD.md#ur-005)
 - 各ピークに対してプロミネンスを規定するコル（Keyコル）を検出する
 - プロミネンス = ピーク標高 − Keyコル標高
-- Keyコルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に未確定フラグを付与する（FR-014 参照）
+- Keyコルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に未確定フラグを付与する（[FR-014 参照](#fr-014-独立峰対応レベル14-広域再解析)）
 
 #### FR-007: プロミネンスフィルタ・per-mesh CSV 出力
 
@@ -361,7 +361,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | col_lon | Keyコル経度 |
 | col_elev | Keyコル標高（m） |
 | prominence | プロミネンス（m） |
-| is_tile_top | 未確定フラグ（0/1、FR-006 参照） |
+| is_tile_top | 未確定フラグ（0/1、[FR-006 参照](#fr-006-keyコル検出プロミネンス計算)） |
 | col_margin_px | Keyコルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
@@ -461,7 +461,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 |---|---|
 | ファイル | `$DATA_DIR/results/submission.xlsx` |
 | テンプレート | `ref/SOTA-Summit-list-revision-request.xlsx` |
-| カラム構成 | FR-011 参照 |
+| カラム構成 | [FR-011 参照](#fr-011-申請書-xlsx-生成) |
 | シート構成 | 1シート（アクション列で追加/変更/削除/その他を識別） |
 
 ### 6.4 出力: エビデンス CSV
@@ -471,7 +471,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | ファイル | `$DATA_DIR/results/merged.csv` |
 | エンコーディング | UTF-8 |
 | 区切り文字 | カンマ |
-| カラム | FR-012 参照 |
+| カラム | [FR-012 参照](#fr-012-エビデンス-csv-生成) |
 
 ### 6.5 出力: GeoJSON・HTML ビューア
 
@@ -480,7 +480,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | 生成 | フェーズ3 処理 |
 | GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャ構成 | FR-013 参照（アクティベーションゾーンポリゴン含む） |
+| フィーチャ構成 | [FR-013 参照](#fr-013-geojsonhtml-ビューア生成)（アクティベーションゾーンポリゴン含む） |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
 | HTML テンプレート | HTML テンプレートファイル（詳細は HLD） |
 | 地図ライブラリ | 地図表示ライブラリ（CDN 経由） |
@@ -495,7 +495,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 |---|---|
 | ファイル | `$DATA_DIR/results/csv/<meshcode>.csv` |
 | エンコーディング | UTF-8 |
-| カラム | FR-007 参照 |
+| カラム | [FR-007 参照](#fr-007-プロミネンスフィルタper-mesh-csv-出力) |
 
 ### 6.7 出力: 標高地形図（Terrain-RGB PNG）
 
