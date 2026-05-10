@@ -112,7 +112,7 @@ deleted サミットが「どの検出ピークに最も近いか（最近接検
   - 47都道府県 + 北海道14振興局（計61地域）対応
 - `scripts/merge.py` 更新
   - `load_regions()` / `assign_temp_summit_code()` 追加
-  - 新規ピークに `JA/<area>-A<seq>` 形式の仮コード付与（海上・未判定は `ZZ/ZZ-A<seq>`）
+  - 新規ピークに `JAx/XX-A01` 形式の仮コード付与（海上・未判定は `ZZ/ZZ-A01`）
   - `--regions-file` 引数追加（デフォルト: `$DATA_DIR/ref/N03-2026_regions.geojson`、未存在時は自動フォールバック）
 - ドキュメント更新: SRS（FR-017, 6.9, セクション3, セクション7）・environment.md・SOURCES.md・CLAUDE.md・.gitignore
 - ISSUE-009 対応完了

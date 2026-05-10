@@ -5,7 +5,7 @@ merge.py: 解析CSV統合 + summitslist.csv突き合わせ
 出力CSV の列:
   match_status - SOTAリストとの突合結果
     matched  - 現行SOTAサミットと一致したピーク
-    new      - 新規候補（都道府県ベース仮コード JA(x)/<area>-A<seq> 付与、未判定は ZZ/ZZ-A<seq>）
+    new      - 新規候補（都道府県ベース仮コード JAx/XX-A01 付与、未判定は ZZ/ZZ-A01）
     deleted  - 現行SOTAサミットで未検出（削除候補）
   stability - 解析品質
     confirmed - 確定ピーク（全解析で is_tile_top=0、解析回数=期待値）
@@ -226,7 +226,7 @@ def load_regions(path):
 def assign_temp_summit_code(lat, lon, regions, counters):
     """
     ピーク座標から都道府県/振興局を特定して仮サミットコードを生成する。
-    regions が None または座標が未判定の場合は ZZ/ZZ-A<seq> を返す。
+    regions が None または座標が未判定の場合は ZZ/ZZ-A01 形式を返す。
     counters は {(assoc, area_code): int} の dict（呼び出し元が管理）。
     """
     if regions:
@@ -374,7 +374,7 @@ def main():
     parser.add_argument("--output",       type=Path, default=DEFAULT_OUTPUT)
     _default_regions = _DEFAULT_REGIONS_FILE if _DEFAULT_REGIONS_FILE.exists() else None
     parser.add_argument("--regions-file", type=Path, default=_default_regions,
-                        help=f"N03前処理済みGeoJSON（都道府県/振興局境界）。省略または未存在時は ZZ/ZZ-A<seq>。"
+                        help=f"N03前処理済みGeoJSON（都道府県/振興局境界）。省略または未存在時は ZZ/ZZ-A01 形式。"
                              f"デフォルト: {_DEFAULT_REGIONS_FILE}")
     args = parser.parse_args()
 
@@ -395,7 +395,7 @@ def main():
     if regions:
         log(f"都道府県境界: {args.regions_file} ({len(regions)} 地域)")
     else:
-        log("都道府県境界: 未使用（新規ピークは ZZ/ZZ-A<seq> 形式）")
+        log("都道府県境界: 未使用（新規ピークは ZZ/ZZ-A01 形式）")
 
     mesh_set = load_mesh_set(args.mesh_list)
     if mesh_set:
