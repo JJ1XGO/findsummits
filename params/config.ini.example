@@ -1,3 +1,7 @@
 [paths]
 # データディレクトリ（claude-container使わない人はホストのパスを設定）
 DATA_DIR = /path/to/your/data
+
+[sota]
+# SOTAサミットGeoJSONのバージョン番号（ref/geojson_v{N}/ のディレクトリ名に使用）
+geojson_version = 31

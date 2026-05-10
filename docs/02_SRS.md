@@ -299,7 +299,9 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - FR-014 処理後の統合済み CSV（`$DATA_DIR/results/merged.csv`）および統合済み activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。この時点で全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする
   - `ref/summitslist.csv`（JA プレフィックスサミット一覧）
   - メッシュコードリスト（オプション）: FR-008・FR-018 と同じリストを受け取る。省略時は全範囲を対象とする。FR-010 の削除候補スコープ判定に使用する
+  - `ref/geojson_v{N}/`（ja0〜ja9 ファイル群）: 既存 SOTA サミットの日本語山岳名（`summit_name_jp`）取得用。バージョン番号 `{N}` は `params/config.ini` の `geojson_version` パラメータで指定する
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
+- geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・deleted サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
 - 突合は各ピークのアクティベーションゾーン（FR-016 → FR-018 → FR-014 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
 - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
 - match_status 値:
@@ -347,7 +349,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - `type`: "peak"
 - `match_status`: matched / new
 - `summit_code`: SOTA サミットコード（matched のみ）
-- `summit_name`: サミット名（matched のみ）
+- `summit_name`: サミット名（matched のみ・英語/ローマ字）
+- `summit_name_jp`: 日本語山岳名（matched のみ・geojson_v{N} から取得。未取得時は空文字）
 - `peak_elev`: 検出標高（m）
 - `prominence`: プロミネンス（m）
 - `stability`: confirmed / unstable
@@ -367,7 +370,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - `type`: "sota_summit"
 - `match_status`: matched / deleted
 - `summit_code`: SOTA サミットコード
-- `summit_name`: サミット名
+- `summit_name`: サミット名（summitslist.csv の SummitName、英語/ローマ字）
+- `summit_name_jp`: 日本語山岳名（geojson_v{N} から取得。未取得時は空文字）
 - `sota_alt_m`: SOTA 登録標高（m）
 
 **LineString: ピーク → Keyコル**
@@ -396,7 +400,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 - **HTML ビューア仕様**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
-  - フェーズ4 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
+  - フェーズ4 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）。毎回コピーする理由: テンプレートに新機能（レイヤー追加等）を加えた場合、次回のパイプライン実行で自動的に最新版が反映されるため
   - 地図表示ライブラリ（CDN 経由）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで読み込み）
   - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
@@ -416,21 +420,20 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - 1シート構成
   - カラム: 既存山岳ID または県名 / アクション / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
 - 出力シート構成: 1シート（テンプレート仕様に準拠）
-- アクション列の値（テンプレートの選択肢）:
+- アクション列の値（本ツールが出力する値）:
   - `追加`: match_status=new のサミット
-  - `変更`: match_status=matched かつ座標・標高に差異があるサミット
   - `削除`: match_status=deleted のサミット
-  - `その他`: **[TBD-02: 使用条件・該当ケースを別途確認]**
+  - `変更`・`その他`: 本ツールでは自動出力しない（人間系で判断・記入）
 - 各アクションで使用するカラムのマッピング（テンプレート列 A〜J）:
 
 | アクション | A: 山岳ID/県名 | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
 | 追加 | 都道府県名 | 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | 解析根拠 ※2 |
-| 変更 | SummitCode | 変更 | SOTA 登録名JP | SOTA 登録名EN | sota_alt_m | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | 変更根拠 ※2 |
-| 削除 | SummitCode | 削除 | SOTA 登録名JP | SOTA 登録名EN | sota_alt_m | 空白 | 空白 | 空白 | 削除根拠 ※2 |
+| 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | 削除根拠 ※2 |
 
-※1 山岳名は自動取得不可。OSM・国土地理院地図を参照しながら人間系で記入すること（URD スコープ外）  
-※2 根拠の記載例: 「findsummits 解析: prominence=XXX.Xm」「解析範囲内で prominence 150m 以上のピーク未検出」
+※1 新規サミットの山岳名は自動取得不可。HTML ビューアで OSM・国土地理院地図を参照しながら人間系で記入すること（URD スコープ外）  
+※2 根拠の記載例: 「findsummits 解析: prominence=XXX.Xm」「解析範囲内で prominence 150m 以上のピーク未検出」  
+※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合は人間系で記入すること
 
 #### FR-012: エビデンス CSV 生成
 
@@ -444,7 +447,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | match_status | SOTAリスト突合結果（matched/new/deleted） |
 | stability | 解析品質（confirmed/unstable/-） |
 | summit_code | SOTAサミットコード（例: JA/TK-001）、新規は都道府県ベース仮コード（例: JA/TK-A001）または ZZ/ZZ-A001（海上・未判定） |
-| summit_name | サミット名（SOTA リストから） |
+| summit_name | サミット名（SOTA リストから・英語/ローマ字） |
+| summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
 | sota_alt_m | SOTA リスト登録標高（m） |
 | peak_lat | 検出ピーク緯度 |
 | peak_lon | 検出ピーク経度 |
