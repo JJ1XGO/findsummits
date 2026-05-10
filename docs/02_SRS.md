@@ -332,6 +332,9 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **対応 UR**: [UR-006](01_URD.md#ur-006)
 - フェーズ4 で GeoJSON と HTML を同時生成する
 - 入力: `$DATA_DIR/results/merged.csv` および `$DATA_DIR/results/merged_activation.geojson`
+- **GeoJSON メタデータ**: `merged.geojson` のトップレベルに `metadata` オブジェクトを追加する
+  - `summitslist_date`: `ref/summitslist.csv` 1行目（`SOTA Summits List (Date=DD/MM/YYYY)` 形式）からパースした日付文字列
+  - `generated_at`: FR-013 実行時の ISO 8601 形式の日時文字列（パイプライン最終実行日時）
 - **出力先**:
   - `$DATA_DIR/results/merged.geojson`（GeoJSON）
   - `$DATA_DIR/results/merged_viewer.html`（静的 HTML ビューア）
@@ -409,6 +412,9 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - deleted SOTA サミットと従属ピークを結ぶ LineString（`type: "deleted_link"`）を表示する
   - ローカルでの閲覧にはローカル HTTP サーバが必要（外部参照の CORS 制限のため）
   - GitHub Pages では静的ホスティングのみで動作
+  - GeoJSON の `metadata` から取得した以下の情報を画面上に表示する:
+    - SOTA サミットリスト基準日（`summitslist_date`）
+    - 解析実行日時（`generated_at`）
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
 
 #### FR-011: 申請書 XLSX 生成
