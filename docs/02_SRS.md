@@ -295,7 +295,10 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-009: SOTAリスト突合・match_status 判定
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
-- **入力**: FR-014 処理後の統合済み CSV（`$DATA_DIR/results/merged.csv`）および統合済み activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。この時点で全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする
+- **入力**:
+  - FR-014 処理後の統合済み CSV（`$DATA_DIR/results/merged.csv`）および統合済み activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。この時点で全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする
+  - `ref/summitslist.csv`（JA プレフィックスサミット一覧）
+  - メッシュコードリスト（オプション）: FR-008・FR-018 と同じリストを受け取る。省略時は全範囲を対象とする。FR-010 の削除候補スコープ判定に使用する
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
 - 突合は各ピークのアクティベーションゾーン（FR-016 → FR-018 → FR-014 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
 - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
@@ -317,7 +320,10 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-010: 削除候補のスコープ
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
-- 解析対象メッシュセットの地理的範囲内に座標がある SOTA サミットのみを削除候補の対象とする（解析対象外メッシュのサミットを誤って削除候補にしない）
+- **入力**: FR-009 に渡されたメッシュコードリスト（オプション）
+- メッシュコードリストが指定されている場合: 各メッシュコードから地理的範囲（緯度・経度の矩形）を算出し、その範囲内に座標がある SOTA サミットのみを削除候補の対象とする
+- メッシュコードリストが省略された場合: 全 SOTA サミットを削除候補の対象とする（全国フル解析を前提）
+- （解析対象外メッシュのサミットを誤って削除候補にしない）
 
 #### FR-013: GeoJSON・HTML ビューア生成
 
