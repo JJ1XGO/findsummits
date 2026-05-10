@@ -273,11 +273,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   Python 側での再実装を禁止する。Python オーケストレーションはウィンドウパターン生成・
   C エンジン呼び出し・結果判定のみを担う（詳細は ADR-004 参照）。
 - **出力**: 再解析結果で統合済み CSV と `merged_activation.geojson` の該当レコードを上書きする。再解析後は対象ピークの `is_tile_top` および `area_truncated` フラグが解消されていること（手動調査待ちのケースを除く）
-- **詳細仕様**: **[TBD-01: ADR-004 の実装設計完了後に確定]**
-  - 座標変換ロジック（ズーム15→14 変換）
-  - col_margin_px への影響
-  - 1px ボーダーの地理的幅変化の許容判断
-  - 257×257 オーバーラップの max pooling 時の処理
+- **実装設計**（詳細は `decisions/ADR-004` Consequences 参照）:
+  - 座標変換: 各 256×256 L15 タイルを 128×128 に 2×2 max pooling し L14 combined image に書き込む
+    （combined image を L15 で先に作ってから pooling しない）
+  - col_margin_px: px 単位のまま出力、CSV に `zoom_level` 列を追加して merge.py 側で補正
+  - 1px ボーダー: 現行実装を踏襲（L14 での 1px 幅増加は FR-014 対象ピークへの影響なし、許容）
+  - 257×257 オーバーラップ: 使用しない（cross-tile pooling は不要）
 - 詳細は [`decisions/ADR-004-level14-max-pooling-isolated-peaks.md`](decisions/ADR-004-level14-max-pooling-isolated-peaks.md) を参照
 
 ---

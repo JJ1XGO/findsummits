@@ -102,11 +102,29 @@ FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサ�
 
 ## Consequences
 
-実装時に以下を考慮する必要がある:
-1. **座標変換**: `mesh.c` はレベル 15 前提。レベル 14 化後はピクセルサイズが 2 倍になる
-2. **col_margin_px**: 現在レベル 15 ピクセル単位。レベル 14 化後の影響を確認すること
-3. **1px ボーダー**: メッシュ外周の海面ボーダーがレベル 14 化後は地理的 2 倍幅になる
-4. **257×257 オーバーラップ**: タイル境界の 1px オーバーラップを max pooling 時にどう扱うか設計が必要
+1. **座標変換（L15→L14）**: タイル単位 max pooling を採用（確定）
+   - 各 256×256 L15 タイルを 128×128 L14 タイルに 2×2 max pooling
+   - combined image を L15 で先に構築してから pooling するのではなく、**タイル読み込み時に pooling して
+     L14 combined image（4×4 で ~46k×38k px ≈ 7 GB float）に直接書き込む**
+   - 理由: 4×4 の L15 combined image は ~28 GB になり実用不可
+   - NODATA (-9999.0f) は max 計算で自然に正しく扱われる（実標高があれば実標高が残る）
+   - 実装: `load_mesh_tile` に `zoom_level` 引数を追加。combined image サイズと配置オフセットを
+     `zoom_factor`（L15=1, L14=2）で割る
+
+2. **col_margin_px**: px 単位のまま出力、zoom_level 列を CSV に追加して merge.py 側で補正（確定）
+   - L14 の 1 px = L15 の 2 px 相当（地理的 2 倍幅）
+   - `is_tile_top` の判定ロジックは変更なし
+   - stability 判定時は `col_margin_px × zoom_factor` で L15 相当値に換算（merge.py 側で実装）
+
+3. **1px ボーダー**: L14 でも現行実装を踏襲、許容する（確定）
+   - L14 の 1 px ≈ 20m（L15 の 2 倍幅）だが、FR-014 対象ピーク（鳥海山・八経ヶ岳）は
+     解析範囲中央付近に位置するため影響はない
+   - `load_mesh_tile` の calloc 初期化 + 1px オフセット配置は変更なし
+
+4. **257×257 オーバーラップ**: FR-014 では使用しない（確定）
+   - `load_mesh_tile` が使う `elev_load_tile_into_big` はタイル本体 256×256 のみ読む
+   - cross-tile pooling（境界をまたぐ 2×2 group）は実施しない
+   - 隣接タイル境界での ~10m 格子誤差はプロミネンス 150m 判定に対して無視できる
 5. **activation.geojson 再生成**: FR-014 は CSV の上書きに加えて `merged_activation.geojson` の
    該当ピークのポリゴンも差し替える責務を持つ（FR-018 との連携設計が必要）
 6. **実装原則: C エンジンの拡張・再利用（ロジック重複禁止）**
