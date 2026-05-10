@@ -497,8 +497,10 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | col_margin_px | Keyコルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
-| orig_lat | SOTA リスト登録緯度 |
-| orig_lon | SOTA リスト登録経度 |
+| sota_lat | SOTA リスト登録緯度（matched・deleted のみ。new は空欄） |
+| sota_lon | SOTA リスト登録経度（matched・deleted のみ。new は空欄） |
+| dominant_peak_code | 従属ピークコード（deleted のみ） |
+| dominant_peak_dist_m | 従属ピークまでの距離 m（deleted のみ） |
 
 ---
 
