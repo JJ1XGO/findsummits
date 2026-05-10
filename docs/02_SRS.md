@@ -224,6 +224,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する
 - ピクセル群の外周輪郭を GeoJSON Polygon として出力する
 - Flood Fill が解析対象メッシュ全体の地理的範囲外で途切れた場合、`area_truncated=true` フラグを付与する（ゾーンが実際より小さく計算されている可能性を示す）。フェーズ3 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域再解析してゾーンを再計算する
+- アクティベーションゾーンと同様に、**コル等高線ポリゴン（prominence boundary polygon）** も生成する:
+  - **定義**: ピークから Key Col 標高（`col_elev`）以上で連続する領域の外周（ピークがどの地形に「属しているか」を示す境界）
+  - **計算方法**: アクティベーションゾーンと同一の Flood Fill を `col_elev` 閾値で実行
+  - `is_tile_top=1` のピークはコル等高線ポリゴンを生成しない（`col_elev` 未確定のため）
+  - 頂点間引き: L15 の 4px → 1 頂点に間引いてポリゴンを軽量化する
+  - 出力: 同一 GeoJSON ファイルに `feature_type="key_col_boundary"` のフィーチャとして追記
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
 - 詳細は [6.8 内部インターフェース: アクティベーションゾーン GeoJSON](#68-内部インターフェース-アクティベーションゾーン-geojsonフェーズ2--フェーズ3-境界) を参照
 
@@ -248,6 +254,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **入力**: `$DATA_DIR/results/csv/` 配下の per-mesh `<meshcode>_activation.geojson`。メッシュコードリストが指定された場合はそのメッシュの GeoJSON のみ読み込む（省略時は全 GeoJSON）
 - フェーズ2（[FR-016](#fr-016-アクティベーションゾーン計算)）で出力された per-mesh `*_activation.geojson` を1つの統合 GeoJSON にまとめる
 - 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_truncated=false`（完全なゾーン）のものを優先して採用する。`area_truncated=false` が存在しない場合は、FR-008 の代表レコードの `center_mesh` に対応する `<center_mesh>_activation.geojson` 内のポリゴンを採用する（いずれも FR-014 で後処理される）
+- コル等高線ポリゴン（`feature_type="key_col_boundary"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ優先方針（`area_truncated=false` のものを優先）で採用する
 - 出力先: `$DATA_DIR/results/merged_activation.geojson`
 - 統合後の GeoJSON は [FR-014](#fr-014-独立峰対応レベル14-広域再解析) の入力として使用する
 
@@ -300,6 +307,12 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - `confirmed`: 解析回数=期待値かつ未確定フラグなし
   - `unstable`: 未確定フラグあり、または解析回数不一致
   - `-`: 削除候補（解析結果なし）
+- **deleted サミットの従属ピーク特定**:
+  - 各 deleted サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
+    その座標が含まれる検出ピークを従属ピーク（dominant peak）とする
+  - 複数のポリゴンに含まれる場合は最も近い検出ピークを採用する
+  - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピークを従属ピークとする
+  - 付与するカラム: `dominant_peak_code`（検出ピークコード）、`dominant_peak_dist_m`（距離 m）
 
 #### FR-010: 削除候補のスコープ
 
@@ -320,7 +333,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 |---|---|
 | matched | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
 | new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ LineString（ピーク→Keyコル） |
-| deleted | Point（SOTA サミット）のみ |
+| deleted | Point（SOTA サミット）+ Point（従属ピーク）+ Polygon（従属ピークのコル等高線）+ LineString（SOTA サミット→従属ピーク） |
 
 - **各フィーチャのプロパティ**:
 
@@ -359,6 +372,22 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - `type`: "coord_diff"
 - matched のみ生成
 
+**Point: 従属ピーク**（deleted のみ）
+- `type`: "dominant_peak"
+- `dominant_peak_code`: 従属ピークコード
+- `peak_elev`: 従属ピーク標高（m）
+- `prominence`: 従属ピークのプロミネンス（m）
+
+**Polygon: コル等高線**（deleted のみ）
+- `type`: "key_col_boundary"
+- `dominant_peak_code`: 対応する従属ピークコード
+- 従属ピークのコル等高線ポリゴン（FR-016 出力から取得）
+
+**LineString: SOTA サミット → 従属ピーク**（deleted のみ）
+- `type`: "deleted_link"
+- `dominant_peak_code`: 従属ピークコード
+- `dominant_peak_dist_m`: 距離（m）
+
 - **HTML ビューア仕様**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
   - フェーズ4 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）
@@ -366,6 +395,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
   - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで読み込み）
   - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
   - 未確定フラグ付きのアクティベーションゾーンは警告色（橙）で表示する
+  - コル等高線ポリゴン（deleted 従属ピーク分）を独立したトグルレイヤーとして追加（デフォルト ON、アクティベーションゾーンと異なる色・半透明）
+  - deleted SOTA サミットと従属ピークを結ぶ LineString（`type: "deleted_link"`）を表示する
   - ローカルでの閲覧にはローカル HTTP サーバが必要（外部参照の CORS 制限のため）
   - GitHub Pages では静的ホスティングのみで動作
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
