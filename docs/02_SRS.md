@@ -247,7 +247,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **対応 UR**: [UR-003](01_URD.md#ur-003), [UR-006](01_URD.md#ur-006)
 - **入力**: `$DATA_DIR/results/csv/` 配下の per-mesh `<meshcode>_activation.geojson`。メッシュコードリストが指定された場合はそのメッシュの GeoJSON のみ読み込む（省略時は全 GeoJSON）
 - フェーズ2（[FR-016](#fr-016-アクティベーションゾーン計算)）で出力された per-mesh `*_activation.geojson` を1つの統合 GeoJSON にまとめる
-- 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_truncated=false`（完全なゾーン）のものを優先して採用する。`area_truncated=false` が存在しない場合は、FR-008 の代表レコードに対応するものを採用する（いずれも FR-014 で後処理される）
+- 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_truncated=false`（完全なゾーン）のものを優先して採用する。`area_truncated=false` が存在しない場合は、FR-008 の代表レコードの `center_mesh` に対応する `<center_mesh>_activation.geojson` 内のポリゴンを採用する（いずれも FR-014 で後処理される）
 - 出力先: `$DATA_DIR/results/merged_activation.geojson`
 - 統合後の GeoJSON は [FR-014](#fr-014-独立峰対応レベル14-広域再解析) の入力として使用する
 
