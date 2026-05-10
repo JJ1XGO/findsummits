@@ -410,17 +410,17 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 - **HTML ビューア仕様**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
-  - フェーズ4 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）。毎回コピーする理由: テンプレートに新機能（レイヤー追加等）を加えた場合、次回のパイプライン実行で自動的に最新版が反映されるため
+  - フェーズ4 処理は `merged.geojson` を生成したうえで、HTML テンプレートに GeoJSON データを JavaScript 変数として埋め込み `$DATA_DIR/results/merged_viewer.html` を生成する
+  - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
+  - `merged.geojson` は証跡用として引き続き別ファイルで出力する（HTML への埋め込みとは独立）
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）
-  - 地図表示ライブラリ（CDN 経由）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
-  - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで読み込み）
+  - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
   - 未確定フラグ付きのアクティベーションゾーンは警告色（橙）で表示する
   - コル等高線ポリゴン（deleted 従属ピーク分）を独立したトグルレイヤーとして追加（デフォルト ON、アクティベーションゾーンと異なる色・半透明）
   - deleted SOTA サミットと従属ピークを結ぶ LineString（`type: "deleted_link"`）を表示する
-  - ローカルでの閲覧にはローカル HTTP サーバが必要（外部参照の CORS 制限のため）
-  - GitHub Pages では静的ホスティングのみで動作
-  - GeoJSON の `metadata` から取得した以下の情報を画面上に表示する:
+  - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
+  - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）
     - 解析実行日時（`generated_at`）
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
@@ -430,7 +430,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
     - deleted（削除候補）: 入力フィールド不要（GeoJSON データを使用）
   - **入力内容の保持（localStorage）**:
     - 入力した山岳名・名称修正はブラウザの localStorage に保存し、再訪時も維持する
-    - キー: `merged.geojson` の `metadata.generated_at` を含む文字列
+    - キー: 埋め込みデータの `metadata.generated_at` を含む文字列
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
   - **申請書エクスポート（FR-011 準拠）**:
     - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
@@ -599,8 +599,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | HTML テンプレート | HTML テンプレートファイル（詳細は HLD） |
 | 使用ライブラリ | Leaflet（地図・CDN 経由）・SheetJS/xlsx.js（XLSX エクスポート・CDN 経由） |
 | 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
-| GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を相対パスで読み込み） |
-| ローカル閲覧 | ローカル HTTP サーバが必要 |
+| GeoJSON 参照方式 | HTML 内に JavaScript 変数として埋め込み（外部ファイル参照なし） |
+| ローカル閲覧 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
 | GitHub Pages | 静的ホスティングのみで動作 |
 
 ### 6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）
