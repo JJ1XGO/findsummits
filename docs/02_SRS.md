@@ -27,13 +27,13 @@
      - [FR-007: プロミネンスフィルタ・per-mesh CSV 出力](#fr-007-プロミネンスフィルタper-mesh-csv-出力)
      - [FR-015: 標高地形図出力](#fr-015-標高地形図出力)
      - [FR-016: アクティベーションゾーン計算](#fr-016-アクティベーションゾーン計算)
-   - [フェーズ3: 統合・広域再解析](#フェーズ3-統合広域再解析)
+   - [フェーズ3: 統合・突合](#フェーズ3-統合突合)
      - [FR-008: per-mesh CSV 統合](#fr-008-per-mesh-csv-統合)
      - [FR-018: per-mesh activation.geojson 統合](#fr-018-per-mesh-activationgeojson-統合)
      - [FR-014: 独立峰対応（レベル14 広域再解析）](#fr-014-独立峰対応レベル14-広域再解析)
-   - [フェーズ4: 突合・申請用出力生成](#フェーズ4-突合申請用出力生成)
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
      - [FR-010: 削除候補のスコープ](#fr-010-削除候補のスコープ)
+   - [フェーズ4: 出力生成](#フェーズ4-出力生成)
      - [FR-013: GeoJSON・HTML ビューア生成](#fr-013-geojsonhtml-ビューア生成)
      - [FR-011: 申請書 XLSX 生成](#fr-011-申請書-xlsx-生成)
      - [FR-012: エビデンス CSV 生成](#fr-012-エビデンス-csv-生成)
@@ -94,13 +94,11 @@ findsummits (C)      ピーク・コル検出・アクティベーションゾ�
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
        ├─ per-peak activation area  ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
-merge.py (Python)    統合・広域再解析・SOTA 突合（フェーズ3〜4）
-       ├─ merged.csv         ($DATA_DIR/results/merged.csv)
-       ├─ merged.geojson     ← 目視確認用 GeoJSON
-       └─ merged_viewer.html ← 目視確認用 静的 HTML ビューア
-【ステップ3: 申請書生成】（確認済みの場合のみ実行）
-output.py (Python)   申請書 XLSX 生成（フェーズ4）
-       └─ submission.xlsx
+merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
+       ├─ merged.csv         ($DATA_DIR/results/merged.csv)    ← エビデンス CSV
+       ├─ merged.geojson     ($DATA_DIR/results/merged.geojson) ← 証跡 GeoJSON
+       └─ merged_viewer.html ← HTML ビューア（GeoJSON 埋め込み・申請書 XLSX エクスポート機能付き）
+【ステップ3: 申請書生成】（HTML ビューアで山岳名を入力後、申請書エクスポートボタンで XLSX 生成）
 ```
 
 **C / Python 境界**: per-mesh CSV および アクティベーションゾーン GeoJSON ファイル。  
@@ -235,7 +233,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 ---
 
-### フェーズ3: 統合・広域再解析
+### フェーズ3: 統合・突合
 
 #### FR-008: per-mesh CSV 統合
 
@@ -290,8 +288,6 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 ---
 
-### フェーズ4: 突合・申請用出力生成
-
 #### FR-009: SOTAリスト突合・match_status 判定
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
@@ -333,6 +329,8 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - メッシュコードリストが指定されている場合: 各メッシュコードから地理的範囲（緯度・経度の矩形）を算出し、その範囲内に座標がある SOTA サミットのみを削除候補の対象とする
 - メッシュコードリストが省略された場合: 全 SOTA サミットを削除候補の対象とする（全国フル解析を前提）
 - （解析対象外メッシュのサミットを誤って削除候補にしない）
+
+### フェーズ4: 出力生成
 
 #### FR-013: GeoJSON・HTML ビューア生成
 
@@ -473,7 +471,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 #### FR-012: エビデンス CSV 生成
 
 - **対応 UR**: [UR-005](01_URD.md#ur-005)
-- フェーズ3〜4 が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
+- フェーズ3〜4 を通じて merge.py が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
 - merged.csv は純粋なバッチ解析結果であり、HTML ビューアでのユーザー入力（山岳名等）は反映しない
 - 出力先: `$DATA_DIR/results/merged.csv`
 - **出力カラム**:
@@ -650,7 +648,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | フィーチャ数 | 61（47都道府県 + 北海道14振興局） |
 | プロパティ | `assoc`（JA/JA5/JA6/JA8）、`area_code`（例: TK、IS）、`region_name`（都道府県名/振興局名） |
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成 |
-| 省略時の動作 | ファイル未存在の場合、フェーズ4 処理は新規ピークに `ZZ/ZZ-A01` 形式の仮コードを付与して続行 |
+| 省略時の動作 | ファイル未存在の場合、フェーズ3（FR-009）は新規ピークに `ZZ/ZZ-A01` 形式の仮コードを付与して続行 |
 
 ---
 
