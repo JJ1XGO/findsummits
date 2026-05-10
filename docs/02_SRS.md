@@ -434,12 +434,26 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 
 | アクション | A: 山岳ID/県名 | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
-| 追加 | 都道府県名 | 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | 解析根拠 ※2 |
-| 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | 削除根拠 ※2 |
+| 追加 | summit_code（仮コード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2（自動生成） |
+| 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4（自動生成） |
 
 ※1 新規サミットの山岳名は自動取得不可。HTML ビューアで OSM・国土地理院地図を参照しながら人間系で記入すること（URD スコープ外）  
-※2 根拠の記載例: 「findsummits 解析: prominence=XXX.Xm」「解析範囲内で prominence 150m 以上のピーク未検出」  
-※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合は人間系で記入すること
+※2 追加根拠（自動生成フォーマット）:
+```
+国土地理院標高タイルで解析
+{peak_lat},{peak_lon}
+所在地：{都道府県または振興局名}
+コル標高：{col_elev}m
+プロミネンス：{prominence}m
+```
+※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合は人間系で記入すること  
+※4 削除根拠（自動生成フォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`
+
+- **名称修正（変更）の手動追記**: HTML ビューアで既存サミットの名称誤りを確認した場合、ユーザーが XLSX に 変更 行を手動追記する。カラム構成:
+
+| A: 山岳ID | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
+|---|---|---|---|---|---|---|---|---|
+| SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名（手動記入） | 新EN名（手動記入） | sota_alt_m | 変更根拠（自由記述） |
 
 #### FR-012: エビデンス CSV 生成
 
