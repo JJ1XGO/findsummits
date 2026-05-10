@@ -411,6 +411,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 - **HTML ビューア仕様**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
   - フェーズ4 処理は `merged.geojson` を生成し、HTML テンプレートファイルを `$DATA_DIR/results/merged_viewer.html` にコピーする（HTML の動的生成は行わない）。毎回コピーする理由: テンプレートに新機能（レイヤー追加等）を加えた場合、次回のパイプライン実行で自動的に最新版が反映されるため
+  - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）
   - 地図表示ライブラリ（CDN 経由）+ 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - GeoJSON は外部参照（同ディレクトリの `merged.geojson` を相対パスで読み込み）
   - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
@@ -423,29 +424,36 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
     - SOTA サミットリスト基準日（`summitslist_date`）
     - 解析実行日時（`generated_at`）
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
+  - **山岳名入力 UI**:
+    - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」「山岳名EN」入力フィールドを表示
+    - matched（既存）ピーク: 同様に名称修正用の入力フィールドを表示（任意入力・未入力時は 変更 行を出力しない）
+    - deleted（削除候補）: 入力フィールド不要（GeoJSON データを使用）
+  - **入力内容の保持（localStorage）**:
+    - 入力した山岳名・名称修正はブラウザの localStorage に保存し、再訪時も維持する
+    - キー: `merged.geojson` の `metadata.generated_at` を含む文字列
+    - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
+  - **申請書エクスポート（FR-011 準拠）**:
+    - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
+    - 出力行: `追加`（GeoJSON の new ピーク + 入力山岳名）・`削除`（GeoJSON の deleted サミット）・`変更`（名称修正を入力した matched サミットのみ）
+    - 列構成・根拠文フォーマットは [FR-011 参照](#fr-011-申請書-xlsx-生成)
 
 #### FR-011: 申請書 XLSX 生成
 
 - **対応 UR**: [UR-004](01_URD.md#ur-004)
-- SOTA日本支部指定のフォーマット（`ref/SOTA-Summit-list-revision-request.xlsx` テンプレート）に準拠した XLSX ファイルを生成する
-- 出力先: `$DATA_DIR/results/submission.xlsx`
-- テンプレート構造:
+- 申請書 XLSX は **HTML ビューア（FR-013）がブラウザ内で生成・ダウンロード**する。Python バッチは XLSX を生成しない
+- テンプレート列構成（`ref/SOTA-Summit-list-revision-request.xlsx` 準拠）:
   - 1シート構成
-  - カラム: 既存山岳ID または県名 / アクション / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
-- 出力シート構成: 1シート（テンプレート仕様に準拠）
-- アクション列の値（本ツールが出力する値）:
-  - `追加`: match_status=new のサミット
-  - `削除`: match_status=deleted のサミット
-  - `変更`・`その他`: 本ツールでは自動出力しない（人間系で判断・記入）
-- 各アクションで使用するカラムのマッピング（テンプレート列 A〜J）:
+  - カラム: 既存山岳ID または仮コード / アクション / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
+- アクション別カラムマッピング（テンプレート列 A〜J）:
 
-| アクション | A: 山岳ID/県名 | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
+| アクション | A: 山岳ID/仮コード | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
-| 追加 | summit_code（仮コード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2（自動生成） |
-| 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4（自動生成） |
+| 追加 | summit_code（仮コード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
+| 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
+| 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名 ※1 | 新EN名 ※1 | sota_alt_m | 変更根拠（自由記述） |
 
-※1 新規サミットの山岳名は自動取得不可。HTML ビューアで OSM・国土地理院地図を参照しながら人間系で記入すること（URD スコープ外）  
-※2 追加根拠（自動生成フォーマット）:
+※1 HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-geojsonhtml-ビューア生成)）  
+※2 追加根拠（ビューアが自動生成するフォーマット）:
 ```
 国土地理院標高タイルで解析
 {peak_lat},{peak_lon}
@@ -453,19 +461,14 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 コル標高：{col_elev}m
 プロミネンス：{prominence}m
 ```
-※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合は人間系で記入すること  
-※4 削除根拠（自動生成フォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`
-
-- **名称修正（変更）の手動追記**: HTML ビューアで既存サミットの名称誤りを確認した場合、ユーザーが XLSX に 変更 行を手動追記する。カラム構成:
-
-| A: 山岳ID | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
-|---|---|---|---|---|---|---|---|---|
-| SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名（手動記入） | 新EN名（手動記入） | sota_alt_m | 変更根拠（自由記述） |
+※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること  
+※4 削除根拠（ビューアが自動生成するフォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`
 
 #### FR-012: エビデンス CSV 生成
 
 - **対応 UR**: [UR-005](01_URD.md#ur-005)
 - フェーズ3〜4 が生成する統合 CSV（`$DATA_DIR/results/merged.csv`）が本要件を満たす
+- merged.csv は純粋なバッチ解析結果であり、HTML ビューアでのユーザー入力（山岳名等）は反映しない
 - 出力先: `$DATA_DIR/results/merged.csv`
 - **出力カラム**:
 
@@ -594,7 +597,7 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | フィーチャ構成 | [FR-013 参照](#fr-013-geojsonhtml-ビューア生成)（アクティベーションゾーンポリゴン含む） |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
 | HTML テンプレート | HTML テンプレートファイル（詳細は HLD） |
-| 地図ライブラリ | 地図表示ライブラリ（CDN 経由） |
+| 使用ライブラリ | Leaflet（地図・CDN 経由）・SheetJS/xlsx.js（XLSX エクスポート・CDN 経由） |
 | 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
 | GeoJSON 参照方式 | 外部参照（同ディレクトリの merged.geojson を相対パスで読み込み） |
 | ローカル閲覧 | ローカル HTTP サーバが必要 |
@@ -661,7 +664,6 @@ output.py (Python)   申請書 XLSX 生成（フェーズ4）
 | 依存 | 用途 |
 |---|---|
 | Python 3 | スクリプト実行 |
-| openpyxl | XLSX 生成（FR-011） |
 | requests | タイル取得（FR-001） |
 | shapely | 都道府県/振興局判定（FR-009・FR-017） |
 
