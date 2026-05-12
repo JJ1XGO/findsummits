@@ -549,7 +549,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 #### NFR-006: 可搬性・環境
 
 - **対応 UR**: [UR-008](01_URD.md#ur-008)
-- 動作環境は [`environment.md`](environment.md) に定める特定マシン上のみを前提とする
+- [environment.md](environment.md) に定めるマシンスペック（物理メモリ 62.72GB 等）と同等以上の環境で動作すること
 - サーバー構成・マルチユーザー運用は対象外
 
 #### NFR-007: ログ出力
