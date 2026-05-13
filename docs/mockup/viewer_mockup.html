@@ -32,6 +32,15 @@
     }
     #header button:hover { background: #e0e0e0; }
 
+    #filters { display: flex; align-items: center; gap: 10px; }
+    #filters > span { font-size: 12px; color: #555; white-space: nowrap; }
+    #filters label { display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    #filters input[type="checkbox"] { cursor: pointer; width: 13px; height: 13px; accent-color: currentColor; }
+    #filters label[data-cat="new"]       { color: #4D7A20; }
+    #filters label[data-cat="deleted"]   { color: #C8101E; }
+    #filters label[data-cat="changed"]   { color: #DC5D04; }
+    #filters label[data-cat="unchanged"] { color: #888; }
+
     #map { flex: 1; }
 
     .popup-title { font-weight: bold; margin-bottom: 6px; }
@@ -71,6 +80,13 @@
   <h1>SOTA Japan 申請支援ビューア</h1>
   <span id="meta">サミットリスト基準日: 2026-01-01 　解析日時: 2026-05-13 09:00 JST</span>
   <span class="spacer"></span>
+  <div id="filters">
+    <span>表示:</span>
+    <label data-cat="new">       <input type="checkbox" data-cat="new"       checked> 新規</label>
+    <label data-cat="deleted">   <input type="checkbox" data-cat="deleted"   checked> 削除</label>
+    <label data-cat="changed">   <input type="checkbox" data-cat="changed"   checked> 変更あり</label>
+    <label data-cat="unchanged"> <input type="checkbox" data-cat="unchanged" checked> 変更なし</label>
+  </div>
   <button id="btn-export">申請書エクスポート</button>
   <button id="btn-publish">公開用エクスポート</button>
 </div>
@@ -97,6 +113,8 @@ const GEOJSON_DATA = {
       properties: { type: "activation_area", peak_lat: 35.36, peak_lon: 138.73, area_truncated: false, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.71, 35.33] },
       properties: { type: "col", peak_lat: 35.36, peak_lon: 138.73, col_elev: 1311, points: 10 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.695,35.315],[138.725,35.315],[138.725,35.345],[138.695,35.345],[138.695,35.315]]] },
+      properties: { type: "key_col_boundary", peak_lat: 35.36, peak_lon: 138.73 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.71,35.33]] },
       properties: { type: "prominence_range" } },
 
@@ -109,6 +127,8 @@ const GEOJSON_DATA = {
       properties: { type: "activation_area", peak_lat: 35.31, peak_lon: 138.68, area_truncated: false, points: 2 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.66, 35.29] },
       properties: { type: "col", peak_lat: 35.31, peak_lon: 138.68, col_elev: 415, points: 2 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.650,35.278],[138.672,35.278],[138.672,35.302],[138.650,35.302],[138.650,35.278]]] },
+      properties: { type: "key_col_boundary", peak_lat: 35.31, peak_lon: 138.68 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
       properties: { type: "prominence_range" } },
 
@@ -163,28 +183,31 @@ function pointsToColor(pts) {
 }
 
 const WHITE_OUTLINE = "text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff";
+const CIRCLE_PX = 16;   // fa-circle はフル描画なのでそのまま
+const TRIANGLE_PX = 24; // fa-caret は余白が多いので大きめにして視覚サイズを揃える
 
 function peakIcon(color) {
   return L.divIcon({
-    html: `<i class="fa-solid fa-caret-up" style="color:${color};font-size:20px;line-height:1;${WHITE_OUTLINE};"></i>`,
-    iconSize: [20, 17], iconAnchor: [10, 17], className: ""
+    html: `<i class="fa-solid fa-caret-up" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:bottom center;${WHITE_OUTLINE};"></i>`,
+    iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, TRIANGLE_PX], className: ""
   });
 }
 function colIcon(color) {
   return L.divIcon({
-    html: `<i class="fa-solid fa-caret-down" style="color:${color};font-size:14px;line-height:1;${WHITE_OUTLINE};"></i>`,
-    iconSize: [14, 12], iconAnchor: [7, 0], className: ""
+    html: `<i class="fa-solid fa-caret-down" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:top center;${WHITE_OUTLINE};"></i>`,
+    iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, 0], className: ""
   });
 }
 function sotaIcon(color) {
   return L.divIcon({
-    html: `<i class="fa-solid fa-circle" style="color:${color};font-size:14px;line-height:1;${WHITE_OUTLINE};"></i>`,
-    iconSize: [14, 14], iconAnchor: [7, 7], className: ""
+    html: `<i class="fa-solid fa-circle" style="color:${color};font-size:${CIRCLE_PX}px;line-height:1;${WHITE_OUTLINE};"></i>`,
+    iconSize: [CIRCLE_PX, CIRCLE_PX], iconAnchor: [CIRCLE_PX / 2, CIRCLE_PX / 2], className: ""
   });
 }
 
 // ---- 地図初期化 ----
-const map = L.map("map").setView([35.33, 138.72], 10);
+const map = L.map("map", { zoomControl: false }).setView([35.33, 138.72], 10);
+L.control.zoom({ position: "bottomright" }).addTo(map);
 
 const baseLayers = {
   "国土地理院": L.tileLayer(
@@ -202,112 +225,337 @@ const baseLayers = {
 };
 baseLayers["国土地理院"].addTo(map);
 
+// ---- 1次メッシュグリッド（日本国土 176 メッシュのみ）----
+const JAPAN_MESHES = [
+  3036,3622,3623,3624,3631,3641,3653,3724,3725,3741,3823,3824,3831,3841,
+  3926,3927,3928,3942,4027,4028,4040,4042,4128,4129,4142,4229,4230,4328,
+  4329,4429,4440,4529,4530,4531,4540,4629,4630,4631,4728,4729,4730,4731,
+  4739,4740,4828,4829,4830,4831,4839,4928,4929,4930,4931,4932,4933,4934,
+  4939,5029,5030,5031,5032,5033,5034,5035,5036,5038,5039,5129,5130,5131,
+  5132,5133,5134,5135,5136,5137,5138,5139,5229,5231,5232,5233,5234,5235,
+  5236,5237,5238,5239,5240,5332,5333,5334,5335,5336,5337,5338,5339,5340,
+  5432,5433,5435,5436,5437,5438,5439,5440,5531,5536,5537,5538,5539,5540,
+  5541,5636,5637,5638,5639,5640,5641,5738,5739,5740,5741,5839,5840,5841,
+  5939,5940,5941,5942,6039,6040,6041,6139,6140,6141,6239,6240,6241,6243,
+  6339,6340,6341,6342,6343,6439,6440,6441,6442,6443,6444,6445,6540,6541,
+  6542,6543,6544,6545,6546,6641,6642,6643,6644,6645,6646,6647,6740,6741,
+  6742,6747,6748,6840,6841,6842,6847,6848
+];
+
+function createMeshGrid() {
+  const lines  = L.layerGroup();
+  const labels = L.layerGroup();
+
+  const LAT_STEP = 2 / 3;
+  const LON_STEP = 1;
+  const MESH_COLOR = "#7B2FBE";
+
+  JAPAN_MESHES.forEach(code => {
+    const p = Math.floor(code / 100);
+    const u = code % 100;
+    const latMin = p * LAT_STEP;
+    const latMax = latMin + LAT_STEP;
+    const lonMin = u + 100;
+    const lonMax = lonMin + LON_STEP;
+
+    // 矩形枠線
+    L.rectangle([[latMin, lonMin], [latMax, lonMax]], {
+      color: MESH_COLOR, weight: 1.8, opacity: 0.7, fill: false, interactive: false
+    }).addTo(lines);
+
+    // ラベル（左下から少し内側）
+    L.marker([latMin + LAT_STEP * 0.08, lonMin + LON_STEP * 0.04], {
+      icon: L.divIcon({
+        html: `<span style="font-size:13px;color:${MESH_COLOR};font-weight:bold;white-space:nowrap;text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,0 0 3px #fff;">${code}</span>`,
+        className: "", iconSize: [42, 16], iconAnchor: [0, 16]
+      }),
+      interactive: false
+    }).addTo(labels);
+  });
+
+  // ズームに応じてラベル表示制御（ズーム7未満は非表示）
+  const LABEL_ZOOM = 7;
+  function syncLabels() {
+    const z = map.getZoom();
+    if (z >= LABEL_ZOOM) {
+      if (!map.hasLayer(labels)) labels.addTo(map);
+    } else {
+      if (map.hasLayer(labels)) map.removeLayer(labels);
+    }
+  }
+
+  const group = L.layerGroup([lines]);
+  group.on = (evt, fn) => map.on(evt, fn); // イベント委譲は不要だが型合わせ用
+
+  // グループのadd/removeに連動してラベルも制御
+  map.on("zoomend", () => { if (map.hasLayer(lines)) syncLabels(); });
+  map.on("overlayadd",    e => { if (e.name === "1次メッシュ") { group._labelsEnabled = true; syncLabels(); } });
+  map.on("overlayremove", e => { if (e.name === "1次メッシュ") { group._labelsEnabled = false; map.removeLayer(labels); } });
+
+  group._lines = lines;
+  group._labels = labels;
+  group._syncLabels = syncLabels;
+  return group;
+}
+
+const meshGrid = createMeshGrid();
+
+// ---- 基準点レイヤー（地理院タイル cp） ----
+function createCpLayer() {
+  const group = L.layerGroup();
+  const loadedTiles = new Set();
+  let currentCpZ = -1;
+
+  // タイルzoom: マップzoomに応じて地理院cpのzを決定
+  function cpZ(mapZ) {
+    if (mapZ >= 12) return 12;
+    if (mapZ >= 8)  return mapZ;
+    return 7;
+  }
+
+  // 緯度経度 → タイル座標
+  function ll2tile(lat, lon, z) {
+    const x = Math.floor((lon + 180) / 360 * Math.pow(2, z));
+    const r = Math.PI / 180 * lat;
+    const y = Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * Math.pow(2, z));
+    return { x, y };
+  }
+
+  // 基準点種別 → 色
+  function cpColor(kind) {
+    if (kind.includes("電子基準点"))  return "#0055cc";
+    if (kind.includes("一等三角点"))  return "#cc0000";
+    if (kind.includes("二等三角点"))  return "#e07000";
+    if (kind.includes("三等三角点"))  return "#ccaa00";
+    return "#888";
+  }
+
+  async function loadTile(z, x, y) {
+    const key = `${z}/${x}/${y}`;
+    if (loadedTiles.has(key)) return;
+    loadedTiles.add(key);
+    try {
+      const res = await fetch(`https://cyberjapandata.gsi.go.jp/xyz/cp/${z}/${x}/${y}.geojson`);
+      if (!res.ok) return;
+      const data = await res.json();
+      L.geoJSON(data, {
+        pointToLayer: (f, latlng) => {
+          const color = cpColor(f.properties["基準点種別"] || "");
+          return L.circleMarker(latlng, {
+            radius: 4, color, fillColor: "#fff", fillOpacity: 1, weight: 1.5
+          });
+        },
+        onEachFeature: (f, layer) => {
+          const p = f.properties;
+          layer.bindPopup(
+            `<b>${p["点名"] || "−"}</b><br>${p["基準点種別"] || "−"}<br><small>${p["基準点コード"] || ""}</small>`
+          );
+        }
+      }).addTo(group);
+    } catch(e) {}
+  }
+
+  async function update() {
+    if (!map.hasLayer(group)) return;
+    const z = cpZ(map.getZoom());
+    if (z !== currentCpZ) {          // zが変わったら全クリア
+      group.clearLayers();
+      loadedTiles.clear();
+      currentCpZ = z;
+    }
+    const b = map.getBounds();
+    const sw = ll2tile(b.getSouth(), b.getWest(), z);
+    const ne = ll2tile(b.getNorth(), b.getEast(), z);
+    const fetches = [];
+    for (let x = sw.x; x <= ne.x; x++)
+      for (let y = ne.y; y <= sw.y; y++)
+        fetches.push(loadTile(z, x, y));
+    await Promise.all(fetches);
+  }
+
+  const CP_ATTR = '基準点データ: <a href="https://www.gsi.go.jp/" target="_blank">国土地理院</a>';
+
+  map.on("moveend zoomend", update);
+  map.on("overlayadd",    e => { if (e.name === "基準点") { map.attributionControl.addAttribution(CP_ATTR); update(); } });
+  map.on("overlayremove", e => { if (e.name === "基準点") { map.attributionControl.removeAttribution(CP_ATTR); group.clearLayers(); loadedTiles.clear(); currentCpZ = -1; } });
+
+  return group;
+}
+
+const cpLayer = createCpLayer();
+
+// ---- レイヤーコントロール ----
+L.control.layers(baseLayers, { "1次メッシュ": meshGrid, "基準点": cpLayer }, { position: "topright" }).addTo(map);
+
 // ---- localStorage ----
 const storageKey = "sota_viewer_" + GEOJSON_DATA.metadata.generated_at;
 let savedInputs = {};
 try { savedInputs = JSON.parse(localStorage.getItem(storageKey) || "{}"); } catch(e) {}
 
-// ---- フィーチャ描画 ----
-GEOJSON_DATA.features.forEach(f => {
-  const p = f.properties;
-  const geom = f.geometry;
-  const color = pointsToColor(p.points);
+// ---- フィルター用レイヤーグループ ----
+// カテゴリ: new / deleted / changed（matched で入力あり）/ unchanged（matched で入力なし）
+const filterGroups = {
+  new:       L.layerGroup().addTo(map),
+  deleted:   L.layerGroup().addTo(map),
+  changed:   L.layerGroup().addTo(map),
+  unchanged: L.layerGroup().addTo(map),
+};
 
-  if (p.type === "activation_area") {
-    L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
-      color, fillColor: color, fillOpacity: 0.1, weight: 1
-    }).addTo(map);
-    return;
-  }
+// ピークの coordKey → カテゴリ のマップ（フィーチャ振り分け用）
+const peakCategory = {};
 
-  if (p.type === "key_col_boundary") {
-    const pkColor = pointsToColor(
-      GEOJSON_DATA.features.find(
-        f2 => f2.properties.type === "peak"
-          && f2.geometry.coordinates[1] === p.peak_lat
-          && f2.geometry.coordinates[0] === p.peak_lon
-      )?.properties.points
-    );
-    L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
-      color: pkColor, fillColor: pkColor, fillOpacity: 0.15, weight: 1.5, dashArray: "4,3"
-    }).addTo(map);
-    return;
-  }
+// カテゴリ判定（peak フィーチャ用）
+function categorize(matchStatus, coordKey) {
+  if (matchStatus === "new")     return "new";
+  if (matchStatus === "deleted") return "deleted";
+  const s = savedInputs[coordKey] || {};
+  return (s.jp || s.en) ? "changed" : "unchanged";
+}
 
-  if (p.type === "prominence_range") {
-    L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
-      { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(map);
-    return;
-  }
+// フィーチャをカテゴリに振り分けて描画
+function renderFeatures() {
+  Object.values(filterGroups).forEach(g => g.clearLayers());
 
-  if (p.type === "coord_diff") {
-    L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
-      { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(map);
-    return;
-  }
+  // peak_lat/lon → category を先に解決
+  GEOJSON_DATA.features.forEach(f => {
+    const p = f.properties;
+    if (p.type !== "peak") return;
+    const coordKey = `${f.geometry.coordinates[1]}_${f.geometry.coordinates[0]}`;
+    peakCategory[coordKey] = categorize(p.match_status, coordKey);
+  });
 
-  if (p.type === "peak") {
-    const coordKey = `${geom.coordinates[1]}_${geom.coordinates[0]}`;
-    const saved = savedInputs[coordKey] || {};
-    const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(color) });
+  GEOJSON_DATA.features.forEach(f => {
+    const p = f.properties;
+    const geom = f.geometry;
+    const color = pointsToColor(p.points);
 
-    if (p.match_status === "new") {
-      marker.bindPopup(`
-        <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span></div>
-        <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
-        <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
-        <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
-        <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="例: Maruyama"></div>
-        <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
-        <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
-      `);
-    } else if (p.match_status === "matched") {
-      marker.bindPopup(`
-        <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span></div>
-        <div class="popup-row"><label>コード</label>${p.summit_code}</div>
-        <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
-        <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
-        <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
-        <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="${p.summit_name}"></div>
-        <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
-        <div class="popup-hint">未入力時は変更行を出力しません</div>
-      `);
-    } else {
-      marker.bindPopup(`
-        <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">deleted</span></div>
-        <div class="popup-row"><label>コード</label>${p.summit_code}</div>
-        <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
-        <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
-      `);
+    // peak → category を peakCategory から解決
+    // activation_area / col / prominence_range / coord_diff / key_col_boundary は
+    // 対応 peak の peak_lat/lon からカテゴリを取得
+    function catByPeak(lat, lon) {
+      return peakCategory[`${lat}_${lon}`] || "unchanged";
     }
-    marker.addTo(map);
-    return;
-  }
 
-  if (p.type === "col") {
-    L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(color) })
-      .bindPopup(`
-        <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
-        <div class="popup-row"><label>標高</label>${p.col_elev}m</div>
-      `)
-      .addTo(map);
-    return;
-  }
+    if (p.type === "activation_area") {
+      const cat = catByPeak(p.peak_lat, p.peak_lon);
+      L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
+        color, fillColor: color, fillOpacity: 0.1, weight: 1
+      }).addTo(filterGroups[cat]);
+      return;
+    }
 
-  if (p.type === "sota_summit") {
-    const badge = p.match_status === "deleted" ? "deleted" : "matched";
-    L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(color) })
-      .bindPopup(`
-        <div class="popup-title"><i class="fa-solid fa-circle" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
-        <div class="popup-row"><label>コード</label>${p.summit_code}</div>
-        <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
-      `)
-      .addTo(map);
-  }
+    if (p.type === "key_col_boundary") {
+      const cat = catByPeak(p.peak_lat, p.peak_lon);
+      const pkColor = pointsToColor(
+        GEOJSON_DATA.features.find(
+          f2 => f2.properties.type === "peak"
+            && f2.geometry.coordinates[1] === p.peak_lat
+            && f2.geometry.coordinates[0] === p.peak_lon
+        )?.properties.points
+      );
+      L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
+        color: pkColor, fillColor: pkColor, fillOpacity: 0.15, weight: 1.5, dashArray: "4,3"
+      }).addTo(filterGroups[cat]);
+      return;
+    }
+
+    if (p.type === "prominence_range") {
+      // LineString の始点座標（ピーク座標）でカテゴリ解決
+      const [lon, lat] = geom.coordinates[0];
+      const cat = catByPeak(lat, lon);
+      L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
+        { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(filterGroups[cat]);
+      return;
+    }
+
+    if (p.type === "coord_diff") {
+      const [lon, lat] = geom.coordinates[0];
+      const cat = catByPeak(lat, lon);
+      L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
+        { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(filterGroups[cat]);
+      return;
+    }
+
+    if (p.type === "peak") {
+      const coordKey = `${geom.coordinates[1]}_${geom.coordinates[0]}`;
+      const cat = peakCategory[coordKey];
+      const saved = savedInputs[coordKey] || {};
+      const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(color) });
+
+      if (p.match_status === "new") {
+        marker.bindPopup(`
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span></div>
+          <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
+          <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
+          <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
+          <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="例: Maruyama"></div>
+          <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
+          <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
+        `);
+      } else if (p.match_status === "matched") {
+        marker.bindPopup(`
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span></div>
+          <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+          <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
+          <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
+          <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="${p.summit_name}"></div>
+          <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
+          <div class="popup-hint">未入力時は変更行を出力しません</div>
+        `);
+      } else {
+        marker.bindPopup(`
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">deleted</span></div>
+          <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+          <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
+        `);
+      }
+      marker.addTo(filterGroups[cat]);
+      return;
+    }
+
+    if (p.type === "col") {
+      // col の peak_lat/lon からカテゴリ解決
+      const cat = catByPeak(p.peak_lat, p.peak_lon);
+      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(color) })
+        .bindPopup(`
+          <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
+          <div class="popup-row"><label>標高</label>${p.col_elev}m</div>
+        `)
+        .addTo(filterGroups[cat]);
+      return;
+    }
+
+    if (p.type === "sota_summit") {
+      // sota_summit は peak と同じ summit_code でカテゴリを解決
+      const peakFeature = GEOJSON_DATA.features.find(
+        f2 => f2.properties.type === "peak" && f2.properties.summit_code === p.summit_code
+      );
+      const cat = peakFeature
+        ? catByPeak(peakFeature.geometry.coordinates[1], peakFeature.geometry.coordinates[0])
+        : (p.match_status === "deleted" ? "deleted" : "unchanged");
+      const badge = p.match_status === "deleted" ? "deleted" : "matched";
+      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(color) })
+        .bindPopup(`
+          <div class="popup-title"><i class="fa-solid fa-circle" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
+          <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
+        `)
+        .addTo(filterGroups[cat]);
+    }
+  });
+}
+
+renderFeatures();
+
+// ---- フィルター チェックボックス ----
+document.querySelectorAll("#filters input[type='checkbox']").forEach(cb => {
+  cb.addEventListener("change", () => {
+    if (cb.checked) filterGroups[cb.dataset.cat].addTo(map);
+    else            map.removeLayer(filterGroups[cb.dataset.cat]);
+  });
 });
-
-// ---- 背景タイル切り替え ----
-L.control.layers(baseLayers, null, { position: "topright" }).addTo(map);
 
 // ---- localStorage 保存 ----
 function saveInput(key) {
@@ -315,6 +563,11 @@ function saveInput(key) {
   const en = document.getElementById("en_" + key)?.value || "";
   savedInputs[key] = { jp, en };
   localStorage.setItem(storageKey, JSON.stringify(savedInputs));
+  renderFeatures(); // 変更あり/なし の再分類
+  // 再描画後に変更したフィルターグループを地図に反映
+  document.querySelectorAll(".filter-btn").forEach(b => {
+    if (b.classList.contains("active")) filterGroups[b.dataset.cat].addTo(map);
+  });
 }
 
 // ---- ボタン ----

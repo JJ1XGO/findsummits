@@ -356,7 +356,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | match_status | フィーチャ |
 |---|---|
 | matched | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
-| new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ LineString（ピーク→Keyコル） |
+| new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル） |
 | deleted | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
 
 - **各フィーチャのプロパティ**:
@@ -395,7 +395,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `sota_alt_m`: SOTA 登録標高（m）
 - `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
 
-**Polygon: コル等高線**（deleted のみ）
+**Polygon: コル等高線**（new / deleted）
 - `type`: "key_col_boundary"
 - `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
 - 対応ピークのコル等高線ポリゴン（FR-016 出力から取得）
@@ -417,7 +417,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
   - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
-  - コル等高線ポリゴン（deleted のみ）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。SOTA 既存サミットがピークのアクティベーションゾーン外かつコル等高線内に位置することを可視化する
+  - コル等高線ポリゴン（new / deleted）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new はコル等高線内に既存サミットが存在しないことを、deleted はコル等高線内に既存サミットが存在することを可視化する
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）
