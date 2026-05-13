@@ -482,9 +482,13 @@ function renderFeatures() {
       const saved = savedInputs[coordKey] || {};
       const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(color) });
 
+      const pkLat = geom.coordinates[1].toFixed(5);
+      const pkLon = geom.coordinates[0].toFixed(5);
       if (p.match_status === "new") {
         marker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span></div>
+          <div class="popup-row"><label>緯度</label>${pkLat}</div>
+          <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
@@ -496,6 +500,8 @@ function renderFeatures() {
         marker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span></div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>緯度</label>${pkLat}</div>
+          <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
           <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
@@ -507,6 +513,8 @@ function renderFeatures() {
         marker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">deleted</span></div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>緯度</label>${pkLat}</div>
+          <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
         `);
@@ -518,9 +526,13 @@ function renderFeatures() {
     if (p.type === "col") {
       // col の peak_lat/lon からカテゴリ解決
       const cat = catByPeak(p.peak_lat, p.peak_lon);
+      const colLat = geom.coordinates[1].toFixed(5);
+      const colLon = geom.coordinates[0].toFixed(5);
       L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(color) })
         .bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
+          <div class="popup-row"><label>緯度</label>${colLat}</div>
+          <div class="popup-row"><label>経度</label>${colLon}</div>
           <div class="popup-row"><label>標高</label>${p.col_elev}m</div>
         `)
         .addTo(filterGroups[cat]);
@@ -536,10 +548,14 @@ function renderFeatures() {
         ? catByPeak(peakFeature.geometry.coordinates[1], peakFeature.geometry.coordinates[0])
         : (p.match_status === "deleted" ? "deleted" : "unchanged");
       const badge = p.match_status === "deleted" ? "deleted" : "matched";
+      const sotaLat = geom.coordinates[1].toFixed(5);
+      const sotaLon = geom.coordinates[0].toFixed(5);
       L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(color) })
         .bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-circle" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>緯度</label>${sotaLat}</div>
+          <div class="popup-row"><label>経度</label>${sotaLon}</div>
           <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
         `)
         .addTo(filterGroups[cat]);
