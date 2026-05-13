@@ -357,29 +357,33 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 |---|---|
 | matched | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
 | new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ LineString（ピーク→Keyコル） |
-| deleted | Point（SOTA サミット）+ Point（従属ピーク）+ Polygon（従属ピークのコル等高線）+ LineString（SOTA サミット→従属ピーク） |
+| deleted | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
 
 - **各フィーチャのプロパティ**:
 
 **Point: 検出ピーク**
 - `type`: "peak"
-- `match_status`: matched / new
-- `summit_code`: SOTA サミットコード（matched のみ）
-- `summit_name`: サミット名（matched のみ・英語/ローマ字）
-- `summit_name_jp`: 日本語山岳名（matched のみ・geojson_v{N} から取得。未取得時は空文字）
+- `match_status`: matched / new / deleted
+- `summit_code`: SOTA サミットコード（matched / deleted のみ）
+- `summit_name`: サミット名（matched / deleted のみ・英語/ローマ字）
+- `summit_name_jp`: 日本語山岳名（matched / deleted のみ・geojson_v{N} から取得。未取得時は空文字）
 - `peak_elev`: 検出標高（m）
 - `prominence`: プロミネンス（m）
 - `stability`: confirmed / unstable
 - `is_tile_top`: 未確定フラグ（0/1）
+- `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出
 
 **Polygon: アクティベーションゾーン**
 - `type`: "activation_area"
 - `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
 - `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
+- `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
 **Point: Keyコル**
 - `type`: "col"
+- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
 - `col_elev`: Keyコル標高（m）
+- `points`: 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出）
 - 未確定フラグが 1 の場合は含めない
 
 **Point: 既存 SOTA サミット**
@@ -389,30 +393,20 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `summit_name`: サミット名（summitslist.csv の SummitName、英語/ローマ字）
 - `summit_name_jp`: 日本語山岳名（geojson_v{N} から取得。未取得時は空文字）
 - `sota_alt_m`: SOTA 登録標高（m）
+- `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
+
+**Polygon: コル等高線**（deleted のみ）
+- `type`: "key_col_boundary"
+- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
+- 対応ピークのコル等高線ポリゴン（FR-016 出力から取得）
 
 **LineString: ピーク → Keyコル**
 - `type`: "prominence_range"
 - 未確定フラグが 1 の場合は生成しない
 
-**LineString: ピーク → SOTA サミット**
+**LineString: ピーク → SOTA サミット**（matched / deleted）
 - `type`: "coord_diff"
-- matched のみ生成
-
-**Point: 従属ピーク**（deleted のみ）
-- `type`: "dominant_peak"
-- `dominant_peak_code`: 従属ピークコード
-- `peak_elev`: 従属ピーク標高（m）
-- `prominence`: 従属ピークのプロミネンス（m）
-
-**Polygon: コル等高線**（deleted のみ）
-- `type`: "key_col_boundary"
-- `dominant_peak_code`: 対応する従属ピークコード
-- 従属ピークのコル等高線ポリゴン（FR-016 出力から取得）
-
-**LineString: SOTA サミット → 従属ピーク**（deleted のみ）
-- `type`: "deleted_link"
-- `dominant_peak_code`: 従属ピークコード
-- `dominant_peak_dist_m`: 距離（m）
+- `match_status`: matched / deleted
 
 - **HTML ビューア仕様**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
@@ -421,10 +415,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - `merged.geojson` は証跡用として引き続き別ファイルで出力する（HTML への埋め込みとは独立）
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）
   - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
-  - ピーク Point クリック時に対応するアクティベーションゾーンポリゴンをハイライト表示する（matched: 赤 / new: 橙）
-  - 未確定フラグ付きのアクティベーションゾーンは警告色（橙）で表示する
-  - コル等高線ポリゴン（deleted 従属ピーク分）を独立したトグルレイヤーとして追加（デフォルト ON、アクティベーションゾーンと異なる色・半透明）
-  - deleted SOTA サミットと従属ピークを結ぶ LineString（`type: "deleted_link"`）を表示する
+  - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
+  - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
+  - コル等高線ポリゴン（deleted のみ）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。SOTA 既存サミットがピークのアクティベーションゾーン外かつコル等高線内に位置することを可視化する
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）

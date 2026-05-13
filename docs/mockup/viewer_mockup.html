@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOTA Japan 申請支援ビューア（モックアップ）</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; font-size: 13px; display: flex; flex-direction: column; height: 100vh; }
+
+    #header {
+      padding: 6px 12px;
+      background: #fff;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    #header h1 { font-size: 14px; font-weight: bold; white-space: nowrap; }
+    #meta { color: #666; font-size: 12px; white-space: nowrap; }
+    #header .spacer { flex: 1; }
+    #header button {
+      padding: 4px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #888;
+      background: #f5f5f5;
+      border-radius: 3px;
+    }
+    #header button:hover { background: #e0e0e0; }
+
+    #map { flex: 1; }
+
+    .popup-title { font-weight: bold; margin-bottom: 6px; }
+    .popup-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-left: 4px;
+      color: #fff;
+      background: #555;
+    }
+    .popup-row { margin: 3px 0; }
+    .popup-row label { display: inline-block; width: 80px; color: #555; }
+    .popup-input {
+      width: 130px;
+      padding: 2px 4px;
+      font-size: 12px;
+      border: 1px solid #aaa;
+      border-radius: 2px;
+    }
+    .popup-save {
+      margin-top: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid #888;
+      background: #f5f5f5;
+      border-radius: 2px;
+    }
+    .popup-hint { font-size: 11px; color: #888; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <h1>SOTA Japan 申請支援ビューア</h1>
+  <span id="meta">サミットリスト基準日: 2026-01-01 　解析日時: 2026-05-13 09:00 JST</span>
+  <span class="spacer"></span>
+  <button id="btn-export">申請書エクスポート</button>
+  <button id="btn-publish">公開用エクスポート</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ---- ダミーデータ（実物では merged.geojson の内容が埋め込まれる） ----
+// points は merge.py が peak_elev / sota_alt_m から標高バンドで算出してセットする
+const GEOJSON_DATA = {
+  type: "FeatureCollection",
+  metadata: {
+    summitslist_date: "2026-01-01",
+    generated_at: "2026-05-13T09:00:00+09:00"
+  },
+  features: [
+    // ── new: 新規ピーク候補（1521m → 10pt）────────────────────────────
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
+      properties: { type: "peak", match_status: "new",
+                    peak_elev: 1521, prominence: 210, stability: "confirmed", is_tile_top: 0,
+                    points: 10 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
+      properties: { type: "activation_area", peak_lat: 35.36, peak_lon: 138.73, area_truncated: false, points: 10 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.71, 35.33] },
+      properties: { type: "col", peak_lat: 35.36, peak_lon: 138.73, col_elev: 1311, points: 10 } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.71,35.33]] },
+      properties: { type: "prominence_range" } },
+
+    // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.68, 35.31] },
+      properties: { type: "peak", match_status: "new",
+                    peak_elev: 580, prominence: 165, stability: "confirmed", is_tile_top: 0,
+                    points: 2 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.670,35.300],[138.690,35.300],[138.690,35.320],[138.670,35.320],[138.670,35.300]]] },
+      properties: { type: "activation_area", peak_lat: 35.31, peak_lon: 138.68, area_truncated: false, points: 2 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.66, 35.29] },
+      properties: { type: "col", peak_lat: 35.31, peak_lon: 138.68, col_elev: 415, points: 2 } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
+      properties: { type: "prominence_range" } },
+
+    // ── matched: 既存サミットと一致（3776m → 10pt）───────────────────
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
+      properties: { type: "peak", match_status: "matched",
+                    summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
+                    peak_elev: 3776, prominence: 3776, stability: "confirmed", is_tile_top: 0,
+                    points: 10 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
+      properties: { type: "activation_area", peak_lat: 35.42, peak_lon: 138.80, area_truncated: false, points: 10 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.76, 35.38] },
+      properties: { type: "col", peak_lat: 35.42, peak_lon: 138.80, col_elev: 1200, points: 10 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
+      properties: { type: "sota_summit", match_status: "matched",
+                    summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
+                    sota_alt_m: 3776, points: 10 } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.76,35.38]] },
+      properties: { type: "prominence_range" } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.78,35.39]] },
+      properties: { type: "coord_diff", match_status: "matched" } },
+
+    // ── deleted: 削除候補（ピーク 1050m → 8pt・SOTA サミット 880m → 6pt）──
+    // 本ツール検出ピーク(8pt)のアクティベーションゾーン外、かつコル等高線内に
+    // SOTA 既存サミット(6pt)が位置している → 削除候補
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.65, 35.25] },
+      properties: { type: "peak", match_status: "deleted",
+                    summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
+                    peak_elev: 1050, prominence: 320, stability: "confirmed", is_tile_top: 0,
+                    points: 8 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.640,35.240],[138.660,35.240],[138.660,35.260],[138.640,35.260],[138.640,35.240]]] },
+      properties: { type: "activation_area", peak_lat: 35.25, peak_lon: 138.65, area_truncated: false, points: 8 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.63, 35.23] },
+      properties: { type: "col", peak_lat: 35.25, peak_lon: 138.65, col_elev: 730, points: 8 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
+      properties: { type: "sota_summit", match_status: "deleted",
+                    summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
+                    sota_alt_m: 880, points: 6 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
+      properties: { type: "key_col_boundary", peak_lat: 35.25, peak_lon: 138.65 } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
+      properties: { type: "prominence_range" } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.655,35.245]] },
+      properties: { type: "coord_diff", match_status: "deleted" } }
+  ]
+};
+
+// ---- points → 色 ----
+function pointsToColor(pts) {
+  const map = { 1: "#4D7A20", 2: "#6DA536", 4: "#AEA727", 6: "#EFA818", 8: "#DC5D04", 10: "#C8101E" };
+  return map[pts] || "#888";
+}
+
+const WHITE_OUTLINE = "text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff";
+
+function peakIcon(color) {
+  return L.divIcon({
+    html: `<i class="fa-solid fa-caret-up" style="color:${color};font-size:20px;line-height:1;${WHITE_OUTLINE};"></i>`,
+    iconSize: [20, 17], iconAnchor: [10, 17], className: ""
+  });
+}
+function colIcon(color) {
+  return L.divIcon({
+    html: `<i class="fa-solid fa-caret-down" style="color:${color};font-size:14px;line-height:1;${WHITE_OUTLINE};"></i>`,
+    iconSize: [14, 12], iconAnchor: [7, 0], className: ""
+  });
+}
+function sotaIcon(color) {
+  return L.divIcon({
+    html: `<i class="fa-solid fa-circle" style="color:${color};font-size:14px;line-height:1;${WHITE_OUTLINE};"></i>`,
+    iconSize: [14, 14], iconAnchor: [7, 7], className: ""
+  });
+}
+
+// ---- 地図初期化 ----
+const map = L.map("map").setView([35.33, 138.72], 10);
+
+const baseLayers = {
+  "国土地理院": L.tileLayer(
+    "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
+    { attribution: "© 国土地理院", maxZoom: 18 }
+  ),
+  "OSM": L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    { attribution: "© OpenStreetMap contributors", maxZoom: 19 }
+  ),
+  "OpenTopoMap": L.tileLayer(
+    "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    { attribution: "© OpenTopoMap contributors", maxZoom: 17 }
+  )
+};
+baseLayers["国土地理院"].addTo(map);
+
+// ---- localStorage ----
+const storageKey = "sota_viewer_" + GEOJSON_DATA.metadata.generated_at;
+let savedInputs = {};
+try { savedInputs = JSON.parse(localStorage.getItem(storageKey) || "{}"); } catch(e) {}
+
+// ---- フィーチャ描画 ----
+GEOJSON_DATA.features.forEach(f => {
+  const p = f.properties;
+  const geom = f.geometry;
+  const color = pointsToColor(p.points);
+
+  if (p.type === "activation_area") {
+    L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
+      color, fillColor: color, fillOpacity: 0.1, weight: 1
+    }).addTo(map);
+    return;
+  }
+
+  if (p.type === "key_col_boundary") {
+    const pkColor = pointsToColor(
+      GEOJSON_DATA.features.find(
+        f2 => f2.properties.type === "peak"
+          && f2.geometry.coordinates[1] === p.peak_lat
+          && f2.geometry.coordinates[0] === p.peak_lon
+      )?.properties.points
+    );
+    L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
+      color: pkColor, fillColor: pkColor, fillOpacity: 0.15, weight: 1.5, dashArray: "4,3"
+    }).addTo(map);
+    return;
+  }
+
+  if (p.type === "prominence_range") {
+    L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
+      { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(map);
+    return;
+  }
+
+  if (p.type === "coord_diff") {
+    L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
+      { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(map);
+    return;
+  }
+
+  if (p.type === "peak") {
+    const coordKey = `${geom.coordinates[1]}_${geom.coordinates[0]}`;
+    const saved = savedInputs[coordKey] || {};
+    const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(color) });
+
+    if (p.match_status === "new") {
+      marker.bindPopup(`
+        <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span></div>
+        <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
+        <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
+        <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
+        <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="例: Maruyama"></div>
+        <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
+        <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
+      `);
+    } else if (p.match_status === "matched") {
+      marker.bindPopup(`
+        <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span></div>
+        <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+        <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+        <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
+        <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
+        <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="${p.summit_name}"></div>
+        <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
+        <div class="popup-hint">未入力時は変更行を出力しません</div>
+      `);
+    } else {
+      marker.bindPopup(`
+        <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">deleted</span></div>
+        <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+        <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+        <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
+      `);
+    }
+    marker.addTo(map);
+    return;
+  }
+
+  if (p.type === "col") {
+    L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(color) })
+      .bindPopup(`
+        <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
+        <div class="popup-row"><label>標高</label>${p.col_elev}m</div>
+      `)
+      .addTo(map);
+    return;
+  }
+
+  if (p.type === "sota_summit") {
+    const badge = p.match_status === "deleted" ? "deleted" : "matched";
+    L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(color) })
+      .bindPopup(`
+        <div class="popup-title"><i class="fa-solid fa-circle" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
+        <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+        <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
+      `)
+      .addTo(map);
+  }
+});
+
+// ---- 背景タイル切り替え ----
+L.control.layers(baseLayers, null, { position: "topright" }).addTo(map);
+
+// ---- localStorage 保存 ----
+function saveInput(key) {
+  const jp = document.getElementById("jp_" + key)?.value || "";
+  const en = document.getElementById("en_" + key)?.value || "";
+  savedInputs[key] = { jp, en };
+  localStorage.setItem(storageKey, JSON.stringify(savedInputs));
+}
+
+// ---- ボタン ----
+document.getElementById("btn-export").addEventListener("click", () => {
+  alert("（モックアップ）申請書 XLSX をエクスポートします\n実物では SheetJS で XLSX を生成してダウンロードします");
+});
+document.getElementById("btn-publish").addEventListener("click", () => {
+  alert("（モックアップ）公開用 HTML をエクスポートします\n実物では入力内容を埋め込んだ閲覧専用 HTML をダウンロードします");
+});
+</script>
+</body>
+</html>
