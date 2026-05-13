@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-12 |
+| 最終更新日 | 2026-05-13 |
 | ステータス | ドラフト（TBD残3件・フェーズ再構成済み） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
@@ -55,7 +55,9 @@
    - [6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）](#66-内部インターフェース-per-mesh-csvフェーズ2--フェーズ3-境界)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
    - [6.8 内部インターフェース: アクティベーションゾーン GeoJSON（フェーズ2 → フェーズ3 境界）](#68-内部インターフェース-アクティベーションゾーン-geojsonフェーズ2--フェーズ3-境界)
-   - [6.9 入力: N03 前処理済み GeoJSON](#69-入力-n03-前処理済み-geojson)
+   - [6.9 入力: N03 前処理済みファイル（FR-017 生成）](#69-入力-n03-前処理済みファイルfr-017-生成)
+   - [6.10 入力: SOTA 既存サミット GeoJSON（geojson_v{N}）](#610-入力-sota-既存サミット-geojsongeojson_vn)
+   - [6.11 内部インターフェース: 統合済み activation.geojson（フェーズ3 → フェーズ4 境界）](#611-内部インターフェース-統合済み-activationgeojsonフェーズ3--フェーズ4-境界)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
 9. [スコープ外](#9-スコープ外)
@@ -503,6 +505,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | expected_count | このピークが含まれるべき期待解析回数 |
 | sota_lat | SOTA リスト登録緯度（matched・deleted のみ。new は空欄） |
 | sota_lon | SOTA リスト登録経度（matched・deleted のみ。new は空欄） |
+| municipality | 市区町村名（例: "根室市"・"標津町"）。N03-2026_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（deleted のみ） |
 | dominant_peak_dist_m | 従属ピークまでの距離 m（deleted のみ） |
 
@@ -584,10 +587,10 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 形式 | PNG（RGB エンコード） |
 | ズームレベル | DEM5a/5b/5c: 15 / DEM10b: 14 |
 | タイルサイズ | 256×256 px |
-| RGB→標高変換 | `elev = (R×65536 + G×256 + B) / 100.0` |
-| NODATA | R=128, G=0, B=0 → -9999.0m |
-| タイル URL パターン | `https://cyberjapandata.gsi.go.jp/xyz/{dem}/{z}/{x}/{y}.png`（`{dem}` は URL サービス名。詳細は HLD 参照） |
-| キャッシュ保存先 | `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png`（`{dem}` は DEM 種別の最後1桁: `a`/`b`/`c`） |
+| 標高算出式 | `elev = (R×65536 + G×256 + B) / 100.0`（RGB ピクセル値から標高（m）を計算） |
+| 無効値（NODATA）の定義 | R=128, G=0, B=0 のピクセルは標高値なし（海・データ未整備等）を示し、-9999.0m として扱う |
+| タイル URL | ベース: `https://cyberjapandata.gsi.go.jp/xyz/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` |
+| キャッシュ保存先 | `$DATA_DIR/tiles/{z}/{x}/{y}_{suffix}.png`<br>`{suffix}`: `a`=DEM5a / `b`=DEM5b・DEM10b / `c`=DEM5c（DEM5b と DEM10b はズームレベル 15/14 で区別） |
 
 ### 6.2 入力: SOTA サミットリスト CSV
 
@@ -602,10 +605,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `$DATA_DIR/results/submission.xlsx` |
-| テンプレート | `ref/SOTA-Summit-list-revision-request.xlsx` |
-| カラム構成 | [FR-011 参照](#fr-011-申請書-xlsx-生成) |
-| シート構成 | 1シート（アクション列で追加/変更/削除/その他を識別） |
+| 生成方式 | HTML ビューア（FR-013）の「申請書エクスポート」ボタンによるブラウザダウンロード（Python バッチは XLSX を生成しない） |
+| 列構成の根拠 | `ref/SOTA-Summit-list-revision-request.xlsx` の列構成に準拠 |
+| カラム構成・アクション | [FR-011 参照](#fr-011-申請書-xlsx-生成) |
 
 ### 6.4 出力: エビデンス CSV
 
@@ -623,6 +625,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 生成 | フェーズ4 処理 |
 | GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
+| GeoJSON メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601）を付与 |
 | フィーチャ構成 | [FR-013 参照](#fr-013-geojsonhtml-ビューア生成)（アクティベーションゾーンポリゴン含む） |
 | HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
 | HTML テンプレート | HTML テンプレートファイル（詳細は HLD） |
@@ -657,8 +660,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャタイプ | Polygon（各ピーク 1 フィーチャ） |
-| プロパティ | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
+| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type` なし）・コル等高線（`feature_type="key_col_boundary"`） |
+| プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
+| プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon`（対応ピーク特定用）。`is_tile_top=1` のピークは生成しない |
 | 生成タイミング | `findsummits` 実行時（ピーク候補検出・プロミネンス計算完了後、per-mesh CSV 出力と同じタイミング） |
 
 ### 6.9 入力: N03 前処理済みファイル（FR-017 生成）
@@ -695,6 +699,30 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 形式 | テキスト（1行1タイル、`x y` 形式の整数ペア、ズームレベル15） |
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成（N03_007 = 01696〜01701 のポリゴン内タイルを列挙） |
 | 省略時の動作 | 未存在の場合、FR-003 は北方領土タイル除外をスキップして警告ログを出力 |
+
+### 6.10 入力: SOTA 既存サミット GeoJSON（geojson_v{N}）
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `ref/geojson_v{N}/ja0.geojson` 〜 `ja9.geojson`（{N} は `params/config.ini` の `geojson_version` パラメータで指定） |
+| 形式 | GeoJSON（RFC 7946） |
+| 座標参照系 | WGS84（EPSG:4326） |
+| `name` プロパティ形式 | `"JA/XX-NNN(山岳名)"` — SOTA コードと日本語山岳名を括弧区切りで格納 |
+| 用途 | matched・deleted サミットの日本語山岳名（`summit_name_jp`）取得（FR-009） |
+| 省略時の動作 | 未存在の場合、`summit_name_jp` を空文字として処理続行 |
+
+### 6.11 内部インターフェース: 統合済み activation.geojson（フェーズ3 → フェーズ4 境界）
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/merged_activation.geojson` |
+| 形式 | GeoJSON（RFC 7946） |
+| 座標参照系 | WGS84（EPSG:4326） |
+| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン・コル等高線（`feature_type="key_col_boundary"`） |
+| プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
+| プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
+| 生成元 | FR-018（per-mesh `_activation.geojson` を統合）。FR-014 で再解析対象レコードが上書きされる |
+| 利用先 | FR-009（point-in-polygon 突合）・FR-013（GeoJSON 生成）・FR-014（広域再解析後の上書き） |
 
 ---
 
