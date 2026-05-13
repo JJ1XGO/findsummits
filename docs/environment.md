@@ -1,6 +1,6 @@
 # 環境定義
 
-> 最終更新: 2026-05-09
+> 最終更新: 2026-05-13
 
 ## ホスト環境
 
@@ -25,10 +25,18 @@
 | データディスク (`/data`) | ホストの `/mnt/findsummits` をマウント（457.38 GiB ext4） |
 | Shell | bash 5.3.9 |
 
+## C 解析エンジン ビルド依存（`src/` のビルドに必要）
+
+| 依存 | 用途 |
+|---|---|
+| GCC（C99 準拠） | コンパイラ |
+| libpng | PNG タイルデコード |
+| libm | 数学関数 |
+| pthread | マルチスレッド処理 |
+
 ## Python パッケージ（スクリプト実行に必要）
 
 | パッケージ | 用途 | インストール |
 |---|---|---|
-| openpyxl | XLSX 生成（output.py） | `pip install openpyxl` |
 | requests | タイル取得（prefetch_tiles.py） | `pip install requests` |
 | shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） | `pip install shapely` |
