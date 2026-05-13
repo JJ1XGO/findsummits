@@ -58,6 +58,7 @@
    - [6.9 入力: N03 前処理済みファイル（FR-017 生成）](#69-入力-n03-前処理済みファイルfr-017-生成)
    - [6.10 入力: SOTA 既存サミット GeoJSON（geojson_v{N}）](#610-入力-sota-既存サミット-geojsongeojson_vn)
    - [6.11 内部インターフェース: 統合済み activation.geojson（フェーズ3 → フェーズ4 境界）](#611-内部インターフェース-統合済み-activationgeojsonフェーズ3--フェーズ4-境界)
+   - [6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）](#612-出力-公開用-html閲覧専用ブラウザダウンロード)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
 9. [スコープ外](#9-スコープ外)
@@ -617,22 +618,29 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 区切り文字 | カンマ |
 | カラム | [FR-012 参照](#fr-012-エビデンス-csv-生成) |
 
-### 6.5 出力: GeoJSON・HTML ビューア
+### 6.5 出力: GeoJSON・作業用 HTML ビューア
+
+**GeoJSON**
 
 | 項目 | 仕様 |
 |---|---|
 | 生成 | フェーズ4 処理 |
-| GeoJSON ファイル | `$DATA_DIR/results/merged.geojson` |
+| ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
-| GeoJSON メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601）を付与 |
+| メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601）を付与 |
 | フィーチャ構成 | [FR-013 参照](#fr-013-geojsonhtml-ビューア生成)（アクティベーションゾーンポリゴン含む） |
-| HTML ビューアファイル | `$DATA_DIR/results/merged_viewer.html` |
-| HTML テンプレート | HTML テンプレートファイル（詳細は HLD） |
+
+**作業用 HTML ビューア**（`merged_viewer.html`）
+
+| 項目 | 仕様 |
+|---|---|
+| ファイル | `$DATA_DIR/results/merged_viewer.html` |
+| 用途 | 山岳名入力・目視確認・申請書エクスポート・公開用エクスポートを行うローカル作業用ビューア |
+| HTML テンプレート | 作業用テンプレートファイル（詳細は HLD） |
 | 使用ライブラリ | Leaflet（地図・CDN 経由）・SheetJS/xlsx.js（XLSX エクスポート・CDN 経由） |
 | 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
 | GeoJSON 参照方式 | HTML 内に JavaScript 変数として埋め込み（外部ファイル参照なし） |
-| ローカル閲覧 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
-| GitHub Pages | 静的ホスティングのみで動作 |
+| 動作環境 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
 
 ### 6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）
 
@@ -722,6 +730,17 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
 | 生成元 | FR-018（per-mesh `_activation.geojson` を統合）。FR-014 で再解析対象レコードが上書きされる |
 | 利用先 | FR-009（point-in-polygon 突合）・FR-013（GeoJSON 生成）・FR-014（広域再解析後の上書き） |
+
+### 6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
+
+| 項目 | 仕様 |
+|---|---|
+| 生成方式 | 作業用 HTML ビューア（`merged_viewer.html`）の「公開用エクスポート」ボタンによるブラウザダウンロード（Python バッチは生成しない） |
+| 用途 | GitHub Pages 等の静的ホスティングによる外部公開（申請先への証跡共有等） |
+| HTML テンプレート | 閲覧専用テンプレートファイル（詳細は HLD） |
+| 使用ライブラリ | Leaflet（地図・CDN 経由） |
+| 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用） |
+| GeoJSON ダウンロード | 埋め込み GeoJSON をファイルとしてダウンロードするボタンあり（受領側が QGIS 等で独自確認できるよう） |
 
 ---
 
