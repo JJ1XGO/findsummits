@@ -212,15 +212,15 @@ L.control.zoom({ position: "bottomright" }).addTo(map);
 const baseLayers = {
   "国土地理院": L.tileLayer(
     "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
-    { attribution: "© 国土地理院", maxZoom: 18 }
+    { attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">© 国土地理院</a>', maxZoom: 18 }
   ),
   "OSM": L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    { attribution: "© OpenStreetMap contributors", maxZoom: 19 }
+    { attribution: '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>', maxZoom: 19 }
   ),
   "OpenTopoMap": L.tileLayer(
     "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-    { attribution: "© OpenTopoMap contributors", maxZoom: 17 }
+    { attribution: '<a href="https://opentopomap.org" target="_blank">© OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC-BY-SA</a>)', maxZoom: 17 }
   )
 };
 baseLayers["国土地理院"].addTo(map);

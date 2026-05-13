@@ -124,7 +124,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   2. `$DATA_DIR/ref/N03-{n03_year}_municipalities.geojson` — 市区町村単位（約2,000地域）。FR-009 での所在地（市区町村名）取得に使用
   3. `$DATA_DIR/ref/N03-{n03_year}_excluded_tiles.txt` — 北方領土6村（市区町村コード 01696〜01701）に該当するポリゴン内のズームレベル15タイル座標リスト（x y 形式、1行1タイル）。FR-003 での NODATA マスクに使用
 - **北方領土の識別**: N03 の行政区域コード属性（N03_007）が 01696〜01701 に一致するポリゴンを除外対象として識別する（詳細: [`decisions/ADR-005-northern-territories-exclusion.md`](decisions/ADR-005-northern-territories-exclusion.md)）
-- **フォールバック**: 前処理済みファイルが存在しない場合、北方領土タイル除外（FR-003）をスキップして警告ログを出力し、地域不明を示す仮コード（`ZZ/ZZ-A01` 形式）を付与して処理を続行する（処理は停止しない）。仮コードの採番ロジックは [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
+- **フォールバック**: 前処理済みファイルが存在しない場合、北方領土タイル除外（FR-003）をスキップして警告ログを出力し、地域不明を示す仮サミットコード（`ZZ/ZZ-A01` 形式）を付与して処理を続行する（処理は停止しない）。仮サミットコードの採番ロジックは [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
 - 出典: [`ref/SOURCES.md`](../ref/SOURCES.md)（国土数値情報 N03 行政区域）
 
 #### FR-001: 標高タイル事前取得
@@ -308,13 +308,13 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - 突合は各ピークのアクティベーションゾーン（FR-016 → FR-018 → FR-014 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
 - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
 - **市区町村判定**: 各ピーク（matched/new）および deleted サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
-- **新規ピーク仮コード割り当て**: match_status=new のピークに対して、FR-017 で前処理した地域データを用いて仮サミットコードを付与する
+- **新規ピーク仮サミットコード割り当て**: match_status=new のピークに対して、FR-017 で前処理した地域データを用いて仮サミットコードを付与する
   - フォーマット: `JAx/XX-A01`
     - `JAx`: SOTA アソシエーションコード（JA / JA5 / JA6 / JA8 のいずれか）
     - `XX`: SOTA エリアコード（例: TK = 東京都・島部、KS = 鹿児島県）
     - `A01`: 仮番号（`A` + 2桁連番、エリアごとに 01 からリセット）
   - 海上・地域不明ピーク（FR-017 フォールバック）: `ZZ/ZZ-A01` 形式
-  - **以降、仮コードを `JAx/XX-A01` と表記する**（JAx・XX は実際の値の例示、01 は連番の例示）
+  - **以降、仮サミットコードを `JAx/XX-A01` と表記する**（JAx・XX は実際の値の例示、01 は連番の例示）
 - match_status 値:
   - `matched`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する
   - `new`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在しない（プロミネンス ≥ 150m を満たす新規候補）
@@ -364,7 +364,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 **Point: 検出ピーク**
 - `type`: "peak"
 - `match_status`: matched / new / deleted
-- `summit_code`: SOTA サミットコード（matched / deleted のみ）
+- `summit_code`: サミットコード（matched / deleted のみ）
+- `provisional_code`: 仮サミットコード（new のみ）
 - `summit_name`: サミット名（matched / deleted のみ・英語/ローマ字）
 - `summit_name_jp`: 日本語山岳名（matched / deleted のみ・geojson_v{N} から取得。未取得時は空文字）
 - `peak_elev`: 検出標高（m）
@@ -414,7 +415,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
   - `merged.geojson` は証跡用として引き続き別ファイルで出力する（HTML への埋め込みとは独立）
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）
-  - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ
+  - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-006](decisions/ADR-006-viewer-background-tile-selection.md)）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
   - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
   - コル等高線ポリゴン（new / deleted）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new はコル等高線内に既存サミットが存在しないことを、deleted はコル等高線内に既存サミットが存在することを可視化する
@@ -448,12 +449,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - 申請書 XLSX は **HTML ビューア（FR-013）がブラウザ内で生成・ダウンロード**する。Python バッチは XLSX を生成しない
 - テンプレート列構成（`ref/SOTA-Summit-list-revision-request.xlsx` 準拠）:
   - 1シート構成
-  - カラム: 既存山岳ID または仮コード / アクション / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
+  - カラム: 既存山岳ID または仮サミットコード / アクション / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
 - アクション別カラムマッピング（テンプレート列 A〜J）:
 
-| アクション | A: 山岳ID/仮コード | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
+| アクション | A: 山岳ID/仮サミットコード | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
-| 追加 | summit_code（仮コード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
+| 追加 | provisional_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
 | 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名 ※1 | 新EN名 ※1 | sota_alt_m | 変更根拠（自由記述） |
 
@@ -481,7 +482,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 |---|---|
 | match_status | SOTAリスト突合結果（matched/new/deleted） |
 | stability | 解析品質（confirmed/unstable/-） |
-| summit_code | SOTAサミットコード（例: JA/TK-001）、新規は仮コード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
+| summit_code | サミットコード（例: JA/TK-001）。matched / deleted のみ |
+| provisional_code | 仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定）。new のみ |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
 | summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
 | sota_alt_m | SOTA リスト登録標高（m） |
@@ -623,6 +625,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 **作業用 HTML ビューア**（`merged_viewer.html`）
 
+画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)
+
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `$DATA_DIR/results/merged_viewer.html` |
@@ -678,7 +682,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | フィーチャ数 | 61（47都道府県 + 北海道14振興局） |
 | プロパティ | `assoc`（JA/JA5/JA6/JA8）、`area_code`（例: TK、IS）、`region_name`（都道府県名/振興局名） |
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成 |
-| 省略時の動作 | 未存在の場合、FR-009 は新規ピークに `ZZ/ZZ-A01` 形式の仮コードを付与して続行 |
+| 省略時の動作 | 未存在の場合、FR-009 は新規ピークに `ZZ/ZZ-A01` 形式の仮サミットコードを付与して続行 |
 
 **N03-{n03_year}_municipalities.geojson**（市区町村単位）
 
@@ -728,6 +732,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
 
 ### 6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
+
+画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)（作業用ビューアと共通のモックアップ。公開用は編集 UI・XLSX エクスポートなし）
 
 | 項目 | 仕様 |
 |---|---|
