@@ -627,7 +627,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 生成 | フェーズ4 処理 |
 | ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
-| メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601）を付与 |
+| メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601 形式、例: `"2026-05-13T14:30:00+09:00"`）を付与 |
 | フィーチャ構成 | [FR-013 参照](#fr-013-geojsonhtml-ビューア生成)（アクティベーションゾーンポリゴン含む） |
 
 **作業用 HTML ビューア**（`merged_viewer.html`）
