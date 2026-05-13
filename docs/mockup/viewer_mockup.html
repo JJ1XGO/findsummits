@@ -106,7 +106,7 @@ const GEOJSON_DATA = {
   features: [
     // ── new: 新規ピーク候補（1521m → 10pt）────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
-      properties: { type: "peak", match_status: "new",
+      properties: { type: "peak", match_status: "new", provisional_code: "JA/NEW-001",
                     peak_elev: 1521, prominence: 210, stability: "confirmed", is_tile_top: 0,
                     points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
@@ -120,7 +120,7 @@ const GEOJSON_DATA = {
 
     // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.68, 35.31] },
-      properties: { type: "peak", match_status: "new",
+      properties: { type: "peak", match_status: "new", provisional_code: "JA/NEW-002",
                     peak_elev: 580, prominence: 165, stability: "confirmed", is_tile_top: 0,
                     points: 2 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.670,35.300],[138.690,35.300],[138.690,35.320],[138.670,35.320],[138.670,35.300]]] },
@@ -487,6 +487,7 @@ function renderFeatures() {
       if (p.match_status === "new") {
         marker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span></div>
+          <div class="popup-row"><label>仮コード</label>${p.provisional_code}</div>
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
@@ -528,9 +529,19 @@ function renderFeatures() {
       const cat = catByPeak(p.peak_lat, p.peak_lon);
       const colLat = geom.coordinates[1].toFixed(5);
       const colLon = geom.coordinates[0].toFixed(5);
+      const colParentPeak = GEOJSON_DATA.features.find(
+        f2 => f2.properties.type === "peak"
+          && f2.geometry.coordinates[1] === p.peak_lat
+          && f2.geometry.coordinates[0] === p.peak_lon
+      );
+      const colPeakCode = colParentPeak?.properties.summit_code
+                       || colParentPeak?.properties.provisional_code
+                       || "";
+      const colCodeLabel = colParentPeak?.properties.match_status === "new" ? "仮コード" : "コード";
       L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(color) })
         .bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
+          ${colPeakCode ? `<div class="popup-row"><label>${colCodeLabel}</label>${colPeakCode}</div>` : ""}
           <div class="popup-row"><label>緯度</label>${colLat}</div>
           <div class="popup-row"><label>経度</label>${colLon}</div>
           <div class="popup-row"><label>標高</label>${p.col_elev}m</div>
