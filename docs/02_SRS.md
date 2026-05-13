@@ -772,6 +772,10 @@ URD セクション 5 より:
 - 申請書フォーマットは SOTA 日本支部指定の XLSX テンプレートに従う
 - 解析対象は日本国内の 1 次メッシュ全 176 メッシュ（参照: [`ref/SOURCES.md`](../ref/SOURCES.md) — 第1次地域区画定義）
 - 一部の 1 次メッシュには北方領土が含まれるが、北方領土に所在するサミット候補は SOTA 日本支部の管轄外のため解析対象外とする
+- 以下の参照データはユーザーが事前に手動取得・所定のパスに配置することが前提（ツールは自動取得しない）:
+  - `$DATA_DIR/ref/N03-{n03_year}.geojson` — 国土交通省 国土数値情報サイトからダウンロード
+  - `ref/summitslist.csv` — SOTA データベース（sotadata.org.uk）からダウンロード
+  - `ref/geojson_v{N}/` — SOTA 山名 GeoJSON ファイル群（取得元は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照）
 - タイル取得時はインターネット接続が必要（解析・出力生成はオフライン可）
 - 地理院サーバへのアクセスは[国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)に従い、サーバへの過度な負荷を避けること
 - 本ツールは [`environment.md`](environment.md) に定める仕様と同等以上の環境での動作を前提とする
