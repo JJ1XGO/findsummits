@@ -7,3 +7,7 @@ LOG_DIR = /path/to/your/logs
 [sota]
 # SOTAサミットGeoJSONのバージョン番号（ref/geojson_v{N}/ のディレクトリ名に使用）
 geojson_version = 31
+
+[n03]
+# 国土数値情報 行政区域データの年度（N03-{n03_year}.geojson のファイル名に使用）
+n03_year = 2026

@@ -91,7 +91,7 @@ C + Python ハイブリッド構成（ADR-001）。3ステップの運用フロ�
 【ステップ1: データ取得・前処理】
 prefetch_tiles.py              タイル事前取得（フェーズ1）
 preprocess_pref_boundaries.py  N03 行政区域前処理（フェーズ1・初回のみ）
-       └─ $DATA_DIR/ref/N03-2026_regions.geojson  ← merge.py が参照
+       └─ $DATA_DIR/ref/N03-{n03_year}_regions.geojson  ← merge.py が参照
        ↓
 【ステップ2: 解析・突合・確認】（GeoJSON/HTML で結果を確認してから次ステップへ）
 findsummits (C)      ピーク・コル検出・アクティベーションゾーン計算（フェーズ2）
@@ -119,11 +119,11 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - **対応 UR**: [UR-001](01_URD.md#ur-001), [UR-003](01_URD.md#ur-003), [UR-004](01_URD.md#ur-004)
 - 国土数値情報の市区町村単位の行政区域データを前処理する初回のみ実行するスクリプト（`preprocess_pref_boundaries.py`）
 - **実行タイミング**: 初回のみ（突合処理の前に一度だけ実行する）
-- **入力**: `$DATA_DIR/ref/N03-2026.geojson`（国土数値情報 N03-2026 全国行政区域データ。ユーザーが事前にダウンロードして配置する）
+- **入力**: `$DATA_DIR/ref/N03-{n03_year}.geojson`（国土数値情報 N03-{n03_year} 全国行政区域データ。ユーザーが事前にダウンロードして配置する。`{n03_year}` は `params/config.ini` の `n03_year` パラメータで指定）
 - **出力**（3種）:
-  1. `$DATA_DIR/ref/N03-2026_regions.geojson` — 都道府県/振興局単位（47都道府県 + 北海道14振興局 = 計61地域）。FR-009 での SOTA エリアコード自動付与に使用
-  2. `$DATA_DIR/ref/N03-2026_municipalities.geojson` — 市区町村単位（約2,000地域）。FR-009 での所在地（市区町村名）取得に使用
-  3. `$DATA_DIR/ref/N03-2026_excluded_tiles.txt` — 北方領土6村（市区町村コード 01696〜01701）に該当するポリゴン内のズームレベル15タイル座標リスト（x y 形式、1行1タイル）。FR-003 での NODATA マスクに使用
+  1. `$DATA_DIR/ref/N03-{n03_year}_regions.geojson` — 都道府県/振興局単位（47都道府県 + 北海道14振興局 = 計61地域）。FR-009 での SOTA エリアコード自動付与に使用
+  2. `$DATA_DIR/ref/N03-{n03_year}_municipalities.geojson` — 市区町村単位（約2,000地域）。FR-009 での所在地（市区町村名）取得に使用
+  3. `$DATA_DIR/ref/N03-{n03_year}_excluded_tiles.txt` — 北方領土6村（市区町村コード 01696〜01701）に該当するポリゴン内のズームレベル15タイル座標リスト（x y 形式、1行1タイル）。FR-003 での NODATA マスクに使用
 - **北方領土の識別**: N03 の行政区域コード属性（N03_007）が 01696〜01701 に一致するポリゴンを除外対象として識別する（詳細: [`decisions/ADR-005-northern-territories-exclusion.md`](decisions/ADR-005-northern-territories-exclusion.md)）
 - **フォールバック**: 前処理済みファイルが存在しない場合、北方領土タイル除外（FR-003）をスキップして警告ログを出力し、地域不明を示す仮コード（`ZZ/ZZ-A01` 形式）を付与して処理を続行する（処理は停止しない）。仮コードの採番ロジックは [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
 - 出典: [`ref/SOURCES.md`](../ref/SOURCES.md)（国土数値情報 N03 行政区域）
@@ -156,7 +156,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - 標高タイルは PNG 画像形式で配信されており、各ピクセルの RGB 値から標高（m）を計算する: `標高 = (R×65536 + G×256 + B) / 100.0`
 - 標高値なし（海・データ未整備等）を示すピクセル（R=128, G=0, B=0）は無効値（-9999m）として扱う
 - 無効値のピクセルはピーク検出・プロミネンス計算の対象から除外する
-- **北方領土タイル除外**: タイル読み込み時に `$DATA_DIR/ref/N03-2026_excluded_tiles.txt`（FR-017 生成）を参照し、リスト内のタイル（ズームレベル15の x/y 座標）は全ピクセルを無効値（-9999m）として扱う。ファイルが存在しない場合はこの除外を行わず警告ログを出力して続行する（詳細: [`decisions/ADR-005-northern-territories-exclusion.md`](decisions/ADR-005-northern-territories-exclusion.md)）
+- **北方領土タイル除外**: タイル読み込み時に `$DATA_DIR/ref/N03-{n03_year}_excluded_tiles.txt`（FR-017 生成）を参照し、リスト内のタイル（ズームレベル15の x/y 座標）は全ピクセルを無効値（-9999m）として扱う。ファイルが存在しない場合はこの除外を行わず警告ログを出力して続行する（詳細: [`decisions/ADR-005-northern-territories-exclusion.md`](decisions/ADR-005-northern-territories-exclusion.md)）
 
 ---
 
@@ -308,7 +308,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・deleted サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
 - 突合は各ピークのアクティベーションゾーン（FR-016 → FR-018 → FR-014 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
 - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
-- **市区町村判定**: 各ピーク（matched/new）および deleted サミットの座標を `N03-2026_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
+- **市区町村判定**: 各ピーク（matched/new）および deleted サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
 - **新規ピーク仮コード割り当て**: match_status=new のピークに対して、FR-017 で前処理した地域データを用いて仮サミットコードを付与する
   - フォーマット: `JAx/XX-A01`
     - `JAx`: SOTA アソシエーションコード（JA / JA5 / JA6 / JA8 のいずれか）
@@ -506,7 +506,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | expected_count | このピークが含まれるべき期待解析回数 |
 | sota_lat | SOTA リスト登録緯度（matched・deleted のみ。new は空欄） |
 | sota_lon | SOTA リスト登録経度（matched・deleted のみ。new は空欄） |
-| municipality | 市区町村名（例: "根室市"・"標津町"）。N03-2026_municipalities.geojson 未存在時は空文字 |
+| municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（deleted のみ） |
 | dominant_peak_dist_m | 従属ピークまでの距離 m（deleted のみ） |
 
@@ -676,12 +676,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 ### 6.9 入力: N03 前処理済みファイル（FR-017 生成）
 
-**N03-2026_regions.geojson**（都道府県/振興局単位）
+**N03-{n03_year}_regions.geojson**（都道府県/振興局単位）
 
 | 項目 | 仕様 |
 |---|---|
 | 用途 | 新規ピーク候補への SOTA エリアコード（例: TK・KS）と仮サミットコードの自動付与（FR-009） |
-| ファイル | `$DATA_DIR/ref/N03-2026_regions.geojson` |
+| ファイル | `$DATA_DIR/ref/N03-{n03_year}_regions.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャ数 | 61（47都道府県 + 北海道14振興局） |
@@ -689,12 +689,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成 |
 | 省略時の動作 | 未存在の場合、FR-009 は新規ピークに `ZZ/ZZ-A01` 形式の仮コードを付与して続行 |
 
-**N03-2026_municipalities.geojson**（市区町村単位）
+**N03-{n03_year}_municipalities.geojson**（市区町村単位）
 
 | 項目 | 仕様 |
 |---|---|
 | 用途 | 各ピーク・削除候補サミットの所在地（市区町村名）を申請書・エビデンス CSV に付与（FR-009） |
-| ファイル | `$DATA_DIR/ref/N03-2026_municipalities.geojson` |
+| ファイル | `$DATA_DIR/ref/N03-{n03_year}_municipalities.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャ数 | 約2,000（全国市区町村） |
@@ -702,12 +702,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成 |
 | 省略時の動作 | 未存在の場合、FR-009 は `municipality` カラムに空文字を付与して続行 |
 
-**N03-2026_excluded_tiles.txt**（北方領土除外タイルリスト）
+**N03-{n03_year}_excluded_tiles.txt**（北方領土除外タイルリスト）
 
 | 項目 | 仕様 |
 |---|---|
 | 用途 | 北方領土に該当するタイルを解析対象から除外するためのリスト。標高デコード時に参照し、リスト内のタイルは全ピクセルを無効値として扱う（FR-003） |
-| ファイル | `$DATA_DIR/ref/N03-2026_excluded_tiles.txt` |
+| ファイル | `$DATA_DIR/ref/N03-{n03_year}_excluded_tiles.txt` |
 | 形式 | テキスト（1行1タイル、`x y` 形式の整数ペア、ズームレベル15） |
 | 生成方法 | 前処理スクリプト（FR-017）を実行して生成（北方領土6村に相当する行政区域コード（N03_007: 01696〜01701）のポリゴン内タイルを列挙） |
 | 省略時の動作 | 未存在の場合、FR-003 は北方領土タイル除外をスキップして警告ログを出力 |
