@@ -52,12 +52,12 @@
    - [6.3 出力: 申請書 XLSX](#63-出力-申請書-xlsx)
    - [6.4 出力: エビデンス CSV](#64-出力-エビデンス-csv)
    - [6.5 出力: GeoJSON・HTML ビューア](#65-出力-geojsonhtml-ビューア)
-   - [6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）](#66-内部インターフェース-per-mesh-csvフェーズ2--フェーズ3-境界)
+   - [6.6 中間ファイル: メッシュ別ピーク候補 CSV](#66-中間ファイル-メッシュ別ピーク候補-csv)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
-   - [6.8 内部インターフェース: アクティベーションゾーン GeoJSON（フェーズ2 → フェーズ3 境界）](#68-内部インターフェース-アクティベーションゾーン-geojsonフェーズ2--フェーズ3-境界)
+   - [6.8 中間ファイル: メッシュ別アクティベーションゾーン GeoJSON](#68-中間ファイル-メッシュ別アクティベーションゾーン-geojson)
    - [6.9 入力: N03 前処理済みファイル（FR-017 生成）](#69-入力-n03-前処理済みファイルfr-017-生成)
    - [6.10 入力: SOTA 既存サミット GeoJSON（geojson_v{N}）](#610-入力-sota-既存サミット-geojsongeojson_vn)
-   - [6.11 内部インターフェース: 統合済み activation.geojson（フェーズ3 → フェーズ4 境界）](#611-内部インターフェース-統合済み-activationgeojsonフェーズ3--フェーズ4-境界)
+   - [6.11 中間ファイル: 全国統合済みアクティベーションゾーン GeoJSON](#611-中間ファイル-全国統合済みアクティベーションゾーン-geojson)
    - [6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）](#612-出力-公開用-html閲覧専用ブラウザダウンロード)
 7. [依存関係・環境](#7-依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
@@ -642,11 +642,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | GeoJSON 参照方式 | HTML 内に JavaScript 変数として埋め込み（外部ファイル参照なし） |
 | 動作環境 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
 
-### 6.6 内部インターフェース: per-mesh CSV（フェーズ2 → フェーズ3 境界）
+### 6.6 中間ファイル: メッシュ別ピーク候補 CSV
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `$DATA_DIR/results/csv/<meshcode>.csv` |
+| 役割 | C 解析エンジン（findsummits）がメッシュごとに出力するピーク候補の中間ファイル。Python 統合処理（merge.py）がこれを読み込んで全国分を統合する |
+| ファイル | `$DATA_DIR/results/csv/<meshcode>.csv`（`<meshcode>` は4桁の1次メッシュコード） |
 | エンコーディング | UTF-8 |
 | カラム | [FR-007 参照](#fr-007-プロミネンスフィルタper-mesh-csv-出力) |
 
@@ -660,17 +661,17 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 色分け | 標高に応じたグラデーション（詳細は HLD） |
 | 生成タイミング | `findsummits` 実行時（標高タイル読み込み完了後・解析開始前） |
 
-### 6.8 内部インターフェース: アクティベーションゾーン GeoJSON（フェーズ2 → フェーズ3 境界）
+### 6.8 中間ファイル: メッシュ別アクティベーションゾーン GeoJSON
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson` |
+| 役割 | C 解析エンジン（findsummits）がメッシュごとに出力するアクティベーションゾーン（SOTA ルールで定義されるピーク周辺の有効エリア）の中間ファイル。メッシュ別 CSV（6.6）と同タイミングで生成され、Python 統合処理が全国分を統合する |
+| ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（`<meshcode>` は4桁の1次メッシュコード） |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type` なし）・コル等高線（`feature_type="key_col_boundary"`） |
 | プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon`（対応ピーク特定用）。`is_tile_top=1` のピークは生成しない |
-| 生成タイミング | `findsummits` 実行時（ピーク候補検出・プロミネンス計算完了後、per-mesh CSV 出力と同じタイミング） |
 
 ### 6.9 入力: N03 前処理済みファイル（FR-017 生成）
 
@@ -718,18 +719,17 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 用途 | matched・deleted サミットの日本語山岳名（`summit_name_jp`）取得（FR-009） |
 | 省略時の動作 | 未存在の場合、`summit_name_jp` を空文字として処理続行 |
 
-### 6.11 内部インターフェース: 統合済み activation.geojson（フェーズ3 → フェーズ4 境界）
+### 6.11 中間ファイル: 全国統合済みアクティベーションゾーン GeoJSON
 
 | 項目 | 仕様 |
 |---|---|
+| 役割 | メッシュ別アクティベーションゾーン GeoJSON（6.8）を全国分統合した中間ファイル。SOTA リスト突合・HTML ビューア生成・独立峰の広域再解析の入力として使用する |
 | ファイル | `$DATA_DIR/results/merged_activation.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャタイプ | Polygon（2種）: アクティベーションゾーン・コル等高線（`feature_type="key_col_boundary"`） |
 | プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
-| 生成元 | FR-018（per-mesh `_activation.geojson` を統合）。FR-014 で再解析対象レコードが上書きされる |
-| 利用先 | FR-009（point-in-polygon 突合）・FR-013（GeoJSON 生成）・FR-014（広域再解析後の上書き） |
 
 ### 6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
 
