@@ -733,7 +733,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | フィーチャタイプ | Polygon（2種）: アクティベーションゾーン・コル等高線（`feature_type="key_col_boundary"`） |
-| プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated` |
+| プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated`（解析範囲の境界でゾーンが途切れた場合 true） |
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
 
 ### 6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
