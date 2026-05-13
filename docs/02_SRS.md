@@ -716,11 +716,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | 項目 | 仕様 |
 |---|---|
+| 用途 | matched・deleted サミットの日本語山岳名（`summit_name_jp`）取得（FR-009） |
 | ファイル | `ref/geojson_v{N}/ja0.geojson` 〜 `ja9.geojson`（{N} は `params/config.ini` の `geojson_version` パラメータで指定） |
+| ファイル分割 | 全国サミットデータが10ファイルに分割されている（分割方針は出典元データに依存。詳細は出典元に確認） |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | `name` プロパティ形式 | `"JA/XX-NNN(山岳名)"` — SOTA コードと日本語山岳名を括弧区切りで格納 |
-| 用途 | matched・deleted サミットの日本語山岳名（`summit_name_jp`）取得（FR-009） |
 | 省略時の動作 | 未存在の場合、`summit_name_jp` を空文字として処理続行 |
 
 ### 6.11 中間ファイル: 全国統合済みアクティベーションゾーン GeoJSON
