@@ -387,7 +387,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `summit_name`: サミット名（summitslist.csv の SummitName、英語/ローマ字）
 - `summit_name_jp`: 日本語山岳名（geojson_v{N} から取得。未取得時は空文字）
 - `sota_alt_m`: SOTA 登録標高（m）
-- `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
+- `sota_points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
 
 **Polygon: アクティベーションゾーン**
 - `type`: "activation_area"
@@ -488,6 +488,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | peak_lat | 検出ピーク緯度 |
 | peak_lon | 検出ピーク経度 |
 | peak_elev | 検出ピーク標高（m） |
+| points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出 |
 | col_lat | Keyコル緯度 |
 | col_lon | Keyコル経度 |
 | col_elev | Keyコル標高（m） |
@@ -498,6 +499,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | expected_count | このピークが含まれるべき期待解析回数 |
 | sota_lat | SOTA リスト登録緯度（matched・deleted のみ。new は空欄） |
 | sota_lon | SOTA リスト登録経度（matched・deleted のみ。new は空欄） |
+| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出。matched・deleted のみ。new は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（deleted のみ） |
 | dominant_peak_dist_m | 従属ピークまでの距離 m（deleted のみ） |

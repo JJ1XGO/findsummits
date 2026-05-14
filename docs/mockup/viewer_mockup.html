@@ -145,7 +145,7 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
       properties: { type: "sota_summit", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
-                    sota_alt_m: 3776, points: 10 } },
+                    sota_alt_m: 3776, sota_points: 10 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.76,35.38]] },
       properties: { type: "prominence_range" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.78,35.39]] },
@@ -166,7 +166,7 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
       properties: { type: "sota_summit", match_status: "deleted",
                     summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
-                    sota_alt_m: 880, points: 6 } },
+                    sota_alt_m: 880, sota_points: 6 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
       properties: { type: "key_col_boundary", summit_code: "JA/YN-099" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
@@ -544,18 +544,19 @@ function renderFeatures() {
     }
 
     if (p.type === "sota_summit") {
+      const sotaColor = pointsToColor(p.sota_points);
       const cat = peakCategory[p.summit_code] ?? (p.match_status === "deleted" ? "deleted" : "unchanged");
       const badge = p.match_status === "deleted" ? "deleted" : "matched";
       const sotaLat = geom.coordinates[1].toFixed(5);
       const sotaLon = geom.coordinates[0].toFixed(5);
-      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(color) })
+      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(sotaColor) })
         .bindPopup(`
-          <div class="popup-title"><i class="fa-solid fa-circle" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
+          <div class="popup-title"><i class="fa-solid fa-circle" style="color:${sotaColor}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
           <div class="popup-row"><label>緯度</label>${sotaLat}</div>
           <div class="popup-row"><label>経度</label>${sotaLon}</div>
           <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
-          <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
+          <div class="popup-row"><label>ポイント</label>${p.sota_points}pt</div>
         `)
         .addTo(filterGroups[cat]);
     }
