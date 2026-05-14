@@ -328,7 +328,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
     その座標が含まれる検出ピークを従属ピーク（dominant peak）とする
   - 複数のポリゴンに含まれる場合は最も近い検出ピークを採用する
   - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピークを従属ピークとする
-  - 付与するカラム: `dominant_peak_code`（検出ピークコード）、`dominant_peak_dist_m`（距離 m）
+  - 付与するカラム: `dominant_peak_code`（検出ピークコード）
 
 #### FR-010: 削除候補のスコープ
 
@@ -502,7 +502,6 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出。matched・deleted のみ。new は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（deleted のみ） |
-| dominant_peak_dist_m | 従属ピークまでの距離 m（deleted のみ） |
 
 ---
 
