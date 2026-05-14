@@ -359,7 +359,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル） |
 | deleted | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
 
-- **各フィーチャのプロパティ**:
+##### 各フィーチャのプロパティ
 
 **Point: 検出ピーク**
 - `type`: "peak"
