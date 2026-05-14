@@ -486,6 +486,7 @@ function renderFeatures() {
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
+          <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
           <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="例: Maruyama"></div>
@@ -499,6 +500,7 @@ function renderFeatures() {
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+          <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
           <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="${p.summit_name}"></div>
@@ -512,6 +514,7 @@ function renderFeatures() {
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+          <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
         `);
       }
@@ -563,6 +566,7 @@ function renderFeatures() {
           <div class="popup-row"><label>緯度</label>${sotaLat}</div>
           <div class="popup-row"><label>経度</label>${sotaLon}</div>
           <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
+          <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
         `)
         .addTo(filterGroups[cat]);
     }
