@@ -355,9 +355,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | match_status | フィーチャ |
 |---|---|
-| matched | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
-| new | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル） |
-| deleted | Point（ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（SOTA サミット）+ Polygon（コル等高線）+ LineString（ピーク→Keyコル）+ LineString（ピーク→SOTA サミット） |
+| matched | Point（検出ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（既存 SOTA サミット）+ LineString（ピーク → Keyコル）+ LineString（ピーク → SOTA サミット） |
+| new | Point（検出ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Polygon（コル等高線）+ LineString（ピーク → Keyコル） |
+| deleted | Point（検出ピーク）+ Polygon（アクティベーションゾーン）+ Point（Keyコル）+ Point（既存 SOTA サミット）+ Polygon（コル等高線）+ LineString（ピーク → Keyコル）+ LineString（ピーク → SOTA サミット） |
 
 ##### 各フィーチャのプロパティ
 
