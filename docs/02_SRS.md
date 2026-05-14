@@ -484,7 +484,6 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | summit_code | サミットコード（例: JA/TK-001）。matched / deleted の場合は正式コード、new の場合は仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
 | summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
-| sota_alt_m | SOTA リスト登録標高（m） |
 | peak_lat | 検出ピーク緯度 |
 | peak_lon | 検出ピーク経度 |
 | peak_elev | 検出ピーク標高（m） |
@@ -499,6 +498,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | expected_count | このピークが含まれるべき期待解析回数 |
 | sota_lat | SOTA リスト登録緯度（matched・deleted のみ。new は空欄） |
 | sota_lon | SOTA リスト登録経度（matched・deleted のみ。new は空欄） |
+| sota_alt_m | SOTA リスト登録標高（m）。matched・deleted のみ。new は空欄 |
 | sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出。matched・deleted のみ。new は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（deleted のみ） |
