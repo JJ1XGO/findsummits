@@ -68,7 +68,7 @@
 | 標高タイル | 地理院タイルのうち標高データを提供するもの。RGB 値に標高をエンコードした 256×256px PNG。 |
 | SOTA | [Summits On The Air](https://www.sota.org.uk/)。アマチュア無線の運用活動。本プロジェクトは[SOTA日本支部](https://www.kawauchi.homeip.mydns.jp/sotajp/)（JA）の山岳リスト更新申請を目的とする。 |
 | サミットコード | SOTAが各山岳に付与する識別コード。`JA/YN-001` の形式（`JA`: アソシエーション、`YN`: リージョン、`001`: サミット番号）。`summitslist.csv` の `SummitCode` 列が正式名称。matched / deleted ピークに対応。プロパティ名: `summit_code` |
-| 仮サミットコード | 申請前の new ピークに暫定付与する識別コード。正式なサミットコードはSOTA審査後に確定する。プロパティ名: `provisional_code` |
+| 仮サミットコード | 申請前の new ピークに暫定付与する識別コード。正式なサミットコードはSOTA審査後に確定する。`summit_code` プロパティに格納（`match_status="new"` の場合） |
 
 ## 出力物関連
 

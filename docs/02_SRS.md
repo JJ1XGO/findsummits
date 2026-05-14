@@ -364,8 +364,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 **Point: 検出ピーク**
 - `type`: "peak"
 - `match_status`: matched / new / deleted
-- `summit_code`: サミットコード（matched / deleted のみ）
-- `provisional_code`: 仮サミットコード（new のみ）
+- `summit_code`: サミットコード（matched / deleted）または仮サミットコード（new）
 - `summit_name`: サミット名（matched / deleted のみ・英語/ローマ字）
 - `summit_name_jp`: 日本語山岳名（matched / deleted のみ・geojson_v{N} から取得。未取得時は空文字）
 - `peak_elev`: 検出標高（m）
@@ -454,7 +453,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | アクション | A: 山岳ID/仮サミットコード | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
-| 追加 | provisional_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
+| 追加 | summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
 | 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名 ※1 | 新EN名 ※1 | sota_alt_m | 変更根拠（自由記述） |
 
@@ -482,8 +481,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 |---|---|
 | match_status | SOTAリスト突合結果（matched/new/deleted） |
 | stability | 解析品質（confirmed/unstable/-） |
-| summit_code | サミットコード（例: JA/TK-001）。matched / deleted のみ |
-| provisional_code | 仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定）。new のみ |
+| summit_code | サミットコード（例: JA/TK-001）。matched / deleted の場合は正式コード、new の場合は仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
 | summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
 | sota_alt_m | SOTA リスト登録標高（m） |
