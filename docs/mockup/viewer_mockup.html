@@ -207,8 +207,8 @@ function sotaIcon(color) {
 
 // ---- 地図初期化 ----
 const map = L.map("map", { zoomControl: false }).setView([35.33, 138.72], 10);
-L.control.zoom({ position: "bottomright" }).addTo(map);
 L.control.scale({ position: "bottomright", imperial: false, maxWidth: 150 }).addTo(map);
+L.control.zoom({ position: "bottomright" }).addTo(map);
 
 const baseLayers = {
   "国土地理院": L.tileLayer(
