@@ -373,12 +373,6 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `is_tile_top`: 未確定フラグ（0/1）
 - `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出
 
-**Polygon: アクティベーションゾーン**
-- `type`: "activation_area"
-- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
-- `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
-- `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
-
 **Point: Keyコル**
 - `type`: "col"
 - `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
@@ -394,6 +388,12 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `summit_name_jp`: 日本語山岳名（geojson_v{N} から取得。未取得時は空文字）
 - `sota_alt_m`: SOTA 登録標高（m）
 - `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
+
+**Polygon: アクティベーションゾーン**
+- `type`: "activation_area"
+- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
+- `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
+- `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
 **Polygon: コル等高線**（new / deleted）
 - `type`: "key_col_boundary"
