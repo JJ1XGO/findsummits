@@ -375,7 +375,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 **Point: Keyコル**
 - `type`: "col"
-- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
+- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - `col_elev`: Keyコル標高（m）
 - `points`: 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出）
 - 未確定フラグが 1 の場合は含めない
@@ -391,13 +391,13 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 **Polygon: アクティベーションゾーン**
 - `type`: "activation_area"
-- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
+- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
 - `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
 **Polygon: コル等高線**（new / deleted）
 - `type`: "key_col_boundary"
-- `peak_lat`, `peak_lon`: 対応ピーク座標（ピーク Point との対応付け用）
+- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - 対応ピークのコル等高線ポリゴン（FR-016 出力から取得）
 
 **LineString: ピーク → Keyコル**
