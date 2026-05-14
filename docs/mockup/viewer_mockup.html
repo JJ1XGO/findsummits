@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SOTA Japan 申請支援ビューア（モックアップ）</title>
+  <title>findsummits viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
@@ -77,7 +77,7 @@
 <body>
 
 <div id="header">
-  <h1>SOTA Japan 申請支援ビューア</h1>
+  <h1>findsummits viewer</h1>
   <span id="meta">サミットリスト基準日: 2026-01-01 　解析日時: 2026-05-13 09:00 JST</span>
   <span class="spacer"></span>
   <div id="filters">
@@ -273,28 +273,22 @@ function createMeshGrid() {
     }).addTo(labels);
   });
 
-  // ズームに応じてラベル表示制御（ズーム7未満は非表示）
+  // labels を group 内で管理することでオーバーレイ OFF 時に自動削除される
   const LABEL_ZOOM = 7;
+  const group = L.layerGroup([lines]);
+
   function syncLabels() {
-    const z = map.getZoom();
-    if (z >= LABEL_ZOOM) {
-      if (!map.hasLayer(labels)) labels.addTo(map);
+    if (!map.hasLayer(group)) return;
+    if (map.getZoom() >= LABEL_ZOOM) {
+      if (!group.hasLayer(labels)) group.addLayer(labels);
     } else {
-      if (map.hasLayer(labels)) map.removeLayer(labels);
+      if (group.hasLayer(labels)) group.removeLayer(labels);
     }
   }
 
-  const group = L.layerGroup([lines]);
-  group.on = (evt, fn) => map.on(evt, fn); // イベント委譲は不要だが型合わせ用
+  map.on("zoomend", syncLabels);
+  map.on("overlayadd", e => { if (e.name === "1次メッシュ") syncLabels(); });
 
-  // グループのadd/removeに連動してラベルも制御
-  map.on("zoomend", () => { if (map.hasLayer(lines)) syncLabels(); });
-  map.on("overlayadd",    e => { if (e.name === "1次メッシュ") { group._labelsEnabled = true; syncLabels(); } });
-  map.on("overlayremove", e => { if (e.name === "1次メッシュ") { group._labelsEnabled = false; map.removeLayer(labels); } });
-
-  group._lines = lines;
-  group._labels = labels;
-  group._syncLabels = syncLabels;
   return group;
 }
 
