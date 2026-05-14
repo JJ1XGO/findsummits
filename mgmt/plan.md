@@ -1,173 +1,150 @@
-# SRS 北方領土除外・市区町村名追加
+# 計画: match_status の意味明確化と dominant_peak_dist_m の復活
 
 ## Context
 
-調査結果: 国土数値情報 N03-2026 は北方領土の6村（色丹村・泊村・留夜別村・留別村・
-紗那村・蘂取村）を日本の正式な行政区域として収録している（市区町村コード
-01696〜01701付与済み）。そのため「N03 ポジティブフィルタ = 日本領土」は不成立。
-市区町村コードによる明示的な除外が必要。
+`match_status` の3つの値は、整理すると主語が一貫していない：
+- `matched` / `new` … ピーク自身の状態を記述
+- `deleted` … ピーク自身ではなく**近傍 SOTA サミットへのアクション**を記述
 
-あわせて2点の要件追加：
-1. 除外を FR-003（C エンジン・標高デコード段階）で行い、北方領土のピクセルを
-   -9999m（NODATA）扱いにする
-2. FR-011 の追加根拠「所在地」を市区町村レベルまで記載する
+特に GeoJSON の peak feature において `match_status="deleted"` は「このピーク自身が削除される」と誤読される。実際は「このピークは dominant peak であり、近傍の SOTA サミットが削除候補となる」という意味。
 
-## 実現可能性の確認
+すべての値をピーク中心の状態記述で揃えるため、peak / LineString / CSV の `deleted` を `dominant` にリネームする。SOTA summit feature だけは「サミット自身の運命」を直接表すので `matched` / `deleted` のまま維持する。
 
-**FR-003 での除外（C エンジン）**
-北方領土は孤立した島嶼群で本土と陸続きではない。タイル単位（z=15, ~1.2km×1.2km）
-の除外で十分な精度が得られる。
-→ Python（FR-017）が z=15 タイル座標リストを事前生成し、C エンジンが読み込む方式
-  で実現可能。C 側に polygon geometry ライブラリ不要。
-
-**市区町村名（FR-011）**
-N03-2026 は市区町村レベルのポリゴンを持つ。溶解（dissolve）前の市区町村レベル
-GeoJSON を FR-017 の追加出力として生成し、FR-009 で point-in-polygon を行えば
-municipality カラムを merged.csv に追加できる。
-
-→ **両方とも実現可能**
-
-## 実施順序
-
-**Step 1（先行）**: ADR-005 を新規作成（SRS が参照リンクを貼るため先に作成）
-**Step 2（後続）**: SRS を更新し ADR-005 へのリンクを追記
-
-## 変更ファイル
-
-- `docs/decisions/ADR-005-northern-territories-exclusion.md`（新規・Step 1）
-- `docs/02_SRS.md`（Step 2: FR-017・FR-003・FR-009・FR-011・Section 6.9・ヘッダー）
-
----
+加えて、先のコミットで `dominant_peak_dist_m` を「使われていないだろう」と誤判断して削除してしまったが、FR-009 のフォールバック処理（最近接検出ピーク）で内部的に必要な計算値で、証跡 CSV にも残すべき値であることが判明した。復活させる。
 
 ## 変更内容
 
-### 1. FR-017（行118〜122）: 出力を3種に拡張
+### 0. ADR を 2 件追加
 
-**利用用途** を更新し、**出力** に2ファイル追加:
+**ADR-007: peak match_status の用語整理**（新規作成）
 
-```markdown
-- **出力**:
-  1. `$DATA_DIR/ref/N03-2026_regions.geojson` — 都道府県/振興局単位（61地域）。
-     FR-009 での SOTA エリアコード自動付与に使用（既存）
-  2. `$DATA_DIR/ref/N03-2026_municipalities.geojson` — 市区町村単位（約2000地域）。
-     FR-009 での所在地（市区町村名）取得に使用（新規）
-  3. `$DATA_DIR/ref/N03-2026_excluded_tiles.txt` — 北方領土6村の市区町村コード
-     （01696〜01701）に該当するポリゴン内のズームレベル15タイル座標リスト。
-     FR-003 での NODATA マスクに使用（新規）
+- ファイル: `docs/decisions/ADR-007-peak-match-status-terminology.md`
+- 状態: 採用・未実装
+- 決定日: 2026-05-14
+- Context: match_status の3値が主語不整合（matched/new は状態記述、deleted はアクション記述）。GeoJSON peak feature で "deleted" が「ピーク自身の削除」と誤読される問題
+- Decision: peak / LineString / CSV row の `deleted` を `dominant` にリネーム。SOTA summit feature の `deleted` は維持（サミット自身の運命）
+- Alternatives: 現状維持（注釈で説明）／完全分離（peak_status と summit_status に分離）の検討内容を残す
+- Consequences: 用語整合性向上、申請書 XLSX 生成時は dominant → 削除アクションにマッピング
 
-- **北方領土の識別**: N03 の行政区域コード（属性 N03_007）が以下の6村に
-  一致するポリゴンを除外対象とする
-  | 島 | 村名 | コード（※） |
-  |---|---|---|
-  | 色丹島 | 色丹郡色丹村 | 01696 |
-  | 国後島 | 国後郡泊村 | 01697 |
-  | 国後島 | 国後郡留夜別村 | 01698 |
-  | 択捉島 | 択捉郡留別村 | 01699 |
-  | 択捉島 | 紗那郡紗那村 | 01700 |
-  | 択捉島 | 蘂取郡蘂取村 | 01701 |
-  ※ 正確なコードは実データで検証すること（総務省市区町村コード表が正）
-```
+**ADR-008: dominant peak 特定アルゴリズム**（新規作成）
 
----
+- ファイル: `docs/decisions/ADR-008-dominant-peak-identification.md`
+- 状態: 採用・未実装
+- 決定日: 2026-05-14
+- Context: 削除候補 SOTA サミットに対し dominant peak（従属先）を特定する必要がある。コル等高線ポリゴンによる包含判定が基本だが、複数包含・包含なしのエッジケースが存在しうる
+- Decision: 3段階の判定:
+  1. dominant peak のコル等高線ポリゴン内に SOTA サミット座標が含まれる検出ピークを採用
+  2. 複数のポリゴンに含まれる場合は最も近い検出ピークを採用（タイブレーク）
+  3. いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピーク
+- 距離計算: Haversine 公式（測地線距離）
+- Alternatives:
+  - 単純最近接のみ（コル等高線判定を使わない）→ プロミネンス計算結果との整合が取れず却下
+  - 複数包含時のタイブレークを「最高コル」に → 実装複雑、最近接で十分と判断
+  - フォールバックなし（包含なしはエラー） → メッシュ境界 truncation や SOTA リスト座標精度の問題で実用上必須
+- Consequences: 縦走路上のサミットや古い座標データでも安定して dominant peak が特定できる
 
-### 2. FR-003（標高デコード）: 北方領土タイルを NODATA 扱いに
+**SRS からのリンク**:
+- FR-013 Point: 検出ピーク `match_status` の説明に ADR-007 へのリンク
+- FR-009 「dominant peak 特定」セクションに ADR-008 へのリンク
+- 参照形式は ADR-006 と同じ: `[ADR-007](decisions/ADR-007-peak-match-status-terminology.md)`
 
-FR-003 の処理記述に以下を追加:
+### 1. peak の match_status 値を "deleted" → "dominant" にリネーム
 
-```markdown
-- **北方領土タイル除外**: タイル読み込み時に
-  `$DATA_DIR/ref/N03-2026_excluded_tiles.txt` を参照し、リスト内のタイル
-  （ズームレベル15 x/y 座標）は全ピクセルを NODATA（-9999m）として扱う。
-  ファイルが存在しない場合はこの除外を行わず、警告ログを出力する
-  （FR-017 フォールバック動作に準ずる）
-```
+**`docs/02_SRS.md` の変更箇所:**
 
----
+- **FR-008** （L318-321）match_status 値の定義をピーク中心の表現に書き直す:
+  - `matched`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する
+  - `new`: 検出ピークのコル等高線内に既存 SOTA サミット座標が存在しない
+  - `dominant`: 検出ピークのコル等高線内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外（= サミットが削除候補となり、このピークがその dominant peak になる）
 
-### 3. FR-009（SOTA 突合）: 地理的フィルタを削除、市区町村判定を追加
+- **FR-009** （L321 周辺）`deleted サミットの従属ピーク特定` のセクション名と本文の用語を更新:
+  - セクション名: `dominant peak 特定` 等に変更
+  - 本文の「deleted サミット」を「削除候補サミット」または「subordinate サミット」に置換
 
-**削除**: 以前のプランで追加予定だった「地理的フィルタ（北方領土除外）」ステップ
-→ FR-003 が処理するため FR-009 には不要
+- **FR-011** （L455-459）申請書 XLSX マッピング表の「削除」アクション行:
+  - 「| 削除 | SummitCode | 削除 | ... |」 のマッピングは `match_status="dominant"` の行に対して適用と SRS に明記
+  - 注釈の※4 削除根拠フォーマットはそのまま使う
 
-**追加**: 突合処理の後、`N03-2026_municipalities.geojson` を使った
-point-in-polygon で市区町村名を判定し、merged.csv に `municipality` カラムを追加する:
+- **FR-013** フィーチャ構成テーブル（L358-360）の行ヘッダーを `deleted` → `dominant` に変更
 
-```markdown
-- **市区町村判定**: 各ピーク（matched/new）の座標を
-  `N03-2026_municipalities.geojson`（市区町村レベル）と照合し、
-  `municipality` カラム（例: "根室市"・"標津町"）を付与する。
-  - 市区町村ファイル未存在時は空文字を付与して続行（警告ログ出力）
-  - deleted サミットは既存の SOTA 座標を同様に照合する
-```
+- **FR-013** Point: 検出ピーク の `match_status` 値定義（L366）: `matched / new / dominant`
+- **FR-013** Point: 既存 SOTA サミット の `match_status` 値（L385）: **`matched / deleted` のまま維持**
+- **FR-013** LineString: ピーク → SOTA サミット の `match_status` 値（L410）: `matched / dominant`（peak と整合）
 
----
+- **FR-012** CSV `match_status` カラムの値説明（L482）: `matched/new/dominant`
 
-### 4. FR-011（申請書 XLSX）: 所在地を市区町村まで拡張
+### 2. dominant_peak_dist_m を復活
 
-行464の追加根拠フォーマットを変更:
+**`docs/02_SRS.md` の変更箇所:**
 
-**Before:**
-```
-所在地：{都道府県または振興局名}
-```
+- **FR-009** L331 の付与カラム記述に追加:
+  - `付与するカラム: dominant_peak_code（検出ピークコード）、dominant_peak_dist_m（dominant peak から SOTA サミット座標までの距離 m。Haversine 公式で計算）`
 
-**After:**
-```
-所在地：{都道府県または振興局名} {市区町村名}
-```
+- **FR-012** CSV カラム表に1行追加（dominant_peak_code の直後）:
+  - `| dominant_peak_dist_m | dominant peak から SOTA サミット座標までの距離 m（Haversine 公式）。dominant のみ |`
 
-`{市区町村名}` は merged.csv の `municipality` カラムから取得。空文字の場合は
-スペースなしで都道府県名のみ表示する（後退互換）。
+### 3. GLOSSARY 更新
 
----
+**`docs/00_GLOSSARY.md` の変更:**
 
-### 5. Section 6.9（N03 入力インターフェース）: 出力3種を反映
+- 「サミットコード」関連用語の近くに `dominant peak` 用語を追加
+  - 例: `| dominant peak | 削除候補となる SOTA サミットが従属する検出ピーク。サミットがそのピークのコル等高線内に含まれることで判定される。SRS FR-009 参照 |`
 
-入力ファイル定義に `N03-2026_municipalities.geojson` と
-`N03-2026_excluded_tiles.txt` を追記する。
+### 4. モックアップ更新
 
----
+**`docs/mockup/viewer_mockup.html` の変更:**
 
-### 6. ヘッダー最終更新日
+- ダミーデータ（L157-175 の deleted ブロック）:
+  - peak feature の `match_status: "deleted"` → `"dominant"`
+  - LineString (coord_diff) の `match_status: "deleted"` → `"dominant"`
+  - **SOTA summit feature の `match_status: "deleted"` はそのまま**
 
-`2026-05-12` に更新する。
+- ポップアップ（L510-518 のピーク deleted ブロック）:
+  - バッジ表示を `dominant` に変更
+  - ラベル「コード」のままで OK
 
----
+- カテゴリ判定 `categorize()`（L399-407）:
+  - `matchStatus === "deleted"` の判定を `=== "dominant"` に変更
+  - フィルター UI ラベル「削除」は維持（peak match_status="dominant" を「削除」フィルタにマッピング）
 
-## Step 1: ADR-005 新規作成
+- sota_summit セクション（L546 周辺）:
+  - peak match_status="dominant" の場合の処理を追加（現状 sota_summit の match_status="deleted" でカテゴリ判定しているが、これは維持して OK）
 
-**ファイル**: `docs/decisions/ADR-005-northern-territories-exclusion.md`
+## Critical Files
 
-**フォーマット**（CLAUDE.md ADR 標準）:
-```
-| 状態 | 採用・未実装 |
-| 決定日 | 2026-05-12 |
+- `docs/02_SRS.md` （FR-008, FR-009, FR-011, FR-012, FR-013）
+- `docs/00_GLOSSARY.md`
+- `docs/mockup/viewer_mockup.html`
+- `docs/decisions/ADR-007-peak-match-status-terminology.md`（新規）
+- `docs/decisions/ADR-008-dominant-peak-identification.md`（新規）
 
-## Context
-## Decision
-## Alternatives
-## Consequences
-```
+## 懸念事項（実装時の注意）
 
-**記載内容**:
-- **Context**: 北方領土がN03行政区域データに正式収録されている事実（6村・市区町村コード01696〜01701）。「N03ポジティブフィルタ = 日本領土」が不成立な理由。SOTAはUR-001により北方領土を対象外とすること
-- **Decision**:
-  1. N03の市区町村コード（N03_007）で北方領土6村を識別する
-  2. FR-017（Python）が対象タイル座標リスト（z=15）を事前生成
-  3. FR-003（C エンジン）がリストを読み、対象タイルを全ピクセル NODATA(-9999m)扱いにする
-  4. タイル単位除外の精度で十分な理由: 北方領土は孤立した島嶼群であり本土と陸続きでない
-- **Alternatives**: 
-  - FR-009（merge.py）でのポストフィルタ → ピーク候補が CSV に混入する段階まで残る
-  - 座標範囲によるハードコード除外 → N03 コードと比べメンテナンス性が低い
-- **Consequences**: C エンジン起動時に excluded_tiles.txt 読み込みが追加。ファイル未存在時は除外なしで続行（警告ログ）
-- **SRS 参照**: FR-003・FR-017 へのリンク
+1. **FR-010 削除候補のスコープ** … この章は SOTA サミット側の選定処理なので、用語「削除候補」を維持（peak の `dominant` とは別概念）。本計画では特に変更不要。
 
----
+2. **CSV 行の denormalization** … 1 つの dominant peak が複数の subordinate サミットを持つ場合、CSV では subordinate サミット数分の `dominant` 行ができ、各行に同じ peak 情報が重複して入る。これは現状の SRS のままで、本計画では変更しない（別途検討事項として残す）。
 
-## 検証
+3. **テキスト検索の徹底** … `grep -n "deleted" docs/02_SRS.md docs/00_GLOSSARY.md docs/mockup/viewer_mockup.html` でヒットしたものをすべて確認し、SOTA summit feature の文脈以外で `deleted` が残っていれば `dominant` に置換する。`merged_activation.geojson`（中間ファイル）には match_status はないため対象外。
 
-- FR-003 の記述が「タイルリスト読み込み → NODATA 設定」の流れで記述されていること
-- FR-017 の出力が3種（regions・municipalities・excluded_tiles）と対応していること
-- FR-009 から「地理的フィルタ」が削除されていること
-- FR-011 の追加根拠フォーマットに `{市区町村名}` が含まれていること
-- Section 6.9 と各 FR の入出力インターフェースが整合していること
+4. **モックアップのコメント** … 「deleted: 削除候補」等のコメントも「dominant: 削除対象サミットを持つピーク」等に書き直す。
+
+## Verification
+
+実装完了後:
+
+1. **SRS 整合性**:
+   ```bash
+   grep -n "deleted" docs/02_SRS.md
+   ```
+   ヒット箇所が「Point: 既存 SOTA サミット の match_status」「FR-010 削除候補のスコープ」「FR-011 申請書の "削除" アクション」「※4 削除根拠フォーマット」など、SOTA サミット側または申請書アクション側の文脈のみに限定されていることを確認。
+
+2. **モックアップ動作確認**:
+   - ブラウザで `docs/mockup/viewer_mockup.html` を開く
+   - dominant ピーク（JA/YN-099 の例）のポップアップに `dominant` バッジが表示される
+   - SOTA サミット側のポップアップは `deleted` バッジのまま
+   - フィルター UI の「削除」チェックボックスのオン/オフで dominant ピークと subordinate サミットの両方が表示・非表示される
+   - ピーク・コル・サミット・LineString・コル等高線が正しく紐付いて表示される
+
+3. **コミット**:
+   - 1コミットでまとめて OK（リネーム + dominant_peak_dist_m 復活 + 関連文書更新）
+   - コミットメッセージ例: `refactor: peak match_status を dominant にリネーム・dominant_peak_dist_m 復活`

@@ -37,7 +37,7 @@
     #filters label { display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; white-space: nowrap; }
     #filters input[type="checkbox"] { cursor: pointer; width: 13px; height: 13px; accent-color: currentColor; }
     #filters label[data-cat="new"]       { color: #4D7A20; }
-    #filters label[data-cat="deleted"]   { color: #C8101E; }
+    #filters label[data-cat="dominant"]  { color: #C8101E; }
     #filters label[data-cat="changed"]   { color: #DC5D04; }
     #filters label[data-cat="unchanged"] { color: #888; }
 
@@ -83,7 +83,7 @@
   <div id="filters">
     <span>表示:</span>
     <label data-cat="new">       <input type="checkbox" data-cat="new"       checked> 新規</label>
-    <label data-cat="deleted">   <input type="checkbox" data-cat="deleted"   checked> 削除</label>
+    <label data-cat="dominant">  <input type="checkbox" data-cat="dominant"  checked> 削除</label>
     <label data-cat="changed">   <input type="checkbox" data-cat="changed"   checked> 変更あり</label>
     <label data-cat="unchanged"> <input type="checkbox" data-cat="unchanged" checked> 変更なし</label>
   </div>
@@ -151,11 +151,11 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.78,35.39]] },
       properties: { type: "coord_diff", match_status: "matched" } },
 
-    // ── deleted: 削除候補（ピーク 1050m → 8pt・SOTA サミット 880m → 6pt）──
-    // 本ツール検出ピーク(8pt)のアクティベーションゾーン外、かつコル等高線内に
-    // SOTA 既存サミット(6pt)が位置している → 削除候補
+    // ── dominant: 削除候補（ピーク 1050m → 8pt・SOTA サミット 880m → 6pt）──
+    // 本ツール検出ピーク(8pt)のコル等高線内に SOTA 既存サミット(6pt)が位置しているが
+    // アクティベーションゾーン外 → ピークが dominant peak、サミットが削除候補
     { type: "Feature", geometry: { type: "Point", coordinates: [138.65, 35.25] },
-      properties: { type: "peak", match_status: "deleted",
+      properties: { type: "peak", match_status: "dominant",
                     summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
                     peak_elev: 1050, prominence: 320, stability: "confirmed", is_tile_top: 0,
                     points: 8 } },
@@ -172,7 +172,7 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
       properties: { type: "prominence_range" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.655,35.245]] },
-      properties: { type: "coord_diff", match_status: "deleted" } }
+      properties: { type: "coord_diff", match_status: "dominant" } }
   ]
 };
 
@@ -388,10 +388,10 @@ let savedInputs = {};
 try { savedInputs = JSON.parse(localStorage.getItem(storageKey) || "{}"); } catch(e) {}
 
 // ---- フィルター用レイヤーグループ ----
-// カテゴリ: new / deleted / changed（matched で入力あり）/ unchanged（matched で入力なし）
+// カテゴリ: new / dominant / changed（matched で入力あり）/ unchanged（matched で入力なし）
 const filterGroups = {
   new:       L.layerGroup().addTo(map),
-  deleted:   L.layerGroup().addTo(map),
+  dominant:  L.layerGroup().addTo(map),
   changed:   L.layerGroup().addTo(map),
   unchanged: L.layerGroup().addTo(map),
 };
@@ -401,8 +401,8 @@ const peakCategory = {};
 
 // カテゴリ判定（peak フィーチャ用）
 function categorize(matchStatus, summitCode) {
-  if (matchStatus === "new")     return "new";
-  if (matchStatus === "deleted") return "deleted";
+  if (matchStatus === "new")      return "new";
+  if (matchStatus === "dominant") return "dominant";
   const s = savedInputs[summitCode] || {};
   return (s.jp || s.en) ? "changed" : "unchanged";
 }
@@ -511,7 +511,7 @@ function renderFeatures() {
         `);
       } else {
         marker.bindPopup(`
-          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">deleted</span></div>
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">dominant</span></div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
@@ -545,7 +545,7 @@ function renderFeatures() {
 
     if (p.type === "sota_summit") {
       const sotaColor = pointsToColor(p.sota_points);
-      const cat = peakCategory[p.summit_code] ?? (p.match_status === "deleted" ? "deleted" : "unchanged");
+      const cat = peakCategory[p.summit_code] ?? (p.match_status === "deleted" ? "dominant" : "unchanged");
       const badge = p.match_status === "deleted" ? "deleted" : "matched";
       const sotaLat = geom.coordinates[1].toFixed(5);
       const sotaLon = geom.coordinates[0].toFixed(5);

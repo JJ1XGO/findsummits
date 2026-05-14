@@ -315,20 +315,20 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
     - `A01`: 仮番号（`A` + 2桁連番、エリアごとに 01 からリセット）
   - 海上・地域不明ピーク（FR-017 フォールバック）: `ZZ/ZZ-A01` 形式
   - **以降、仮サミットコードを `JAx/XX-A01` と表記する**（JAx・XX は実際の値の例示、01 は連番の例示）
-- match_status 値:
+- match_status 値（ピーク中心の状態記述。用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md) 参照）:
   - `matched`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する
   - `new`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在しない（プロミネンス ≥ 150m を満たす新規候補）
-  - `deleted`: いずれの検出ピークのアクティベーションゾーンにも含まれない既存 SOTA サミット
+  - `dominant`: 検出ピークのコル等高線内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外（= サミットが削除候補となり、このピークがその dominant peak になる）
 - stability 値:
   - `confirmed`: 解析回数=期待値かつ未確定フラグなし
   - `unstable`: 未確定フラグあり、または解析回数不一致
   - `-`: 削除候補（解析結果なし）
-- **deleted サミットの従属ピーク特定**:
-  - 各 deleted サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
-    その座標が含まれる検出ピークを従属ピーク（dominant peak）とする
-  - 複数のポリゴンに含まれる場合は最も近い検出ピークを採用する
-  - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピークを従属ピークとする
-  - 付与するカラム: `dominant_peak_code`（検出ピークコード）
+- **dominant peak 特定**（[ADR-008](decisions/ADR-008-dominant-peak-identification.md)）:
+  - 各削除候補サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
+    その座標が含まれる検出ピークを dominant peak とする
+  - 複数のポリゴンに含まれる場合は最も近い検出ピークを採用する（Haversine 公式で距離計算）
+  - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピークを dominant peak とする
+  - 付与するカラム: `dominant_peak_code`（検出ピークコード）、`dominant_peak_dist_m`（dominant peak から削除候補サミット座標までの距離 m。Haversine 公式で計算）
 
 #### FR-010: 削除候補のスコープ
 
@@ -357,16 +357,16 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 |---|---|
 | matched | Point（検出ピーク）+ Point（Keyコル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ LineString（ピーク → Keyコル）+ LineString（ピーク → SOTA サミット） |
 | new | Point（検出ピーク）+ Point（Keyコル）+ Polygon（アクティベーションゾーン）+ Polygon（コル等高線）+ LineString（ピーク → Keyコル） |
-| deleted | Point（検出ピーク）+ Point（Keyコル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（コル等高線）+ LineString（ピーク → Keyコル）+ LineString（ピーク → SOTA サミット） |
+| dominant | Point（検出ピーク）+ Point（Keyコル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（コル等高線）+ LineString（ピーク → Keyコル）+ LineString（ピーク → SOTA サミット） |
 
 ##### 各フィーチャのプロパティ
 
 **Point: 検出ピーク**
 - `type`: "peak"
-- `match_status`: matched / new / deleted
-- `summit_code`: サミットコード（matched / deleted）または仮サミットコード（new）
-- `summit_name`: サミット名（matched / deleted のみ・英語/ローマ字）
-- `summit_name_jp`: 日本語山岳名（matched / deleted のみ・geojson_v{N} から取得。未取得時は空文字）
+- `match_status`: matched / new / dominant
+- `summit_code`: サミットコード（matched / dominant）または仮サミットコード（new）
+- `summit_name`: サミット名（matched / dominant のみ・英語/ローマ字）
+- `summit_name_jp`: 日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字）
 - `peak_elev`: 検出標高（m）
 - `prominence`: プロミネンス（m）
 - `stability`: confirmed / unstable
@@ -395,7 +395,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
 - `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
-**Polygon: コル等高線**（new / deleted）
+**Polygon: コル等高線**（new / dominant）
 - `type`: "key_col_boundary"
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - 対応ピークのコル等高線ポリゴン（FR-016 出力から取得）
@@ -404,9 +404,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `type`: "prominence_range"
 - 未確定フラグが 1 の場合は生成しない
 
-**LineString: ピーク → SOTA サミット**（matched / deleted）
+**LineString: ピーク → SOTA サミット**（matched / dominant）
 - `type`: "coord_diff"
-- `match_status`: matched / deleted
+- `match_status`: matched / dominant
 
 ##### HTML ビューア仕様
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
@@ -417,7 +417,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-006](decisions/ADR-006-viewer-background-tile-selection.md)）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
   - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
-  - コル等高線ポリゴン（new / deleted）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new はコル等高線内に既存サミットが存在しないことを、deleted はコル等高線内に既存サミットが存在することを可視化する
+  - コル等高線ポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new はコル等高線内に既存サミットが存在しないことを、dominant はコル等高線内に削除候補サミットが存在することを可視化する
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）
@@ -426,14 +426,14 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - **山岳名入力 UI**:
     - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」「山岳名EN」入力フィールドを表示
     - matched（既存）ピーク: 同様に名称修正用の入力フィールドを表示（任意入力・未入力時は 変更 行を出力しない）
-    - deleted（削除候補）: 入力フィールド不要（GeoJSON データを使用）
+    - dominant（削除候補ピーク）: 入力フィールド不要（GeoJSON データを使用）
   - **入力内容の保持（localStorage）**:
     - 入力した山岳名・名称修正はブラウザの localStorage に保存し、再訪時も維持する
     - キー: 埋め込みデータの `metadata.generated_at` を含む文字列
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
   - **申請書エクスポート（FR-011 準拠）**:
     - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
-    - 出力行: `追加`（GeoJSON の new ピーク + 入力山岳名）・`削除`（GeoJSON の deleted サミット）・`変更`（名称修正を入力した matched サミットのみ）
+    - 出力行: `追加`（GeoJSON の new ピーク + 入力山岳名）・`削除`（GeoJSON の削除候補 SOTA サミット、すなわち sota_summit feature の `match_status="deleted"`）・`変更`（名称修正を入力した matched サミットのみ）
     - 列構成・根拠文フォーマットは [FR-011 参照](#fr-011-申請書-xlsx-生成)
   - **公開用エクスポート**:
     - 「公開用エクスポート」ボタンで、localStorage の入力内容（山岳名JP/EN・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** をブラウザダウンロードする
@@ -479,9 +479,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | カラム | 説明 |
 |---|---|
-| match_status | SOTAリスト突合結果（matched/new/deleted） |
+| match_status | SOTAリスト突合結果（matched/new/dominant） |
 | stability | 解析品質（confirmed/unstable/-） |
-| summit_code | サミットコード（例: JA/TK-001）。matched / deleted の場合は正式コード、new の場合は仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
+| summit_code | サミットコード（例: JA/TK-001）。matched / dominant の場合は正式コード、new の場合は仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
 | summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
 | peak_lat | 検出ピーク緯度 |
@@ -496,12 +496,13 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | col_margin_px | Keyコルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
-| sota_lat | SOTA リスト登録緯度（matched・deleted のみ。new は空欄） |
-| sota_lon | SOTA リスト登録経度（matched・deleted のみ。new は空欄） |
-| sota_alt_m | SOTA リスト登録標高（m）。matched・deleted のみ。new は空欄 |
-| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出。matched・deleted のみ。new は空欄 |
+| sota_lat | SOTA リスト登録緯度（matched・dominant のみ。new は空欄） |
+| sota_lon | SOTA リスト登録経度（matched・dominant のみ。new は空欄） |
+| sota_alt_m | SOTA リスト登録標高（m）。matched・dominant のみ。new は空欄 |
+| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出。matched・dominant のみ。new は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
-| dominant_peak_code | 従属ピークコード（deleted のみ） |
+| dominant_peak_code | 従属ピークコード（dominant のみ） |
+| dominant_peak_dist_m | dominant peak から削除候補サミット座標までの距離 m（Haversine 公式）。dominant のみ |
 
 ---
 
