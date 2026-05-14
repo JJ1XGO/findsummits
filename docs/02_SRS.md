@@ -409,7 +409,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `type`: "coord_diff"
 - `match_status`: matched / deleted
 
-- **HTML ビューア仕様**:
+##### HTML ビューア仕様
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
   - フェーズ4 処理は `merged.geojson` を生成したうえで、HTML テンプレートに GeoJSON データを JavaScript 変数として埋め込み `$DATA_DIR/results/merged_viewer.html` を生成する
   - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
