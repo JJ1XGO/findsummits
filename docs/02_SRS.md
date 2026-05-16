@@ -301,36 +301,40 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
 - **入力**:
-  - FR-014 処理後の統合済み CSV（`$DATA_DIR/results/merged.csv`）および統合済み activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。この時点で全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする
+  - FR-008/FR-018 で統合した CSV（`$DATA_DIR/results/merged.csv`）および統合済み activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。各メッシュで FR-014 の広域再解析が完了しており、全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする
   - `ref/summitslist.csv`（JA プレフィックスサミット一覧）
   - メッシュコードリスト（オプション）: FR-008・FR-018 と同じリストを受け取る。省略時は全範囲を対象とする。FR-010 の削除候補スコープ判定に使用する
   - `ref/geojson_v{N}/`（ja0〜ja9 ファイル群）: 既存 SOTA サミットの日本語山岳名（`summit_name_jp`）取得用。バージョン番号 `{N}` は `params/config.ini` の `geojson_version` パラメータで指定する
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
-- geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・deleted サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
-- 突合は各ピークのアクティベーションゾーン（FR-016 → FR-018 → FR-014 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
+- geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
+- 突合は各ピークのアクティベーションゾーン（FR-016 → FR-014（per-mesh）→ FR-018 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
 - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
-- **市区町村判定**: 各ピーク（matched/new）および deleted サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
-- **新規ピーク仮サミットコード割り当て**: match_status=new のピークに対して、FR-017 で前処理した地域データを用いて仮サミットコードを付与する
+- **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
+- **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md) 参照）:
+  1. 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する → `matched`
+  2. 検出ピークのコル等高線ポリゴン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外 → `dominant`（そのサミットが削除候補となり、このピークが dominant peak となる）
+  3. いずれにも該当しない（コル等高線内にも既存サミットが存在しない）→ `new`（プロミネンス ≥ 150m を満たす新規申請候補）
+- **`summit.match_status` 判定**（peak.match_status とは独立した値。ピーク中心 → サミット中心へ視点が切り替わる基点）:
+  - `matched`: 既存 SOTA サミット座標が検出ピークのアクティベーションゾーン内に存在する（正常存続）
+  - `delete`: 既存 SOTA サミット座標がいずれかの検出ピークのコル等高線ポリゴン内かつアクティベーションゾーン外に存在する（削除候補）
+- **仮サミットコード割り当て**（`new` および `dominant` ピーク）:
+  - match_status=new・dominant 両方のピークに、FR-017 で前処理した地域データを用いて仮サミットコードを付与する
   - フォーマット: `JAx/XX-A01`
     - `JAx`: SOTA アソシエーションコード（JA / JA5 / JA6 / JA8 のいずれか）
     - `XX`: SOTA エリアコード（例: TK = 東京都・島部、KS = 鹿児島県）
     - `A01`: 仮番号（`A` + 2桁連番、エリアごとに 01 からリセット）
   - 海上・地域不明ピーク（FR-017 フォールバック）: `ZZ/ZZ-A01` 形式
   - **以降、仮サミットコードを `JAx/XX-A01` と表記する**（JAx・XX は実際の値の例示、01 は連番の例示）
-- match_status 値（ピーク中心の状態記述。用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md) 参照）:
-  - `matched`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する
-  - `new`: 検出ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在しない（プロミネンス ≥ 150m を満たす新規候補）
-  - `dominant`: 検出ピークのコル等高線内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外（= サミットが削除候補となり、このピークがその dominant peak になる）
 - stability 値:
   - `confirmed`: 解析回数=期待値かつ未確定フラグなし
   - `unstable`: 未確定フラグあり、または解析回数不一致
-  - `-`: 削除候補（解析結果なし）
+  - `-`: delete サミット（解析対象外のため）
 - **dominant peak 特定**（[ADR-008](decisions/ADR-008-dominant-peak-identification.md)）:
-  - 各削除候補サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
+  - 各 delete 候補サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
     その座標が含まれる検出ピークを dominant peak とする
   - 複数のポリゴンに含まれる場合は最も近い検出ピークを採用する（Haversine 公式で距離計算）
-  - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピークを dominant peak とする
-  - 付与するカラム: `dominant_peak_code`（検出ピークコード）、`dominant_peak_dist_m`（dominant peak から削除候補サミット座標までの距離 m。Haversine 公式で計算）
+  - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接検出ピークを dominant peak とする。ただし、このフォールバック対象ピークの `peak.match_status` は変更しない（コル等高線内に当該サミット座標が含まれないため `dominant` に昇格させない。`summit.dominant_peak_code` で紐付けのみ行う）
+  - 付与するカラム: `dominant_peak_code`（dominant peak のサミットコード）、`dominant_peak_dist_m`（dominant peak から delete 候補サミット座標までの距離 m。Haversine 公式で計算）
 
 #### FR-010: 削除候補のスコープ
 
@@ -364,7 +368,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 **Point: 検出ピーク**
 - `type`: "peak"
 - `match_status`: matched / new / dominant
-- `summit_code`: サミットコード（matched / dominant）または仮サミットコード（new）
+- `summit_code`: サミットコード（matched のみ）または仮サミットコード（new / dominant。`JAx/XX-A01` 形式）
 - `summit_name`: サミット名（matched / dominant のみ・英語/ローマ字）
 - `summit_name_jp`: 日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字）
 - `peak_elev`: 検出標高（m）
@@ -381,8 +385,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - 未確定フラグが 1 の場合は含めない
 
 **Point: 既存 SOTA サミット**
-- `type`: "sota_summit"
-- `match_status`: matched / deleted
+- `type`: "summit"
+- `match_status`: matched / delete
 - `summit_code`: SOTA サミットコード
 - `summit_name`: サミット名（summitslist.csv の SummitName、英語/ローマ字）
 - `summit_name_jp`: 日本語山岳名（geojson_v{N} から取得。未取得時は空文字）
@@ -433,7 +437,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
   - **申請書エクスポート（FR-011 準拠）**:
     - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
-    - 出力行: `追加`（GeoJSON の new ピーク + 入力山岳名）・`削除`（GeoJSON の削除候補 SOTA サミット、すなわち sota_summit feature の `match_status="deleted"`）・`変更`（名称修正を入力した matched サミットのみ）
+    - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（名称修正を入力した matched サミットのみ）
     - 列構成・根拠文フォーマットは [FR-011 参照](#fr-011-申請書-xlsx-生成)
   - **公開用エクスポート**:
     - 「公開用エクスポート」ボタンで、localStorage の入力内容（山岳名JP/EN・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** をブラウザダウンロードする
@@ -453,7 +457,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | アクション | A: 山岳ID/仮サミットコード | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
 |---|---|---|---|---|---|---|---|---|---|
-| 追加 | summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
+| 追加（new） | summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
+| 追加（dominant）| summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
 | 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名 ※1 | 新EN名 ※1 | sota_alt_m | 変更根拠（自由記述） |
 
@@ -481,7 +486,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 |---|---|
 | match_status | SOTAリスト突合結果（matched/new/dominant） |
 | stability | 解析品質（confirmed/unstable/-） |
-| summit_code | サミットコード（例: JA/TK-001）。matched / dominant の場合は正式コード、new の場合は仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
+| summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A01）または ZZ/ZZ-A01（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
 | summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
 | peak_lat | 検出ピーク緯度 |
@@ -711,7 +716,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | 項目 | 仕様 |
 |---|---|
-| 用途 | matched・deleted サミットの日本語山岳名（`summit_name_jp`）取得（FR-009） |
+| 用途 | matched・delete サミットの日本語山岳名（`summit_name_jp`）取得（FR-009） |
 | ファイル | `ref/geojson_v{N}/ja0.geojson` 〜 `ja9.geojson`（{N} は `params/config.ini` の `geojson_version` パラメータで指定） |
 | ファイル分割 | 全国サミットデータが10ファイルに分割されている（分割方針は出典元データに依存。詳細は出典元に確認） |
 | 形式 | GeoJSON（RFC 7946） |
