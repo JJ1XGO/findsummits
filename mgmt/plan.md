@@ -1,377 +1,140 @@
-# URD / SRS レビュー結果（Opus）
+# SRS 4. 機能要件 の処理フロー組み替え + 関連用語整理（ISSUE-018 統合対応）
 
 ## Context
 
-handover 2026-05-14 で「次のフェーズは HLD 作成」となっており、その前に URD（確定）と
-SRS（ドラフト・フェーズ再構成済み）を Opus でレビューする依頼。レビューの目的は次の2点。
-
-1. HLD 着手前に SRS の論理的な矛盾・抜け・曖昧な記述を洗い出す
-2. URD と SRS の対応（UR ↔ FR）のヌケ／重複を確認する
-
-レビューは **仕様優先原則**（CLAUDE.md）に従い、コードを参照せず仕様書の内容だけを根拠に行った。
-読み込んだ文書: `docs/01_URD.md` / `docs/02_SRS.md` / `docs/00_GLOSSARY.md` /
-ADR-004 / ADR-005 / ADR-007 / ADR-008 / 直近 3 件の handover。
-
----
-
-## レビュー結果サマリ
-
-| 重要度 | 件数 | HLD 着手への影響 |
-|---|---|---|
-| **高（仕様の論理矛盾・抜け）** | 5 | HLD 前に解消したい |
-| **中（記述の曖昧さ・補完）** | 5 | HLD と並行で改訂可 |
-| **低（用語・記述スタイル）** | 5 | HLD 完了後に整理可 |
-| **URD 観点** | 2 | 議論のうえ要否を判断 |
-
-総じて **HLD 着手は可能だが、【高】の指摘 5 件は SRS 確定前に必ず解消すべき**。
-特に #1〜#3 は HLD 設計を左右する（match_status 判定ロジックと dominant peak の関係）。
-
----
-
-## 【高】仕様の論理的矛盾・抜け（5件）
-
-### H-1. match_status の判定順序が未定義（FR-009）
-
-**場所**: SRS L318-321（match_status 値の定義）
-
-**問題**: matched / new / dominant の判定順序が明示されていない。定義文を素直に
-読むと「matched と dominant の判定条件は両立する」可能性がある。
-具体的には、ある検出ピークの AZ 内に SOTA サミット A があり（→ matched）、
-かつコル等高線内（AZ 外）に別の SOTA サミット B がある（→ dominant 候補）状況。
-
-**修正案**: 判定順序を以下に明示する。
-1. AZ 内に SOTA サミットが存在 → `matched`
-2. （上記に該当しない）コル等高線内に SOTA サミットが存在 → `dominant`
-3. それ以外 → `new`
-
-加えて「1 ピークが matched と dominant を同時に取り得るか」を明確化する
-（FR-009 の「マッチング一意性」は AZ 内 SOTA の唯一性のみ規定）。
-
----
-
-### H-2. 「deleted サミット」の定義が SRS 本文に明示されていない
-
-**場所**: SRS 全般（FR-009 / FR-013 / FR-011 で deleted を扱うが定義文がない）
-
-**問題**: peak の `dominant` は L321 で定義されているが、sota_summit feature の
-`match_status="deleted"` の定義文が SRS にない。GLOSSARY にもない。
-現状は「matched にならなかった範囲内（FR-010 スコープ）のサミット = deleted」と
-消去法で導出する形になっている。
-
-**修正案**: FR-009 に sota_summit の match_status 定義を独立して追加する。
-
-```
-sota_summit feature の match_status:
-  matched: FR-010 スコープ内のサミットで、いずれかの検出ピークの AZ 内に座標が含まれる
-  deleted: FR-010 スコープ内のサミットで、いずれの検出ピークの AZ 内にも座標が含まれない
-```
-
-GLOSSARY にも「削除候補（deleted）」の項目を追加する。
-
----
-
-### H-3. dominant peak フォールバック時の match_status 不整合
-
-**場所**: SRS L326-331（dominant peak 特定）＋ ADR-008
-
-**問題**: ADR-008 の 3 段階目（フォールバック）では、コル等高線にサミットが含まれない
-場合に最近接ピークを dominant peak とする。このとき:
-
-- sota_summit の `match_status` は `deleted`（AZ 外なので確定）
-- 紐付け先 peak の `match_status` は何になるか？
-  - SRS の `dominant` 定義（L321）は「コル等高線内に SOTA サミットが存在する」なので、
-    フォールバックされた peak は厳密には `dominant` 定義を満たさない
-  - 該当 peak が AZ 外なら `new` のままで「new ピークが deleted サミットの dominant peak になる」状態が発生
-  - これは FR-013 のフィーチャ構成（new = peak+col+AZ+key_col_boundary+LineString(peak→col)、
-    SOTA サミットや coord_diff LineString を含まない）と矛盾する
-
-**修正案**: 以下のいずれかを SRS で確定する。
-
-- 案A: フォールバック対象 peak も `dominant` に昇格させる（定義文を「コル等高線内
-  または最近接として紐付けられた SOTA サミットがある」に修正）
-- 案B: フォールバック時は peak の `match_status` を変更せず、sota_summit feature を
-  独立に扱う（FR-013 フィーチャ構成テーブルに「フォールバック時の dominant 紐付き sota_summit」
-  パターンを追加）
-
-H-1 の判定順序と整合する必要あり。
-
----
-
-### H-4. 仮サミットコードの採番順序が未規定
-
-**場所**: SRS L312-317（仮サミットコード採番）＋ NFR-003
-
-**問題**: 「エリアごとに 01 からリセット」と書かれているが、同一エリア内での連番付与順序
-（緯度降順／経度順／peak_elev 降順／座標タプル昇順 等）が指定されていない。
-NFR-003（決定論的出力）を満たすには採番順序を確定する必要がある。
-また、解析対象メッシュリストが変わった場合（再実行）に既存の仮コードが安定するかも
-規定が必要（番号が振り直されるとビューア localStorage と整合しなくなる）。
-
-**修正案**:
-
-- 採番順序を明示する（推奨: `peak_lat 降順 → peak_lon 昇順` でタイブレーク。
-  もしくは `(peak_lat, peak_lon)` 昇順）
-- 採番の安定性ポリシーを規定する（フル解析時のみ採番再生成／部分解析時は既存コード保持／等）
-
----
-
-### H-5. 手動調査待ちピークのコル等高線フィーチャ取り扱い
-
-**場所**: FR-014 L278（最終残存ピークのフラグ維持）＋ FR-013 フィーチャ構成テーブル
-
-**問題**: FR-014 で 5×5 エスカレーション後も `is_tile_top=1` が残るピークは
-「フラグを維持したまま処理継続（手動調査待ち）」となるが、このピークは：
-
-- FR-016 によりコル等高線が生成されない（`is_tile_top=1` のピークはコル等高線を生成しない）
-- ところが FR-013 では new / dominant のフィーチャ構成にコル等高線が必須
-
-**修正案**: 以下のいずれかを規定する。
-
-- 案A: 手動調査待ちピークは FR-013 出力から除外する（または専用カテゴリにする）
-- 案B: コル等高線がない場合のフォールバック表現（例: 仮 Polygon・空 Polygon・省略可フラグ）を
-  FR-013 で規定する
-- 案C: 手動調査待ちは matched / new / dominant のいずれにも分類しない第4のカテゴリ
-  `unresolved` を追加する
-
-加えて、area_truncated=true が残るケース（4×4 でも解消しなかったとき）の挙動も
-FR-014 で明示されていないため、併せて整理する。
-
----
-
-## 【中】記述の曖昧さ・補完が必要な点（5件）
-
-### M-1. FR-014 の上書きスコープ
-
-**場所**: FR-014 L287（出力）
-
-**問題**: 「再解析結果で統合済み CSV と `merged_activation.geojson` の該当レコードを
-上書きする」とあるが、`per-mesh CSV` および `<meshcode>_activation.geojson`（中間ファイル）が
-更新されるか否か明示されていない。次回部分再実行時の挙動に影響する。
-
-**修正案**: 「per-mesh ファイルは更新しない。merged.csv / merged_activation.geojson のみ更新」を
-明示する。または「中間ファイルも更新する」かを確定する。
-
----
-
-### M-2. 北方領土タイル除外の判定基準
-
-**場所**: FR-017 L125（excluded_tiles.txt 生成）＋ ADR-005 L47
-
-**問題**: 「該当ポリゴン内のタイル」の判定基準（タイル中心点／タイルの任意点／タイルとポリゴンの
-交差）が SRS 本文に未規定。ADR-005 では「対象ポリゴン内に中心点が含まれる全タイル」と
-書かれているが、SRS と GLOSSARY には反映されていない。
-
-**修正案**: FR-017 に「タイル中心点が北方領土 6 村ポリゴンに含まれるタイルを列挙」と明示。
-ADR-005 と同じ規定を SRS に転記する。
-
----
-
-### M-3. NFR-003 決定論性のスコープ（timestamp 除外）
-
-**場所**: NFR-003 L527-529
-
-**問題**: 「すべての出力が同一の内容になること」とあるが、`merged.geojson` には
-`generated_at`（実行時刻）が含まれ、完全な同一性は不可能。
-
-**修正案**: NFR-003 の対象から `generated_at`（および同種の実行時タイムスタンプ）を除外
-する旨を明記する。例: 「`metadata.generated_at` 等の実行時タイムスタンプを除き、
-ピーク座標・標高・突合結果・採番が同一であること」。
-
----
-
-### M-4. 標高地形図の縮小方法
-
-**場所**: FR-015 / 6.7
-
-**問題**: 「長辺 6000px に縮小（アスペクト比保持）」とあるが、縮小方式（サブサンプリング／
-バイリニア／max pooling 等）が未規定。`points` プロパティのような数値ベース計算では
-ないため致命的ではないが、NODATA を保持するかどうかなど挙動が変わる。
-
-**修正案**: HLD で規定する旨を SRS に明記するか、SRS で方式を確定する。
-推奨: 「max pooling でダウンサンプル（NODATA は除外）」と FR-015 に明示。
-
----
-
-### M-5. 標高バンド（points）の境界値
-
-**場所**: FR-009 / FR-013 / FR-012 の `points` / `sota_points` カラム
-
-**問題**: `points`（1/2/4/6/8/10）の値域は記載されているが、各バンドの標高境界値
-（何 m 以上で何 pt）が SRS にない。sotl.as 由来の sotl.as 表との対応を SRS / GLOSSARY で
-明示すべきか HLD で十分か議論が必要。
-
-**修正案**: SRS の用語定義または FR-009 で標高バンド境界表を提示する
-（緯度依存の可能性もあるため、SOTA 日本支部の正式表を出典として引用）。
-
----
-
-## 【低】用語・記述スタイル（5件）
-
-### L-1. 用語表記揺れ
-- 「Keyコル」「Key Col」「key_col_boundary」「prominence boundary polygon」が混在
-  （FR-006 / FR-009 / FR-016 / FR-018）
-- 表記ルール: 本文では「Keyコル」、プロパティ名／feature_type 値は `key_col_boundary` で統一
-
-### L-2. 「ピーク候補」「サミット候補」「ピーク」「サミット」の使い分け
-- GLOSSARY では「サミット = プロミネンス 150m 以上のピーク」と定義
-- SRS で「ピーク候補」「サミット候補」が混在。フィルタ前後で使い分けるか統一する
-- 推奨: 130m フィルタ後 = ピーク候補、150m フィルタ後 = サミット候補
-
-### L-3. 「dominant peak」「ドミナントピーク」の表記混在
-- GLOSSARY 見出しのみカタカナ。本文はすべて英語
-- 統一する（推奨: 本文は `dominant peak`、GLOSSARY 見出しも英語に揃える）
-
-### L-4. 「削除候補」が用語集に未定義
-- dominant peak の説明文で言及されるが独立項目になっていない
-- H-2 とセットで GLOSSARY に追加
-
-### L-5. フォールバック規定の重複
-- FR-003 / FR-017 / 6.9 で同じフォールバック動作（excluded_tiles.txt 未存在時の挙動）が
-  複数箇所に書かれている。1 箇所に集約してリンクするのが保守性が高い
-
----
-
-## URD 観点（2件）
-
-### U-1. UR-008 / UR-009 の要件性
-
-- UR-008「ドキュメントに従って環境構築から成果物生成まで実行できること」
-- UR-009「仕様書・設計書の内容とプログラムの実装が整合していること」
-
-両者ともユーザーニーズというより **プロセス品質目標**。トレース対象として残すなら
-「(品質要件)」と明示するか、SRS 側で NFR にマップする扱いを確定したい。
-現状 NFR-003 / NFR-007 が部分的に対応しているが対応関係が暗黙的。
-
-### U-2. UR-006 の「ローカル・GitHub Pages 対応」
-
-URD では 1 つの HTML として記述されているが、SRS では「作業用 HTML ビューア（6.5）」と
-「公開用 HTML（6.12）」の 2 層構造に展開されている。URD 本文または用語集で
-この 2 層構造に触れておくとトレーサビリティが明確になる。
-
----
-
-## 改訂作業の進め方（ユーザー方針反映版）
-
-### 方針
-- **全件対応**（高5・中5・低5・URD2 + RTM 追加 + 対応UR 漏れ調査）
-- **すべての指摘を `mgmt/tracker/track.py issue add` で課題管理に登録**
-- **すべての issue が「解決済」になるまで HLD には着手しない**
-- ステータス遷移: 未対応 → 対応中（着手時）→ 対応完了（close）→ 解決済（ユーザー verify）
-
-### Issue 登録方針（粒度）
-
-密接に関連する指摘は 1 issue に統合する。最終的に **15 件** の issue を起票する案。
-
-| Issue ID | タイトル | priority | type | stage | 統合元 |
-|---|---|---|---|---|---|
-| ISSUE-018 | FR-009: match_status 判定順序・deleted 定義・dominant フォールバック整理 | 高 | 設計 | SRS | H-1 + H-2 + H-3 |
-| ISSUE-019 | FR-009: 仮サミットコード採番順序の規定 | 高 | 設計 | SRS | H-4 |
-| ISSUE-020 | FR-013 / FR-014: 手動調査待ちピークの GeoJSON フィーチャ扱い | 高 | 設計 | SRS | H-5 |
-| ISSUE-021 | FR-014: 上書きスコープ（per-mesh 更新有無）の明確化 | 中 | 改善 | SRS | M-1 |
-| ISSUE-022 | FR-017: 北方領土タイル判定基準（タイル中心点）の明示 | 中 | 改善 | SRS | M-2 |
-| ISSUE-023 | NFR-003: 決定論性スコープから timestamp 除外を明記 | 中 | 改善 | SRS | M-3 |
-| ISSUE-024 | FR-015: 標高地形図の縮小方法を規定 | 中 | 改善 | SRS | M-4 |
-| ISSUE-025 | FR-009 等: 標高バンド境界値（points 1/2/4/6/8/10）の規定 | 中 | 設計 | SRS | M-5 |
-| ISSUE-026 | SRS 用語統一（Keyコル / dominant peak / ピーク・サミット候補） | 低 | 改善 | SRS | L-1 + L-2 + L-3 |
-| ISSUE-027 | GLOSSARY 補完（削除候補・dominant peak 見出し統一） | 低 | 改善 | SRS | L-4 |
-| ISSUE-028 | フォールバック規定の集約（FR-003 / FR-017 / 6.9 の重複解消） | 低 | 改善 | SRS | L-5 |
-| ISSUE-029 | UR-008 / UR-009 の要件性検討（NFR への再マップ） | 中 | 設計 | URD | U-1 |
-| ISSUE-030 | UR-006: 作業用 / 公開用 HTML の 2 層構造を URD に反映 | 低 | 改善 | URD | U-2 |
-| ISSUE-031 | SRS: 各 UR に対する FR/NFR の対応漏れ調査と「対応 UR」記述の補完 | 高 | 調査 | SRS | 新規（ユーザー指摘） |
-| ISSUE-032 | SRS: 要求トレーサビリティ・マトリックス（RTM）の追加 | 高 | 機能追加 | SRS | 新規（ユーザー指摘） |
-
-### 実行順序（依存関係を考慮）
-
-```
-第1段 [FR-009 周り]     ISSUE-018 → ISSUE-019 → ISSUE-020
-   ↓ （match_status / GeoJSON フィーチャ仕様が確定）
-第2段 [SRS 局所改善]    ISSUE-021, 022, 023, 024, 025（並行可）
-   ↓
-第3段 [URD 改訂]        ISSUE-029, 030
-   ↓ （URD の UR が確定）
-第4段 [対応 UR 漏れ調査] ISSUE-031（第1〜3段の結果を反映）
-   ↓
-第5段 [用語・整合整理]  ISSUE-026, 027, 028（並行可）
-   ↓
-第6段 [RTM 構築]        ISSUE-032（ISSUE-018〜031 の確定内容を網羅）
-   ↓
-第7段 [SRS 確定化]      ヘッダーのステータスを「ドラフト」→「確定」
-   ↓
-HLD 着手
-```
-
-### RTM（要求トレーサビリティ・マトリックス）仕様
-
-SRS 末尾（9. スコープ外の後）に新章「10. 要求トレーサビリティ・マトリックス」として追加。
-
-- **縦軸**: UR-001〜UR-010（URD の各要件 ID + 要件タイトル）
-- **横軸**: FR-001〜FR-018 + NFR-001〜NFR-008（各 FR/NFR の ID + 概要タイトル）
-- **セル**: 該当する場合「◯」、しない場合は空欄
-- **判定基準**: その FR/NFR がその UR の達成に寄与する場合に ◯
-- 行末に「対応 FR/NFR 合計」、列末に「実現対象 UR 合計」を入れて網羅性を視覚的に確認
-
-横軸は FR が 19 件 + NFR が 8 件 = 27 列。Markdown の表で表現可能。
-（縦長になる場合は FR セクションと NFR セクションを 2 つの表に分割してもよい）
-
-### 各 issue クローズ時の検証
-
-issue ごとに対応完了する際、以下を確認する:
-
-- 該当 FR/NFR の本文修正
-- 関連する箇所（GLOSSARY / ADR / 他 FR / 6.x 外部 IF）の整合性
-- 修正が他 issue の前提を崩していないか
-
-すべての issue 解決後、最終確認として:
-
-1. matched / new / dominant の判定ツリーが decision table 形式で網羅されているか
-2. RTM の全 UR に最低 1 つの FR/NFR が紐づいているか
-3. GeoJSON フィーチャ構成が match_status × is_tile_top × area_truncated × area_truncated_after_FR014 の組合せに対して完全に定義されているか
-4. SRS ヘッダーのステータス更新
-
-### HLD 着手条件
-
-- 全 15 issue が「解決済」（ユーザー verify 済み）
-- SRS ステータスが「確定」
-- RTM が完成
-
-### Issue 別の Opus / Sonnet 推奨
-
-各 issue について、設計判断の重さに応じてモデル選定の目安を記載する。
-ユーザー方針: **1 issue ずつユーザーレビューを挟みながら段階的に進める**。
-
-| Issue ID | 推奨モデル | 判断理由 |
-|---|---|---|
-| ISSUE-018 | **Opus** | match_status の論理整合（FR-009 / FR-013 / ADR-007 / ADR-008 / GLOSSARY に波及）。フォールバック処理の案A/B の選択は設計判断 |
-| ISSUE-019 | **Opus** | 採番順序＋安定性ポリシーは決定論性・部分再実行・localStorage 整合へ波及。複数の制約を同時に満たす設計判断 |
-| ISSUE-020 | **Opus** | 案A/B/C の選択が FR-013 全体のフィーチャ構成・GLOSSARY・申請書 XLSX マッピングに波及 |
-| ISSUE-021 | Sonnet | 案A/B のいずれかを選んで 1 行追記する局所改訂 |
-| ISSUE-022 | Sonnet | ADR-005 の既存規定を SRS に転記するだけ |
-| ISSUE-023 | Sonnet | NFR-003 に除外文言を追記するだけ |
-| ISSUE-024 | Sonnet | 推奨案（max pooling・NODATA 除外）を採用するなら機械的追記 |
-| ISSUE-025 | **Opus**（前段の調査含む） | SOTA 日本支部の標高バンド表（緯度区分の有無含む）を ref/SOURCES.md と照らして決定する判断が必要 |
-| ISSUE-026 | Sonnet | 表記ルールを定めれば全文検索置換に近い作業 |
-| ISSUE-027 | Sonnet | GLOSSARY への追加・見出し統一。ISSUE-018/026 確定後に着手 |
-| ISSUE-028 | Sonnet | フォールバック規定の集約・他箇所からの参照リンク追加 |
-| ISSUE-029 | **Opus** | URD の要件構造を変える設計判断（案A/B/C 選択）。SRS NFR との対応関係に波及 |
-| ISSUE-030 | Sonnet | SRS 既決定事項を URD に転記するだけ |
-| ISSUE-031 | **Opus** | 全 UR × 全 FR/NFR の対応関係を吟味する論理判断。漏れ抽出には全文を俯瞰した整合性レビューが必要 |
-| ISSUE-032 | Opus + Sonnet ハイブリッド | 構築方針（縦軸・横軸の分割粒度・◯判定基準）は Opus。実際の表組み構築は Sonnet。最終確認 Opus |
-
-**Opus 推奨**: ISSUE-018 / 019 / 020 / 025 / 029 / 031（および ISSUE-032 の方針決定）= 6〜7 件
-**Sonnet 可**: ISSUE-021 / 022 / 023 / 024 / 026 / 027 / 028 / 030（および ISSUE-032 の表組み実装）= 8〜9 件
-
-進行ルール:
-- 1 issue を完了したらユーザーレビューを挟み、`issue close` → ユーザーが `issue verify` で「解決済」化
-- 次の issue に進む前にモデル切替（Sonnet が妥当なら `/model` で切替を提案）
-- Opus 推奨 issue の途中で機械的改訂のみ残った場合は Sonnet に切り替えてよい
-
----
-
-## 本セッションでやること
-
-1. ユーザー承認後、上記 15 件の issue を `mgmt/tracker/track.py issue add` で登録
-2. plan を `mgmt/plan.md` に移動（CLAUDE.md ルール）
-3. 第1段 #1 から作業を開始するか、別セッションで進めるかをユーザーに確認
-
-実装作業は Sonnet 推奨（memory: 計画は Opus・実装は Sonnet）。
-ただし「設計判断を伴う改訂」は Opus 継続が望ましい case もあり、issue ごとに判断する。
+ISSUE-018（FR-009 match_status 整理）の議論中に、ユーザーから「SOTAサミットリスト突合を境に **ピーク中心 → SOTAサミット中心** に処理視点が切り替わる」という構造整理が提示された。これに伴い、SRS 4. 機能要件 の章構成を処理フローに沿って組み替えると同時に、ステータス用語・フィーチャ名・dominant peak の採番方針を一括で整える。
+
+合意済みの変更点（議論経緯）：
+1. **フェーズ構成**：ピーク中心と SOTAサミット中心の境界が明確になるよう組み替える
+2. **ステータス値の用語**：summit 側を `deleted` → `delete` にリネーム（命令形に揃え、申請アクションと整合）
+3. **GeoJSON フィーチャ名**：`sota_summit` → `summit`（プロジェクト内で "summit" は SOTA 限定で使用済み）
+4. **dominant peak の `summit_code`**：既存 SummitCode 引き継ぎを廃止し、**仮サミットコード採番** に変更（パターン② の新ピークを「新規候補」として申請書「追加」行に載せるため）
+5. **申請書「追加」行の生成対象**：`peak.match_status="new"` のみ → `{"new", "dominant"}` に拡張（パターン② で 2 レコード = 追加+削除 が自然に生成される）
+
+ピーク・サミット両側の独立属性は維持（ADR-007 の方針を継承）：
+- `peak.match_status`: `matched` / `new` / `dominant`（3値）
+- `summit.match_status`: `matched` / `delete`（2値）
+
+## 新しいフェーズ構成
+
+### フェーズ1：タイル取得・前処理（共通基盤）
+- FR-017 N03 行政区域前処理（独立・初回のみ）
+- FR-001 標高タイル事前取得
+- FR-002 DEM 階層フォールバック
+- FR-003 標高デコード・NODATA 処理
+
+### フェーズ2：ピーク中心解析（per-mesh）
+- FR-004 3×3 メッシュ結合解析
+- FR-005 ピーク候補検出
+- FR-006 Keyコル検出・プロミネンス計算
+- FR-016 アクティベーションゾーン計算（コル等高線ポリゴン含む）
+- FR-007 プロミネンスフィルタ・per-mesh CSV 出力
+- FR-014 独立峰対応（レベル14 広域再解析・per-mesh の追加処理として実行）
+- FR-015 標高地形図出力
+
+### フェーズ3：ピーク中心統合（全国）
+- FR-008 per-mesh CSV 統合
+- FR-018 per-mesh activation.geojson 統合
+
+### フェーズ4：SOTAサミット中心（突合・出力）
+- FR-009 SOTAリスト突合・match_status 判定
+- FR-010 削除候補のスコープ
+- FR-013 GeoJSON・HTML ビューア生成
+- FR-011 申請書 XLSX 生成
+- FR-012 エビデンス CSV 生成
+
+総計 18 FR（変更前と同数）。FR 番号は維持し、所属フェーズと記述順のみ変更する。
+
+## SRS 編集詳細
+
+### docs/02_SRS.md
+
+| 箇所 | 変更内容 |
+|---|---|
+| 4. 章構成 | 上記新フェーズ構成に沿って FR を並べ替え。各フェーズ冒頭に「ピーク中心」「SOTAサミット中心」の視点切り替え説明を追加 |
+| FR-014 入力・出力記述 | 入力を「FR-007 が出力した per-mesh CSV と FR-016 が出力した per-mesh activation.geojson（同一メッシュ）」に変更。出力を「同 per-mesh CSV と activation.geojson を上書き更新」に変更（統合済み merged.csv / merged_activation.geojson の上書きを廃止）。詳細実装は HLD で詰める旨を明記 |
+| FR-008 入力 | 「FR-014 で更新済みの per-mesh CSV」を前提とする記述に整える |
+| FR-018 入力 | 同上（FR-014 更新済み per-mesh activation.geojson 前提） |
+| FR-009 入力 | 「FR-008 / FR-018 が出力した統合済みファイル」と素直に書ける（FR-014 の後処理に言及不要） |
+| FR-009 match_status 判定 | (a) 判定順序を明示：①AZ 内 → matched ②コル等高線内 → dominant ③それ以外 → new（peak 側）。summit 側は ①AZ 内 → matched ②AZ 外 → delete<br>(b) summit.match_status の独立定義文を追加<br>(c) dominant ピークの `summit_code` を **仮サミットコード採番** に変更（既存 SummitCode 引き継ぎを廃止）<br>(d) ADR-008 フォールバック時：紐付け先 peak の match_status は変更しない（dominant に昇格させない）旨を明記 |
+| FR-011 アクション別カラムマッピング | 「追加」行の生成対象を `peak.match_status in {"new", "dominant"}` に拡張。<br>※2 追加根拠フォーマットは現状維持（dominant も同フォーマットで自然に成立） |
+| FR-012 エビデンス CSV | `match_status` の値域記述を更新。`summit_code` 説明を「matched は正式コード、new / dominant は仮サミットコード」に変更。`sota_lat/lon/alt_m/points` の補足を「matched / dominant のみ」（dominant の場合は削除候補サミットの情報）と整える |
+| FR-013 フィーチャ構成表 | `type: "sota_summit"` → `type: "summit"` 全箇所置換。dominant 行のプロパティ説明も同様 |
+| FR-013 HTML ビューア仕様 | 「申請書エクスポート」記述の「sota_summit feature の match_status="deleted"」を「summit feature の match_status="delete"」に更新 |
+| 6.5 / 6.10 / 6.11 / 6.12 | feature 名 `sota_summit` → `summit` を反映 |
+| 6.5 GeoJSON プロパティ表 | match_status 値域を peak / summit で分けて明記 |
+
+### docs/00_GLOSSARY.md
+
+| 箇所 | 変更内容 |
+|---|---|
+| 「サミット」項目 | GeoJSON feature 名としても `summit` を使うことを補足 |
+| 「dominant peak」項目 | リンク先 ADR-007 の更新版に追随（記述自体は概ね現行で OK） |
+| 新規追加「削除（delete）」 | summit の状態としての `delete` の定義を追加（FR-010 スコープ内 かつ いずれの検出ピークの AZ にも包含されない） |
+
+### docs/decisions/ADR-007-peak-match-status-terminology.md
+
+| 箇所 | 変更内容 |
+|---|---|
+| Decision テーブル | `sota_summit feature の match_status`：`matched / deleted` → `matched / delete`（命令形に統一）<br>feature 名のリネーム `sota_summit → summit` を変更対象に追加 |
+| Consequences | feature 名リネームの影響を追記。merge.py 実装での `deleted` → `delete` 出力値変更 |
+
+### docs/decisions/ADR-008-dominant-peak-identification.md
+
+| 箇所 | 変更内容 |
+|---|---|
+| 全体 | feature 名 `sota_summit` → `summit` に揃える |
+| Decision | dominant peak の `summit_code` 採番方針が「仮サミットコード」であることを明示（FR-009 と整合） |
+| Consequences | フォールバック時に紐付け先 peak の `match_status` を dominant に昇格させない旨を追記（ISSUE-018 H-3 案 B） |
+
+### docs/mockup/viewer_mockup.html
+
+| 箇所 | 変更内容 |
+|---|---|
+| ダミー GeoJSON | `type: "sota_summit"` → `type: "summit"`、`match_status: "deleted"` → `"delete"` |
+| `categorize()` 関数 | `=== "deleted"` → `=== "delete"`（summit 側）。dominant ラベルは維持 |
+| `filterGroups` / `data-cat` | summit 側の値を `delete` に統一 |
+| popup バッジ・凡例 | 内部値を更新（表示ラベル「削除」は維持） |
+
+### mgmt/tracker への反映
+
+- ISSUE-018 を本作業完了時に `close`（本変更で対応方針 (1)(2)(3)(4)(5) を一括解消）
+- ISSUE-019（仮サミットコード採番順序）：本変更で dominant ピークにも仮コード採番が必要になるため、採番ルールに「new と dominant を区別するか」を含めるよう Description を補強する必要あり
+- ISSUE-021（FR-014 上書きスコープ明確化）：本変更で「FR-014 = per-mesh の追加処理。出力は per-mesh CSV / activation.geojson の上書き」が確定するため、Description にその方針を明記し、HLD で per-mesh 実装の詳細を詰める旨を残す
+
+## 残課題（本変更のスコープ外・後で議論）
+
+- ADR-008 フォールバック時の細部（包含なしの再現条件・実データでの発生率）
+- matched peak が別の delete 候補 SOTA をコル等高線内に含む edge case の扱い（ユーザー所感：実データに出ない見込み）
+- 仮サミットコード採番順序（ISSUE-019）
+- 手動調査待ちピークの GeoJSON フィーチャ扱い（ISSUE-020）
+- FR-014 per-mesh 実装の詳細（同じピークが複数メッシュの per-mesh 解析で別個に flagged になる場合の再解析重複回避ルール等）→ HLD で詰める
+
+## 実行順序
+
+1. SRS 章構成の組み替え（4. 機能要件 全体を新フェーズ順に並べ替え）
+2. FR-009 本文の判定順序・summit 独立定義追加
+3. FR-011 / FR-012 / FR-013 の「dominant 採番方針変更」と feature 名リネーム反映
+4. 6.x 外部インターフェース仕様の整合更新
+5. GLOSSARY 更新（用語追加・補足）
+6. ADR-007 / ADR-008 更新
+7. mockup HTML 更新
+8. ISSUE-018 を close、ISSUE-019 の Description 補強
+
+## 検証方法
+
+- SRS 目次・章構成が「フェーズ1〜4」の新構成になっていること
+- 4. 機能要件 を通読し、FR-009 の判定順序と summit.match_status の独立定義が明示されていること
+- `grep -n "sota_summit" docs/` で残骸ゼロを確認
+- `grep -n "deleted" docs/02_SRS.md docs/00_GLOSSARY.md docs/decisions/ADR-007*.md docs/decisions/ADR-008*.md docs/mockup/viewer_mockup.html` で summit 文脈の残骸ゼロを確認（peak の `dominant` ラベルや申請書の「削除」表示ラベルは別物）
+- モックアップを `file://` で直接開き、ダミー dominant ピーク + delete summit が想定どおりフィルタ・表示されること
+- ISSUE-018 のチェック項目 (1)〜(5) を SRS 該当箇所で確認
+
+## 主要変更ファイル
+
+- `docs/02_SRS.md`
+- `docs/00_GLOSSARY.md`
+- `docs/decisions/ADR-007-peak-match-status-terminology.md`
+- `docs/decisions/ADR-008-dominant-peak-identification.md`
+- `docs/mockup/viewer_mockup.html`
+- `mgmt/tracker/...`（ISSUE-018 close、ISSUE-019 Description 補強）
