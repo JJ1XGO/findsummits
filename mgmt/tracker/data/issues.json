@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-14",
+    "last_updated": "2026-05-16",
     "counter": 32
   },
   "issues": [
@@ -376,13 +376,21 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-009 に以下を追記:\n(1) 判定順序を明示: ①AZ 内に SOTA → matched, ②コル等高線内に SOTA → dominant, ③それ以外 → new\n(2) sota_summit feature の match_status を独立定義:\n   matched = FR-010 スコープ内で AZ にマッチ\n   deleted = FR-010 スコープ内で AZ にマッチせず\n(3) ADR-008 フォールバック時の peak.match_status と sota_summit の対応関係を明確化。案A（peak も dominant に昇格）または案B（peak の match_status は変えず sota_summit を独立扱い・FR-013 フィーチャ構成テーブルを更新）から選定。\n(4) GLOSSARY に '削除候補（deleted）' を追加。\n(5) ADR-007 / ADR-008 とも整合チェック。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-16",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-16T16:18:22",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": ""
+        }
+      ]
     },
     {
       "id": "ISSUE-019",
