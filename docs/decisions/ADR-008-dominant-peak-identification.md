@@ -2,10 +2,11 @@
 
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-05-14 |
+| 最終更新日 | 2026-05-16 |
 
 ## Context
 
-削除候補となった SOTA サミット（`match_status="deleted"` の sota_summit feature）に対して、その dominant peak（どの検出ピークが当該サミットの存在を「支配」しているか）を特定する必要がある。
+削除候補となった SOTA サミット（`match_status="delete"` の summit feature）に対して、その dominant peak（どの検出ピークが当該サミットの存在を「支配」しているか）を特定する必要がある。
 
 dominant peak の特定には次のエッジケースへの対処が必要:
 
@@ -20,10 +21,12 @@ dominant peak の特定には次のエッジケースへの対処が必要:
 2. **複数包含時のタイブレーク**: 候補が複数の場合は、SOTA サミット座標と各候補ピーク座標の距離が最も近いものを dominant peak とする（Haversine 公式）
 3. **フォールバック（包含なし）**: いずれのポリゴンにも含まれない場合は、全検出ピーク中で最も近いものを dominant peak とする（Haversine 公式）
 
-dominant peak が確定したら以下のカラムを削除候補サミットの行に付与する:
+dominant peak が確定したら以下のカラムを delete サミットの行に付与する:
 
 - `dominant_peak_code`: dominant peak のサミットコード（仮サミットコードの場合もある）
 - `dominant_peak_dist_m`: dominant peak 座標から SOTA サミット座標までの距離 m（Haversine 公式）
+
+**フォールバック時（包含なし）の peak.match_status 扱い**: コル等高線ポリゴンにサミット座標が含まれないフォールバック対象ピークの `peak.match_status` は変更しない。当該ピークが `new` または `matched` であっても `dominant` に昇格させない（`dominant` の意味はコル等高線内包含に限定）。紐付けは `summit.dominant_peak_code` のみで行う。
 
 ## Alternatives
 

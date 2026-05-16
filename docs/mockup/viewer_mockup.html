@@ -143,7 +143,7 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Point", coordinates: [138.76, 35.38] },
       properties: { type: "col", summit_code: "JA/YN-001", col_elev: 1200, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
-      properties: { type: "sota_summit", match_status: "matched",
+      properties: { type: "summit", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     sota_alt_m: 3776, sota_points: 10 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.76,35.38]] },
@@ -156,7 +156,7 @@ const GEOJSON_DATA = {
     // アクティベーションゾーン外 → ピークが dominant peak、サミットが削除候補
     { type: "Feature", geometry: { type: "Point", coordinates: [138.65, 35.25] },
       properties: { type: "peak", match_status: "dominant",
-                    summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
+                    summit_code: "JA/YN-A01", summit_name: "", summit_name_jp: "",
                     peak_elev: 1050, prominence: 320, stability: "confirmed", is_tile_top: 0,
                     points: 8 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.640,35.240],[138.660,35.240],[138.660,35.260],[138.640,35.260],[138.640,35.240]]] },
@@ -164,7 +164,7 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Point", coordinates: [138.63, 35.23] },
       properties: { type: "col", summit_code: "JA/YN-099", col_elev: 730, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
-      properties: { type: "sota_summit", match_status: "deleted",
+      properties: { type: "summit", match_status: "delete",
                     summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
                     sota_alt_m: 880, sota_points: 6 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
@@ -543,10 +543,10 @@ function renderFeatures() {
       return;
     }
 
-    if (p.type === "sota_summit") {
+    if (p.type === "summit") {
       const sotaColor = pointsToColor(p.sota_points);
-      const cat = peakCategory[p.summit_code] ?? (p.match_status === "deleted" ? "dominant" : "unchanged");
-      const badge = p.match_status === "deleted" ? "deleted" : "matched";
+      const cat = peakCategory[p.summit_code] ?? (p.match_status === "delete" ? "dominant" : "unchanged");
+      const badge = p.match_status === "delete" ? "delete" : "matched";
       const sotaLat = geom.coordinates[1].toFixed(5);
       const sotaLon = geom.coordinates[0].toFixed(5);
       L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(sotaColor) })
