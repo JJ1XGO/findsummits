@@ -13,5 +13,50 @@
 
 理由：SOTA のプロミネンス判定基準は 150m であり、5m 解像度で十分な精度が得られる。DEM1a を使用した場合、データ量・処理時間が約 25 倍になるがプロミネンス計算の精度向上はほぼない。
 
+## 必要環境
+
+- GCC（C99）
+- libpng, libm, pthread
+- Python 3.13 + python3-venv パッケージ
+
+## セットアップ
+
+```bash
+# Python 仮想環境の作成（初回・requirements.txt 変更時）
+make venv
+
+# C エンジンのビルド
+make
+```
+
+## 使い方
+
+### 1. タイルの事前取得
+
+```bash
+# params/fetch_config.ini を用意してから実行
+venv/bin/python3 scripts/prefetch_tiles.py \
+  --mesh-list params/mesh_list_japan.txt \
+  --config params/fetch_config.ini \
+  --tile-dir /path/to/data/tiles
+```
+
+### 2. サミット候補の検出
+
+```bash
+./build/findsummits 4929                        # 1次メッシュコード指定
+./build/findsummits params/mesh_list_japan.txt  # メッシュリスト指定
+```
+
+### 3. 結果の統合・出力
+
+```bash
+venv/bin/python3 scripts/merge.py ...
+```
+
+## データディレクトリ設定
+
+`params/config.ini`（`params/config.ini.example` をコピーして作成）に `DATA_DIR` を記入する。
+
 ## ライセンス
 GPL-3.0
