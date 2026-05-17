@@ -200,12 +200,12 @@
       "reporter": null,
       "created_date": "2026-04-28",
       "stage": "OPS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "JJ1XGO",
       "resolution": "requirements.txt・.gitignore・CLAUDE.md は小規模な編集。README.md は現状に合わせて内容を整理してから更新する",
       "notes": null,
       "resolved_date": "2026-05-17",
-      "verified_date": null,
+      "verified_date": "2026-05-17",
       "history": [
         {
           "date": "2026-05-17T14:12:22",
@@ -220,6 +220,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-17T14:14:30",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
