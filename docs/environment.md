@@ -34,9 +34,29 @@
 | libm | 数学関数 |
 | pthread | マルチスレッド処理 |
 
-## Python パッケージ（スクリプト実行に必要）
+## Python 環境セットアップ
 
-| パッケージ | 用途 | インストール |
-|---|---|---|
-| requests | タイル取得（prefetch_tiles.py） | `pip install requests` |
-| shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） | `pip install shapely` |
+Python スクリプトの実行には venv を使用する。venv は `/workspace/venv/` に作成されるため、
+ホストの `/mnt/findsummits` にマウントされたまま永続化され、コンテナをリビルドしても消えない。
+
+```bash
+make venv          # venv 作成 + 依存パッケージインストール（初回 or requirements.txt 変更時）
+```
+
+以降は venv を activate せず、`venv/bin/python3` で直接呼び出す:
+
+```bash
+venv/bin/python3 scripts/prefetch_tiles.py ...
+venv/bin/python3 scripts/merge.py ...
+venv/bin/python3 scripts/preprocess_pref_boundaries.py ...
+venv/bin/python3 mgmt/tracker/track.py ...
+```
+
+## Python パッケージ（`requirements.txt` で管理）
+
+| パッケージ | 用途 |
+|---|---|
+| requests | タイル取得（prefetch_tiles.py） |
+| openpyxl | XLSX 出力 |
+| shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） |
+| numpy | Keyコル距離分析（analysis/analyze_keycol_distance.py） |

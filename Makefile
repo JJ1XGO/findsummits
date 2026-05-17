@@ -38,4 +38,13 @@ test_analyze: $(BUILDDIR)/test_analyze
 clean:
 	rm -rf $(BUILDDIR)
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze
+# Python 仮想環境のセットアップ
+venv: venv/.installed
+
+venv/.installed: requirements.txt
+	python3 -m venv venv
+	venv/bin/pip install --upgrade pip
+	venv/bin/pip install -r requirements.txt
+	@touch venv/.installed
+
+.PHONY: all clean findsummits test_mesh_analyze test_analyze venv

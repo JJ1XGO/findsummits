@@ -40,6 +40,23 @@ make clean              # build/ ディレクトリごと削除
 
 依存: `libpng`, `libm`, `pthread`（GCC / C99）
 
+## Python スクリプトの実行
+
+**Python スクリプトは必ず `venv/bin/python3` で呼び出すこと（`python3` は不可）。**
+`python3` はコンテナのシステム Python であり、パッケージが入っていない。
+
+venv が存在しない場合は先に `make venv` を実行する:
+
+```bash
+make venv                                                          # 初回セットアップ・requirements.txt 変更時
+venv/bin/python3 scripts/prefetch_tiles.py ...                    # タイル取得
+venv/bin/python3 scripts/merge.py ...                             # CSV 統合・出力
+venv/bin/python3 scripts/preprocess_pref_boundaries.py ...        # 都道府県境界前処理
+venv/bin/python3 mgmt/tracker/track.py issue list                          # 課題管理
+```
+
+venv は `/workspace/venv/`（ホストマウント下）に作られるためコンテナリビルド後も消えない。
+
 ## アーキテクチャ
 
 ### データフロー
@@ -233,7 +250,7 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 **バグ・欠陥を発見しても、すぐに修正を始めてはならない。必ず以下のフローを守ること。**
 
 1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する（1件見つけるたびに都度登録しない）
-2. ユーザーに確認を取ってから `python3 mgmt/tracker/track.py bug add` で登録する
+2. ユーザーに確認を取ってから `venv/bin/python3 mgmt/tracker/track.py bug add` で登録する
 3. 原因がわかっている場合は `--resolution` に対応方針まで記入してから登録する
 4. 登録完了後、修正作業の承認を得てから着手する
 5. 修正完了後は `bug close` コマンドでステータスを「対応完了」にする（解決済にしない）
@@ -243,10 +260,10 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 ## 課題管理ルール
 
-**開発タスク（機能追加・改善・調査・設計）は `python3 mgmt/tracker/track.py issue` で管理する。**  
+**開発タスク（機能追加・改善・調査・設計）は `venv/bin/python3 mgmt/tracker/track.py issue` で管理する。**  
 バグ（欠陥）は `track.py bug`、開発課題は `track.py issue` と使い分けること。
 
-1. 新規の開発タスクが発生したら `python3 mgmt/tracker/track.py issue add` で登録する
+1. 新規の開発タスクが発生したら `venv/bin/python3 mgmt/tracker/track.py issue add` で登録する
 2. 作業開始時は `issue update --status 対応中` でステータスを更新する
 3. 実装完了後は `issue close` コマンドでステータスを「対応完了」にする
 4. ユーザーが確認完了後、`issue verify` コマンドでステータスを「解決済」にする
@@ -261,8 +278,8 @@ handover ファイルの本文を書き終えた後、**必ず以下の手順を
 
 1. Excel レポートの条件付き更新:
    ```bash
-   python3 mgmt/tracker/track.py bug export --if-changed
-   python3 mgmt/tracker/track.py issue export --if-changed
+   venv/bin/python3 mgmt/tracker/track.py bug export --if-changed
+   venv/bin/python3 mgmt/tracker/track.py issue export --if-changed
    ```
    `mgmt/tracker/data/` 配下の JSON が xlsx より新しい場合のみ再生成。変更がなければスキップ。
 
@@ -279,7 +296,7 @@ handover ファイルの本文を書き終えた後、**必ず以下の手順を
    - ...
 
    ※ 詳細は `mgmt/tracker/reports/{bugs,issues}_export.xlsx` または
-     `python3 mgmt/tracker/track.py {bug,issue} show <ID>` で確認
+     `venv/bin/python3 mgmt/tracker/track.py {bug,issue} show <ID>` で確認
    ```
    件数・集計値は `track.py bug list --open` / `track.py issue list --open` の結果から取得すること。
 
