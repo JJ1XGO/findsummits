@@ -55,8 +55,11 @@ python3 track.py bug verify BUG-001 --actor "JJ1XGO" --comment "確認OK"
 # サマリー
 python3 track.py bug summary
 
-# Excel出力
+# Excel出力（無条件）
 python3 track.py bug export
+
+# Excel出力（bugs.json が xlsx より新しい場合のみ再生成）
+python3 track.py bug export --if-changed
 ```
 
 ---
@@ -90,8 +93,11 @@ python3 track.py issue verify ISSUE-001 --actor "JJ1XGO" --comment "確認OK"
 # サマリー
 python3 track.py issue summary
 
-# Excel出力
+# Excel出力（無条件）
 python3 track.py issue export
+
+# Excel出力（issues.json が xlsx より新しい場合のみ再生成）
+python3 track.py issue export --if-changed
 ```
 
 ---
@@ -106,7 +112,8 @@ python3 track.py issue export
 | 「ISSUE-001の詳細を見せて」 | `python3 track.py issue show ISSUE-001` |
 | 「バグのサマリーを出して」 | `python3 track.py bug summary` |
 | 「課題のサマリーを出して」 | `python3 track.py issue summary` |
-| 「Excelに書き出して」 | `python3 track.py bug export && python3 track.py issue export` |
+| 「Excelに書き出して（強制）」 | `python3 track.py bug export && python3 track.py issue export` |
+| 「Excelに書き出して（変更時のみ）」 | `python3 track.py bug export --if-changed && python3 track.py issue export --if-changed` |
 
 ---
 

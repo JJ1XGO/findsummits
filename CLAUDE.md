@@ -254,6 +254,45 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
+## handover 実行時のルール
+
+`/handover` を実行するとき（または手動で handover ドキュメントを作成するとき）は、
+handover ファイルの本文を書き終えた後、**必ず以下の手順を実行する**。
+
+1. Excel レポートの条件付き更新:
+   ```bash
+   python3 mgmt/tracker/track.py bug export --if-changed
+   python3 mgmt/tracker/track.py issue export --if-changed
+   ```
+   `mgmt/tracker/data/` 配下の JSON が xlsx より新しい場合のみ再生成。変更がなければスキップ。
+
+2. handover ファイルの末尾に「未対応バグ・課題サマリー」セクションを追記する:
+   ```
+   ## 未対応バグ・課題サマリー
+
+   ### 未対応バグ（N件: 高=x / 中=y / 低=z）
+   - BUG-XXX [高] タイトル
+   - ...
+
+   ### 未対応課題（N件: 高=x / 中=y / 低=z）
+   - ISSUE-XXX [高/機能追加] タイトル
+   - ...
+
+   ※ 詳細は `mgmt/tracker/reports/{bugs,issues}_export.xlsx` または
+     `python3 mgmt/tracker/track.py {bug,issue} show <ID>` で確認
+   ```
+   件数・集計値は `track.py bug list --open` / `track.py issue list --open` の結果から取得すること。
+
+3. コミット漏れ確認・コミット:
+   - `git status` で未コミットの変更を確認する
+   - 変更がなければスキップ
+   - 変更がある場合:
+     - `params/config.ini` / `.claude-container` など機密・gitignore 対象が含まれていないことを確認
+     - 変更内容から Conventional Commits 形式・本文日本語のメッセージを作成
+     - ファイルを**個別指定**で `git add <files>` してコミット（`git add .` / `git add -A` は使わない）
+     - handover ファイル・xlsx 更新分もこのコミットに含める
+     - コミット後に `git status` でクリーンになったことを確認する
+
 ## ブランチ運用ルール
 
 - `devel → main` の直接マージ禁止

@@ -448,6 +448,12 @@ def bug_summary(args):
     print()
 
 def bug_export(args):
+    out = args.output or BUG_REPORT
+    if args.if_changed and os.path.exists(out):
+        if os.path.getmtime(BUG_DATA) <= os.path.getmtime(out):
+            print(f"  変更なし、{out} の再生成をスキップ")
+            return
+
     try:
         from openpyxl import Workbook
         from openpyxl.utils import get_column_letter
@@ -535,7 +541,6 @@ def bug_export(args):
     ws3 = wb.create_sheet("欠陥収束")
     write_convergence_sheet(ws3, bugs, "found_date", hdr_cell, border, to_serial)
 
-    out = args.output or BUG_REPORT
     os.makedirs(os.path.dirname(out), exist_ok=True)
     wb.save(out)
     print(f"\n  ✅ エクスポート完了: {out}\n")
@@ -753,6 +758,12 @@ def issue_summary(args):
     print()
 
 def issue_export(args):
+    out = args.output or ISSUE_REPORT
+    if args.if_changed and os.path.exists(out):
+        if os.path.getmtime(ISSUE_DATA) <= os.path.getmtime(out):
+            print(f"  変更なし、{out} の再生成をスキップ")
+            return
+
     try:
         from openpyxl import Workbook
         from openpyxl.utils import get_column_letter
@@ -843,7 +854,6 @@ def issue_export(args):
     ws3 = wb.create_sheet("収束グラフ")
     write_convergence_sheet(ws3, issues, "created_date", hdr_cell, border, to_serial)
 
-    out = args.output or ISSUE_REPORT
     os.makedirs(os.path.dirname(out), exist_ok=True)
     wb.save(out)
     print(f"\n  ✅ エクスポート完了: {out}\n")
@@ -864,7 +874,7 @@ def build_bug_parser(sub):
     pc = s.add_parser("close");    pc.add_argument("id"); pc.add_argument("--actor", default="不明"); pc.add_argument("--comment")
     pv = s.add_parser("verify");   pv.add_argument("id"); pv.add_argument("--actor", default="不明"); pv.add_argument("--comment")
     s.add_parser("summary")
-    pe = s.add_parser("export");   pe.add_argument("--output")
+    pe = s.add_parser("export");   pe.add_argument("--output"); pe.add_argument("--if-changed", action="store_true")
 
     p.set_defaults(dispatch={
         "list": bug_list, "show": bug_show, "add": bug_add,
@@ -883,7 +893,7 @@ def build_issue_parser(sub):
     pc = s.add_parser("close");    pc.add_argument("id"); pc.add_argument("--actor", default="不明"); pc.add_argument("--comment")
     pv = s.add_parser("verify");   pv.add_argument("id"); pv.add_argument("--actor", default="不明"); pv.add_argument("--comment")
     s.add_parser("summary")
-    pe = s.add_parser("export");   pe.add_argument("--output")
+    pe = s.add_parser("export");   pe.add_argument("--output"); pe.add_argument("--if-changed", action="store_true")
 
     p.set_defaults(dispatch={
         "list": issue_list, "show": issue_show, "add": issue_add,

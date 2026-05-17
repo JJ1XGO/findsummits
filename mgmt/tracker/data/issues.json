@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-16",
-    "counter": 32
+    "last_updated": "2026-05-17",
+    "counter": 34
   },
   "issues": [
     {
@@ -376,12 +376,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-009 に以下を追記:\n(1) 判定順序を明示: ①AZ 内に SOTA → matched, ②コル等高線内に SOTA → dominant, ③それ以外 → new\n(2) sota_summit feature の match_status を独立定義:\n   matched = FR-010 スコープ内で AZ にマッチ\n   deleted = FR-010 スコープ内で AZ にマッチせず\n(3) ADR-008 フォールバック時の peak.match_status と sota_summit の対応関係を明確化。案A（peak も dominant に昇格）または案B（peak の match_status は変えず sota_summit を独立扱い・FR-013 フィーチャ構成テーブルを更新）から選定。\n(4) GLOSSARY に '削除候補（deleted）' を追加。\n(5) ADR-007 / ADR-008 とも整合チェック。",
       "notes": null,
       "resolved_date": "2026-05-16",
-      "verified_date": null,
+      "verified_date": "2026-05-17",
       "history": [
         {
           "date": "2026-05-16T16:18:22",
@@ -389,6 +389,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-17T11:51:34",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] Opus による独立検証で resolution 5 項目（判定順序明示・summit.match_status 独立定義・dominant フォールバック Case B・GLOSSARY 削除追加・ADR 整合）すべての反映を確認。SRS L313-336 / ADR-007 / ADR-008 / GLOSSARY L72 / モックアップ で完全に統一されており、5 文書間の矛盾なし。"
         }
       ]
     },
@@ -639,6 +646,42 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "SRS に '10. 要求トレーサビリティ・マトリックス' を新章として追加。\n- FR セクションと NFR セクションを 2 つの表に分割するか、1 つにまとめるかは可読性で判断\n- 目次にもセクション 10 を追加\n- ISSUE-031 の調査結果を反映",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-033",
+      "title": "SRS FR-018: FR-014 参照記述の整合性修正（フェーズ構成組み替えの取り残し）",
+      "description": "ISSUE-018 確認時に Opus が独立検証で発見した残課題。2026-05-16 のフェーズ構成組み替えで FR-014 を per-mesh フェーズ2 へ移動したが、SRS FR-018 本文に旧設計の記述が残っている。\n- L291: 「（いずれも FR-014 で後処理される）」← FR-014 はフェーズ2 で完了済みのため矛盾\n- L294: 「統合後の GeoJSON は FR-014 の入力として使用する」← フェーズ3 出力がフェーズ2 入力になる循環参照\n- L304（FR-009 入力）: FR-014 完了タイミングの表現が薄く、読み手依存になっている可能性",
+      "type": "設計",
+      "priority": "高",
+      "category": "解析エンジン",
+      "reporter": null,
+      "created_date": "2026-05-17",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "(1) L291 の括弧書き「（いずれも FR-014 で後処理される）」を削除またはフェーズ2 完了済み前提の表現に修正\n(2) L294 を削除または FR-009 入力として使う旨に修正\n(3) L304 FR-009 入力記述で FR-014 の per-mesh 完了タイミング明示を再確認\n(4) フェーズ2 内の FR-016 → FR-014 → FR-007 の処理順序が SRS から読み取れるかも合わせて確認",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-034",
+      "title": "tracker: ISSUE-018 の resolution 文を実装実態（案 B 採用）に合わせて更新",
+      "description": "ISSUE-018 の resolution 文に「案A（peak も dominant に昇格）または案B…から選定」と書かれているが、実装方針は案 B（peak 昇格なし）で確定済み（SRS L336 / ADR-008 L29）。後から履歴を辿る際の誤読防止のため、resolution 文を案 B 採用前提の記述に更新する。",
+      "type": "改善",
+      "priority": "低",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-17",
+      "stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "tracker のレコード編集機能で ISSUE-018 の resolution フィールドを書き換え、「案 B（peak.match_status は変更せず、summit.dominant_peak_code で紐付けのみ）を採用」と明記する。",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,

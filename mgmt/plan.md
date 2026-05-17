@@ -138,3 +138,16 @@ ISSUE-018（FR-009 match_status 整理）の議論中に、ユーザーから「
 - `docs/decisions/ADR-008-dominant-peak-identification.md`
 - `docs/mockup/viewer_mockup.html`
 - `mgmt/tracker/...`（ISSUE-018 close、ISSUE-019 Description 補強）
+
+---
+
+# handover と tracker レポートの連携（実装済み 2026-05-17）
+
+## Context
+セッション終了後にユーザーが未対応バグ・課題の残件を事前確認できるよう、
+handover 時に Excel レポートの条件付き更新 + handover ファイルへの残件サマリー埋め込みを行うルールを整備した。
+
+## 変更内容
+- `mgmt/tracker/track.py`: `bug export` / `issue export` に `--if-changed` フラグ追加（JSON mtime > xlsx mtime の時のみ再生成）
+- `CLAUDE.md`: 「handover 実行時のルール」セクション新設
+- `mgmt/tracker/CLAUDE.md`: export コマンド説明・自然言語依頼例に `--if-changed` を追記
