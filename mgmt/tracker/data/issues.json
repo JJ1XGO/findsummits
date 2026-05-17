@@ -15,13 +15,28 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "IT",
-      "status": "未対応",
+      "status": "解決済",
       "assignee": "JJ1XGO",
       "resolution": "python3 scripts/merge.py --mesh-list params/mesh_5339_neighbors.txt を実行して結果確認",
       "notes": "ステップ1（prefetch）・ステップ2（findsummits 9メッシュ解析）は完了済み",
-      "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "resolved_date": "2026-04-26",
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T14:50:17",
+          "actor": "JJ1XGO",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "2026-04-26_0402 handoverにてステップ3（merge.py）実行・1100行のmerged.csv出力を確認"
+        },
+        {
+          "date": "2026-05-17T14:50:24",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-05-17）"
+        }
+      ]
     },
     {
       "id": "ISSUE-002",
@@ -33,13 +48,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "COD",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "ISSUE-001（ステップ3検証）の後に着手。突合列: match_status, summit_code, summit_name, peak_lat, peak_lon, peak_elev, col_lat, col_lon, col_elev, prominence, orig_lat, orig_lon, orig_elev",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T14:54:15",
+          "actor": "JJ1XGO",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "ユーザー判断により却下（2026-05-17）"
+        }
+      ]
     },
     {
       "id": "ISSUE-003",
@@ -120,13 +143,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "IT",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "ISSUE-001 完了後に着手",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T14:55:50",
+          "actor": "JJ1XGO",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "ユーザー判断により却下（2026-05-17）"
+        }
+      ]
     },
     {
       "id": "ISSUE-007",
@@ -138,13 +169,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "OPS",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "フルパイプ検証前に仕様を詰めても実行時の問題で仕様変更になりやすいため後回し",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T14:56:41",
+          "actor": "JJ1XGO",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "ユーザー判断により却下（2026-05-17）"
+        }
+      ]
     },
     {
       "id": "ISSUE-008",
@@ -156,13 +195,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "HLD",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "plan_v1.md: .claude/mgmt/plan_v1.md",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T14:57:45",
+          "actor": "JJ1XGO",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "ユーザー判断により却下（2026-05-17）"
+        }
+      ]
     },
     {
       "id": "ISSUE-009",
@@ -174,11 +221,11 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "HLD",
-      "status": "対応完了",
+      "status": "未対応",
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "将来実装候補。フルパイプ検証・申請用出力フェーズ完了後に検討。",
-      "resolved_date": "2026-05-08",
+      "resolved_date": null,
       "verified_date": null,
       "history": [
         {
@@ -187,6 +234,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-17T14:54:05",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "未対応",
+          "comment": "N03-2026_regions.geojson が未生成（preprocess_pref_boundaries.py 未実行）のため実際には ZZ/ZZ-A01 フォールバック状態。コードは実装済みだが機能として未完了のため差し戻し"
         }
       ]
     },
@@ -240,12 +294,12 @@
       "reporter": null,
       "created_date": "2026-04-28",
       "stage": "OPS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "CLAUDE.mdのルールと制約セクションに追記",
       "notes": null,
       "resolved_date": "2026-04-28",
-      "verified_date": null,
+      "verified_date": "2026-05-17",
       "history": [
         {
           "date": "2026-04-28T15:20:44",
@@ -253,6 +307,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "プロジェクトCLAUDE.mdにブランチ運用ルールセクションを追記"
+        },
+        {
+          "date": "2026-05-17T14:59:09",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-05-17）"
         }
       ]
     },
@@ -266,12 +327,12 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-05-08",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
-      "resolution": null,
+      "resolution": "スコープ外として対応しない。matched サミットの座標・標高変更は本プロジェクトでは自動識別しない。既存登録情報は概ね正しいと判断。URD UR-003・スコープ外セクションに反映済み。",
       "notes": null,
       "resolved_date": "2026-05-10",
-      "verified_date": null,
+      "verified_date": "2026-05-17",
       "history": [
         {
           "date": "2026-05-10T13:40:42",
@@ -279,6 +340,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "スコープ外として対応しない。matched サミットの座標・標高変更は本プロジェクトでは自動識別しない。既存登録情報は概ね正しいと判断。URD UR-003・スコープ外セクションに反映済み。"
+        },
+        {
+          "date": "2026-05-17T15:02:25",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-05-17）"
         }
       ]
     },
@@ -336,13 +404,28 @@
       "reporter": null,
       "created_date": "2026-05-09",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "解決済",
       "assignee": null,
-      "resolution": null,
+      "resolution": "GitHub Pages 公開ツールからローカル用HTMLビューア（docs/mockup/viewer_mockup.html）に方針変更。山岳名JP/EN入力フォームとlocalStorage保存を実装。FR-013に仕様として取り込み済み。",
       "notes": null,
-      "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "resolved_date": "2026-05-13",
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T15:08:12",
+          "actor": "JJ1XGO",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "docs/mockup/viewer_mockup.html を作成。GitHub Pages 公開ツールからローカル用HTMLビューアに方針変更。山岳名JP/EN入力フォームとlocalStorage保存を実装。FR-013に仕様として取り込み済み。"
+        },
+        {
+          "date": "2026-05-17T15:08:19",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-05-17）"
+        }
+      ]
     },
     {
       "id": "ISSUE-016",
@@ -372,12 +455,12 @@
       "reporter": null,
       "created_date": "2026-05-09",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
-      "resolution": null,
+      "resolution": "SRS に FR-018（activation.geojson 統合ステップ）を新設。フェーズ3を FR-008 → FR-018 → FR-014 の構成に再設計し、FR-009 の前に統合済み activation.geojson が参照できるよう仕様化。コミット 5b633f5（2026-05-09）で対応完了。",
       "notes": null,
       "resolved_date": "2026-05-09",
-      "verified_date": null,
+      "verified_date": "2026-05-17",
       "history": [
         {
           "date": "2026-05-09T15:48:58",
@@ -385,6 +468,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-17T15:10:07",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-05-17）"
         }
       ]
     },
