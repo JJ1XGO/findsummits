@@ -535,13 +535,35 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "解決済",
       "assignee": null,
       "resolution": "表記ルールを SRS 冒頭または GLOSSARY に明示し、全文を統一:\n(1) 本文表記: 'Keyコル'、プロパティ名 / feature_type 値: 'key_col_boundary' に統一\n(2) 130m フィルタ後 = 'ピーク候補'、150m フィルタ後 = 'サミット候補' に統一\n(3) 'dominant peak' は本文・GLOSSARY 見出しとも英語表記に統一",
       "notes": null,
-      "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "resolved_date": "2026-05-17",
+      "verified_date": "2026-05-17",
+      "history": [
+        {
+          "date": "2026-05-17T13:14:40",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-17T13:20:44",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-17T13:23:52",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
+        }
+      ]
     },
     {
       "id": "ISSUE-027",
