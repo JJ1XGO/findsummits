@@ -524,7 +524,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "FR-009 に追記:\n(1) 採番順序を明示（推奨: peak_lat 降順 → peak_lon 昇順タイブレーク、または (peak_lat, peak_lon) 昇順タプル）\n(2) 採番安定性ポリシーを規定（フル解析時のみ採番再生成 / 部分解析時は既存コード保持 / 等）\n(3) NFR-003 とのトレース確認",
-      "notes": null,
+      "notes": "【Opus相談推奨】複数の独立した設計判断と副次的影響の整理が必要。\n\n相談ポイント:\n(1) 採番順序の選択肢比較（peak_lat降順→peak_lon昇順タイブレーク vs (peak_lat, peak_lon)昇順タプル vs その他）。実データでの順序安定性・可読性・申請書での扱いやすさを総合評価\n(2) 採番安定性ポリシーの設計（フル解析時のみ採番再生成 / 部分解析時は既存コード保持 / その他）。将来の部分再実行ユースケース・ビューア localStorage との整合性・ユーザー混乱の回避を考慮\n(3) (1)(2)の組み合わせがNFR-003（決定論的出力）と整合することの検証方法\n(4) 既存仮コード割当がない初回実行と、再実行の境界ケースの扱い",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -542,7 +542,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "以下のいずれかを SRS で確定し、FR-013 / FR-014 を改訂:\n案A: 手動調査待ちピークは FR-013 出力から除外（または専用カテゴリ）\n案B: コル等高線がない場合のフォールバック表現（仮 Polygon / 空 Polygon / 省略可フラグ）を FR-013 に規定\n案C: 第4の match_status カテゴリ 'unresolved' を追加\n併せて area_truncated=true が残るケースの FR-014 挙動も明示。",
-      "notes": null,
+      "notes": "【Opus相談推奨】3案あり、FR-013/FR-014/FR-016/merge.py/ビューアの広範囲に影響する複合判断。\n\n相談ポイント:\n(1) 案A・案B・案Cそれぞれの長所短所を、影響範囲（FR-013出力構造、merge.py突合ロジック、ビューア表示）を含めて比較\n(2) 'unresolved' を第4のmatch_statusに追加した場合のADR-007との整合性\n(3) コル等高線フォールバック表現（仮Polygon/空Polygon）の point-in-polygon 突合動作への影響\n(4) 手動調査待ちピーク = 何件想定か。1〜2件なら手動対応で十分か、自動化が必要か\n(5) area_truncated=true が4×4でも解消しなかった場合の挙動（is_tile_top=1とは独立に発生しうる）",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -726,7 +726,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "以下のいずれかに整理:\n案A: UR-008 / UR-009 を URD に残しつつ '(品質要件)' と明示し、SRS で NFR-XXX に明示マップ\n案B: URD から削除し、SRS の NFR として独立記載\n案C: URD に残し、トレース確認のための専用節を新設",
-      "notes": null,
+      "notes": "【Opus相談推奨】URD/SRS構造に関わる設計哲学的判断。後から変更すると影響範囲が大きい。\n\n相談ポイント:\n(1) 案A・案B・案Cそれぞれの長所短所。要件管理の一般的なプラクティスに照らした評価\n(2) UR-008（環境構築から成果物生成までの実行可能性）とUR-009（仕様・実装の整合性）は本質的に '品質目標' であり、ユーザー要求とは性質が異なる。これをURDに残すべきか、NFRに移すべきか\n(3) ISO/IEC 25010 等の品質特性モデルとのマッピング\n(4) 既存のNFR-003 / NFR-007との対応関係を明示するか、独立した品質目標として扱うか\n(5) ISSUE-031（UR↔FR/NFRトレース調査）・ISSUE-032（RTM作成）の進め方への影響",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -924,7 +924,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": null,
+      "notes": "【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_truncated 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
       "resolved_date": null,
       "verified_date": null,
       "history": []
