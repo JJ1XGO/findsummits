@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-17",
+    "last_updated": "2026-05-18",
     "counter": 40
   },
   "issues": [
@@ -557,13 +557,21 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-014 出力節に以下のいずれかを明示:\n案A: 'per-mesh ファイルは更新せず、merged.csv / merged_activation.geojson のみ更新'\n案B: '中間ファイルも更新する'（再現性向上のため）",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-18",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-18T16:26:17",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-014 のフェーズ配置をフェーズ3 末尾に移動する際、上書きスコープを明示。merged.csv / merged_activation.geojson のみを上書き、per-mesh ファイル（<meshcode>.csv・<meshcode>_activation.geojson）は更新しない（案A 採用）。ISSUE-033 と同時解消。"
+        }
+      ]
     },
     {
       "id": "ISSUE-022",
@@ -795,13 +803,21 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "(1) L291 の括弧書き「（いずれも FR-014 で後処理される）」を削除またはフェーズ2 完了済み前提の表現に修正\n(2) L294 を削除または FR-009 入力として使う旨に修正\n(3) L304 FR-009 入力記述で FR-014 の per-mesh 完了タイミング明示を再確認\n(4) フェーズ2 内の FR-016 → FR-014 → FR-007 の処理順序が SRS から読み取れるかも合わせて確認",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-18",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-18T16:26:15",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS FR-014 をフェーズ3 末尾配置に移動・FR-018 / FR-009 / FR-016 / FR-008 の参照記述を整合化。ADR-004 も更新。ISSUE-021 を同時解消（per-mesh ファイルは更新せず merged のみが正と明示）。"
+        }
+      ]
     },
     {
       "id": "ISSUE-034",

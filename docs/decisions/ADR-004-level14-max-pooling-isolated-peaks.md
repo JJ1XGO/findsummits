@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 採用（設計確定）・未実装 |
-| 決定日 | 2026-04-24 頃（2026-05-09 トリガー条件拡張・調査確定、2026-05-10 メッシュサイズ改訂） |
+| 決定日 | 2026-04-24 頃（2026-05-09 トリガー条件拡張・調査確定、2026-05-10 メッシュサイズ改訂、2026-05-18 フェーズ配置をフェーズ3 末尾に確定） |
 | 調査資料 | [`research/6x6-mesh-keycol-coverage-study.md`](research/6x6-mesh-keycol-coverage-study.md) |
 | 調査資料 | [`research/outliers_3x3_parent_connection.geojson`](research/outliers_3x3_parent_connection.geojson) |
 
@@ -48,7 +48,9 @@
 
 ## Decision
 
-- **トリガー条件**: `is_tile_top=1` **または** `area_truncated=true` のピークを対象とする
+- **パイプライン配置**: フェーズ3 末尾（FR-008 + FR-018 の全国統合が完了した直後、FR-009 突合より前）。per-mesh フェーズ2 で判定する設計は採らない（同一ピークが複数の per-mesh 解析に出現するため、`is_tile_top=1` は per-mesh 段階では確定せず、全国統合後でないと真に独立峰となるピークを特定できない）
+- **入力**: `$DATA_DIR/results/merged.csv`（FR-008 出力）および `$DATA_DIR/results/merged_activation.geojson`（FR-018 出力）
+- **トリガー条件**: merged.csv 上で `is_tile_top=1` **または** `area_truncated=true` のピークを対象とする
 - **再解析方法**: ズームレベル 14 でメッシュを広域再解析（レベル 15 タイルを結合時に max pooling でレベル 14 化）
 - **一次解析: 4×4 メッシュ + L14**（解析半径 111 km、推定メモリ ~25 GB）
   - 鳥海山（JA/YM-001）: Key Col は 4×4 内に確実に収まる
@@ -56,7 +58,7 @@
 - **自動エスカレーション: 5×5 + L14**（148 km、~39 GB）— 4×4 後も `is_tile_top=1` が残る場合に自動実行
 - **最終残存**: 5×5 後も `is_tile_top=1` が残る場合はログ警告を出力し、当該フラグを維持したまま処理継続（手動調査待ち）
 - `area_truncated=true` のみのピークは 4×4 固定（エスカレーション不要）
-- 再解析結果で統合済み CSV の該当レコードを上書きし、同時に activation.geojson も再生成する
+- **上書きスコープ**: 再解析結果で `merged.csv` の該当レコードおよび `merged_activation.geojson` の該当ピークのアクティベーションゾーン/コル等高線ポリゴンを上書きする。**per-mesh ファイル（`<meshcode>.csv` および `<meshcode>_activation.geojson`）は更新しない**（merged のみが正となる）
 
 **解析ウィンドウ決定: スライディングウィンドウ全パターン探索**
 
@@ -99,6 +101,7 @@ FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサ�
 | 8×8 メッシュを通常処理に採用 | 計算コストが 7 倍以上に増大。ほぼ全サミットに適用するのは非現実的。 |
 | 6×6 + L14（当初案） | 解析半径 185 km・推定メモリ ~57 GB で 3×3/L15 と同等。対象 1〜2 件に対してオーバースペック。4×4+5×5 段階構成のほうがメモリ効率が良く対象ケースも十分カバーできる。 |
 | Key Col 方向への矩形メッシュ拡張 | 鳥海山のように N-S 方向だけ延ばす 4×2 等の矩形解析。8 タイルで済み level-14 より解像度を保てる。ただし MeshSet の非正方形対応と拡張方向の自動判定が必要。対象が 1〜2 件であるため実装コスト対効果の面から不採用。 |
+| per-mesh フェーズ2 内配置（2026-05-16 暫定設計） | per-mesh CSV の `is_tile_top=1` を直接トリガとする案。同一ピークが複数の per-mesh 解析に出現し、別解析では `is_tile_top=0` となる可能性がある。per-mesh 段階で確定的に判定できないため、フェーズ3 統合で本来 confirmed になるピークまで広域再解析する無駄が生じる。SRS FR-018 とも循環参照を生んだ（ISSUE-033）。フェーズ3 末尾配置に修正。 |
 
 ## Consequences
 
@@ -126,7 +129,7 @@ FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサ�
    - cross-tile pooling（境界をまたぐ 2×2 group）は実施しない
    - 隣接タイル境界での ~10m 格子誤差はプロミネンス 150m 判定に対して無視できる
 5. **activation.geojson 再生成**: FR-014 は CSV の上書きに加えて `merged_activation.geojson` の
-   該当ピークのポリゴンも差し替える責務を持つ（FR-018 との連携設計が必要）
+   該当ピークのポリゴンも差し替える責務を持つ。FR-018（per-mesh activation.geojson 統合）完了後に FR-014 が動作するため、入力は常に統合済みの merged_activation.geojson となる（per-mesh `<meshcode>_activation.geojson` を直接読まない）
 6. **実装原則: C エンジンの拡張・再利用（ロジック重複禁止）**
    FR-014 は `findsummits`（C エンジン）を拡張して対応し、
    ピーク検出・コル検出・Union-Find のロジックを Python 側で再実装してはならない。
