@@ -310,6 +310,25 @@ handover ファイルの本文を書き終えた後、**必ず以下の手順を
      - handover ファイル・xlsx 更新分もこのコミットに含める
      - コミット後に `git status` でクリーンになったことを確認する
 
+## ドキュメント更新時のルール
+
+ユーザーはドキュメントを GitHub 上で確認しているため、ローカル編集だけでは確認できない。
+**ドキュメントの更新が完了した直後（その作業ターン内）に必ず commit する**こと。push は別途指示があるまで不要。
+
+対象ドキュメント:
+- `docs/` 配下のすべてのファイル（URD/SRS/HLD/LLD/UT/IT/ST/OPS/GLOSSARY/environment）
+- `docs/decisions/` 配下の ADR と research 資料
+- `ref/SOURCES.md` などの参照資料
+- `mgmt/plan.md`・`mgmt/lessons.md`（devel ブランチ運用ファイル）
+
+手順:
+1. 更新作業が一段落したら `git status` で対象を確認
+2. **個別ファイル指定**で `git add <files>`（`git add .` / `-A` は禁止）
+3. Conventional Commits 形式・本文日本語でコミット
+4. push は別途指示があるまで行わない（ユーザーが任意のタイミングで push する）
+
+例外: 同一作業内でコードと一緒に更新したドキュメントは、コードのコミットに含めて構わない（ドキュメント単独でのコミット分割は不要）。
+
 ## ブランチ運用ルール
 
 - `devel → main` の直接マージ禁止
