@@ -24,7 +24,7 @@
      - [FR-004: 3×3 メッシュ結合解析](#fr-004-33-メッシュ結合解析)
      - [FR-005: ピーク候補検出](#fr-005-ピーク候補検出)
      - [FR-006: コル検出・プロミネンス計算](#fr-006-コル検出プロミネンス計算)
-     - [FR-016: アクティベーションゾーン計算](#fr-016-アクティベーションゾーン計算)
+     - [FR-016: ピーク域ポリゴン生成](#fr-016-ピーク域ポリゴン生成)
      - [FR-007: プロミネンスフィルタ・per-mesh CSV 出力](#fr-007-プロミネンスフィルタper-mesh-csv-出力)
      - [FR-014: 独立峰対応（レベル14 広域再解析）](#fr-014-独立峰対応レベル14-広域再解析)
      - [FR-015: 標高地形図出力](#fr-015-標高地形図出力)
@@ -54,10 +54,10 @@
    - [6.5 出力: GeoJSON・HTML ビューア](#65-出力-geojsonhtml-ビューア)
    - [6.6 中間ファイル: メッシュ別ピーク候補 CSV](#66-中間ファイル-メッシュ別ピーク候補-csv)
    - [6.7 出力: 標高地形図（Terrain-RGB PNG）](#67-出力-標高地形図terrain-rgb-png)
-   - [6.8 中間ファイル: メッシュ別アクティベーションゾーン GeoJSON](#68-中間ファイル-メッシュ別アクティベーションゾーン-geojson)
+   - [6.8 中間ファイル: メッシュ別ピーク域 GeoJSON](#68-中間ファイル-メッシュ別ピーク域-geojson)
    - [6.9 入力: N03 前処理済みファイル（FR-017 生成）](#69-入力-n03-前処理済みファイルfr-017-生成)
    - [6.10 入力: SOTA 既存サミット GeoJSON（geojson_v{N}）](#610-入力-sota-既存サミット-geojsongeojson_vn)
-   - [6.11 中間ファイル: 全国統合済みアクティベーションゾーン GeoJSON](#611-中間ファイル-全国統合済みアクティベーションゾーン-geojson)
+   - [6.11 中間ファイル: 全国統合済みピーク域 GeoJSON](#611-中間ファイル-全国統合済みピーク域-geojson)
    - [6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）](#612-出力-公開用-html閲覧専用ブラウザダウンロード)
 7. [外部システム依存関係・環境](#7-外部システム依存関係環境)
 8. [制約・前提条件](#8-制約前提条件)
@@ -93,9 +93,9 @@ preprocess_pref_boundaries.py  N03 行政区域前処理（フェーズ1・初�
        └─ $DATA_DIR/ref/N03-{n03_year}_regions.geojson  ← merge.py が参照
        ↓
 【ステップ2: 解析・突合・確認】（GeoJSON/HTML で結果を確認してから次ステップへ）
-findsummits (C)      ピーク・コル検出・アクティベーションゾーン計算（フェーズ2）
+findsummits (C)      ピーク・コル検出・ピーク域ポリゴン生成（フェーズ2）
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
-       ├─ per-peak activation area  ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
+       ├─ per-peak polygons         ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
 merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
        ├─ merged.csv         ($DATA_DIR/results/merged.csv)    ← エビデンス CSV
@@ -104,7 +104,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 【ステップ3: 申請書生成】（HTML ビューアで山岳名を入力後、申請書エクスポートボタンで XLSX 生成）
 ```
 
-**C / Python 境界**: per-mesh CSV および アクティベーションゾーン GeoJSON ファイル。  
+**C / Python 境界**: per-mesh CSV および ピーク域 GeoJSON ファイル。  
 詳細は [`decisions/ADR-001-hybrid-c-python-architecture.md`](decisions/ADR-001-hybrid-c-python-architecture.md) を参照。
 
 ---
@@ -190,23 +190,23 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - プロミネンス = ピーク標高 − コル標高
 - コルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に未確定フラグを付与する（[FR-014 参照](#fr-014-独立峰対応レベル14-広域再解析)）
 
-#### FR-016: アクティベーションゾーン計算
+#### FR-016: ピーク域ポリゴン生成
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003), [UR-006](01_URD.md#ur-006)
-- ピーク候補検出・プロミネンス計算（[FR-005](#fr-005-ピーク候補検出)・[FR-006](#fr-006-コル検出プロミネンス計算)）完了後にアクティベーションゾーン GeoJSON を生成する
-- **アクティベーションゾーンの定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
-- **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する
-- ピクセル群の外周輪郭を GeoJSON Polygon として出力する
-- **ポリゴンの出力は lossless とする**: [FR-009](#fr-009-sota-リスト突合) の point-in-polygon 突合精度を確保するため、形状を変える簡略化（Douglas-Peucker 等）や等間隔での頂点間引きは行わない。直線上にある冗長な中間頂点の削除（ピクセル境界トレース結果で連続する collinear 点の除去）は形状を変えないため可とする
-- Flood Fill が解析対象メッシュ全体の地理的範囲外で途切れた場合、`area_truncated=true` フラグを付与する（ゾーンが実際より小さく計算されている可能性を示す）。[FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域再解析してゾーンを再計算する
-- アクティベーションゾーンと同様に、**コル等高線ポリゴン** も生成する:
-  - **定義**: ピークからコル標高（`col_elev`）以上で連続する領域の外周（ピークがどの地形に「属しているか」を示す境界）
-  - **計算方法**: アクティベーションゾーンと同一の Flood Fill を `col_elev` 閾値で実行
+- ピーク候補検出・プロミネンス計算（[FR-005](#fr-005-ピーク候補検出)・[FR-006](#fr-006-コル検出プロミネンス計算)）完了後に、各ピークについて以下の2種類のポリゴンを GeoJSON として生成する
+- **共通仕様**:
+  - **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する。ピクセル群の外周輪郭を GeoJSON Polygon として出力する
+  - **出力は lossless とする**: [FR-009](#fr-009-sota-リスト突合) の point-in-polygon 突合精度を確保するため、形状を変える簡略化（Douglas-Peucker 等）や等間隔での頂点間引きは行わない。直線上にある冗長な中間頂点の削除（ピクセル境界トレース結果で連続する collinear 点の除去）は形状を変えないため可とする
+  - Flood Fill が解析対象メッシュ全体の地理的範囲外で途切れた場合、`area_truncated=true` フラグを付与する（ポリゴンが実際より小さく計算されている可能性を示す）。[FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域再解析してポリゴンを再計算する
+- **アクティベーションゾーンポリゴン**:
+  - **定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
+  - **Flood Fill 閾値**: `peak_elev - 25.0m` 以上
+- **コル等高線ポリゴン**（`feature_type="key_col_boundary"`）:
+  - **定義**: コル標高以上でピークと連続する領域の外周（ピークがどの地形に「属しているか」を示す境界）
+  - **Flood Fill 閾値**: `col_elev` 以上
   - `is_tile_top=1` のピークはコル等高線ポリゴンを生成しない（`col_elev` 未確定のため）
-  - 出力ポリゴンは lossless（アクティベーションゾーンと同じ方針）
-  - 出力: 同一 GeoJSON ファイルに `feature_type="key_col_boundary"` のフィーチャとして追記
-- 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`
-- 詳細は [6.8 中間ファイル: メッシュ別アクティベーションゾーン GeoJSON](#68-中間ファイル-メッシュ別アクティベーションゾーン-geojson) を参照
+- 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（2種類のポリゴンを同一ファイルに収録）
+- 詳細は [6.8 中間ファイル: メッシュ別ピーク域 GeoJSON](#68-中間ファイル-メッシュ別ピーク域-geojson) を参照
 
 #### FR-007: プロミネンスフィルタ・per-mesh CSV 出力
 
@@ -288,8 +288,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003), [UR-006](01_URD.md#ur-006)
 - **入力**: `$DATA_DIR/results/csv/` 配下の per-mesh `<meshcode>_activation.geojson`。メッシュコードリストが指定された場合はそのメッシュの GeoJSON のみ読み込む（省略時は全 GeoJSON）
-- フェーズ2（[FR-016](#fr-016-アクティベーションゾーン計算)）で出力された per-mesh `*_activation.geojson` を1つの統合 GeoJSON にまとめる
-- 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_truncated=false`（完全なゾーン）のものを優先して採用する。`area_truncated=false` が存在しない場合は、FR-008 の代表レコードの `center_mesh` に対応する `<center_mesh>_activation.geojson` 内のポリゴンを採用する（いずれも FR-014 で後処理される）
+- フェーズ2（[FR-016](#fr-016-ピーク域ポリゴン生成)）で出力された per-mesh `*_activation.geojson` を1つの統合 GeoJSON にまとめる
+- 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_truncated=false`（完全なポリゴン）のものを優先して採用する。`area_truncated=false` が存在しない場合は、FR-008 の代表レコードの `center_mesh` に対応する `<center_mesh>_activation.geojson` 内のポリゴンを採用する（いずれも FR-014 で後処理される）
 - コル等高線ポリゴン（`feature_type="key_col_boundary"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ優先方針（`area_truncated=false` のものを優先）で採用する
 - 出力先: `$DATA_DIR/results/merged_activation.geojson`
 - 統合後の GeoJSON は [FR-014](#fr-014-独立峰対応レベル14-広域再解析) の入力として使用する
@@ -308,8 +308,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - `ref/geojson_v{N}/`（ja0〜ja9 ファイル群）: 既存 SOTA サミットの日本語山岳名（`summit_name_jp`）取得用。バージョン番号 `{N}` は `params/config.ini` の `geojson_version` パラメータで指定する
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
 - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
-- 突合は各ピークのアクティベーションゾーン（FR-016 → FR-014（per-mesh）→ FR-018 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
-- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーン内に複数 SOTA サミットは数学的に存在しない
+- 突合は各ピークのアクティベーションゾーンポリゴン（FR-016 → FR-014（per-mesh）→ FR-018 で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
+- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない
 - **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
 - **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md) 参照）:
   1. ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する → `matched`
@@ -663,11 +663,11 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | 色分け | 標高に応じたグラデーション（詳細は HLD） |
 | 生成タイミング | `findsummits` 実行時（標高タイル読み込み完了後・解析開始前） |
 
-### 6.8 中間ファイル: メッシュ別アクティベーションゾーン GeoJSON
+### 6.8 中間ファイル: メッシュ別ピーク域 GeoJSON
 
 | 項目 | 仕様 |
 |---|---|
-| 役割 | C 解析エンジン（findsummits）がメッシュごとに出力するアクティベーションゾーン（SOTA ルールで定義されるピーク周辺の有効エリア）の中間ファイル。メッシュ別 CSV（6.6）と同タイミングで生成され、Python 統合処理が全国分を統合する |
+| 役割 | C 解析エンジン（findsummits）がメッシュごとに出力するアクティベーションゾーンポリゴンおよびコル等高線ポリゴンの中間ファイル。メッシュ別 CSV（6.6）と同タイミングで生成され、Python 統合処理が全国分を統合する |
 | ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（`<meshcode>` は4桁の1次メッシュコード） |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
@@ -725,11 +725,11 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | `name` プロパティ形式 | `"JA/XX-NNN(山岳名)"` — SOTA コードと日本語山岳名を括弧区切りで格納 |
 | 省略時の動作 | 未存在の場合、`summit_name_jp` を空文字として処理続行 |
 
-### 6.11 中間ファイル: 全国統合済みアクティベーションゾーン GeoJSON
+### 6.11 中間ファイル: 全国統合済みピーク域 GeoJSON
 
 | 項目 | 仕様 |
 |---|---|
-| 役割 | メッシュ別アクティベーションゾーン GeoJSON（6.8）を全国分統合した中間ファイル。SOTA リスト突合・HTML ビューア生成・独立峰の広域再解析の入力として使用する |
+| 役割 | メッシュ別ピーク域 GeoJSON（6.8）を全国分統合した中間ファイル。SOTA リスト突合・HTML ビューア生成・独立峰の広域再解析の入力として使用する |
 | ファイル | `$DATA_DIR/results/merged_activation.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
