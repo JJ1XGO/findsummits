@@ -367,7 +367,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 ##### 各フィーチャのプロパティ
 
 **Point: ピーク**
-- `type`: "peak"
+- `feature_type`: "peak"
 - `match_status`: matched / new / dominant
 - `summit_code`: サミットコード（matched のみ）または仮サミットコード（new / dominant。`JAx/XX-A01` 形式）
 - `summit_name`: サミット名（matched / dominant のみ・英語/ローマ字）
@@ -379,14 +379,14 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出
 
 **Point: コル**
-- `type`: "col"
+- `feature_type`: "col"
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - `col_elev`: コル標高（m）
 - `points`: 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出）
 - 未確定フラグが 1 の場合は含めない
 
 **Point: 既存 SOTA サミット**
-- `type`: "summit"
+- `feature_type`: "summit"
 - `match_status`: matched / delete
 - `summit_code`: SOTA サミットコード
 - `summit_name`: サミット名（summitslist.csv の SummitName、英語/ローマ字）
@@ -395,22 +395,24 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `sota_points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
 
 **Polygon: アクティベーションゾーン**
-- `type`: "activation_area"
+- `feature_type`: "activation_zone"
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - `area_truncated`: true / false（アクティベーションゾーンが解析範囲外で途切れた場合 true）
 - `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
 **Polygon: コル等高線**（new / dominant）
-- `type`: "key_col_boundary"
+- `feature_type`: "key_col_boundary"
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - 対応ピークのコル等高線ポリゴン（FR-016 出力から取得）
 
 **LineString: ピーク → コル**
-- `type`: "prominence_range"
+- `feature_type`: "prominence_range"
+- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - 未確定フラグが 1 の場合は生成しない
 
 **LineString: ピーク → SOTA サミット**（matched / dominant）
-- `type`: "coord_diff"
+- `feature_type`: "coord_diff"
+- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - `match_status`: matched / dominant
 
 ##### HTML ビューア仕様
