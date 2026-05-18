@@ -198,7 +198,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する。ピクセル群の外周輪郭を GeoJSON Polygon として出力する
   - **出力は lossless とする**: [FR-009](#fr-009-sota-リスト突合) の point-in-polygon 突合精度を確保するため、形状を変える簡略化（Douglas-Peucker 等）や等間隔での頂点間引きは行わない。直線上にある冗長な中間頂点の削除（ピクセル境界トレース結果で連続する collinear 点の除去）は形状を変えないため可とする
   - Flood Fill が解析対象メッシュ全体の地理的範囲外で途切れた場合、`area_truncated=true` フラグを付与する（ポリゴンが実際より小さく計算されている可能性を示す）。[FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域再解析してポリゴンを再計算する
-- **アクティベーションゾーンポリゴン**:
+- **アクティベーションゾーンポリゴン**（`feature_type="activation_zone"`）:
   - **定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
   - **Flood Fill 閾値**: `peak_elev - 25.0m` 以上
 - **コル等高線ポリゴン**（`feature_type="key_col_boundary"`）:
@@ -671,8 +671,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（`<meshcode>` は4桁の1次メッシュコード） |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type` なし）・コル等高線（`feature_type="key_col_boundary"`） |
-| プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated`（解析範囲の境界でゾーンが途切れた場合 true） |
+| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type="activation_zone"`）・コル等高線（`feature_type="key_col_boundary"`） |
+| プロパティ（アクティベーションゾーン） | `feature_type="activation_zone"`, `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated`（解析範囲の境界でゾーンが途切れた場合 true） |
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon`（対応ピーク特定用）。コルが解析範囲外のピークはコル等高線を生成しない |
 
 ### 6.9 入力: N03 前処理済みファイル（FR-017 生成）
@@ -733,8 +733,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | ファイル | `$DATA_DIR/results/merged_activation.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン・コル等高線（`feature_type="key_col_boundary"`） |
-| プロパティ（アクティベーションゾーン） | `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated`（解析範囲の境界でゾーンが途切れた場合 true） |
+| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type="activation_zone"`）・コル等高線（`feature_type="key_col_boundary"`） |
+| プロパティ（アクティベーションゾーン） | `feature_type="activation_zone"`, `peak_lat`, `peak_lon`, `peak_elev`, `area_truncated`（解析範囲の境界でゾーンが途切れた場合 true） |
 | プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
 
 ### 6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
