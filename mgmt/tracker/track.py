@@ -172,7 +172,8 @@ def make_excel_helpers():
 def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
     """収束グラフ用シートを書き込む（Bug/Issue 共通）"""
     from openpyxl.styles import Font, PatternFill, Alignment
-    from openpyxl.chart import ScatterChart, Series, Reference
+    from openpyxl.chart import LineChart, Series, Reference
+    from openpyxl.chart.series import DataPoint
     from datetime import timedelta as td
 
     all_dates = [x[date_field] for x in items if x.get(date_field)]
@@ -202,34 +203,29 @@ def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
         cnt_reg  = sum(1 for x in items if x.get(date_field)     and x[date_field]     <= ds)
         cnt_res  = sum(1 for x in items if x.get("resolved_date") and x["resolved_date"] <= ds)
         cnt_ver  = sum(1 for x in items if x.get("verified_date") and x["verified_date"] <= ds)
-        c = ws.cell(row=ri, column=1, value=to_serial(d))
-        c.number_format = "YYYY-MM-DD"
+        ws.cell(row=ri, column=1, value=d.isoformat())
         ws.cell(row=ri, column=2, value=cnt_reg)
         ws.cell(row=ri, column=3, value=cnt_res)
         ws.cell(row=ri, column=4, value=cnt_ver)
 
-    chart = ScatterChart()
+    chart = LineChart()
     chart.title  = ws.title
     chart.style  = 10
     chart.width  = 20
     chart.height = 14
-    chart.y_axis.title  = "累計数"
-    chart.x_axis.title  = "日付"
-    chart.y_axis.numFmt = "0"
-    chart.x_axis.numFmt = "YYYY-MM-DD"
-    chart.x_axis.scaling.min = to_serial(start)
-    chart.x_axis.scaling.max = to_serial(end)
+    chart.y_axis.title   = "累計数"
+    chart.x_axis.title   = "日付"
+    chart.y_axis.numFmt  = "0"
     chart.y_axis.scaling.min = 0
 
-    xvals = Reference(ws, min_col=1, min_row=2, max_row=len(dates) + 1)
+    cats = Reference(ws, min_col=1, min_row=2, max_row=len(dates) + 1)
     for label, col, color in [("累計登録", 2, "FF0000"), ("対応累計", 3, "4472C4"), ("確認累計", 4, "70AD47")]:
-        yvals = Reference(ws, min_col=col, min_row=2, max_row=len(dates) + 1)
-        s = Series(yvals, xvals, title=label)
+        yvals = Reference(ws, min_col=col, min_row=1, max_row=len(dates) + 1)
+        s = Series(yvals, title_from_data=True)
         s.graphicalProperties.line.solidFill = color
         s.graphicalProperties.line.width     = 20000
-        s.marker.symbol = "circle"
-        s.marker.size   = 5
         chart.series.append(s)
+    chart.set_categories(cats)
 
     ws.add_chart(chart, "F2")
 
