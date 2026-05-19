@@ -1,123 +1,102 @@
-# FR-014 を縮小版パイプライン構造（フェーズ3.5）として書き直し
+# ISSUE-014 関連: dominant peak タイブレーク変更 + フラグ名整理 + フォールバック廃止
 
 ## Context
 
-午後セッションで私が FR-014 を「フェーズ3 末尾の単発処理 + `merged.csv` への差分破壊的上書き」として SRS を書き換え、commit (`8f273a8`) してしまった。
-これはユーザーの本来のイメージ（午前中の Opus セッションで合意済み・handover に記載）と**構造そのものが根本的に異なる**。
+ISSUE-014（削除候補サミットの最近接検出ピーク特定）の議論で、以下 3 点を新方針として決定:
 
-ユーザーの真意:
-- FR-014 は「広域再解析のオーケストレーション」。**per-mesh 解析エンジン（FR-004〜FR-007・FR-016）を N×N + L14 パラメータで呼び出して広域 per-mesh CSV/GeoJSON を生成**し、それを通常 per-mesh と一緒に FR-008/FR-018 に投入することで merged を更新する
-- 残ったピークがあれば N+1（4→5→6）でループ
-- merged 差分上書きではなく、FR-008/FR-018 の重複排除ロジック（`is_tile_top=0` を優先）を利用して自然に広域結果が代表に選ばれる構造
-- ADR-010（C++ 全面移行）と整合する「C++ エンジン」表記に統一
+1. **複数包含時のタイブレーク**: ADR-008 の `Haversine 最近接` → `最小プロミネンス` に変更（地形学的に「親に最も近い局所的隆起」を表現できるため）
+2. **フォールバック廃止**: 「どのコル等高線ポリゴンにも AZ にも入らない既存 SOTA サミット」は FR-014 が N=6 までエスカレーションした後の状況では理論上稀（陸地最高峰のみ）。発生したら無理矢理紐付けず、ログ警告 + 処理中止で人手判断
+3. **フラグ `is_tile_top` → `key_col_unresolved` リネーム**: 「タイル（256×256 px）のトップ」と読める誤解を解消し、状態の本意（コル未確定）を表現。既存の `area_truncated` と並びが揃う
 
----
+陸地最高峰の機械的特定（陸地ポリゴン整備）は、利用機会が稀かつ N03 前処理拡張コストが大きいため YAGNI で却下。
 
-## 修正アプローチ
+## 対象文書と変更内容
 
-### Step 0: 既存 commit (`8f273a8`) を直接書き直し
+### 1. `docs/decisions/ADR-008-dominant-peak-identification.md`（中核）
 
-- `git revert` は使わない（history が膨らむため）。`8f273a8` の上に「方針転換」commit を 1 個積む形で書き直す
-- `f26ee48`（CLAUDE.md ドキュメント commit ルール）は維持
-- `mgmt/plan.md` は新 plan で書き直す
-- ISSUE-033 / ISSUE-021 は一旦「未対応」に戻す（tracker の update --status コマンド）。新方針で対応完了させてから再 close
+- 最終更新日: `2026-05-19`
+- **Decision section** を新方針で書き直し:
+  - タイブレーク規則を「最小プロミネンスのピークを採用」に変更
+  - フォールバック規定を削除し、「該当ケースはログ警告 + 処理中止」を追記
+  - データ構造の補足（merged.csv に検出ピーク行と既存 SOTA サミット行が混在する旨）
+  - 処理方向の補足（delete サミット側を外側ループ）
+  - 実装方針の補足（`shapely.strtree.STRtree` を AZ・コル等高線の両判定で利用）
+- **Alternatives section** に却下案を追記:
+  - `Haversine 最近接`（地形的根拠が弱い、最小プロミネンスより精度劣る）
+  - `陸地ポリゴンによる陸地最高峰フォールバック`（YAGNI、稀少ケースのために前処理拡張は過剰）
+- **Consequences**:
+  - `dominant_peak_dist_m` は引き続き Haversine で計算し人手確認用に出力
+  - フォールバック該当ケース発生時は ISSUE 起票して個別対応
 
-### Step 1: SRS の構造変更（`docs/02_SRS.md`）
+### 2. `docs/02_SRS.md`
 
-#### 1-1. 目次の変更
+- **FR-005/FR-006/FR-007**: 出力カラム `is_tile_top` → `key_col_unresolved` にリネーム
+- **FR-008/FR-018**: 統合キー・重複排除ロジック内のカラム名更新（重複排除ロジック `(is_tile_top=0, ...)` → `(key_col_unresolved=false, ...)`）
+- **FR-009 主ピーク特定**:
+  - タイブレーク規則を「最小プロミネンス」に変更
+  - フォールバック規定を削除し処理中止に変更
+  - `merged.csv` の 2 種類の行構造（検出ピーク + 既存 SOTA サミット）を入力セクションに補足
+- **FR-013**: GeoJSON フィーチャ構成の参照名（あれば）更新
+- **FR-014**: トリガー条件のカラム名 `key_col_unresolved` に更新（既存 `is_tile_top=1` 表記を全置換）
+- 目次・本文内の他の `is_tile_top` 出現箇所も漏れなく置換
 
-- フェーズ3 のタイトルを「ピーク統合（全国）」に戻す（午後追加した「・広域再解析」サフィックスを削除）
-- **新フェーズ3.5「独立峰対応（広域再解析）」を追加**し、FR-014 を配下に置く
-- フェーズ4 はそのまま
+### 3. `docs/decisions/ADR-004-level14-max-pooling-isolated-peaks.md`
 
-#### 1-2. FR-004 への最小追記（`#### FR-004: 3×3 メッシュ結合解析`）
+- トリガー条件のカラム名 `is_tile_top=1` → `key_col_unresolved=true` に更新
+- 最終更新日: `2026-05-19`
 
-- 「**処理モード（メッシュ数 N + ズームレベル L）パラメータを受け取る**」を1〜2行で追記
-  - 通常モード: N=3, L=15（既存動作）
-  - 広域モード: N=4/5/6, L=14（FR-014 から呼ばれる）
-- 広域モード時はタイル結合時に max pooling（2×2→1px）でレベル14化する旨を1行追記
-- 出力ファイル名は処理モードで区別される旨を1行（詳細は FR-014 参照）
-- セクション名は維持（「3×3 メッシュ結合解析」のまま）。N×N へ一般化しない（既存テキスト・参照が大量にあるため最小修正）
+### 4. `docs/00_GLOSSARY.md`
 
-#### 1-3. FR-008 / FR-018 への最小追記
+- `key_col_unresolved` の用語定義を追加（旧 `is_tile_top` の意味を継承）
+- 既存に `is_tile_top` の項目があれば削除または「旧称」として残す（読み手の混乱回避）
 
-- FR-008（per-mesh CSV 統合）:
-  - 「入力に**通常 per-mesh CSV と広域 per-mesh CSV が混在しても統合する**」を明示
-  - 重複排除ロジックで `(is_tile_top=0, コル標高最高)` を採用するため、広域結果が自動的に代表に選ばれる旨を補足
-- FR-018（per-mesh GeoJSON 統合）:
-  - 同様に「広域 per-mesh GeoJSON が混在しても統合する」「`area_truncated=false` を優先」を明示
-- これらは FR-014 のループから複数回呼ばれるため、**再入可能（再実行で merged を更新できる）**であることも記述
+### 5. `mgmt/tracker/data/issues.json`
 
-#### 1-4. 新 FR-014 の全面書き直し（フェーズ3.5 配下）
+- **ISSUE-014**: ステータス `対応完了` → `対応中`
+  - `resolution` を新方針で書き直し
+  - `notes` に「設計変更経緯（最小プロミネンス採用・フォールバック廃止・フラグ名変更）」を追記
+  - 変更履歴に「設計再変更により再対応」のエントリを追加
+- **ISSUE-033 関連**: 既に解決済のため変更不要（前回更新済）
 
-**位置**: フェーズ3.5「独立峰対応（広域再解析）」の唯一の FR として配置。
+### 6. `mgmt/tracker/reports/issues_export.xlsx`
 
-**本文構成**:
-- **入力**: `merged.csv`（FR-008 出力）+ `merged_activation.geojson`（FR-018 出力）
-- **対象ピーク特定**: `is_tile_top=1` または `area_truncated=true` のピーク
-- **ループ構造（N = 4, 5, 6）**:
-  1. 対象ピーク座標 → 含まれるメッシュコード算出（既存 mesh 変換ロジック流用）
-  2. そのメッシュコードを含む N×N メッシュコードリスト生成
-  3. FR-004 を「処理モード = N×N + L14」で呼び出す。per-mesh パイプライン（FR-004→FR-005→FR-006→FR-016→FR-007）が広域モードで実行され、広域 per-mesh CSV/GeoJSON が出力される
-  4. 既存 per-mesh CSV/GeoJSON と広域 per-mesh CSV/GeoJSON を**まとめて** FR-008/FR-018 に再投入 → `merged.csv` / `merged_activation.geojson` が更新される
-  5. 更新後の merged で `is_tile_top=1` が残るピークがあれば N+1 で 2 へ戻る
-  6. N=6 でも残ればログ警告を出力し、フラグを維持したまま処理継続（手動調査待ち = ISSUE-020 と連携）
-- **解析ウィンドウ全パターン探索**: 対象メッシュ位置 (1,1)〜(N,N) を順に試し、`is_tile_top=0` を得たら早期終了（ADR-004 既決）
-- **広域 per-mesh ファイル命名**（提案案・open question）:
-  - CSV: `$DATA_DIR/results/csv/<対象peak識別>_<n>x<n>_<col>_<row>.csv`
-  - GeoJSON: `$DATA_DIR/results/csv/<対象peak識別>_<n>x<n>_<col>_<row>_activation.geojson`
-  - または `csv/widearea/` サブディレクトリ配下に整理
-- **対象ピーク絞り込み**: 広域 per-mesh CSV/GeoJSON では、対象ピーク行・フィーチャだけを残す（解析範囲内に他のピークが検出されても出力しない）。merged 統合時のノイズを防ぐため
-- **L14 ポリゴンの扱い**（open question）:
-  - 案A: L14 ピクセル境界の頂点を L15 座標系に変換して出力（lossless）
-  - 案B: 大外の緯度経度のみ保持（簡略化）
-- **実装方針**: ADR-010 移行後の C++ エンジンに「処理モード」入力を追加するだけで、`mesh` / `elevation` / `unionfind` / `analyze` / `mesh_analyze` / `activation` モジュールは流用する（Python 側で再実装しない）
-- 詳細は ADR-004 参照
+- ISSUE-014 更新後に `track.py issue export --if-changed` で再生成
 
-### Step 2: ADR-004 の更新（`docs/decisions/ADR-004-...md`）
+### 7. `mgmt/lessons.md`
 
-- Decision に以下を明示:
-  - フェーズ配置 = フェーズ3.5（独立峰対応）
-  - ループ構造（N = 4 → 5 → 6 → 手動調査）
-  - per-mesh エンジン流用（FR-004 に処理モードパラメータ追加して N×N + L14 で呼び出す）
-  - FR-008/FR-018 の再実行で merged を更新（差分上書きしない）
-- 「既存 C モジュール（`mesh.c` 等）」表記を「**C++ エンジン（ADR-010 移行後）**」に統一
-- Alternatives に却下経緯を追記:
-  - 「フェーズ3 末尾の単発処理 + merged 差分上書き」（2026-05-18 午後・私の暫定）
-  - 「フェーズ2 per-mesh 内配置」（2026-05-16 暫定設計）
-- Consequences 5 の表現を「FR-008/FR-018 を再実行することで統合を担保（差分上書きしない）」に修正
-- 決定日に 2026-05-18 のループ構造確定を追記
+- 「実装由来のフラグ名は仕様読者を混乱させる」教訓 1 件追記
+  - 例: `is_tile_top` は「タイル（256×256px の地理院タイル）のトップ」と誤読され得る。実体は「3×3 メッシュ解析範囲内で key col 未確定」であり、命名は目的・状態を反映すべき
 
-### Step 3: ISSUE の再対応
+## 実装側（src/, scripts/）への影響
 
-- **ISSUE-033（FR-018 整合性）**: 一旦「未対応」に戻す。新方針（縮小版パイプラインのループ）で書き直したら再度「対応完了」へ
-- **ISSUE-021（上書きスコープ）**: 同様に「未対応」へ戻す。新方針では「merged 差分上書きしない」「FR-008/FR-018 再実行で更新」が明示されるので解消条件が変わる
-- 新規 ISSUE は登録しない（既存 ISSUE-033/021 で対応）
+仕様優先原則のため、本タスクは **SRS/ADR レベルの仕様変更が中心**。実装コード（`mesh_analyze.c` 等で `is_tile_top` を出力）の追従は **別タスク**（実装フェーズで対応）。
 
-### Step 4: 検証
+- 実装追従用の新規 ISSUE を起票するか、ISSUE-014 のスコープに含めるかは plan 実行時にユーザー確認
 
-- SRS 整合性チェック:
-  - FR-004 → FR-014 → FR-008/FR-018 のループ連携が一読で取れること
-  - 新フェーズ3.5 が目次・本文両方に存在すること
-  - 「per-mesh CSV を FR-014 が差分上書き」「merged の該当レコードを上書き」等の旧記述が完全に消えていること
-- ADR-004 ⇄ FR-014 ⇄ ADR-010 の整合（C++ エンジン表記の統一）
-- handover の Yes/No との突合（午前中の handover の方針と完全一致するか）
+## 検証
 
----
+1. `grep -rn "is_tile_top" docs/` で SRS/ADR/GLOSSARY 内に残存がないことを確認
+2. `venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-014` で備考欄・ステータスが想定通りか確認
+3. `mgmt/tracker/reports/issues_export.xlsx` を開いて ISSUE-014 行の内容確認
+4. ADR-008 の Decision・Alternatives・Consequences の論理整合（特に「フォールバック削除」と「処理中止」が一貫しているか）
 
-## 修正対象ファイル
+## 実行手順
 
-- `docs/02_SRS.md`（目次・FR-004・FR-008・FR-018・新 FR-014）
-- `docs/decisions/ADR-004-level14-max-pooling-isolated-peaks.md`（Decision・Alternatives・Consequences・決定日）
-- `mgmt/plan.md`（この plan を反映）
-- `mgmt/tracker/data/issues.json`（ISSUE-033/021 のステータス戻し → 新対応後に再 close）
+1. `docs/decisions/ADR-008-dominant-peak-identification.md` 編集（中核の設計変更）
+2. `docs/decisions/ADR-004-level14-max-pooling-isolated-peaks.md` 編集（カラム名追従）
+3. `docs/02_SRS.md` 編集（FR-005/006/007/008/009/013/014/018・目次）
+4. `docs/00_GLOSSARY.md` 編集（用語追加）
+5. `mgmt/lessons.md` 追記（ネーミング教訓）
+6. `track.py issue update ISSUE-014 --status 対応中 --resolution "..." --notes "..."`
+7. `track.py issue export --if-changed` で Excel 再生成
+8. `git status` で確認 → 個別 `git add <files>` → Conventional Commits 形式（本文日本語）で commit
 
----
+## 関連ファイル
 
-## Open Questions（実装中にユーザーと相談）
-
-1. **広域 per-mesh ファイル命名規則**: `csv/<peak>_<n>x<n>_<col>_<row>.csv` vs `csv/widearea/...` 構造
-2. **L14 ポリゴンの記述方法**: L15 座標展開（lossless）vs 大外緯度経度のみ保持（簡略化）
-3. **FR-004 の処理モードパラメータ詳細**: ファイル名規則・対象ピーク絞り込み実装位置（FR-016 内 / FR-014 内 / FR-007 内のどこか）
-
-実装中、対応箇所に来たタイミングで都度ユーザーに確認しながら確定する。
+- `docs/decisions/ADR-008-dominant-peak-identification.md`
+- `docs/decisions/ADR-004-level14-max-pooling-isolated-peaks.md`
+- `docs/02_SRS.md`
+- `docs/00_GLOSSARY.md`
+- `mgmt/lessons.md`
+- `mgmt/tracker/data/issues.json`
+- `mgmt/tracker/reports/issues_export.xlsx`

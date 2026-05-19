@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-16 |
+| 最終更新日 | 2026-05-19 |
 | ステータス | ドラフト（フェーズ再構成済み） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
@@ -194,7 +194,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - 各ピークに対してプロミネンスを規定するコルを検出する
 - [FR-005](#fr-005-ピーク候補検出) の処理中に 2 つ以上の山塊グループが初めて接触した時点のピクセルがコルであり、その標高がコル標高となる
 - プロミネンス = ピーク標高 − コル標高
-- コルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に未確定フラグを付与する（[FR-014 参照](#fr-014-独立峰対応レベル14-広域再解析)）
+- コルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に `key_col_unresolved=true` を付与する（[FR-014 参照](#fr-014-独立峰対応レベル14-広域再解析)）
 
 #### FR-016: ピーク域ポリゴン生成
 
@@ -210,7 +210,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - **コル等高線ポリゴン**（`feature_type="key_col_boundary"`）:
   - **定義**: コル標高以上でピークと連続する領域の外周（ピークがどの地形に「属しているか」を示す境界）
   - **Flood Fill 閾値**: `col_elev` 以上
-  - `is_tile_top=1` のピークはコル等高線ポリゴンを生成しない（`col_elev` 未確定のため）。フェーズ3.5 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で `is_tile_top=0` に解消されたピークは、広域モードの FR-016 がコル等高線ポリゴンを生成し、FR-018 の統合で merged_activation.geojson に追加される
+  - `key_col_unresolved=true` のピークはコル等高線ポリゴンを生成しない（`col_elev` 未確定のため）。フェーズ3.5 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で `key_col_unresolved=false` に解消されたピークは、広域モードの FR-016 がコル等高線ポリゴンを生成し、FR-018 の統合で merged_activation.geojson に追加される
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（2種類のポリゴンを同一ファイルに収録）
 - 詳細は [6.8 中間ファイル: メッシュ別ピーク域 GeoJSON](#68-中間ファイル-メッシュ別ピーク域-geojson) を参照
 
@@ -231,7 +231,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | col_lon | float | 小数点8桁 | コル経度（未確定フラグが 1 の場合は 0.0） |
 | col_elev | float | 小数点2桁 | コル標高（m） |
 | prominence | float | 小数点2桁 | プロミネンス（m） |
-| is_tile_top | int | 0/1 | コルが解析範囲外の場合 1（未確定フラグ） |
+| key_col_unresolved | bool | true/false | コルが解析範囲外の場合 true（未確定フラグ） |
 | col_margin_px | int | — | コルから解析範囲（結合画像）の端（4辺）までの最短距離（ピクセル単位）。小さいほど信頼性が低い |
 | center_mesh | int | — | 解析中心メッシュコード（4桁） |
 
@@ -256,10 +256,10 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - **通常モード（フェーズ2）の per-mesh CSV** と **広域モード（[FR-014](#fr-014-独立峰対応レベル14-広域再解析) から生成）の per-mesh CSV** が同一ディレクトリ配下に混在することがある。両方を読み込み、同一ピーク座標で重複排除する
 - 同一ピーク座標（ズームレベル15 タイル座標が一致）のレコードを同一ピークとして重複排除し、統合する
   - 複数解析のうち `(未確定フラグ=0, コル標高が最も高い)` レコードを代表に採用する（保守的評価）
-  - 通常 per-mesh では `is_tile_top=1` だったピークも、広域 per-mesh で `is_tile_top=0` の結果が得られていれば、本ロジックにより広域モード結果が自動的に代表として採用される
+  - 通常 per-mesh では `key_col_unresolved=true` だったピークも、広域 per-mesh で `key_col_unresolved=false` の結果が得られていれば、本ロジックにより広域モード結果が自動的に代表として採用される
   - `analysis_count`: 重複排除前の出現回数（実際の解析回数）
   - `expected_count`: メッシュコードリスト（オプション）をもとに算出する期待解析回数。リストが省略された場合は空欄
-  - `stability`: `is_tile_top` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`
+  - `stability`: `key_col_unresolved=true` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`
 - プロミネンス最終フィルタ: ≥ 150m（FR-007 の 130m フィルタ通過済みのレコードに適用）
 - **再入可能性**: 本機能は FR-014 のループから複数回呼び出され、その都度 merged.csv が再生成される
 
@@ -279,7 +279,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 ### フェーズ3.5: 独立峰対応（広域再解析）
 
 フェーズ3 の統合結果（`merged.csv`・`merged_activation.geojson`）で残った独立峰候補
-（`is_tile_top=1` または `area_truncated=true` のピーク）を対象に、per-mesh 解析エンジンを
+（`key_col_unresolved=true` または `area_truncated=true` のピーク）を対象に、per-mesh 解析エンジンを
 広域モード（[FR-004](#fr-004-33-メッシュ結合解析) の N×N + L14 パラメータ）で再呼び出しし、
 広域 per-mesh CSV/GeoJSON を生成する。生成された広域 per-mesh ファイルは通常 per-mesh ファイルと
 ともに [FR-008](#fr-008-per-mesh-csv-統合)/[FR-018](#fr-018-per-mesh-activationgeojson-統合)
@@ -295,7 +295,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - [FR-008](#fr-008-per-mesh-csv-統合) 出力 `$DATA_DIR/results/merged.csv`
   - [FR-018](#fr-018-per-mesh-activationgeojson-統合) 出力 `$DATA_DIR/results/merged_activation.geojson`
 - **再解析トリガー**: `merged.csv` の各ピークのうち、以下のいずれかのフラグを持つピークを対象とする
-  - `is_tile_top=1`（コルが通常 per-mesh 3×3 解析範囲外 → プロミネンス未確定）
+  - `key_col_unresolved=true`（コルが通常 per-mesh 3×3 解析範囲外 → プロミネンス未確定）
   - `area_truncated=true`（アクティベーションゾーンが解析範囲外で途切れ → ゾーン不完全）
 - **基本フロー（縮小版パイプラインのループ）**:
   1. **対象ピーク特定**: 上記トリガー条件で `merged.csv` から対象ピークを抽出する
@@ -305,9 +305,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
      - **[FR-004](#fr-004-33-メッシュ結合解析) を「処理モード = N×N + L14」パラメータ付きで呼び出す**。per-mesh パイプライン（FR-004→[FR-005](#fr-005-ピーク候補検出)→[FR-006](#fr-006-コル検出プロミネンス計算)→[FR-016](#fr-016-ピーク域ポリゴン生成)→[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力)）が広域モードで実行され、広域 per-mesh CSV/GeoJSON が出力される
      - **対象ピーク絞り込み**: 広域モードでは、解析範囲内に検出される他のピークは出力せず、対象ピークの行・フィーチャだけを per-mesh CSV/GeoJSON に出力する（merged 統合時のノイズを防ぐため）
      - **[FR-008](#fr-008-per-mesh-csv-統合)/[FR-018](#fr-018-per-mesh-activationgeojson-統合) を再実行**: 通常 per-mesh ファイル群と広域 per-mesh ファイル群を**まとめて**入力として再統合し、`merged.csv` / `merged_activation.geojson` を更新する
-     - 更新後の `merged.csv` で対象ピークの `is_tile_top=1` または `area_truncated=true` が解消されていなければ、N+1 にエスカレーションして 2 を繰り返す
-  3. **最終残存**: N=6 でもフラグが残るピークがあればログ警告を出力し、`is_tile_top=1` / `area_truncated=true` を維持したまま処理継続する（手動調査待ち。詳細は [ISSUE-020](../mgmt/tracker/ で管理) と連携）
-- **解析ウィンドウ全パターン探索**: 各 N の段階で、対象メッシュを N×N ウィンドウ内 (1,1)〜(N,N) の各位置に置いた N² 通りのパターンを順に試す。`is_tile_top=0` を得たパターンが見つかった時点で早期終了する（次のパターン・次の N へは進まない）。存在しないメッシュ（海上・日本国外等）を含むパターンはスキップする
+     - 更新後の `merged.csv` で対象ピークの `key_col_unresolved=true` または `area_truncated=true` が解消されていなければ、N+1 にエスカレーションして 2 を繰り返す
+  3. **最終残存**: N=6 でもフラグが残るピークがあればログ警告を出力し、`key_col_unresolved=true` / `area_truncated=true` を維持したまま処理継続する（手動調査待ち。詳細は [ISSUE-020](../mgmt/tracker/ で管理) と連携）
+- **解析ウィンドウ全パターン探索**: 各 N の段階で、対象メッシュを N×N ウィンドウ内 (1,1)〜(N,N) の各位置に置いた N² 通りのパターンを順に試す。`key_col_unresolved=false` を得たパターンが見つかった時点で早期終了する（次のパターン・次の N へは進まない）。存在しないメッシュ（海上・日本国外等）を含むパターンはスキップする
 - **広域 per-mesh ファイル命名**（区別のため通常 per-mesh と異なる名前にする）:
   - CSV: `$DATA_DIR/results/csv/widearea_<対象peak識別>_<n>x<n>_<col>_<row>.csv`
   - GeoJSON: `$DATA_DIR/results/csv/widearea_<対象peak識別>_<n>x<n>_<col>_<row>_activation.geojson`
@@ -333,7 +333,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
 - **入力**:
-  - フェーズ3 ([FR-008](#fr-008-per-mesh-csv-統合)/[FR-018](#fr-018-per-mesh-activationgeojson-統合)) で統合され、フェーズ3.5 ([FR-014](#fr-014-独立峰対応レベル14-広域再解析)) の広域再解析・再統合を経た最終 merged.csv（`$DATA_DIR/results/merged.csv`）および merged_activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。全ピークの `is_tile_top` および `area_truncated` フラグが解消されていることを前提とする（N=6 でも解消されなかった手動調査待ちピークを除く）
+  - フェーズ3 ([FR-008](#fr-008-per-mesh-csv-統合)/[FR-018](#fr-018-per-mesh-activationgeojson-統合)) で統合され、フェーズ3.5 ([FR-014](#fr-014-独立峰対応レベル14-広域再解析)) の広域再解析・再統合を経た最終 merged.csv（`$DATA_DIR/results/merged.csv`）および merged_activation.geojson（`$DATA_DIR/results/merged_activation.geojson`）。全ピークの `key_col_unresolved` および `area_truncated` フラグが解消されていることを前提とする（N=6 でも解消されなかった手動調査待ちピークを除く）
   - `ref/summitslist.csv`（JA プレフィックスサミット一覧）
   - メッシュコードリスト（オプション）: FR-008・FR-018 と同じリストを受け取る。省略時は全範囲を対象とする。FR-010 の削除候補スコープ判定に使用する
   - `ref/geojson_v{N}/`（ja0〜ja9 ファイル群）: 既存 SOTA サミットの日本語山岳名（`summit_name_jp`）取得用。バージョン番号 `{N}` は `params/config.ini` の `geojson_version` パラメータで指定する
@@ -358,15 +358,15 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - 海上・地域不明ピーク（FR-017 フォールバック）: `ZZ/ZZ-A01` 形式
   - **以降、仮サミットコードを `JAx/XX-A01` と表記する**（JAx・XX は実際の値の例示、01 は連番の例示）
 - stability 値:
-  - `confirmed`: 解析回数=期待値かつ未確定フラグなし
-  - `unstable`: 未確定フラグあり、または解析回数不一致
+  - `confirmed`: 解析回数=期待値かつ `key_col_unresolved=false`
+  - `unstable`: `key_col_unresolved=true` あり、または解析回数不一致
   - `-`: delete サミット（解析対象外のため）
 - **主ピーク特定**（[ADR-008](decisions/ADR-008-dominant-peak-identification.md)）:
   - 各 delete 候補サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
-    その座標が含まれるピークを主ピークとする
-  - 複数のポリゴンに含まれる場合は最も近いピークを採用する（Haversine 公式で距離計算）
-  - いずれのポリゴンにも含まれない場合（フォールバック）: 最近接ピークを主ピークとする。ただし、このフォールバック対象ピークの `peak.match_status` は変更しない（コル等高線内に当該サミット座標が含まれないため `dominant` に昇格させない。`summit.dominant_peak_code` で紐付けのみ行う）
-  - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算）
+    その座標が含まれるピークを候補とする（point-in-polygon 判定）
+  - 候補が複数の場合は**プロミネンスが最小のピーク**を主ピークとする（プロミネンスが最小のピークは親ピークへ最も早く合流する局所的な隆起であり、delete 候補サミットと同一山塊と見なせる）
+  - いずれのポリゴンにも含まれない場合は**ログ警告を出力して処理を中止**する（人手判断が必要なため自動フォールバックは行わない）
+  - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算。人手確認用）
 
 #### FR-010: 削除候補のスコープ
 
@@ -406,7 +406,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `peak_elev`: 検出標高（m）
 - `prominence`: プロミネンス（m）
 - `stability`: confirmed / unstable
-- `is_tile_top`: 未確定フラグ（0/1）
+- `key_col_unresolved`: 未確定フラグ（true/false）
 - `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出
 
 **Point: コル**
@@ -414,7 +414,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
 - `col_elev`: コル標高（m）
 - `points`: 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出）
-- 未確定フラグが 1 の場合は含めない
+- `key_col_unresolved=true` の場合は含めない
 
 **Point: 既存 SOTA サミット**
 - `feature_type`: "summit"
@@ -439,7 +439,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 **LineString: ピーク → コル**
 - `feature_type`: "prominence_range"
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- 未確定フラグが 1 の場合は生成しない
+- `key_col_unresolved=true` の場合は生成しない
 
 **LineString: ピーク → SOTA サミット**（matched / dominant）
 - `feature_type`: "coord_diff"
@@ -531,7 +531,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | col_lon | コル経度 |
 | col_elev | コル標高（m） |
 | prominence | プロミネンス（m） |
-| is_tile_top | 未確定フラグ（0/1、[FR-006 参照](#fr-006-コル検出プロミネンス計算)） |
+| key_col_unresolved | 未確定フラグ（true/false、[FR-006 参照](#fr-006-コル検出プロミネンス計算)） |
 | col_margin_px | コルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
