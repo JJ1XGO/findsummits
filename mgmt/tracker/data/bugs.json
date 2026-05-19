@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-02",
+    "last_updated": "2026-05-19",
     "counter": 14
   },
   "bugs": [
@@ -20,7 +20,7 @@
       "assignee": "JJ1XGO",
       "stage": "COD",
       "cause": "scripts/merge.py",
-      "resolution": null,
+      "resolution": "scripts/merge.py の expected_count() を修正: 代表レコードの center_mesh ではなく peak_lat/peak_lon からピークの属する 1 次メッシュコードを算出し、そのメッシュをどれだけの解析が含むかで expected_count を計算する",
       "notes": "stability判定精度の問題。ピーク検出自体への影響はない。",
       "resolved_date": null,
       "verified_date": null,
@@ -41,7 +41,7 @@
       "assignee": "JJ1XGO",
       "stage": "COD",
       "cause": "src/mesh_analyze.c",
-      "resolution": null,
+      "resolution": "src/mesh_analyze.c の log_dir パス生成部分でファイル名を '<meshcode>.log' から 'findsummits_<meshcode>.log' に変更する（snprintf のフォーマット文字列を修正）",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
@@ -62,7 +62,7 @@
       "assignee": "JJ1XGO",
       "stage": "COD",
       "cause": "src/mesh_analyze.c",
-      "resolution": null,
+      "resolution": "src/mesh_analyze.c のログ出力部分に time() を使って解析開始時刻・終了時刻・所要時間（秒）を記録するコードを追加する。prefetch_tiles.py の実装を参考にする。BUG-002 と同じ箇所のため同一 PR での対応を推奨",
       "notes": "BUG-002と同じ箇所（mesh_analyze.c）の修正なのでまとめて対応推奨。",
       "resolved_date": null,
       "verified_date": null,
@@ -83,7 +83,7 @@
       "assignee": "JJ1XGO",
       "stage": "COD",
       "cause": "scripts/prefetch_tiles.py",
-      "resolution": null,
+      "resolution": "scripts/prefetch_tiles.py のログファイル名生成部分で datetime.utcnow() を datetime.now() に変更して JST ベースのファイル名にする。または UTC 使用のままとしてコメント・ドキュメントに UTC 前提である旨を明記する",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
@@ -104,7 +104,7 @@
       "assignee": "JJ1XGO",
       "stage": "IT",
       "cause": "scripts/prefetch_tiles.py",
-      "resolution": null,
+      "resolution": "段階的に調査・対応: ①TIMEOUT / LOW_SPEED_TIME の値を調整して改善確認 ②効果なければリトライロジック（失敗タイルをキューに積み再試行）を追加 ③それでも改善しない場合は残り N 枚を直列（1スレッド）フォールバックで処理する実装を検討",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,

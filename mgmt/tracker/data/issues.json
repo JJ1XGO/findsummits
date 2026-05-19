@@ -52,7 +52,7 @@
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "ISSUE-001（ステップ3検証）の後に着手。突合列: match_status, summit_code, summit_name, peak_lat, peak_lon, peak_elev, col_lat, col_lon, col_elev, prominence, orig_lat, orig_lon, orig_elev",
-      "resolved_date": null,
+      "resolved_date": "2026-05-17",
       "verified_date": "2026-05-17",
       "history": [
         {
@@ -147,7 +147,7 @@
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "ISSUE-001 完了後に着手",
-      "resolved_date": null,
+      "resolved_date": "2026-05-17",
       "verified_date": "2026-05-17",
       "history": [
         {
@@ -173,7 +173,7 @@
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "フルパイプ検証前に仕様を詰めても実行時の問題で仕様変更になりやすいため後回し",
-      "resolved_date": null,
+      "resolved_date": "2026-05-17",
       "verified_date": "2026-05-17",
       "history": [
         {
@@ -199,7 +199,7 @@
       "assignee": "JJ1XGO",
       "resolution": null,
       "notes": "plan_v1.md: .claude/mgmt/plan_v1.md",
-      "resolved_date": null,
+      "resolved_date": "2026-05-17",
       "verified_date": "2026-05-17",
       "history": [
         {
