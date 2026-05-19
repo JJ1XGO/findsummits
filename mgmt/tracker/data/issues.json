@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-19",
-    "counter": 40
+    "counter": 41
   },
   "issues": [
     {
@@ -983,6 +983,24 @@
       "assignee": null,
       "resolution": null,
       "notes": "【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_truncated 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-041",
+      "title": "実装側のフラグ命名追従（is_tile_top → key_col_resolved + 真偽値反転）",
+      "description": "ISSUE-014 関連の仕様変更（commit 633e54b / ea6bbbe）で、SRS/ADR/GLOSSARY のフラグ名と真偽値方向を以下に統一した。実装側はまだ旧名のままなので、仕様と整合させる追従が必要。\n\n【リネーム + 真偽値反転】\n- is_tile_top (int 0/1) → key_col_resolved (bool true/false)\n  - 旧 is_tile_top=1 → 新 key_col_resolved=false\n  - 旧 is_tile_top=0 → 新 key_col_resolved=true\n- FR-016 が未実装のため area_truncated は実装に未出現。新規実装時に area_complete で対応 → ISSUE-040 の責務\n\n【追従対象】\nA. C 実装（解析エンジン）\n  - src/analyze.h: AnalyzeResult.is_tile_top フィールド改名 + 真偽値反転\n  - src/analyze.c: フラグセット箇所\n  - src/mesh_analyze.c: CSV ヘッダー文字列・出力フォーマット・条件分岐\n  - tests/test_analyze.c: テストアサーション\n\nB. Python 実装\n  - scripts/merge.py: CSV 読み込みカラム名・stability 判定ロジック反転・重複排除ロジック・出力カラム\n  - scripts/output_geojson.py: プロパティ名追従\n\n【連携・順序】\n- ADR-010 Phase 1/2 (ISSUE-037/038) で C → C++/OpenCV 移行が予定されている。C 側の改修は C++ 移行と同時に実施するのが効率的。Python 側は先行追従可能。\n- ただし CSV カラム名は C 側と Python 側で揃える必要があるため、片方だけ変更すると一時的にパイプラインが壊れる。タイミング調整が必要。\n- area_complete の実装は ISSUE-040 (FR-016 C++ 新規実装) のスコープ。新規実装時に最新 SRS に従えば良い。\n\n【検証】\n- findsummits 実行 → per-mesh CSV のヘッダーが key_col_resolved になっていること\n- merge.py 実行 → merged.csv の stability が正しく付与されること（confirmed/unstable の判定方向が反転している）\n- output_geojson.py 実行 → GeoJSON プロパティが新名で出力されること",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-19",
+      "stage": "COD",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "【背景】commit 633e54b (is_tile_top → key_col_unresolved) + commit ea6bbbe (key_col_unresolved → key_col_resolved + area_truncated → area_complete) で仕様側を更新済み。実装側はまだ旧名のまま。仕様優先原則のため仕様変更が先行している。\n\n【関連 ISSUE】\n- ISSUE-014: 仕様変更の母 ISSUE（対応中）\n- ISSUE-037 (ADR-010 Phase 1): elevation.c の C++/OpenCV 化\n- ISSUE-038 (ADR-010 Phase 2): 残り src/ の C++ 翻訳\n- ISSUE-040 (ADR-010 Phase 4): FR-016 (area_complete を含む) C++ 新規実装",
       "resolved_date": null,
       "verified_date": null,
       "history": []
