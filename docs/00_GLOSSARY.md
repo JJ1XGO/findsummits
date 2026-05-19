@@ -13,7 +13,8 @@
 | ピーク | — | プロミネンス ≥ 150m が確定した検出地点。SOTA 申請の分析対象。既存 SOTA サミット座標との照合（FR-009）を経て match_status が確定する。 |
 | コル | Keyコル | あるピークのプロミネンスを規定するコル（鞍部）。本プロジェクトでは「コル」と言えば Keyコル（Key Col）を指す。当該ピークから任意方向に進んだとき、最初に到達する最低鞍部のうち最も標高の高いもの。 |
 | 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークのコル等高線ポリゴン内に含まれることで判定される（詳細は SRS FR-009・[ADR-008](decisions/ADR-008-dominant-peak-identification.md) 参照）。 |
-| key_col_unresolved | — | per-mesh CSV のフラグ列。コルが 3×3 メッシュ解析範囲外にあるためプロミネンスが未確定である場合に `true`。旧称 `is_tile_top`（タイル最頂点と誤読されやすかったため改名）。`area_truncated` と並ぶ「未解決フラグ」の一つ。フェーズ3.5 の広域再解析（FR-014）で解消されることが期待される。 |
+| key_col_resolved | — | per-mesh CSV のフラグ列。コルが解析範囲内で確定済みの場合 `true`、3×3 メッシュ解析範囲外でコルが未発見の場合 `false`。命名遍歴: 当初 `is_tile_top`（タイル最頂点と誤読されやすかった）→ `key_col_unresolved`（並列フラグ `area_truncated` と同方向の否定形だった）→ 真偽値方向を「`true=正常`」に統一するため現名称に再リネーム。 |
+| area_complete | — | per-mesh GeoJSON のアクティベーションゾーンプロパティ。ポリゴンが解析範囲内で完結している場合 `true`、解析範囲外で途切れた場合 `false`。旧称 `area_truncated`。`key_col_resolved` と並列し、両者とも「`true=正常`」で揃えている。 |
 | プロミネンス | 比高 | ピークの独立性を示す指標。ピーク標高とコル標高の差。本プロジェクトでは 150m 以上を申請対象とする。 |
 | サミット | 山頂 | SOTA に登録されている山岳。本プロジェクトでは `ref/summitslist.csv` に含まれる JA プレフィックスのサミットを指す。GeoJSON では `type="summit"` のフィーチャで表現され、`match_status` は `matched`（存続）または `delete`（削除候補）の2値を取る。 |
 | サミット候補 | — | 既存 SOTA サミットリストにない新規ピーク（match_status="new"）。SOTA 日本支部への追加申請対象。 |

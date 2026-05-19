@@ -381,7 +381,7 @@
       "status": "対応中",
       "assignee": null,
       "resolution": "ADR-008 の dominant peak 特定アルゴリズムを全面改訂。タイブレーク: Haversine 最近接 → 最小プロミネンスに変更。フォールバック廃止（包含なし時はログ警告 + 処理中止）。SRS FR-009 の主ピーク特定ロジックも同様に更新。フラグ名 is_tile_top → key_col_unresolved にリネーム（SRS 全体・ADR-004・ADR-008・GLOSSARY の全箇所を更新）。実装コード（src/*.c 等）への追従は別タスク（本 ISSUE のスコープ外）。",
-      "notes": "【設計変更 2026-05-19】タイブレーク「Haversine 最近接」を「最小プロミネンス」に変更。最小プロミネンスのピークが地形学的に delete 候補サミットと同一の局所的な隆起を表すため。フォールバック廃止: フェーズ3.5 広域再解析後に包含なしが残るのは陸地最高峰のみと想定され稀少なため、自動処理せず中止 + 個別対応とする。フラグ名 is_tile_top はタイル（256×256px）の最頂点と誤読されやすいため key_col_unresolved に改名。実装コード追従 ISSUE は今後起票予定。",
+      "notes": "【設計変更 2026-05-19】タイブレーク「Haversine 最近接」を「最小プロミネンス」に変更。最小プロミネンスのピークが地形学的に delete 候補サミットと同一の局所的な隆起を表すため。フォールバック廃止: フェーズ3.5 広域再解析後に包含なしが残るのは陸地最高峰のみと想定され稀少なため、自動処理せず中止 + 個別対応とする。フラグ名 is_tile_top はタイル（256×256px）の最頂点と誤読されやすいため key_col_unresolved に改名。【追加変更 2026-05-19】さらに肯定形に統一するため key_col_unresolved → key_col_resolved、並列フラグ area_truncated → area_complete に再リネーム（共に true=正常 で真偽値方向を揃えた）。実装コード追従 ISSUE は今後起票予定。",
       "resolved_date": "2026-05-10",
       "verified_date": null,
       "history": [
