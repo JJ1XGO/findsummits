@@ -1,133 +1,106 @@
-# フラグ命名の肯定形統一: key_col_unresolved → key_col_resolved + area_truncated → area_complete
+# Plan: ISSUE-019 — FR-009 仮サミットコード採番順序の規定
 
 ## Context
 
-直前のコミット `633e54b` で `is_tile_top` → `key_col_unresolved` にリネームしたが、
-ユーザーから「`key_col_resolved` の方が良いのでは」という提案を受けた。
+`docs/02_SRS.md` の FR-009（L352-359）の仮サミットコード採番ルールは
+「`A` + 2 桁連番、エリアごとに 01 からリセット」とだけ書かれており、以下が未定義:
 
-検討の結果、`key_col_unresolved` 単独だと否定形になり読みにくい一方、
-肯定形に揃えるなら並列フラグ `area_truncated` も同時に `area_complete` に
-変えないと真偽値方向が揃わないと判断（ユーザー合意）。
+1. **採番順序**: 同一エリア内で複数の `new`/`dominant` ピークがある場合、どの順序で `A01, A02, ...` を振るか
+2. **連番桁数の上限**: 2 桁で枯渇した場合の挙動
+3. **採番タイミング**: フル解析 vs メッシュ範囲指定実行での挙動
 
-**最終方針**: 両フラグとも「`true = 正常状態`」で意味方向を統一する。
+NFR-003（決定論的出力）を満たすには、これらすべての規定が必要。
 
-| 旧名 | 新名 | true の意味 |
-|---|---|---|
-| `key_col_unresolved` | `key_col_resolved` | コル確定済み（正常） |
-| `area_truncated` | `area_complete` | ポリゴン完全（正常） |
+ISSUE-019 のスコープは **SRS 改訂のみ**（仕様優先原則）。
+merge.py 実装変更は別 ISSUE。
 
-## 対象ファイルと変更内容
+## 決定事項
 
-### 1. `docs/02_SRS.md`（30+ 箇所）
+2026-05-20 のユーザー対話で確定:
 
-#### `key_col_unresolved` → `key_col_resolved`（真偽値反転）
+| 項目 | 決定値 |
+|---|---|
+| フォーマット | `JAx/XX-A##`（A + 2 桁） |
+| 採番範囲 | 都府県・振興局単位（XX 単位） |
+| 採番対象 | match_status が `new` または `dominant` のピーク（matched は既存 SOTA コード使用） |
+| 採番ソートキー | **プロミネンス降順 → peak_lat 降順（北→南）→ peak_lon 昇順（西→東）** |
+| 99 超え時の挙動 | エラーメッセージ出力（地域コード・件数を含む）して処理終了（exit code 非 0） |
+| 採番タイミング | `merge.py` 実行ごとに全件再採番（メッシュ範囲指定の有無に関わらず同一規則） |
 
-- **FR-006**: 「per-mesh CSV に `key_col_unresolved=true` を付与する」→「`key_col_resolved=false` を付与する」（解析範囲外時）
-- **FR-007 出力カラム表**: カラム名 + 説明文を反転（`true` = 確定済み）
-- **FR-008**:
-  - 重複排除ロジック `(key_col_unresolved=false, コル標高最高)` → `(key_col_resolved=true, コル標高最高)`
-  - 説明文: 通常で `key_col_unresolved=true`/`false` → `key_col_resolved=false`/`true`
-  - stability 判定: `key_col_unresolved=true` が 1 件でも含まれる → `key_col_resolved=false` が 1 件でも含まれる
-- **FR-009**: stability 値 `confirmed`: 「`key_col_unresolved=false`」→「`key_col_resolved=true`」、`unstable`: 「`key_col_unresolved=true` あり」→「`key_col_resolved=false` あり」
-- **FR-013 GeoJSON フィーチャ**:
-  - ピーク Point: プロパティ `key_col_unresolved`（true/false）→ `key_col_resolved`（true/false）
-  - コル Point: 「`key_col_unresolved=true` の場合は含めない」→「`key_col_resolved=false` の場合は含めない」
-  - LineString prominence_range: 同様に反転
-- **FR-014**: トリガー条件 `key_col_unresolved=true` → `key_col_resolved=false`（全箇所）
-- **FR-016**: `key_col_unresolved=true` のピーク → `key_col_resolved=false` のピーク
-- **merged.csv カラム説明**: `key_col_unresolved`（true/false）→ `key_col_resolved`（true/false）
+### 採番ソートキーの根拠
 
-#### `area_truncated` → `area_complete`（真偽値反転）
+- 既存実装は標高降順だが、ユーザー判断で **プロミネンス降順** に変更
+- SOTA は独立峰評価のため、プロミネンスの大きい山が重要度上位
+- タイブレークは地理的に直感的な「北→南→西→東」
 
-- **FR-016**: 「`area_truncated=true` フラグを付与」→「`area_complete=false` を設定」、「`area_truncated=false` のポリゴンに置き換わる」→「`area_complete=true` のポリゴンに置き換わる」
-- **FR-018**: `area_truncated=false`（完全） → `area_complete=true`（完全）、優先採用ロジック全箇所反転
-- **FR-014**: トリガー条件 `area_truncated=true` → `area_complete=false`（全箇所）
-- **FR-009 入力**: 「`key_col_unresolved` および `area_truncated` フラグが解消」→「`key_col_resolved` および `area_complete` が全 true である」（文意の正方向化）
-- **FR-013 アクティベーションゾーン Polygon プロパティ**: `area_truncated` → `area_complete`
-- **6.x 中間ファイル仕様**（line 708/770）: アクティベーションゾーンプロパティの記述 2 箇所反転
-- **目次・FR-014 説明文** 等での出現箇所
+### 99 超えエラー終了の根拠
 
-#### ヘッダー
-- 最終更新日: `2026-05-19`（既に更新済みのため変更不要）
+- 既存 SOTA リスト（`ref/summitslist.csv`, 2026-04-20 版）の実数:
+  - 60 地域中 33 地域が 99 件超
+  - 最大 JA/HS 306 件、999 件超は 0
+- ただし「**仮**サミットコードが 99 件を超えるなら、解析対象範囲やプロミネンス閾値の異常」というシグナル扱い
+- 自動で 3 桁拡張せず人手介入を促す方針
 
-### 2. `docs/decisions/ADR-004-level14-max-pooling-isolated-peaks.md`（多数）
+### 採番タイミング統一の根拠
 
-- `key_col_unresolved=true` / `=false` → `key_col_resolved=false` / `=true`
-- `area_truncated=true` / `=false` → `area_complete=false` / `=true`
-- 単独で出現する `key_col_unresolved` / `area_truncated` → `key_col_resolved` / `area_complete`
-- Alternatives 表内の旧名表記も反転（読み手の混乱を避けるため新名で記述）
-- 注意: Consequences 2 の「`key_col_unresolved` の判定ロジックは変更なし」は新名で記述しつつ「判定方向は反転」を補足
+- 入力 per-mesh CSV が同じなら出力仮コードも同じ（決定論的 = NFR-003 充足）
+- ユーザー要望「機能によってメッシュ範囲を渡したり渡さなかったりするので、全て共通化したい」と整合
 
-### 3. `docs/decisions/ADR-008-dominant-peak-identification.md`
+## SRS 改訂内容
 
-- Context 2: 「`key_col_unresolved=true` が残るピーク」→「`key_col_resolved=false` が残るピーク」
-- Alternatives フォールバック節: 同様に反転
-- 最終更新日は据え置き（`2026-05-19`）
+### FR-009 L352-359 「仮サミットコード割り当て」を改訂
 
-### 4. `docs/00_GLOSSARY.md`
+現状の記述に以下 3 項目を**追加**する:
 
-- 既存 `key_col_unresolved` 行を `key_col_resolved` に書き換え
-  - 説明文を真偽値方向に合わせて書き直す:
-    「コルが確定済みの場合 `true`、3×3 メッシュ解析範囲外でコルが未発見の場合 `false`。旧称 `is_tile_top` → `key_col_unresolved`（命名整理の経緯あり）」
-- 新規 `area_complete` 行を追加
-  - 説明文: 「アクティベーションゾーンポリゴンが解析範囲内で完結している場合 `true`、解析範囲外で途切れた場合 `false`。旧称 `area_truncated`」
+1. **採番順序**
+   > 同一エリア（XX）内で、プロミネンス降順を 1 次キー、`peak_lat` 降順（北→南）を 2 次キー、`peak_lon` 昇順（西→東）を 3 次キーとしてソートし、`A01` から順に採番する。
 
-### 5. `docs/mockup/viewer_mockup.html`（8 箇所）
+2. **採番タイミング**
+   > `merge.py` の実行ごとに、入力 per-mesh CSV から全件再採番する。メッシュ範囲指定の有無に関わらず同じ規則を適用する（決定論性は NFR-003 が保証）。
 
-- `key_col_unresolved: false` → `key_col_resolved: true`（4 箇所）
-- `area_truncated: false` → `area_complete: true`(4 箇所)
+3. **連番上限**
+   > `A99` まで。`A99` を超える地域が発生した場合は、エラーメッセージ（地域コード・件数を含む）を出力して処理を中止する（exit code 非 0）。想定外件数は解析対象範囲やプロミネンス閾値の異常を示唆するため、自動拡張せず人手判断を仰ぐ。
 
-### 6. `mgmt/lessons.md`
+### NFR-003 への追記
 
-- 既存の「実装由来のフラグ名は仕様読者を混乱させる」教訓を更新
-  - 経緯を 1 文補足: 「`key_col_unresolved` で `area_truncated` と並列にしたが、真偽値方向の統一を優先して `key_col_resolved` + `area_complete`（共に `true=正常`）に再リネーム。フラグ名は単独の読みやすさだけでなく、並列フラグ群との真偽値方向の統一も考慮する」
+L568 の「標高降順ソートに 2 次キー（x→y 座標）を設ける」は C エンジンの内部ソートに関する記述（FR-009 採番とは別レイヤー）。
+FR-009 採番順序が NFR-003 を満たすことを示すトレース注記を 1 行追加する（具体的な文面は編集時に詰める）。
 
-### 7. `mgmt/tracker/data/issues.json`
+### 実装と仕様の既存乖離（記録のみ、本 ISSUE では修正しない）
 
-- **ISSUE-014** の `notes` に経緯追記:
-  - 「2026-05-19 追加: `key_col_unresolved` を `key_col_resolved` に再リネーム + 並列フラグ `area_truncated` も `area_complete` に変更（共に `true=正常` で方向統一）」
+- SRS L357: 「`A` + 2桁連番」
+- 現状実装（`scripts/merge.py` `assign_temp_summit_code()` L243 想定）: `f"...A{counters[key]:03d}"`（3 桁ゼロ埋め）
+- → 実装側追従は別 ISSUE で扱う
 
-### 8. `mgmt/tracker/reports/issues_export.xlsx`
+## 後続作業（ISSUE-019 クローズ後に新規 ISSUE 登録）
 
-- `track.py issue export --if-changed` で再生成
+ユーザー要望に基づき、以下を別 ISSUE として登録する:
 
-## 実装側（src/, scripts/）への影響
-
-仕様優先原則のため、実装コードへの追従は本タスクのスコープ外。
-直前のコミット `633e54b` のスコープに含めなかったのと同じ扱い。
-将来の実装 ISSUE で対応する。
-
-## 検証
-
-1. `grep -rn "key_col_unresolved" docs/ mgmt/lessons.md` で残存ゼロ（research/ 配下は除外）
-2. `grep -rn "area_truncated" docs/ mgmt/lessons.md` で残存ゼロ（research/ 配下は除外）
-3. `grep -rn "key_col_resolved" docs/ | wc -l` と `grep -rn "area_complete" docs/ | wc -l` が新名で増えていることを確認
-4. SRS の論理整合確認:
-   - stability `confirmed` 条件と `unstable` 条件が排他で漏れがないか
-   - FR-008 重複排除ロジックと FR-009 stability 判定が同じ方向で書かれているか
-   - FR-014 トリガー条件と FR-016 ポリゴン生成判定が整合しているか
-5. `track.py issue show ISSUE-014` で notes に新経緯が記録されているか
-6. `mgmt/tracker/reports/issues_export.xlsx` の再生成
-
-## 実行手順
-
-1. SRS（`docs/02_SRS.md`）: `key_col_unresolved` 真偽値反転 → `area_truncated` 真偽値反転（Edit 多数）
-2. ADR-004: 同様にリネーム + 真偽値反転
-3. ADR-008: 同様
-4. GLOSSARY: 既存項目を書き換え + `area_complete` 追加
-5. モックアップ HTML: 8 箇所反転
-6. lessons.md: 既存教訓に経緯補足
-7. `track.py issue update ISSUE-014 --notes "..."` で経緯追記
-8. `track.py issue export --if-changed`
-9. `git add <files>` → Conventional Commits（本文日本語）で commit
+- **メッシュ範囲指定の共通化**: `merge.py` および `findsummits` 等のメッシュ範囲引数の扱いを統一する（採番タイミング統一の前提となるため、本 ISSUE と関連が深い）
 
 ## 関連ファイル
 
-- `docs/02_SRS.md`
-- `docs/decisions/ADR-004-level14-max-pooling-isolated-peaks.md`
-- `docs/decisions/ADR-008-dominant-peak-identification.md`
-- `docs/00_GLOSSARY.md`
-- `docs/mockup/viewer_mockup.html`
-- `mgmt/lessons.md`
-- `mgmt/tracker/data/issues.json`
-- `mgmt/tracker/reports/issues_export.xlsx`
+| ファイル | 変更内容 |
+|---|---|
+| `docs/02_SRS.md` | FR-009 L352-359 改訂（採番順序・タイミング・上限の追記）、NFR-003 トレース注記 |
+| `mgmt/tracker/data/issues.json` | ISSUE-019 を「対応完了」に更新／「メッシュ範囲指定共通化」を新規登録 |
+| `mgmt/tracker/reports/issues_export.xlsx` | 再生成（`track.py issue export --if-changed`） |
+| `mgmt/lessons.md` | プロミネンスベース採番の判断理由を必要に応じて追記 |
+
+ドキュメント更新は CLAUDE.md ルール（更新直後 commit）に従う。
+plan ファイルは Plan モード終了後に `mgmt/plan.md` へ移動する（CLAUDE.md ルール）。
+
+## 検証
+
+- 本 ISSUE は SRS 改訂のみのため、コード検証は対象外
+- SRS 改訂後にユーザーレビュー → 内容確認できれば `issue close` → ユーザー確認後に `issue verify`
+- 実装変更（merge.py の採番ロジック改修）は別 ISSUE での COD/UT フェーズで検証
+
+## 参考: ISSUE-019 トラッカー記載の相談ポイントとの対応
+
+| 相談ポイント | 対応 |
+|---|---|
+| (1) 採番順序の選択肢比較 | プロミネンス降順 → peak_lat 降順 → peak_lon 昇順 で決定 |
+| (2) 採番安定性ポリシー | 「常に全件再採番」で統一（部分解析時も同様） |
+| (3) NFR-003 との整合性検証 | 入力同一なら出力同一が保証されることを明示 |
+| (4) 初回実行と再実行の境界ケース | 「常に全件再採番」のため境界ケースは存在しない |

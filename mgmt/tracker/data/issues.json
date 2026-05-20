@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-20",
-    "counter": 41
+    "counter": 42
   },
   "issues": [
     {
@@ -549,13 +549,21 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-009 に追記:\n(1) 採番順序を明示（推奨: peak_lat 降順 → peak_lon 昇順タイブレーク、または (peak_lat, peak_lon) 昇順タプル）\n(2) 採番安定性ポリシーを規定（フル解析時のみ採番再生成 / 部分解析時は既存コード保持 / 等）\n(3) NFR-003 とのトレース確認",
       "notes": "【Opus相談推奨】複数の独立した設計判断と副次的影響の整理が必要。\n\n相談ポイント:\n(1) 採番順序の選択肢比較（peak_lat降順→peak_lon昇順タイブレーク vs (peak_lat, peak_lon)昇順タプル vs その他）。実データでの順序安定性・可読性・申請書での扱いやすさを総合評価\n(2) 採番安定性ポリシーの設計（フル解析時のみ採番再生成 / 部分解析時は既存コード保持 / その他）。将来の部分再実行ユースケース・ビューア localStorage との整合性・ユーザー混乱の回避を考慮\n(3) (1)(2)の組み合わせがNFR-003（決定論的出力）と整合することの検証方法\n(4) 既存仮コード割当がない初回実行と、再実行の境界ケースの扱い",
-      "resolved_date": null,
+      "resolved_date": "2026-05-20",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-20T11:49:14",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS FR-009 に採番ルール 3 項目を追記済（採番順序 = プロミネンス降順 → peak_lat 降順 → peak_lon 昇順、採番タイミング = merge.py 実行ごと全件再採番、連番上限 = A99 超え時はエラー終了）。NFR-003 にも採番順序のトレース注記を追加。詳細は mgmt/plan.md および docs/02_SRS.md L352-368 / L568-569 参照。関連で ISSUE-042（メッシュ範囲指定引数の共通化）を新規登録。"
+        }
+      ]
     },
     {
       "id": "ISSUE-020",
@@ -1029,6 +1037,24 @@
       "assignee": "Sonnet",
       "resolution": null,
       "notes": "【背景】commit 633e54b (is_tile_top → key_col_unresolved) + commit ea6bbbe (key_col_unresolved → key_col_resolved + area_truncated → area_complete) で仕様側を更新済み。実装側はまだ旧名のまま。仕様優先原則のため仕様変更が先行している。\n\n【関連 ISSUE】\n- ISSUE-014: 仕様変更の母 ISSUE（対応中）\n- ISSUE-037 (ADR-010 Phase 1): elevation.c の C++/OpenCV 化\n- ISSUE-038 (ADR-010 Phase 2): 残り src/ の C++ 翻訳\n- ISSUE-040 (ADR-010 Phase 4): FR-016 (area_complete を含む) C++ 新規実装",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-042",
+      "title": "メッシュ範囲指定引数の共通化（merge.py / findsummits / その他）",
+      "description": "現状、メッシュ範囲指定の引数仕様が機能ごとに異なる:\n- findsummits: 1次メッシュコード または メッシュリストファイル\n- merge.py: メッシュコードリスト（オプション。FR-008/FR-009/FR-010 で参照）\n- prefetch_tiles.py: 別仕様\n- run_all.sh: 別仕様\n\n機能間で「メッシュ範囲を渡したり渡さなかったりする」状態。引数フォーマット・受け渡し方法を統一して、コマンドラインから一貫した形でメッシュ範囲を指定できるようにする。\n\n関連: ISSUE-019（仮サミットコード採番タイミング）で「メッシュ範囲指定の有無に関わらず常に全件再採番」と統一した際の前提となるユーザー要望。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": "ユーザー",
+      "created_date": "2026-05-20",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "ISSUE-019 のクローズ時にユーザーから登録要望が出た案件。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
