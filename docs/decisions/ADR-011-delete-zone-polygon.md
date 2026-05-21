@@ -31,7 +31,7 @@
 各ピークについて、削除判定専用のポリゴンを生成する:
 
 - **feature_type**: `delete_zone`
-- **Flood Fill 閾値**: `max(col_elev, peak_elev - delete_zone_max_drop)` 以上
+- **Flood Fill 閾値**: `max(col_elev, peak_elev - delete_zone_max_drop)` 以上。`key_col_resolved=false`（`col_elev` 未確定）のピークでは `peak_elev - delete_zone_max_drop` を閾値とし、`delete_zone_max_drop` 上限キャップによりプロミネンス不明でもポリゴン生成が可能。広域再解析（FR-014）で `key_col_resolved=true` に解消された場合は広域モードで delete判定ゾーンが再生成され、`col_elev` を考慮した正確な閾値でポリゴンが更新される
 - **等価式**: ピーク標高から `min(prominence, delete_zone_max_drop)` 以内の連続エリア
 - **パラメータ**: `delete_zone_max_drop`（`params/config.ini`）
 
@@ -65,7 +65,7 @@ delete_zone_max_drop = 150 + abs(SOTA標高 - DEM標高).max() + 余裕、切り
 
 - **独立峰問題の自然解消**: 250m キャップによりポリゴンが日本全土規模に膨張しない
 - **ガード条件不要**: 500m のような恣意的な閾値が不要に
-- **広域再解析のトリガー縮小**: delete判定ゾーンは常に 3×3 メッシュ範囲内で完結するため、FR-014（広域再解析）のトリガーは `key_col_resolved=false` および AZ の `area_complete=false` のみに限定できる（delete判定ゾーンの `area_complete=false` は広域再解析の対象外。広域再解析中に `key_col_resolved=true` に解消されたピークについては広域モードの FR-016 が delete判定ゾーンを生成する）
+- **広域再解析のトリガー縮小**: delete判定ゾーンは常に 3×3 メッシュ範囲内で完結するため、FR-014（広域再解析）のトリガーは `key_col_resolved=false` および AZ の `area_complete=false` のみに限定できる（delete判定ゾーンの `area_complete=false` は広域再解析の対象外。広域再解析中に `key_col_resolved=true` に解消されたピークについては広域モードの FR-016 が delete判定ゾーンを再生成し、`col_elev` を考慮した正確な閾値でポリゴンが更新される）
 - **削除判定のシンプル化**: 座標のみで判定するため、SOTA 登録標高と DEM 標高の前後関係に依存しない
 
 ## Alternatives
@@ -95,7 +95,7 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 - **FR-016**: コル等高線ポリゴン仕様を削除し、delete判定ゾーンポリゴン仕様を追加
 - **FR-009**: `summit.match_status` に `unmatched` 追加、エラー停止仕様追加
 - **FR-013**: dominant/new フィーチャ構成のポリゴン種別を変更
-- **FR-014**: `area_complete=false` トリガーを AZ のみに限定（delete判定ゾーンの `area_complete=false` は広域再解析対象外）。広域再解析で `key_col_resolved=true` に解消されたピークの delete判定ゾーンは、広域モードの FR-016 が生成する
+- **FR-014**: `area_complete=false` トリガーを AZ のみに限定（delete判定ゾーンの `area_complete=false` は広域再解析対象外）。広域再解析で `key_col_resolved=true` に解消されたピークの delete判定ゾーンは、広域モードの FR-016 で再生成され、`col_elev` を考慮した正確な閾値で更新される
 - **GLOSSARY**: 「delete判定ゾーン」用語追加、「コル等高線ポリゴン」用語削除
 - **C エンジン** (`src/analyze.c`, `src/mesh_analyze.c`): Flood Fill 閾値とポリゴン種別の変更
 - **merge.py**: AZ / delete判定ゾーンの point-in-polygon 実装、不備フラグ列追加、exit code 制御
