@@ -203,14 +203,16 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - **共通仕様**:
   - **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する。ピクセル群の外周輪郭を GeoJSON Polygon として出力する
   - **出力は lossless とする**: [FR-009](#fr-009-sota-リスト突合) の point-in-polygon 突合精度を確保するため、形状を変える簡略化（Douglas-Peucker 等）や等間隔での頂点間引きは行わない。直線上にある冗長な中間頂点の削除（ピクセル境界トレース結果で連続する collinear 点の除去）は形状を変えないため可とする
-  - Flood Fill が解析対象メッシュ全体の地理的範囲内で完結している場合 `area_complete=true`、解析範囲外で途切れた場合 `area_complete=false` を付与する（false の場合、ポリゴンが実際より小さく計算されている可能性を示す）。フェーズ3.5 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域モードで再実行され、FR-018 の重複排除で広域結果が採用されることで `area_complete=true` のポリゴンに置き換わる
+  - Flood Fill が解析対象メッシュ全体の地理的範囲内で完結している場合 `area_complete=true`、解析範囲外で途切れた場合 `area_complete=false` を付与する（false の場合、ポリゴンが実際より小さく計算されている可能性を示す）。アクティベーションゾーンポリゴンの `area_complete=false` はフェーズ3.5 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域モードで再実行され、FR-018 の重複排除で広域結果が採用されることで `area_complete=true` のポリゴンに置き換わる。delete判定ゾーンポリゴンは `delete_zone_max_drop` 上限キャップにより通常 per-mesh 解析範囲（3×3）内で完結する想定（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）であり、広域再解析の対象外とする（[FR-014](#fr-014-独立峰対応レベル14-広域再解析)）
 - **アクティベーションゾーンポリゴン**（`feature_type="activation_zone"`）:
   - **定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
   - **Flood Fill 閾値**: `peak_elev - 25.0m` 以上
-- **コル等高線ポリゴン**（`feature_type="key_col_boundary"`）:
-  - **定義**: コル標高以上でピークと連続する領域の外周（ピークがどの地形に「属しているか」を示す境界）
-  - **Flood Fill 閾値**: `col_elev` 以上
-  - `key_col_resolved=false` のピークはコル等高線ポリゴンを生成しない（`col_elev` 未確定のため）。フェーズ3.5 の [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で `key_col_resolved=true` に解消されたピークは、広域モードの FR-016 がコル等高線ポリゴンを生成し、FR-018 の統合で merged_activation.geojson に追加される
+- **delete判定ゾーンポリゴン**（`feature_type="delete_zone"`）:
+  - **定義**: 既存 SOTA サミットの削除判定に使用する。ピーク標高から `min(prominence, delete_zone_max_drop)` 以内の連続エリア（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+  - **Flood Fill 閾値**: `max(col_elev, peak_elev - delete_zone_max_drop)` 以上
+  - **パラメータ**: `delete_zone_max_drop` は `params/config.ini` で管理（初期値 250m、最終値は SOTA 日本支部全サミットの登録標高と DEM 標高の差分分布調査後に確定。詳細は [ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+  - **適用条件**: `key_col_resolved=true` のピークのみ生成する（`key_col_resolved=false` のピークは `col_elev` 未確定で Flood Fill 閾値が計算できない）。`key_col_resolved=false` のピークは [FR-014](#fr-014-独立峰対応レベル14-広域再解析) で広域再解析により `key_col_resolved=true` に解消されたタイミングで、広域モードの FR-016 が delete判定ゾーンポリゴンを生成し、FR-018 の統合で merged_activation.geojson に追加される
+  - **area_complete の扱い**: `delete_zone_max_drop` 上限キャップにより常に `area_complete=true` となる想定。万が一 `area_complete=false` が観測された場合は `delete_zone_max_drop` 値の見直しまたはバグ調査が必要であり、ログ警告を出力する（広域再解析の対象にはしない）
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（2種類のポリゴンを同一ファイルに収録）
 - 詳細は [6.8 中間ファイル: メッシュ別ピーク域 GeoJSON](#68-中間ファイル-メッシュ別ピーク域-geojson) を参照
 
@@ -270,7 +272,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - **通常モード（フェーズ2）の per-mesh GeoJSON** と **広域モード（[FR-014](#fr-014-独立峰対応レベル14-広域再解析) から生成）の per-mesh GeoJSON** が同一ディレクトリ配下に混在することがある。両方を読み込み、同一ピーク座標で統合する
 - フェーズ2（[FR-016](#fr-016-ピーク域ポリゴン生成)）および広域モード（FR-014 経由）で出力された per-mesh `*_activation.geojson` を1つの統合 GeoJSON にまとめる
 - 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_complete=true`（完全なポリゴン）のものを優先して採用する。通常 per-mesh で `area_complete=false` だったピークも、広域 per-mesh で `area_complete=true` のポリゴンが得られていれば広域モード結果が自動的に採用される。`area_complete=true` がどこにも存在しない場合は、FR-008 の代表レコードの `center_mesh` に対応する `<center_mesh>_activation.geojson` 内のポリゴンを採用する
-- コル等高線ポリゴン（`feature_type="key_col_boundary"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ優先方針（`area_complete=true` のものを優先）で採用する
+- delete判定ゾーンポリゴン（`feature_type="delete_zone"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ優先方針（`area_complete=true` のものを優先）で採用する
 - 出力先: `$DATA_DIR/results/merged_activation.geojson`
 - **再入可能性**: 本機能は FR-014 のループから複数回呼び出され、その都度 merged_activation.geojson が再生成される
 
@@ -279,13 +281,13 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 ### フェーズ3.5: 独立峰対応（広域再解析）
 
 フェーズ3 の統合結果（`merged.csv`・`merged_activation.geojson`）で残った独立峰候補
-（`key_col_resolved=false` または `area_complete=false` のピーク）を対象に、per-mesh 解析エンジンを
+（`key_col_resolved=false` または アクティベーションゾーンの `area_complete=false` のピーク）を対象に、per-mesh 解析エンジンを
 広域モード（[FR-004](#fr-004-33-メッシュ結合解析) の N×N + L14 パラメータ）で再呼び出しし、
 広域 per-mesh CSV/GeoJSON を生成する。生成された広域 per-mesh ファイルは通常 per-mesh ファイルと
 ともに [FR-008](#fr-008-per-mesh-csv-統合)/[FR-018](#fr-018-per-mesh-activationgeojson-統合)
 に再投入され、重複排除ロジックで広域モード結果が代表として採用されて `merged.csv` /
 `merged_activation.geojson` が更新される。N=4 で解消しなければ N=5、N=6 とエスカレーションする
-（縮小版パイプラインのループ）。
+（縮小版パイプラインのループ）。delete判定ゾーンポリゴンは `delete_zone_max_drop` 上限キャップにより通常 per-mesh 解析範囲（3×3）内で完結する想定であり、その `area_complete=false` は広域再解析のトリガー対象外とする（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）。
 
 #### FR-014: 独立峰対応（レベル14 広域再解析）
 
@@ -296,7 +298,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - [FR-018](#fr-018-per-mesh-activationgeojson-統合) 出力 `$DATA_DIR/results/merged_activation.geojson`
 - **再解析トリガー**: `merged.csv` の各ピークのうち、以下のいずれかの条件を満たすピークを対象とする
   - `key_col_resolved=false`（コルが通常 per-mesh 3×3 解析範囲外 → プロミネンス未確定）
-  - `area_complete=false`（アクティベーションゾーンが解析範囲外で途切れ → ゾーン不完全）
+  - アクティベーションゾーンの `area_complete=false`（アクティベーションゾーンが解析範囲外で途切れ → ゾーン不完全）
+  - **delete判定ゾーンの `area_complete=false` はトリガー対象外**（`delete_zone_max_drop` 上限キャップにより 3×3 範囲内で完結する想定。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
 - **基本フロー（縮小版パイプラインのループ）**:
   1. **対象ピーク特定**: 上記トリガー条件で `merged.csv` から対象ピークを抽出する
   2. **エスカレーション・ループ（N = 4, 5, 6 の順）**:
@@ -306,14 +309,14 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
      - **対象ピーク絞り込み**: 広域モードでは、解析範囲内に検出される他のピークは出力せず、対象ピークの行・フィーチャだけを per-mesh CSV/GeoJSON に出力する（merged 統合時のノイズを防ぐため）
      - **[FR-008](#fr-008-per-mesh-csv-統合)/[FR-018](#fr-018-per-mesh-activationgeojson-統合) を再実行**: 通常 per-mesh ファイル群と広域 per-mesh ファイル群を**まとめて**入力として再統合し、`merged.csv` / `merged_activation.geojson` を更新する
      - 更新後の `merged.csv` で対象ピークの `key_col_resolved=false` または `area_complete=false` が解消されていなければ、N+1 にエスカレーションして 2 を繰り返す
-  3. **最終残存**: N=6 でも `key_col_resolved=false` / `area_complete=false` のピークが残ればログ警告を出力し、当該フラグ状態を維持したまま処理継続する（手動調査待ち。詳細は [ISSUE-020](../mgmt/tracker/ で管理) と連携）
+  3. **最終残存**: N=6 でも `key_col_resolved=false` または AZ の `area_complete=false` のピークが残った場合、当該フラグ状態を維持したまま処理を継続する（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_key_col_unresolved` / `is_area_incomplete` 不備フラグが true となり、merge.py が非ゼロ exit する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
 - **解析ウィンドウ全パターン探索**: 各 N の段階で、対象メッシュを N×N ウィンドウ内 (1,1)〜(N,N) の各位置に置いた N² 通りのパターンを順に試す。`key_col_resolved=true` を得たパターンが見つかった時点で早期終了する（次のパターン・次の N へは進まない）。存在しないメッシュ（海上・日本国外等）を含むパターンはスキップする
 - **広域 per-mesh ファイル命名**（区別のため通常 per-mesh と異なる名前にする）:
   - CSV: `$DATA_DIR/results/csv/widearea_<対象peak識別>_<n>x<n>_<col>_<row>.csv`
   - GeoJSON: `$DATA_DIR/results/csv/widearea_<対象peak識別>_<n>x<n>_<col>_<row>_activation.geojson`
   - 対象 peak 識別子は merged.csv の行を一意に特定できる値（例: peak_lat と peak_lon を結合した文字列）を用いる
 - **L14 ポリゴンの扱い**:
-  - [FR-016](#fr-016-ピーク域ポリゴン生成) は広域モード（L14）でも同じロジックでアクティベーションゾーン・コル等高線ポリゴンを生成する
+  - [FR-016](#fr-016-ピーク域ポリゴン生成) は広域モード（L14）でも同じロジックでアクティベーションゾーン・delete判定ゾーンポリゴンを生成する。広域再解析で `key_col_resolved=true` に解消されたピークについては、広域モードの FR-016 が delete判定ゾーンポリゴンを生成し、FR-018 の統合で merged_activation.geojson に追加される（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - 各頂点のピクセル座標は L14（1 ピクセル ≈ 20m）で算出されるが、緯度経度に変換した上で per-mesh GeoJSON に出力するため、merged_activation.geojson 統合時には L15 由来のポリゴンと座標系が揃う
 - **実装方針（[ADR-010](decisions/ADR-010-cpp-opencv-migration.md) 移行後の C++ エンジン前提）**:
   - C++ エンジンに「処理モード（N, L）」入力を追加するだけで、`mesh` / `elevation` / `unionfind` / `analyze` / `mesh_analyze` / `activation` モジュールを通常モードと共有する（広域モード専用のロジック実装は行わない）
@@ -339,16 +342,17 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - `ref/geojson_v{N}/`（ja0〜ja9 ファイル群）: 既存 SOTA サミットの日本語山岳名（`summit_name_jp`）取得用。バージョン番号 `{N}` は `params/config.ini` の `geojson_version` パラメータで指定する
 - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
 - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
-- 突合は各ピークのアクティベーションゾーンポリゴン（FR-016 → FR-018 → FR-014（広域モードで FR-016/FR-018 再実行）で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う
-- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない
+- 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（FR-016 → FR-018 → FR-014（広域モードで FR-016/FR-018 再実行）で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+- マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない（delete判定ゾーン内には縦走路上などで複数 SOTA サミットが含まれうるが、主ピーク特定アルゴリズム（[ADR-008](decisions/ADR-008-dominant-peak-identification.md)）で各サミットの主ピークが一意に決まる）
 - **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
-- **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md) 参照）:
+- **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md)、ポリゴン種別変更の経緯は [ADR-011](decisions/ADR-011-delete-zone-polygon.md) 参照）:
   1. ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する → `matched`
-  2. ピークのコル等高線ポリゴン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外 → `dominant`（そのサミットが削除候補となり、このピークが主ピークとなる）
-  3. いずれにも該当しない（コル等高線内にも既存サミットが存在しない）→ `new`（プロミネンス ≥ 150m を満たす新規申請候補）
-- **`summit.match_status` 判定**（peak.match_status とは独立した値。ピーク中心 → サミット中心へ視点が切り替わる基点）:
-  - `matched`: 既存 SOTA サミット座標がピークのアクティベーションゾーン内に存在する（正常存続）
-  - `delete`: 既存 SOTA サミット座標がいずれかのピークのコル等高線ポリゴン内かつアクティベーションゾーン外に存在する（削除候補）
+  2. ピークの delete判定ゾーン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外 → `dominant`（そのサミットが削除候補となり、このピークが主ピークとなる）
+  3. いずれにも該当しない（delete判定ゾーン内にも既存サミットが存在しない）→ `new`（プロミネンス ≥ 150m を満たす新規申請候補）
+- **`summit.match_status` 判定**（peak.match_status とは独立した値。ピーク中心 → サミット中心へ視点が切り替わる基点。以下の順に評価し、AZ 内が最優先）:
+  - `matched`: 既存 SOTA サミット座標がいずれかのピークのアクティベーションゾーン内に存在する（正常存続）
+  - `delete`: 既存 SOTA サミット座標がいずれかのピークの delete判定ゾーン内かつアクティベーションゾーン外に存在する（削除候補）
+  - `unmatched`: 既存 SOTA サミット座標がいずれのピークの AZ・delete判定ゾーンにも含まれない（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）。本来発生しないべき状態で、発生した場合は `delete_zone_max_drop` 値の不備または解析欠落を示すため、merge.py はログ警告を出力して**非ゼロ exit で処理を中止**する。後続の FR-013（GeoJSON/HTML 生成）はスキップされる
 - **仮サミットコード割り当て**（`new` および `dominant` ピーク）:
   - match_status=new・dominant 両方のピークに、FR-017 で前処理した地域データを用いて仮サミットコードを付与する
   - フォーマット: `JAx/XX-A01`
@@ -371,11 +375,19 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - `unstable`: `key_col_resolved=false` あり、または解析回数不一致
   - `-`: delete サミット（解析対象外のため）
 - **主ピーク特定**（[ADR-008](decisions/ADR-008-dominant-peak-identification.md)）:
-  - 各 delete 候補サミット座標に対して、コル等高線ポリゴン（`feature_type="key_col_boundary"`）内に
+  - 各 delete 候補サミット座標に対して、delete判定ゾーンポリゴン（`feature_type="delete_zone"`）内に
     その座標が含まれるピークを候補とする（point-in-polygon 判定）
   - 候補が複数の場合は**プロミネンスが最小のピーク**を主ピークとする（プロミネンスが最小のピークは親ピークへ最も早く合流する局所的な隆起であり、delete 候補サミットと同一山塊と見なせる）
-  - いずれのポリゴンにも含まれない場合は**ログ警告を出力して処理を中止**する（人手判断が必要なため自動フォールバックは行わない）
+  - いずれの delete判定ゾーンにも含まれないサミットは `summit.match_status="unmatched"` として上記のエラー停止が発動する（自動フォールバックは行わない）
   - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算。人手確認用）
+- **不備フラグ列**（merged.csv に追加。[ADR-011](decisions/ADR-011-delete-zone-polygon.md) により不備を集中管理し、後続処理（FR-013）への波及を防ぐ）:
+  - `is_unmatched_summit` (bool): 既存サミット行で `summit.match_status="unmatched"` となった場合 true
+  - `is_area_incomplete` (bool): ピーク行で AZ ポリゴンの `area_complete=false`（FR-014 広域再解析でも解消せず）
+  - `is_key_col_unresolved` (bool): ピーク行で `key_col_resolved=false`（FR-014 広域再解析でも解消せず）
+  - `is_out_of_range_summit` (bool): 既存サミット座標が解析対象メッシュ範囲外（FR-010 のスコープ外）
+  - `is_dem_invalid_summit` (bool): 既存サミット座標の DEM が NODATA / 海面
+  - **exit code 制御**: merge.py は処理終了時に上記いずれかの不備フラグが true の行が存在する場合、**非ゼロ exit で終了**する。merged.csv は不備行も含めて出力する（調査用）が、FR-013（GeoJSON/HTML 生成）は exit code を見てスキップする
+  - 列の追加は実装中に随時行ってよい（網羅性が必要）。新規不備種別を発見した場合は本リストに追記する
 
 #### FR-010: 削除候補のスコープ
 
@@ -390,6 +402,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - **対応 UR**: [UR-006](01_URD.md#ur-006)
 - フェーズ4 で GeoJSON と HTML を同時生成する
 - 入力: `$DATA_DIR/results/merged.csv` および `$DATA_DIR/results/merged_activation.geojson`
+- **前提条件**: merge.py（FR-009）が正常終了（exit code 0）した場合のみ実行する。merge.py が非ゼロ exit（`is_unmatched_summit` 等の不備フラグが true の行が存在）で終了した場合、本 FR は実行をスキップし、GeoJSON・HTML は生成しない（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
 - **GeoJSON メタデータ**: `merged.geojson` のトップレベルに `metadata` オブジェクトを追加する
   - `summitslist_date`: `ref/summitslist.csv` 1行目（`SOTA Summits List (Date=DD/MM/YYYY)` 形式）からパースした日付文字列
   - `generated_at`: FR-013 実行時の ISO 8601 形式の日時文字列（パイプライン最終実行日時）
@@ -401,8 +414,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | match_status | フィーチャ |
 |---|---|
 | matched | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
-| new | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（コル等高線）+ LineString（ピーク → コル） |
-| dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（コル等高線）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
+| new | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル） |
+| dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
 
 ##### 各フィーチャのプロパティ
 
@@ -440,10 +453,10 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - `area_complete`: true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false）
 - `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
-**Polygon: コル等高線**（new / dominant）
-- `feature_type`: "key_col_boundary"
+**Polygon: delete判定ゾーン**（new / dominant）
+- `feature_type`: "delete_zone"
 - `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- 対応ピークのコル等高線ポリゴン（FR-016 出力から取得）
+- 対応ピークの delete判定ゾーンポリゴン（FR-016 出力から取得。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
 
 **LineString: ピーク → コル**
 - `feature_type`: "prominence_range"
@@ -464,7 +477,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
   - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-006](decisions/ADR-006-viewer-background-tile-selection.md)）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
   - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
-  - コル等高線ポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new はコル等高線内に既存サミットが存在しないことを、dominant はコル等高線内に削除候補サミットが存在することを可視化する
+  - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）
@@ -710,13 +723,13 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 
 | 項目 | 仕様 |
 |---|---|
-| 役割 | C 解析エンジン（findsummits）がメッシュごとに出力するアクティベーションゾーンポリゴンおよびコル等高線ポリゴンの中間ファイル。メッシュ別 CSV（6.6）と同タイミングで生成され、Python 統合処理が全国分を統合する |
+| 役割 | C 解析エンジン（findsummits）がメッシュごとに出力するアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴンの中間ファイル。メッシュ別 CSV（6.6）と同タイミングで生成され、Python 統合処理が全国分を統合する |
 | ファイル | `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（`<meshcode>` は4桁の1次メッシュコード） |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type="activation_zone"`）・コル等高線（`feature_type="key_col_boundary"`） |
+| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type="activation_zone"`）・delete判定ゾーン（`feature_type="delete_zone"`） |
 | プロパティ（アクティベーションゾーン） | `feature_type="activation_zone"`, `peak_lat`, `peak_lon`, `peak_elev`, `area_complete`（解析範囲内で完結している場合 true、境界で途切れた場合 false） |
-| プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon`（対応ピーク特定用）。コルが解析範囲外のピークはコル等高線を生成しない |
+| プロパティ（delete判定ゾーン） | `feature_type="delete_zone"`, `peak_lat`, `peak_lon`（対応ピーク特定用）, `area_complete`（[FR-016](#fr-016-ピーク域ポリゴン生成) により常に true 想定）。`key_col_resolved=false` のピークは delete判定ゾーンを生成しない（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)） |
 
 ### 6.9 入力: N03 前処理済みファイル（FR-017 生成）
 
@@ -776,9 +789,9 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | ファイル | `$DATA_DIR/results/merged_activation.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
-| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type="activation_zone"`）・コル等高線（`feature_type="key_col_boundary"`） |
+| フィーチャタイプ | Polygon（2種）: アクティベーションゾーン（`feature_type="activation_zone"`）・delete判定ゾーン（`feature_type="delete_zone"`） |
 | プロパティ（アクティベーションゾーン） | `feature_type="activation_zone"`, `peak_lat`, `peak_lon`, `peak_elev`, `area_complete`（解析範囲内で完結している場合 true、境界で途切れた場合 false） |
-| プロパティ（コル等高線） | `feature_type="key_col_boundary"`, `peak_lat`, `peak_lon` |
+| プロパティ（delete判定ゾーン） | `feature_type="delete_zone"`, `peak_lat`, `peak_lon`, `area_complete`（[FR-016](#fr-016-ピーク域ポリゴン生成) により常に true 想定。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)） |
 
 ### 6.12 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
 
