@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-21",
-    "counter": 42
+    "counter": 45
   },
   "issues": [
     {
@@ -582,11 +582,11 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応中",
+      "status": "対応完了",
       "assignee": null,
-      "resolution": "delete判定ゾーンポリゴン導入により旧3案（A/B/C）を破棄。新方針: コル等高線ポリゴンを delete判定ゾーンポリゴン（プロミネンス連動 + 250m 上限キャップ）に置換、peak.match_status の dominant 判定基準を delete判定ゾーン内に変更、summit.match_status に unmatched 追加（エラー停止）、area_complete=false の広域再解析トリガーを AZ のみに限定。Phase A〜E で実装予定。詳細は mgmt/plan.md。",
+      "resolution": "delete判定ゾーンポリゴン方式（max(col_elev, peak_elev - delete_zone_max_drop) 以上の Flood Fill）を採用し、コル等高線ポリゴンを廃止。実装可能な仕様レベルまで確定。\n\nPhase A 完了（SRS / ADR / GLOSSARY 改修）:\n- ADR-011 (delete判定ゾーンポリゴン採用) 新規作成\n- ADR-007 / ADR-008 を delete判定ゾーン仕様に更新\n- SRS FR-009 / FR-013 / FR-014 / FR-016 / 6.8 / 6.11 を delete判定ゾーン仕様に改修\n- GLOSSARY に delete判定ゾーン用語追加、コル等高線ポリゴン削除\n\nPhase B 完了（delete_zone_max_drop 実測確定）:\n- analysis/sota_dem_elevation_diff.py 新規作成（4,600 件の JA サミットで abs(SOTA-DEM) を実測）\n- 廃止サミット 86 件除外、有効 4,514 件の実測結果: 平均 2.09m / 最大 52.26m (JA/TK-014 大山)\n- delete_zone_max_drop = 250m に確定（= 150 + ceil(52.26/50)*50）\n- ADR-011 と SRS FR-016 を確定値で更新\n\nPhase C-E（実装）は別 ISSUE に切り出して進める:\n- ISSUE-040: C++/OpenCV で FR-016 実装（AZ + delete判定ゾーン、notes 更新済み）\n- ISSUE-043: merge.py 改修（AZ/delete-zone PIP, 不備フラグ, exit code, dominant 改名）\n- ISSUE-044: output_geojson.py 改修 + merged_viewer.html 実装\n- ISSUE-045: params/config.ini.example に delete_zone_max_drop = 250 追加",
       "notes": "【議論結論 2026-05-21】\n- 旧3案（A/B/C）は破棄。delete判定ゾーンポリゴン方式を採用。\n- Flood Fill 閾値: max(col_elev, peak_elev - 250m) 以上（プロミネンス連動 + 250m キャップ）\n- 250m の根拠: 暫定（感覚値）。Phase B で SOTA 全サミットの abs(SOTA標高-DEM標高) 分布から確定予定。\n- 250m は config.ini パラメータ化（delete_zone_max_drop）。\n- 既存サミットの判定: matched (AZ内) / delete (delete判定ゾーン内+AZ外) / unmatched (どちらでもない=エラー停止)\n- unmatched 発生時は merge.py を non-zero exit、FR-013 (GeoJSON/HTML) 生成スキップ\n- merged.csv に不備種別ごとの bool 列追加（is_unmatched_summit / is_area_incomplete / is_key_col_unresolved / is_out_of_range_summit / is_dem_invalid_summit）\n- ADR-007 維持（peak.match_status は matched/dominant/new、ポリゴンだけ置換）\n- ADR-008 維持（主ピーク特定はプロミネンス最小）\n- FR-014 広域解析の役割をコル特定のみに縮小（delete判定ゾーンは 3×3 完結）\n\n【段取り】ハイブリッド方式\n1. Phase A: SRS 改修（250m は TBD で記述）→ ユーザーレビュー\n2. Phase B: 250m 実データ検証 → 値確定\n3. Phase A 微更新（TBD → 確定値）\n4. Phase C-E: 実装（C エンジン → merge.py → output_geojson.py）\n\n【影響範囲】\n- docs/02_SRS.md FR-009/013/014/016\n- docs/decisions/ADR-007/008（影響確認）\n- docs/decisions/ADR-NNN-delete-zone-polygon.md（新規）\n- docs/00_GLOSSARY.md\n- src/analyze.c, src/mesh_analyze.c\n- scripts/merge.py, scripts/output_geojson.py\n- params/config.ini.example\n\n【別 ISSUE 切り出し候補】\n- area_complete=false ピークの隣接メッシュ合体問題\n- area_complete スコープ明確化（AZ 用 / delete判定ゾーン用の分離）\n- HTML ビューア（merged_viewer.html）実装範囲",
-      "resolved_date": null,
+      "resolved_date": "2026-05-21",
       "verified_date": null,
       "history": [
         {
@@ -595,6 +595,13 @@
           "from": "未対応",
           "to": "対応中",
           "comment": "delete判定ゾーンポリゴン方式採用の議論結論を反映、ステータスを対応中に更新"
+        },
+        {
+          "date": "2026-05-21T18:30:20",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "Phase A (SRS 改修) + Phase B (250m 実測確定) 完了。実装は ISSUE-040/043/044/045 に分離。"
         }
       ]
     },
@@ -1023,7 +1030,7 @@
     {
       "id": "ISSUE-040",
       "title": "ADR-010 Phase 4: FR-016 アクティベーションゾーン計算（C++/OpenCV 新規実装）",
-      "description": "ADR-010 Phase 4: FR-016（アクティベーションゾーン計算）を C++ + OpenCV で新規実装する。\n\n【作業範囲】\n- ピーク位置を起点とした cv::floodFill で標高差 25m 以内の連続領域を抽出\n  - 4 連結 + FLOODFILL_FIXED_RANGE + FLOODFILL_MASK_ONLY を使用\n- cv::findContours で外周輪郭を取得（CHAIN_APPROX_SIMPLE モードで lossless 出力）\n- 形状を変える簡略化（Douglas-Peucker / approxPolyDP / 等間隔抽出）は使用しない\n- ピクセル座標 → 緯度経度変換は既存の pixel_to_latlon() を再利用\n- 解析範囲外（メッシュ地理範囲外）に Flood Fill が到達したら area_truncated=true を付与\n- 同じ Flood Fill を col_elev 閾値で再実行してコル等高線ポリゴンを生成（is_tile_top=1 はスキップ）\n- per-mesh GeoJSON ファイル <meshcode>_activation.geojson を出力\n\n【新規モジュール】\n- src/activation.cpp / activation.h（Flood Fill 呼び出し + 輪郭抽出 + GeoJSON シリアライズ）\n- mesh_analyze.cpp の CSV 出力ループ内から呼び出し\n\n【検証ポイント】\n- per-mesh <meshcode>_activation.geojson が生成される\n- 地理院地図上に重ねて目視確認（SOTA ルール 25m 連続が反映されている）\n- area_truncated フラグが解析範囲端のケースで正しく付与される\n- コル等高線ポリゴンが feature_type=\"key_col_boundary\" で出力される\n- is_tile_top=1 のピークではコル等高線が出力されない\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- SRS FR-016 docs/02_SRS.md\n- SRS 6.8 中間ファイル: メッシュ別アクティベーションゾーン GeoJSON",
+      "description": "ADR-010 Phase 4: FR-016（ピーク域ポリゴン計算）を C++ + OpenCV で新規実装する。AZ ポリゴンと delete判定ゾーンポリゴン（ADR-011）の 2 種類を per-mesh GeoJSON に出力する。詳細は notes 欄参照。",
       "type": "機能追加",
       "priority": "高",
       "category": "解析エンジン",
@@ -1033,7 +1040,7 @@
       "status": "未対応",
       "assignee": "Sonnet",
       "resolution": null,
-      "notes": "【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_truncated 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
+      "notes": "【ADR-011 適用 2026-05-21】仕様を delete判定ゾーン方式に更新。\n\n【作業範囲】\n- ピーク位置を起点とした cv::floodFill で標高差 25m 以内の連続領域（AZ）を抽出\n  - 4 連結 + FLOODFILL_FIXED_RANGE + FLOODFILL_MASK_ONLY を使用\n- cv::findContours で外周輪郭を取得（CHAIN_APPROX_SIMPLE モードで lossless 出力）\n- 形状を変える簡略化（Douglas-Peucker / approxPolyDP / 等間隔抽出）は使用しない\n- ピクセル座標 → 緯度経度変換は既存の pixel_to_latlon() を再利用\n- Flood Fill が解析対象メッシュ地理的範囲内で完結→ area_complete=true、範囲外で途切れ→ false\n- 同じ Flood Fill を max(col_elev, peak_elev - delete_zone_max_drop) 閾値で再実行して delete判定ゾーンポリゴンを生成\n  - key_col_resolved=false（col_elev 未確定）でも peak_elev - delete_zone_max_drop を閾値として生成可能\n- per-mesh GeoJSON ファイル <meshcode>_activation.geojson を出力\n  - feature_type: 'activation_zone' または 'delete_zone'\n  - delete_zone_max_drop は params/config.ini から読み込み（値 250m、ADR-011 で実測確定）\n\n【新規モジュール】\n- src/activation.cpp / activation.h（Flood Fill 呼び出し + 輪郭抽出 + GeoJSON シリアライズ）\n- mesh_analyze.cpp の CSV 出力ループ内から呼び出し\n\n【検証ポイント】\n- per-mesh <meshcode>_activation.geojson が生成される（AZ + delete判定ゾーンの2種類）\n- 地理院地図上に重ねて目視確認（AZ は 25m 連続、delete判定ゾーンはプロミネンス連動 + 250m キャップ）\n- area_complete フラグが解析範囲端のケースで正しく付与される\n- 独立峰（プロミネンス >> 250m）でも delete判定ゾーンが 3×3 メッシュで完結する\n- key_col_resolved=false のピークでも delete判定ゾーンが生成される\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- ADR-011 docs/decisions/ADR-011-delete-zone-polygon.md（新仕様）\n- SRS FR-016 docs/02_SRS.md\n- SRS 6.8 中間ファイル: メッシュ別ピーク域 GeoJSON\n\n【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_complete 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件 × 2 種類ポリゴン（AZ + delete判定ゾーン）の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -1070,6 +1077,60 @@
       "assignee": null,
       "resolution": null,
       "notes": "ISSUE-019 のクローズ時にユーザーから登録要望が出た案件。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-043",
+      "title": "merge.py: delete判定ゾーン対応（AZ/delete-zone PIP、不備フラグ列、exit code、dominant 改名）",
+      "description": "ADR-011（delete判定ゾーンポリゴン）採用に伴う merge.py の改修。SRS FR-009 / ADR-007 / ADR-008 / ADR-011 の仕様を実装に反映する。",
+      "type": "改善",
+      "priority": "高",
+      "category": "merge.py",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-05-21",
+      "stage": "COD",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "【作業範囲】\n1. per-mesh activation.geojson から AZ ポリゴン（feature_type='activation_zone'）と delete判定ゾーンポリゴン（feature_type='delete_zone'）を読み込む\n2. 各ポリゴンに対して shapely.strtree.STRtree で空間インデックス構築\n3. summit.match_status 判定（SRS FR-009 / ADR-011）:\n   - matched: いずれかのピークの AZ 内\n   - delete: いずれかのピークの delete判定ゾーン内かつ AZ 外\n   - unmatched: いずれにも該当しない（エラー）\n4. peak.match_status 判定（ADR-007 / ADR-008）:\n   - matched: ピークの AZ 内に既存サミット座標あり\n   - dominant: ピークの delete判定ゾーン内かつ AZ 外に既存サミット座標あり（複数ピーク該当時は最小プロミネンスを採用）\n   - new: いずれにも該当せず\n5. merged.csv に不備フラグ列追加（いずれか true なら non-zero exit）:\n   - is_unmatched_summit\n   - is_area_incomplete（FR-018 統合後も area_complete=true が見つからない）\n   - is_key_col_unresolved（FR-014 広域でも未確定）\n   - is_out_of_range_summit（解析範囲外のサミット）\n   - is_dem_invalid_summit（DEM が NODATA）\n6. 既存の peak.match_status 出力値: deleted → dominant にリネーム（ADR-007）\n7. summit.match_status 出力値: deleted → delete にリネーム（ADR-007）\n\n【検証ポイント】\n- 九州・四国の既存解析結果に新ロジック適用 → 削除 6 件すべて delete 判定\n- 不備フラグが立つテストケースで non-zero exit を確認\n\n【依存関係】\n- ISSUE-040（C++/OpenCV で FR-016 実装）完了後、per-mesh activation.geojson が出力される必要がある\n- ただし Python 側の実装はモック GeoJSON で先行可能\n\n【参照】\n- SRS docs/02_SRS.md FR-009 / FR-013 / 6.8 / 6.11\n- ADR docs/decisions/ADR-007 / ADR-008 / ADR-011\n\n【元 ISSUE】ISSUE-020 から分離（設計フェーズは完結、これは実装フェーズ）",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-044",
+      "title": "output_geojson.py: delete判定ゾーン対応 + merged_viewer.html 実装",
+      "description": "ADR-011 採用に伴う output_geojson.py の改修と、SRS FR-013 で要求済みだが未実装の merged_viewer.html 出力を追加する。",
+      "type": "機能追加",
+      "priority": "高",
+      "category": "GeoJSON出力",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-05-21",
+      "stage": "COD",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "【作業範囲】\n1. dominant フィーチャ構成変更:\n   - 旧: コル等高線ポリゴン（feature_type='key_col_boundary'）→ 廃止\n   - 新: delete判定ゾーンポリゴン（feature_type='delete_zone'）→ dominant ピークに付与\n2. summit.match_status の出力値変更: deleted → delete\n3. peak.match_status の出力値変更: deleted → dominant\n4. merged.csv の不備フラグ列確認、いずれか true なら実行スキップ（merge.py が non-zero exit するため二重チェック）\n5. merged_viewer.html の実装（SRS FR-013 で要求済みだが未実装）:\n   - peak の matched / new / dominant をフィルタ UI で切替表示\n   - summit の matched / delete をフィルタ表示\n   - HTML データ属性 data-cat に dominant / delete を分けて格納\n\n【検証ポイント】\n- 地理院地図上で AZ・delete判定ゾーン両ポリゴンが目視確認できる\n- HTML ビューアで peak/summit のフィルタ切替が動く\n\n【依存関係】\n- ISSUE-043（merge.py 改修）完了後に着手するのが自然\n\n【参照】\n- SRS docs/02_SRS.md FR-013\n- ADR docs/decisions/ADR-007 / ADR-011\n\n【元 ISSUE】ISSUE-020 から分離（設計フェーズは完結、これは実装フェーズ）",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-045",
+      "title": "params/config.ini.example: delete_zone_max_drop = 250 パラメータ追加",
+      "description": "ADR-011 で確定した delete_zone_max_drop（実測値 250m）を config.ini.example に記載し、ユーザー環境への展開を可能にする。",
+      "type": "改善",
+      "priority": "中",
+      "category": "設定",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-05-21",
+      "stage": "COD",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "【作業範囲】\n- params/config.ini.example の [analysis] セクション（または相当箇所）に delete_zone_max_drop = 250 を追加\n- 値の根拠コメントとして ADR-011 を参照\n- 既存のローカル params/config.ini（gitignore）は手動で同期する旨をユーザーに通知\n\n【参照】\n- ADR docs/decisions/ADR-011-delete-zone-polygon.md\n- SRS FR-016\n\n【元 ISSUE】ISSUE-020 から分離",
       "resolved_date": null,
       "verified_date": null,
       "history": []
