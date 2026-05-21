@@ -211,7 +211,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 - **delete判定ゾーンポリゴン**（`feature_type="delete_zone"`）:
   - **定義**: 既存 SOTA サミットの削除判定に使用する。ピーク標高から `min(prominence, delete_zone_max_drop)` 以内の連続エリア（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **Flood Fill 閾値**: `max(col_elev, peak_elev - delete_zone_max_drop)` 以上。`key_col_resolved=false`（`col_elev` 未確定）のピークでは `peak_elev - delete_zone_max_drop` を閾値として使用する（`delete_zone_max_drop` 上限キャップによりプロミネンス不明でもポリゴン生成が可能）
-  - **パラメータ**: `delete_zone_max_drop` は `params/config.ini` で管理（初期値 250m、最終値は SOTA 日本支部全サミットの登録標高と DEM 標高の差分分布調査後に確定。詳細は [ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+  - **パラメータ**: `delete_zone_max_drop` は `params/config.ini` で管理（値 200m、実測による確定値。詳細は [ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **area_complete の扱い**: 共通仕様の通り。`delete_zone_max_drop` 上限キャップにより、いずれかの 3×3 解析で必ず完結する想定
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（2種類のポリゴンを同一ファイルに収録）
 - 詳細は [6.8 中間ファイル: メッシュ別ピーク域 GeoJSON](#68-中間ファイル-メッシュ別ピーク域-geojson) を参照
