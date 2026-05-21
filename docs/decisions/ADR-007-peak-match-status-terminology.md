@@ -2,7 +2,7 @@
 
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-05-14 |
-| 最終更新日 | 2026-05-16 |
+| 最終更新日 | 2026-05-21 |
 
 ## Context
 
@@ -23,7 +23,9 @@
 | LineString (coord_diff) の `match_status` | matched / deleted | matched / dominant |
 | merged.csv の `match_status` カラム値 | matched / new / deleted | matched / new / dominant |
 
-`dominant` の定義: 検出ピークのコル等高線内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外（= そのサミットが削除候補となり、このピークがその dominant peak になる）。
+`dominant` の定義: 検出ピークの delete判定ゾーン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外（= そのサミットが削除候補となり、このピークがその dominant peak になる）。
+
+（注: 2026-05-21 [ADR-011](ADR-011-delete-zone-polygon.md) 適用により、`dominant` 判定の根拠ポリゴンは「コル等高線ポリゴン」から「delete判定ゾーンポリゴン」に変更された。判定構造（matched / new / dominant）は維持。）
 
 **(2) summit feature のリネームと summit.match_status の整理（2026-05-16 追加決定）**
 
@@ -39,9 +41,10 @@
 | 値 | peak.match_status | summit.match_status |
 |---|---|---|
 | matched | AZ 内に既存サミット座標あり | 対応検出ピークの AZ 内に存在（正常存続） |
-| new | AZ・コル等高線内に既存サミットなし（新規候補）| — |
-| dominant | コル等高線内かつ AZ 外に既存サミット座標あり | — |
-| delete | — | コル等高線内かつ AZ 外に存在（削除候補） |
+| new | AZ・delete判定ゾーン内に既存サミットなし（新規候補）| — |
+| dominant | delete判定ゾーン内かつ AZ 外に既存サミット座標あり | — |
+| delete | — | delete判定ゾーン内かつ AZ 外に存在（削除候補） |
+| unmatched | — | AZ にも delete判定ゾーンにも該当しない（エラー、処理中止。[ADR-011](ADR-011-delete-zone-polygon.md) 参照） |
 
 **申請書生成への影響**:
 - `追加` 行: peak.match_status ∈ {new, dominant} のピーク（仮サミットコードを使用）

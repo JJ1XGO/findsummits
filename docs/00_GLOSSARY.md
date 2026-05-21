@@ -12,13 +12,14 @@
 | ピーク候補 | 山頂候補 | 局所的な地表面の最高点。8近傍の全方向より高い点を指す。解析中はプロミネンス確定前・フィルタ前のものを「ピーク候補」と呼ぶ。プロミネンス ≥ 150m が確定した時点で「ピーク」となる。 |
 | ピーク | — | プロミネンス ≥ 150m が確定した検出地点。SOTA 申請の分析対象。既存 SOTA サミット座標との照合（FR-009）を経て match_status が確定する。 |
 | コル | Keyコル | あるピークのプロミネンスを規定するコル（鞍部）。本プロジェクトでは「コル」と言えば Keyコル（Key Col）を指す。当該ピークから任意方向に進んだとき、最初に到達する最低鞍部のうち最も標高の高いもの。 |
-| 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークのコル等高線ポリゴン内に含まれることで判定される（詳細は SRS FR-009・[ADR-008](decisions/ADR-008-dominant-peak-identification.md) 参照）。 |
+| 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークの delete判定ゾーン内に含まれることで判定される（詳細は SRS FR-009・[ADR-008](decisions/ADR-008-dominant-peak-identification.md)・[ADR-011](decisions/ADR-011-delete-zone-polygon.md) 参照）。 |
 | key_col_resolved | — | per-mesh CSV のフラグ列。コルが解析範囲内で確定済みの場合 `true`、3×3 メッシュ解析範囲外でコルが未発見の場合 `false`。命名遍歴: 当初 `is_tile_top`（タイル最頂点と誤読されやすかった）→ `key_col_unresolved`（並列フラグ `area_truncated` と同方向の否定形だった）→ 真偽値方向を「`true=正常`」に統一するため現名称に再リネーム。 |
 | area_complete | — | per-mesh GeoJSON のアクティベーションゾーンプロパティ。ポリゴンが解析範囲内で完結している場合 `true`、解析範囲外で途切れた場合 `false`。旧称 `area_truncated`。`key_col_resolved` と並列し、両者とも「`true=正常`」で揃えている。 |
 | プロミネンス | 比高 | ピークの独立性を示す指標。ピーク標高とコル標高の差。本プロジェクトでは 150m 以上を申請対象とする。 |
 | サミット | 山頂 | SOTA に登録されている山岳。本プロジェクトでは `ref/summitslist.csv` に含まれる JA プレフィックスのサミットを指す。GeoJSON では `type="summit"` のフィーチャで表現され、`match_status` は `matched`（存続）または `delete`（削除候補）の2値を取る。 |
 | サミット候補 | — | 既存 SOTA サミットリストにない新規ピーク（match_status="new"）。SOTA 日本支部への追加申請対象。 |
 | アクティベーションゾーン | Activation Zone | SOTAルールにおける山頂での運用可能エリア。山頂の最高地点から標高差 25m 以内の連続エリアをさす。このエリア内での無線運用が「山頂からの運用」として認められる（参照: [SOTA日本支部 FAQ Q12](https://www.kawauchi.homeip.mydns.jp/sotajp/faqs/)）。本プロジェクトではピークと既存SOTAサミットの照合に使用する（FR-016）。 |
+| delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop` は `params/config.ini` で管理（初期値 250m）。詳細は SRS FR-016・[ADR-011](decisions/ADR-011-delete-zone-polygon.md) 参照。 |
 
 ### 座標変換計算式
 
@@ -73,7 +74,7 @@
 | 標高タイル | 地理院タイルのうち標高データを提供するもの。RGB 値に標高をエンコードした 256×256px PNG。 |
 | SOTA | [Summits On The Air](https://www.sota.org.uk/)。アマチュア無線の運用活動。本プロジェクトは[SOTA日本支部](https://www.kawauchi.homeip.mydns.jp/sotajp/)（JA）の山岳リスト更新申請を目的とする。 |
 | サミットコード | SOTAが各山岳に付与する識別コード。`JA/YN-001` の形式（`JA`: アソシエーション、`YN`: リージョン、`001`: サミット番号）。`summitslist.csv` の `SummitCode` 列が正式名称。matched サミットに対応。プロパティ名: `summit_code` |
-| 削除（delete） | summit.match_status の値。既存 SOTA サミット座標が検出ピークのコル等高線ポリゴン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |
+| 削除（delete） | summit.match_status の値。既存 SOTA サミット座標が検出ピークの delete判定ゾーン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |
 | 仮サミットコード | 申請前の new ピークに暫定付与する識別コード。正式なサミットコードはSOTA審査後に確定する。`summit_code` プロパティに格納（`match_status="new"` の場合） |
 
 ## 出力物関連
