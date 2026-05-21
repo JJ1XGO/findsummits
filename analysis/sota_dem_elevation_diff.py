@@ -18,12 +18,19 @@ delete_zone_max_drop の推奨値を算出する。
 import argparse
 import configparser
 import csv
+import datetime
 import math
 import os
+import queue
 import sys
+import threading
 from pathlib import Path
 
 from PIL import Image
+
+# scripts/prefetch_tiles.py からフェッチロジックを流用
+sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+from prefetch_tiles import fetch_dem5_with_fallback, fetch_one  # noqa: E402
 
 # ---- 定数 ----
 
@@ -119,6 +126,89 @@ def get_dem_elevation(lat: float, lon: float, tile_dir: str) -> tuple[float, str
     return -9999.0, "NODATA"
 
 
+# ---- タイル取得（NODATA 解消） ----
+
+def fetch_missing_tiles(ja_summits, tile_dir, repo_root):
+    """
+    対象サミットのうち DEM が NODATA のものについて、必要タイルを取得する。
+
+    DEM5a → DEM5b → DEM5c → DEM10b の順にフォールバック取得する。
+    既にキャッシュ済みのタイルは If-Modified-Since でスキップされる。
+    """
+    # fetch_config.ini 読み込み
+    fc_path = repo_root / "params" / "fetch_config.ini"
+    if not fc_path.exists():
+        print(f"エラー: {fc_path} が見つかりません。", file=sys.stderr)
+        sys.exit(1)
+    fc = configparser.ConfigParser()
+    fc.read(fc_path)
+    user_email = fc["fetch"]["user_agent_email"]
+    user_agent = f"findsummits/sota_dem_elevation_diff ({user_email})"
+    max_parallel = int(fc["fetch"]["max_parallel"])
+    interval_ms = int(fc["fetch"]["interval_ms"])
+    backoff_initial = int(fc["fetch"]["backoff_initial_sec"])
+
+    # NODATA タイル一覧を抽出（z=15 タイル単位で重複除去）
+    nodata_tiles_15 = set()
+    nodata_tiles_14 = set()
+    for s in ja_summits:
+        dem_elev, _ = get_dem_elevation(s["Lat"], s["Lon"], tile_dir)
+        if dem_elev != -9999.0:
+            continue
+        tx15, ty15, _, _ = latlon_to_tile_px(s["Lat"], s["Lon"], ZOOM_DEM5)
+        nodata_tiles_15.add((tx15, ty15))
+        tx14, ty14, _, _ = latlon_to_tile_px(s["Lat"], s["Lon"], ZOOM_DEM10)
+        nodata_tiles_14.add((tx14, ty14))
+
+    n15 = len(nodata_tiles_15)
+    n14 = len(nodata_tiles_14)
+    print(f"  取得対象: z=15 {n15} タイル / z=14 {n14} タイル", file=sys.stderr)
+    print(f"  並列 {max_parallel} / 間隔 {interval_ms}ms", file=sys.stderr)
+
+    # ワーカースレッドで並列取得
+    job_queue = queue.Queue()
+    for tx, ty in nodata_tiles_15:
+        job_queue.put((15, tx, ty))
+    for tx, ty in nodata_tiles_14:
+        job_queue.put((14, tx, ty))
+
+    counters = {"ok": 0, "304": 0, "404": 0, "err": 0}
+    lock = threading.Lock()
+
+    def worker():
+        while True:
+            try:
+                z, tx, ty = job_queue.get_nowait()
+            except queue.Empty:
+                break
+            if z == 15:
+                attempts = fetch_dem5_with_fallback(tx, ty, tile_dir, user_agent, interval_ms, backoff_initial)
+                with lock:
+                    for _, status, msg in attempts:
+                        bucket = status if status in counters else "err"
+                        counters[bucket] += 1
+                        if status == "err":
+                            print(f"    [ERR] {msg}", file=sys.stderr)
+            else:
+                path = os.path.join(tile_dir, "14", str(tx), f"{ty}_b.png")
+                status, msg = fetch_one(14, tx, ty, "b", path, user_agent, interval_ms, backoff_initial)
+                with lock:
+                    bucket = status if status in counters else "err"
+                    counters[bucket] += 1
+                    if status == "err":
+                        print(f"    [ERR] {msg}", file=sys.stderr)
+            job_queue.task_done()
+
+    threads = [threading.Thread(target=worker) for _ in range(max_parallel)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    print(f"  取得結果: ok={counters['ok']} 変更なし={counters['304']} "
+          f"存在なし={counters['404']} エラー={counters['err']}", file=sys.stderr)
+
+
 # ---- 推奨値計算 ----
 
 def calc_recommended_drop(max_abs_diff: float) -> int:
@@ -141,6 +231,8 @@ def main():
                         help="JA サミットの先頭 N 件のみ処理（動作確認用）")
     parser.add_argument("--region", default=None,
                         help="特定地域コードのみ処理（例: CB）。動作確認用")
+    parser.add_argument("--fetch", action="store_true",
+                        help="NODATA だったタイルを国土地理院から取得してから再評価する")
     args = parser.parse_args()
 
     # config.ini 読み込み
@@ -163,6 +255,8 @@ def main():
     # 1行目はメタデータ ("SOTA Summits List (Date=...)")、2行目からヘッダ
     summits_path = repo_root / "ref" / "summitslist.csv"
     ja_summits = []
+    today = datetime.date.today()
+    excluded_expired = 0
     with open(summits_path, newline="", encoding="utf-8") as f:
         next(f)  # メタデータ行をスキップ
         reader = csv.DictReader(f, skipinitialspace=True)
@@ -172,6 +266,17 @@ def main():
                 continue
             if args.region and not code.startswith(f"JA/{args.region}"):
                 continue
+            # 廃止サミットを除外（ValidTo が今日より前のもの）
+            valid_to = row.get("ValidTo", "").strip()
+            if valid_to:
+                try:
+                    d, m, y = valid_to.split("/")
+                    valid_to_date = datetime.date(int(y), int(m), int(d))
+                    if valid_to_date < today:
+                        excluded_expired += 1
+                        continue
+                except (ValueError, IndexError):
+                    pass
             try:
                 lat = float(row["Latitude"])
                 lon = float(row["Longitude"])
@@ -185,12 +290,18 @@ def main():
                 "Lon": lon,
                 "AltM": alt_m,
             })
+    if excluded_expired > 0:
+        print(f"廃止サミット除外: {excluded_expired} 件（ValidTo < {today}）", file=sys.stderr)
 
     if args.sample is not None:
         ja_summits = ja_summits[:args.sample]
 
     total = len(ja_summits)
     print(f"対象: {total} 件の JA サミット", file=sys.stderr)
+
+    # --fetch: NODATA タイルを取得
+    if args.fetch:
+        fetch_missing_tiles(ja_summits, tile_dir, repo_root)
 
     # 各サミットの DEM 標高を取得
     results = []
