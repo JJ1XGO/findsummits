@@ -1,128 +1,226 @@
-# 九州・四国削除 6 件の AZ/50m ゾーン分類分析
+# ISSUE-020: delete判定ゾーンポリゴン導入
 
 ## Context
 
-ISSUE-020「手動調査待ちピーク（key_col_resolved=false）の GeoJSON フィーチャ扱い」の議論で、ユーザーが「コル等高線ポリゴンを使った削除判定は範囲が広すぎる」と判断し、代替案として「AZ（Activation Zone, 25m）+ AZ 外で 50m ゾーン内」の二段階削除判定を検討中。
+### 経緯
 
-ただし数値（25m / 50m）の妥当性は本州・北海道の独立峰経験がないため不明。前プロジェクト findsummits4sotaja（九州・四国）の削除 6 件で「実際にどう分布していたか」を測ることで、判定ゾーンの構造（AZ 二段階の必要性）を判断したい。
+ISSUE-020 元タイトル「FR-013/FR-014: 手動調査待ちピーク GeoJSON フィーチャ扱い」の議論が、九州・四国削除 6 件の minimax 鞍部標高分析（main_Δ 100〜178m）の結果を受けて以下の根本設計変更に発展した:
 
-## 分析の目的
+- **旧方針**: コル等高線ポリゴン（`col_elev` 以上の Flood Fill）で削除判定
+  - 課題: 独立峰（プロミネンス 500m+）でポリゴンが日本全土を覆う問題
+  - 対症療法: ガード条件「既存 SOTA プロミネンス > 500m なら削除除外」が必要
 
-6 件の削除ペアそれぞれについて、「統合先（高い側）標高 − minimax 鞍部標高」を計算し、以下のいずれに該当するか分類する:
+- **新方針**: **delete判定ゾーンポリゴン**（プロミネンス連動 + 250m 上限キャップ）
+  - 等価式: `max(col_elev, peak_elev - 250m)` 以上の Flood Fill
+  - 独立峰問題が 250m キャップで自然解消
+  - ガード条件（恣意的な 500m 値）が不要になる
+  - 250m 上限により delete判定ゾーンは常に 3×3 メッシュで完結する
 
-| 分類 | 条件 | 解釈 |
-|---|---|---|
-| AZ 内 | `≤ 25m` | SOTA 公式の AZ 概念で吸収可能。matched 扱いで十分 |
-| AZ 外 50m ゾーン内 | `25m < x ≤ 50m` | AZ 外 delete 判定ゾーンが必要なケース |
-| ゾーン外 | `> 50m` | 50m では拾えない。閾値見直し or 別ロジック必要 |
+### 議論の結論
 
-3 分類の件数分布から、「AZ + AZ 外 50m ゾーン」二段階の必要性を判断する。
+| 論点 | 結論 |
+|---|---|
+| ポリゴン名 | **delete判定ゾーン** (delete-determination zone) |
+| Flood Fill 閾値 | `max(col_elev, peak_elev - 250m)` 以上 |
+| 250m の根拠 | 暫定（感覚値）。実データ検証で確定: `150m + abs(SOTA標高 - DEM標高).max() + 余裕、切り良い整数` |
+| 250m の管理場所 | `params/config.ini` でパラメータ化 |
+| 判定方向 | 既存サミット座標がいずれかのピークの delete判定ゾーン内にあるか（**座標のみ・標高無関係**） |
+| 既存サミットの状態 | matched (AZ 内) / delete (delete判定ゾーン内 + AZ 外) / **unmatched (どちらでもない)** |
+| unmatched 発生時 | **merge.py を non-zero exit で停止、FR-013 (GeoJSON/HTML) は実行しない** |
+| 不備の表現 | merged.csv に**不備種別ごとの別列**を追加 |
+| 主ピーク特定 | ADR-008 維持（プロミネンス最小ピーク） |
+| 広域解析の役割 | コル特定のみ。delete判定ゾーンは 3×3 で完結するため広域不要 |
+| FR-014 トリガー | `key_col_resolved=false` は維持。`area_complete=false` は **AZ のみに限定** |
 
-## 入力データ
+---
 
-- **削除一覧**: `/workspace/analysis/九州・四国サミット削除一覧.xlsx`
-  - 6 ペア（削除サミット ↔ 統合先サミット）
-  - 削除側座標: 備考欄の「SOTA緯度経度」から抽出
-  - 統合先座標: 備考欄の緯度経度から抽出
-  - JA5/TS-109 のみ統合先座標が空 → 別途 SOTA データベース（`/workspace/ref/summitslist.csv`）から JA5/TS-053 大山の座標を取得
+## 新ロジック概要
 
-- **DEM データ**: `/data/findsummits4sotaja/tiles/`
-  - メッシュコード単位の結合 PNG（ファイル名規則: `<meshcode>_<z-x-y>_<z-x-y>.png`）
-  - 標高デコード: `elev = (R*65536 + G*256 + B) / 100.0`、無効値 `(128,0,0) → -9999`
-  - 各ペアを覆う PNG を特定して読み込む
+### peak.match_status（ADR-007 維持、コル等高線→delete判定ゾーンに置換）
 
-## 計算アルゴリズム
+| 状態 | 条件 |
+|---|---|
+| matched | ピークの AZ 内に既存 SOTA サミットが存在 |
+| dominant | ピークの delete判定ゾーン内に既存 SOTA サミットが存在（AZ 外） |
+| new | いずれにも該当せず、プロミネンス ≥ 150m |
 
-**minimax 鞍部標高 H の計算**:
+### summit.match_status
 
-- DEM グリッドを無向グラフとして扱う（4 近傍 or 8 近傍）
-- 辺の重み = 両端ピクセルの標高の最小値
-- 始点（削除サミット位置）と終点（統合先サミット位置）の間の経路で「経路上の最低標高」を最大化する経路の値を求める
-- これは Bottleneck Shortest Path 問題
+| 状態 | 条件 |
+|---|---|
+| matched | いずれかのピークの AZ 内 |
+| delete | いずれかのピークの delete判定ゾーン内（AZ 外） |
+| **unmatched** | いずれにも該当しない（**エラー、処理中止**） |
 
-**実装方式（推奨）**:
+### 主ピーク特定（ADR-008 維持）
 
-1. **Dijkstra 変種**（priority queue, max-heap）
-   - ノード距離 = 「そのノードに到達するまでの経路の minimum 標高の maximum」
-   - 始点から終点まで Dijkstra して終点の距離を取る
-   - Python `heapq` + numpy で実装可能、1 ペアあたり 1 秒未満を想定
+delete 候補サミットを含む delete判定ゾーンのピーク候補が複数の場合、**プロミネンス最小のピークを主ピーク**とする。
 
-2. （別解）**Union-Find 段階的接続**
-   - 標高の高い順にピクセルを追加、隣接が既存集合と統合
-   - 始点と終点が同じ集合になった時点の標高が H
-   - こちらの方が直感的だが Dijkstra で十分
+---
 
-**領域サイズ**:
-- 各ペアを覆う矩形領域 + 適度なマージン（10%）で十分
-- 通常は 1 メッシュ（約 80km × 80km）内に収まる
-- ピクセル数で数十万 〜 数百万
+## 進め方: ハイブリッド（大筋先 + 250m だけ実データ検証先）
 
-## 出力
+仕様優先原則と「実データ検証を上流に組み込む」のバランスを取る。
 
-`analysis/keycol_threshold_analysis.csv`（または .md）:
+```
+Step 1: 大筋を SRS / ADR に書く（Phase A 実行）
+        - 250m は "delete_zone_max_drop" パラメータ名だけ書く
+        - 値は "TBD（Phase B で確定）" と明記
+        - 不備フラグ列はリスト化（実装で追加発見されたら追記）
 
-| pair_id | 削除ID | 統合先ID | 削除側標高 | 統合先標高 | minimax鞍部標高H | 統合先 − H | 分類 |
-|---|---|---|---|---|---|---|---|
-| 1 | JA6/KG-157 | JA6/KG-197 | 484 | 478 | (計算結果) | (計算結果) | (分類結果) |
-| ... | ... | ... | ... | ... | ... | ... | ... |
+Step 2: ユーザーレビュー（SRS / ADR 構造の合意）
 
-備考:
-- 「統合先 − H」を主指標とするが、参考に「削除側 − H」（=低い方のプロミネンス相当）も出す
-- 統合先標高が削除側より低いケース（KG-157, KM-093）の扱いは結果を見て判断
+Step 3: 250m パラメータ値の実データ検証（Phase B 実行）
+        - analysis/sota_dem_elevation_diff.py 作成・実行
+        - SOTA 日本支部全サミットで abs(SOTA-DEM) 分布調査
+        - 値確定（150 + max(abs差) + 余裕、切り良い整数）
 
-サマリーとして:
-- 3 分類の件数集計
-- 最大値・平均値・分布
+Step 4: SRS の TBD 部分だけ確定値に更新
 
-## 実装計画
+Step 5: Phase C 以降の実装（C エンジン → merge.py → output_geojson.py）
+```
 
-新規スクリプト: `analysis/keycol_threshold_analysis.py`
+### 判断根拠
 
-1. xlsx 読み込み → 6 ペア抽出（openpyxl）
-2. 統合先空欄ケースは `ref/summitslist.csv` から座標補完
-3. 座標 → タイル特定（`/data/findsummits4sotaja/tiles/` のファイル名から該当 PNG を選択）
-4. 標高グリッド読み込み（PIL or 既存の C コードと同じデコード処理を Python で）
-5. minimax 鞍部標高を Dijkstra 変種で計算
-6. CSV 出力 + サマリー print
+| 観点 | ハイブリッドでの扱い |
+|---|---|
+| 構造の手戻りリスク | 議論で固めたので小。先行可能 |
+| 数値の手戻り | 250m 値が変わっても SRS の文章は不変。`config.ini.example` 数値更新のみ |
+| 仕様優先原則 | 守れる（実装着手は SRS 構造合意後） |
+| 実データ検証の上流組み込み | 値だけは検証後に書くので満たす |
 
-依存パッケージ:
-- openpyxl（既存）
-- Pillow（PNG デコード）
-- numpy（グリッド演算）
-- heapq（標準ライブラリ）
+---
 
-実装規模: 200-300 行程度。
+## 実装フェーズ分割
 
-## 検証方法
+### Phase A: SRS 改修（250m は TBD で記述）
 
-1. スクリプト実行: `venv/bin/python3 analysis/keycol_threshold_analysis.py`
-2. 出力 CSV を確認:
-   - 6 ペア全件の H と分類が出ているか
-   - 視覚的確認のため、興味深いケース（JA6/KG-054 → JA6/KG-195、JA6/FO-043 → JA6/FO-092 など）の H を地理院地図で目視確認
-3. 結果から判断:
-   - 全件 AZ 内 → AZ 二段階は不要、AZ 一本で十分
-   - AZ 外 50m ゾーン内が一定数 → AZ 外 delete 判定ゾーン導入を ISSUE-020 plan に組み込む
-   - ゾーン外が出る → 50m では不足、閾値再検討 or 別ロジック検討
+| 対象 | 改修内容 |
+|---|---|
+| `docs/02_SRS.md` FR-009 | summit.match_status に `unmatched` 追加、エラー停止仕様明記。AZ 内優先（match と delete 衝突時は match）を明記 |
+| `docs/02_SRS.md` FR-013 | dominant/new フィーチャ構成の「コル等高線ポリゴン」→「delete判定ゾーンポリゴン」。merge.py 異常時は実行しない（exit code 経由） |
+| `docs/02_SRS.md` FR-014 | `area_complete=false` トリガーを AZ のみに限定。広域モードで delete判定ゾーンは生成しない |
+| `docs/02_SRS.md` FR-016 | 「コル等高線ポリゴン」を削除し「delete判定ゾーンポリゴン」を追加。Flood Fill 閾値 `max(col_elev, peak_elev - delete_zone_max_drop)` に変更 |
+| `docs/decisions/ADR-007` | 影響確認（terminology 変更が必要かレビュー） |
+| `docs/decisions/ADR-008` | 影響確認（主ピーク特定アルゴリズムは維持できるか） |
+| `docs/decisions/ADR-NNN` | 新規 ADR: 「delete判定ゾーンポリゴン採用」決定 |
+| `docs/00_GLOSSARY.md` | 「delete判定ゾーン」用語追加、「コル等高線ポリゴン」削除 |
 
-## ISSUE-020 議論への接続
+### Phase B: 250m パラメータ値の実データ検証
 
-本分析の結果を踏まえて:
-- AZ 外 delete 判定ゾーンの必要性が確認できれば、ISSUE-020 plan の方向性として「広域モードはコル特定のみ（案 D''''の発展形）+ AZ/50m ゾーン判定」が固まる
-- パラメータ化する閾値の妥当範囲（例: 25m / 50m が妥当か、別の値に調整するか）の根拠になる
-- 本州・北海道で外挿可能かは別途検証必要（事実認識として plan に明記）
+| 内容 | ファイル |
+|---|---|
+| 検証スクリプト作成（read-only 解析） | `analysis/sota_dem_elevation_diff.py`（新規） |
+| SOTA 日本支部全サミット（JA で約 1,500 件）の座標から DEM 標高取得 | 同上 |
+| `abs(SOTA標高 - DEM標高)` の分布調査 | 同上 |
+| 250m の最終確定（暫定式: `150 + max(abs差) + 余裕、切り良い整数`） | 結果を ADR に追記 |
 
-## 関連ファイル
+### Phase C: C エンジン側の Flood Fill 閾値変更
 
-### 入力
-- `/workspace/analysis/九州・四国サミット削除一覧.xlsx`
-- `/data/findsummits4sotaja/tiles/*.png`
-- `/workspace/ref/summitslist.csv`
+| 対象 | 改修内容 |
+|---|---|
+| `src/analyze.c` または `src/mesh_analyze.c` | Flood Fill 閾値を `max(col_elev, peak_elev - delete_zone_max_drop)` に変更 |
+| `src/mesh_analyze.c` | コル等高線ポリゴン生成削除、delete判定ゾーンポリゴン生成追加 |
+| `params/config.ini.example` | `delete_zone_max_drop = 250` パラメータ追加 |
+| `src/*.c` の config 読み込み | `delete_zone_max_drop` 値を C 側に渡す経路追加（既存の config 読み込み経路に合流） |
 
-### 新規作成
-- `/workspace/analysis/keycol_threshold_analysis.py` — 分析スクリプト
-- `/workspace/analysis/keycol_threshold_analysis.csv` — 出力
+### Phase D: merge.py 改修
 
-### 参照
-- `/data/findsummits4sotaja/findsummits/analyzePng.py` — PNG デコード処理の参考
-- `/workspace/src/elevation.c` — 現プロジェクトの PNG デコード仕様
-- `/workspace/mgmt/plan_2026-05-20_issue-020-discussion.md` — 前セッションの議論経過
+| 対象 | 改修内容 |
+|---|---|
+| `scripts/merge.py` | AZ ポリゴン読み込み + point-in-polygon 実装（shapely 利用） |
+| 同上 | delete判定ゾーンポリゴン読み込み + point-in-polygon 実装 |
+| 同上 | 不備フラグ列追加（種別ごとに別列） |
+| 同上 | unmatched サミット検出時に non-zero exit |
+| 同上 | dominant 判定の追加（peak.match_status） |
+| 同上 | 既存の `match_status` 値拡張: `matched` / `dominant` / `new` / `deleted` → `delete` |
+
+### Phase E: FR-013 (output_geojson.py) 改修
+
+| 対象 | 改修内容 |
+|---|---|
+| `scripts/output_geojson.py` | merged.csv の不備フラグ確認、不備行があれば実行スキップ（merge.py の exit code で前段で止まるが二重チェック） |
+| 同上 | dominant フィーチャ追加（コル等高線 → delete判定ゾーン） |
+| 同上 | `merged_viewer.html` 出力追加（SRS の FR-013 で要求済みだが現状未実装） |
+
+---
+
+## merged.csv 不備フラグ列（暫定スキーマ）
+
+既存の `match_status` / `stability` 列に加えて以下の bool 列を追加:
+
+| 列名 | 意味 |
+|---|---|
+| `is_unmatched_summit` | 既存サミットが AZ にも delete判定ゾーンにも入らない |
+| `is_area_incomplete` | ピークの AZ が解析範囲外で途切れ（FR-014 広域でも解消せず） |
+| `is_key_col_unresolved` | ピークの Keyコルが未確定（FR-014 広域でも解消せず） |
+| `is_out_of_range_summit` | 既存サミット座標が解析対象メッシュ範囲外 |
+| `is_dem_invalid_summit` | 既存サミット座標の DEM が NODATA / 海面 |
+
+merge.py 終了時に上記いずれかが true の行があれば exit code 1 で終了する。
+
+---
+
+## 修正対象ファイル（絶対パス）
+
+### SRS / ADR / GLOSSARY
+- `/workspace/docs/02_SRS.md`（FR-009 / FR-013 / FR-014 / FR-016）
+- `/workspace/docs/decisions/ADR-007-peak-match-status-terminology.md`（影響確認）
+- `/workspace/docs/decisions/ADR-008-*.md`（影響確認）
+- `/workspace/docs/decisions/ADR-NNN-delete-zone-polygon.md`（新規）
+- `/workspace/docs/00_GLOSSARY.md`
+
+### C エンジン
+- `/workspace/src/analyze.c`
+- `/workspace/src/mesh_analyze.c`
+- `/workspace/params/config.ini.example`
+
+### Python スクリプト
+- `/workspace/scripts/merge.py`
+- `/workspace/scripts/output_geojson.py`
+
+### 検証スクリプト（新規）
+- `/workspace/analysis/sota_dem_elevation_diff.py`
+
+---
+
+## 再利用する既存資産
+
+- `shapely`（既に Python 環境に存在、`merge.py` の `--regions-file` で利用例あり）
+- merge.py 既存の point-in-polygon 経路（都道府県境界判定）
+- C エンジン既存の Flood Fill 実装（FR-016 アクティベーションゾーン生成）
+- merge.py 既存のログ出力（`merge_YYYYMMDD_HHMMSS.log` 形式は既に統一済み）
+
+---
+
+## 検証セクション
+
+### 単体検証
+
+1. **C エンジン**: 既知のテストメッシュで delete判定ゾーンポリゴンを生成 → 想定外形と一致するか目視確認
+2. **merge.py**: 九州・四国の既存解析結果に新ロジック適用 → 削除 6 件すべて delete 判定されることを確認
+
+### 統合検証
+
+3. **北海道独立峰**: 利尻岳・羊蹄山・大雪山周辺で 3×3 解析実行 → delete判定ゾーンが想定範囲（250m キャップ）に収まることを確認
+4. **全国解析**: 日本全土の解析実行 → unmatched サミット 0 件を確認（出れば 250m 値見直し）
+
+### 失敗パターン検証
+
+5. **強制 unmatched**: 250m を意図的に小さい値（例: 50m）に設定して解析 → unmatched サミット検出 → merge.py が non-zero exit → output_geojson.py が実行されないことを確認
+
+---
+
+## 別 ISSUE 切り出し候補（本 ISSUE 範囲外）
+
+- area_complete=false ピークの隣接メッシュ合体問題（前セッションから繰り越し）
+- area_complete スコープ明確化（AZ 用 / delete判定ゾーン用の分離）
+- HTML ビューア（merged_viewer.html）の実装範囲（FR-013 既存仕様で要求済みだが現状未実装）
+
+---
+
+## ステータス
+
+- 議論完了論点: 基本設計（delete判定ゾーン定義 / 判定ロジック / 不備処理方針）
+- **未確定**: 250m パラメータ最終値（Phase B で実データ検証後に確定）
+- **未着手**: SRS / ADR / 実装（Phase A 以降）

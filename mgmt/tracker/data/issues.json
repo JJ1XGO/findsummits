@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-20",
+    "last_updated": "2026-05-21",
     "counter": 42
   },
   "issues": [
@@ -582,13 +582,21 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応中",
       "assignee": null,
-      "resolution": "以下のいずれかを SRS で確定し、FR-013 / FR-014 を改訂:\n案A: 手動調査待ちピークは FR-013 出力から除外（または専用カテゴリ）\n案B: コル等高線がない場合のフォールバック表現（仮 Polygon / 空 Polygon / 省略可フラグ）を FR-013 に規定\n案C: 第4の match_status カテゴリ 'unresolved' を追加\n併せて area_truncated=true が残るケースの FR-014 挙動も明示。",
-      "notes": "【Opus相談推奨】3案あり、FR-013/FR-014/FR-016/merge.py/ビューアの広範囲に影響する複合判断。\n\n相談ポイント:\n(1) 案A・案B・案Cそれぞれの長所短所を、影響範囲（FR-013出力構造、merge.py突合ロジック、ビューア表示）を含めて比較\n(2) 'unresolved' を第4のmatch_statusに追加した場合のADR-007との整合性\n(3) コル等高線フォールバック表現（仮Polygon/空Polygon）の point-in-polygon 突合動作への影響\n(4) 手動調査待ちピーク = 何件想定か。1〜2件なら手動対応で十分か、自動化が必要か\n(5) area_truncated=true が4×4でも解消しなかった場合の挙動（is_tile_top=1とは独立に発生しうる）",
+      "resolution": "delete判定ゾーンポリゴン導入により旧3案（A/B/C）を破棄。新方針: コル等高線ポリゴンを delete判定ゾーンポリゴン（プロミネンス連動 + 250m 上限キャップ）に置換、peak.match_status の dominant 判定基準を delete判定ゾーン内に変更、summit.match_status に unmatched 追加（エラー停止）、area_complete=false の広域再解析トリガーを AZ のみに限定。Phase A〜E で実装予定。詳細は mgmt/plan.md。",
+      "notes": "【議論結論 2026-05-21】\n- 旧3案（A/B/C）は破棄。delete判定ゾーンポリゴン方式を採用。\n- Flood Fill 閾値: max(col_elev, peak_elev - 250m) 以上（プロミネンス連動 + 250m キャップ）\n- 250m の根拠: 暫定（感覚値）。Phase B で SOTA 全サミットの abs(SOTA標高-DEM標高) 分布から確定予定。\n- 250m は config.ini パラメータ化（delete_zone_max_drop）。\n- 既存サミットの判定: matched (AZ内) / delete (delete判定ゾーン内+AZ外) / unmatched (どちらでもない=エラー停止)\n- unmatched 発生時は merge.py を non-zero exit、FR-013 (GeoJSON/HTML) 生成スキップ\n- merged.csv に不備種別ごとの bool 列追加（is_unmatched_summit / is_area_incomplete / is_key_col_unresolved / is_out_of_range_summit / is_dem_invalid_summit）\n- ADR-007 維持（peak.match_status は matched/dominant/new、ポリゴンだけ置換）\n- ADR-008 維持（主ピーク特定はプロミネンス最小）\n- FR-014 広域解析の役割をコル特定のみに縮小（delete判定ゾーンは 3×3 完結）\n\n【段取り】ハイブリッド方式\n1. Phase A: SRS 改修（250m は TBD で記述）→ ユーザーレビュー\n2. Phase B: 250m 実データ検証 → 値確定\n3. Phase A 微更新（TBD → 確定値）\n4. Phase C-E: 実装（C エンジン → merge.py → output_geojson.py）\n\n【影響範囲】\n- docs/02_SRS.md FR-009/013/014/016\n- docs/decisions/ADR-007/008（影響確認）\n- docs/decisions/ADR-NNN-delete-zone-polygon.md（新規）\n- docs/00_GLOSSARY.md\n- src/analyze.c, src/mesh_analyze.c\n- scripts/merge.py, scripts/output_geojson.py\n- params/config.ini.example\n\n【別 ISSUE 切り出し候補】\n- area_complete=false ピークの隣接メッシュ合体問題\n- area_complete スコープ明確化（AZ 用 / delete判定ゾーン用の分離）\n- HTML ビューア（merged_viewer.html）実装範囲",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-21T12:49:39",
+          "actor": "claude",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "delete判定ゾーンポリゴン方式採用の議論結論を反映、ステータスを対応中に更新"
+        }
+      ]
     },
     {
       "id": "ISSUE-021",
