@@ -65,7 +65,7 @@ delete_zone_max_drop = 150 + abs(SOTA標高 - DEM標高).max() + 余裕、切り
 
 - **独立峰問題の自然解消**: 250m キャップによりポリゴンが日本全土規模に膨張しない
 - **ガード条件不要**: 500m のような恣意的な閾値が不要に
-- **広域再解析のトリガー縮小**: AZ（標高差 25m）・delete判定ゾーン（250m 上限キャップ）はいずれも 3×3 メッシュ範囲内で完結する想定のため、FR-014（広域再解析）のトリガーは `key_col_resolved=false` のみに限定できる。`area_complete=false` が想定外に発生した場合は merge.py の `is_area_incomplete` 不備フラグで処理停止する
+- **広域再解析のトリガー縮小**: AZ（標高差 25m）・delete判定ゾーン（250m 上限キャップ）はいずれも複数の 3×3 メッシュ解析を統合する段階で完結ポリゴンが見つかる想定のため、FR-014（独立峰のコル探索）のトリガーは `key_col_resolved=false` のみに限定できる。`area_complete=false` が想定外に発生した場合は merge.py の `is_area_incomplete` 不備フラグで処理停止する
 - **削除判定のシンプル化**: 座標のみで判定するため、SOTA 登録標高と DEM 標高の前後関係に依存しない
 
 ## Alternatives
