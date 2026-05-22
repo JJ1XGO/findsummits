@@ -108,6 +108,8 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 **C / Python 境界**: per-mesh CSV および ピーク域 GeoJSON ファイル。  
 詳細は [`decisions/ADR-001-hybrid-c-python-architecture.md`](decisions/ADR-001-hybrid-c-python-architecture.md) を参照。
 
+![フェーズ1 アーキテクチャ概要](figures/phase1.drawio.svg)
+
 ---
 
 ## 4. 機能要件
