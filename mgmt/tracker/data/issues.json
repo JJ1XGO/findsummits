@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-22",
-    "counter": 46
+    "counter": 50
   },
   "issues": [
     {
@@ -1189,6 +1189,78 @@
           "comment": "[解決確認]"
         }
       ]
+    },
+    {
+      "id": "ISSUE-047",
+      "title": "SRS フェーズ1機能関連図：FR-002/003 を FR-001 の箱から除去",
+      "description": "phase1.drawio で FR-002（DEM 階層フォールバック）と FR-003（標高デコード・NODATA 処理）を FR-001 の箱の中に描いていたが、両者はフェーズ2の処理と判断し SRS を修正済み。drawio 上の図もこれに合わせて修正する必要がある。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-22",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "drawio で FR-002/FR-003 のボックスを FR-001 の外に移動し、SVG を再エクスポートして docs/figures/ を更新する",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-048",
+      "title": "SRS 3.1 システムコンテキスト図の新規作成",
+      "description": "SRS 3章「3.1 システムコンテキスト」にコンテキスト図（外部アクター・データソース・成果物の境界図）を追加する。現在はプレースホルダー注記のみ。外部要素: 国土地理院標高タイル / 国土交通省N03 / SOTA summitslist.csv / 申請担当者 / SOTA日本支部マネージャ。成果物: 申請書XLSX / エビデンスCSV / 証跡GeoJSON。",
+      "type": "機能追加",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-22",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "drawio でコンテキスト図を作成し、docs/figures/context.drawio.svg として保存。SRS 3.1 のプレースホルダーを図参照に置き換えてコミット",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-049",
+      "title": "SRS 3.3 フェーズ俯瞰図の新規作成",
+      "description": "SRS 3章「3.3 フェーズ分割の俯瞰」にフェーズ俯瞰図（フェーズ1〜4の関係性を示す図）を追加する。現在はプレースホルダー注記とテキストフローのみ。各フェーズの入出力ファイルと依存関係を視覚化する。",
+      "type": "機能追加",
+      "priority": "低",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-22",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "drawio でフェーズ俯瞰図を作成し、docs/figures/phases_overview.drawio.svg として保存。SRS 3.3 のプレースホルダーを図参照に置き換えてコミット",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-050",
+      "title": "SRS フェーズ2/3/3.5/4 機能関連図の新規作成",
+      "description": "SRS 4章の各フェーズ節冒頭に機能関連図を追加する。フェーズ2（ピーク解析: FR-002/003/004/005/006/007/015/016）、フェーズ3（ピーク統合: FR-008/018）、フェーズ3.5（独立峰対応: FR-014）、フェーズ4（突合・出力: FR-009/010/011/012/013）の各図。フェーズ1機能関連図（phase1.drawio.svg）を参考に作成する。",
+      "type": "機能追加",
+      "priority": "低",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-22",
+      "stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "drawio で各フェーズの機能関連図を作成し、docs/figures/phase2.drawio.svg 等として保存。SRS の各フェーズ節冒頭に図参照を追加してコミット",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
