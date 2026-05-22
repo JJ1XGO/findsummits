@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-21",
-    "counter": 45
+    "last_updated": "2026-05-22",
+    "counter": 46
   },
   "issues": [
     {
@@ -77,7 +77,7 @@
       "status": "未対応",
       "assignee": "JJ1XGO",
       "resolution": null,
-      "notes": "着手前に plan.md の Ph.2〜Ph.5 設計と現在のアーキテクチャの整合を確認すること。ref/SOTA-Summit-list-revision-request.xlsx の列定義を事前確認。",
+      "notes": "【2026-05-22 更新】MOVED/ELEV_CHANGE シート言及は廃止。最新仕様: 変更行 = is_band_change_candidate=true の matched ピーク（FR-011）。変更前標高=sota_alt_m、変更後標高=round(peak_elev)、山岳名は変更前後同値。根拠文は自動生成（FR-011 ※5参照）。名称変更申請は廃止されたため変更シートは標高バンド遷移のみ対象。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -716,13 +716,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-009 の用語定義または GLOSSARY で標高バンド境界表を提示する（SOTA 日本支部の正式表を出典として引用）。緯度区分がある場合は区分も含めて表で記述。",
-      "notes": null,
-      "resolved_date": null,
+      "notes": "【2026-05-22 対応完了】GLOSSARY に SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく標高バンド表を追加（全国統一・地域依存なし）。SRS FR-009 に変更申請判定（Points バンド遷移）セクションを追加し、GLOSSARY への参照リンクで出典を明示。ref/SOURCES.md にも出典エントリを追加。本 ISSUE は ISSUE-046（変更申請判定スコープ変更）に統合。",
+      "resolved_date": "2026-05-22",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-22T10:17:00",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-22T10:17:09",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ISSUE-046 の作業内で吸収済み。GLOSSARY 標高バンド表・SRS FR-009 変更申請判定セクション追加完了。"
+        }
+      ]
     },
     {
       "id": "ISSUE-026",
@@ -1094,7 +1109,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【作業範囲】\n1. per-mesh activation.geojson から AZ ポリゴン（feature_type='activation_zone'）と delete判定ゾーンポリゴン（feature_type='delete_zone'）を読み込む\n2. 各ポリゴンに対して shapely.strtree.STRtree で空間インデックス構築\n3. summit.match_status 判定（SRS FR-009 / ADR-011）:\n   - matched: いずれかのピークの AZ 内\n   - delete: いずれかのピークの delete判定ゾーン内かつ AZ 外\n   - unmatched: いずれにも該当しない（エラー）\n4. peak.match_status 判定（ADR-007 / ADR-008）:\n   - matched: ピークの AZ 内に既存サミット座標あり\n   - dominant: ピークの delete判定ゾーン内かつ AZ 外に既存サミット座標あり（複数ピーク該当時は最小プロミネンスを採用）\n   - new: いずれにも該当せず\n5. merged.csv に不備フラグ列追加（いずれか true なら non-zero exit）:\n   - is_unmatched_summit\n   - is_area_incomplete（FR-018 統合後も area_complete=true が見つからない）\n   - is_key_col_unresolved（FR-014 広域でも未確定）\n   - is_out_of_range_summit（解析範囲外のサミット）\n   - is_dem_invalid_summit（DEM が NODATA）\n6. 既存の peak.match_status 出力値: deleted → dominant にリネーム（ADR-007）\n7. summit.match_status 出力値: deleted → delete にリネーム（ADR-007）\n\n【検証ポイント】\n- 九州・四国の既存解析結果に新ロジック適用 → 削除 6 件すべて delete 判定\n- 不備フラグが立つテストケースで non-zero exit を確認\n\n【依存関係】\n- ISSUE-040（C++/OpenCV で FR-016 実装）完了後、per-mesh activation.geojson が出力される必要がある\n- ただし Python 側の実装はモック GeoJSON で先行可能\n\n【参照】\n- SRS docs/02_SRS.md FR-009 / FR-013 / 6.8 / 6.11\n- ADR docs/decisions/ADR-007 / ADR-008 / ADR-011\n\n【元 ISSUE】ISSUE-020 から分離（設計フェーズは完結、これは実装フェーズ）",
+      "notes": "【2026-05-22 追記】merge.py 改修スコープに以下を追加: points/sota_points/is_band_change_candidate 列の計算・追加（FR-009 変更申請判定セクション参照）。バンド定義は GLOSSARY 標高バンド（Points 算出表）に従う。peak_elev は四捨五入した整数 m でバンド判定、sota_alt_m はそのまま判定。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -1112,7 +1127,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【作業範囲】\n1. dominant フィーチャ構成変更:\n   - 旧: コル等高線ポリゴン（feature_type='key_col_boundary'）→ 廃止\n   - 新: delete判定ゾーンポリゴン（feature_type='delete_zone'）→ dominant ピークに付与\n2. summit.match_status の出力値変更: deleted → delete\n3. peak.match_status の出力値変更: deleted → dominant\n4. merged.csv の不備フラグ列確認、いずれか true なら実行スキップ（merge.py が non-zero exit するため二重チェック）\n5. merged_viewer.html の実装（SRS FR-013 で要求済みだが未実装）:\n   - peak の matched / new / dominant をフィルタ UI で切替表示\n   - summit の matched / delete をフィルタ表示\n   - HTML データ属性 data-cat に dominant / delete を分けて格納\n\n【検証ポイント】\n- 地理院地図上で AZ・delete判定ゾーン両ポリゴンが目視確認できる\n- HTML ビューアで peak/summit のフィルタ切替が動く\n\n【依存関係】\n- ISSUE-043（merge.py 改修）完了後に着手するのが自然\n\n【参照】\n- SRS docs/02_SRS.md FR-013\n- ADR docs/decisions/ADR-007 / ADR-011\n\n【元 ISSUE】ISSUE-020 から分離（設計フェーズは完結、これは実装フェーズ）",
+      "notes": "【2026-05-22 追記】output_geojson.py + merged_viewer.html 改修スコープに以下を追加: (1) 名称修正 UI 廃止（matched ピークの入力フィールドを削除）。(2) 変更行自動エクスポート（is_band_change_candidate=true の matched ピークを申請書の変更行として自動生成、FR-011 ※5フォーマット準拠）。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -1131,6 +1146,24 @@
       "assignee": null,
       "resolution": null,
       "notes": "【作業範囲】\n- params/config.ini.example の [analysis] セクション（または相当箇所）に delete_zone_max_drop = 250 を追加\n- 値の根拠コメントとして ADR-011 を参照\n- 既存のローカル params/config.ini（gitignore）は手動で同期する旨をユーザーに通知\n\n【参照】\n- ADR docs/decisions/ADR-011-delete-zone-polygon.md\n- SRS FR-016\n\n【元 ISSUE】ISSUE-020 から分離",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-046",
+      "title": "SRS: 変更申請判定を Points バンド遷移基準に変更（URD/SRS/GLOSSARY 改訂）",
+      "description": "SOTA 申請「変更」の定義を「山岳名の変更」から「matched ペアで Points バンドをまたぐ標高差があるケース（is_band_change_candidate=true）」に再定義。山岳名変更は申請対象外（ピーク解析と無関係）。URD UR-003・6.スコープ外、SRS FR-007/009/011/012/013・9.スコープ外、GLOSSARY（標高バンド表追加）、ref/SOURCES.md を改訂。ISSUE-025（標高バンド境界値の規定）を本タスクに統合。",
+      "type": "設計",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-05-22",
+      "stage": "SRS",
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
       "resolved_date": null,
       "verified_date": null,
       "history": []
