@@ -77,12 +77,6 @@
             <mxPoint x="680.0999999999999" y="99.82430326651115" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="tLdTHxkLnrX8JkOwSxEE-35" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;" value="&lt;div&gt;FR-002&lt;/div&gt;&lt;span style=&quot;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;DEM 階層&lt;/span&gt;&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;フォールバック&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="65" width="120" x="559.99" y="480" as="geometry" />
-        </mxCell>
-        <mxCell id="tLdTHxkLnrX8JkOwSxEE-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontColor=default;" value="&lt;div&gt;&lt;font face=&quot;Helvetica&quot; style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;FR-003&lt;/font&gt;&lt;/div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot; face=&quot;Helvetica&quot;&gt;標高デコード・&lt;br&gt;NODATA処理&lt;/font&gt;" vertex="1">
-          <mxGeometry height="65" width="120" x="679.99" y="480" as="geometry" />
-        </mxCell>
         <mxCell id="tLdTHxkLnrX8JkOwSxEE-37" parent="1" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.container_registry_image;" value="" vertex="1">
           <mxGeometry height="48" width="48" x="860" y="481" as="geometry" />
         </mxCell>
