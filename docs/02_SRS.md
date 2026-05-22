@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-19 |
+| 最終更新日 | 2026-05-22 |
 | ステータス | ドラフト（フェーズ再構成済み） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
@@ -229,6 +229,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | peak_lat | float | 小数点8桁 | ピーク緯度 |
 | peak_lon | float | 小数点8桁 | ピーク経度 |
 | peak_elev | float | 小数点2桁 | ピーク標高（m） |
+| points | int | — | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` を四捨五入した整数 m でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)） |
 | col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合は 0.0） |
 | col_lon | float | 小数点8桁 | コル経度（`key_col_resolved=false` の場合は 0.0） |
 | col_elev | float | 小数点2桁 | コル標高（m） |
@@ -380,6 +381,12 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
   - `is_dem_invalid_summit` (bool): 既存サミット座標の DEM が NODATA / 海面
   - **exit code 制御**: 本 FR は処理終了時に上記いずれかの不備フラグが true の行が存在する場合、**非ゼロ exit で終了**する。merged.csv は不備行も含めて出力する（調査用）が、[FR-013](#fr-013-geojsonhtml-ビューア生成)（GeoJSON/HTML 生成）は exit code を見てスキップする
   - 列の追加は実装中に随時行ってよい（網羅性が必要）。新規不備種別を発見した場合は本リストに追記する
+- **変更申請判定（Points バンド遷移）**:
+  - 判定対象: `peak.match_status="matched"` のピーク
+  - `peak_points = band(round(peak_elev))`: `peak_elev` を四捨五入した整数 m でバンド判定
+  - `sota_points = band(sota_alt_m)`: `sota_alt_m` は整数 m なので四捨五入不要
+  - `is_band_change_candidate = (peak_points ≠ sota_points)`: true の場合、申請書エクスポートで「変更」行として自動出力
+  - バンド定義は [`00_GLOSSARY.md` 標高バンド（Points 算出表）](00_GLOSSARY.md#標高バンドpoints-算出表) を参照
 
 #### FR-010: 削除候補のスコープ
 
@@ -477,7 +484,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
   - **山岳名入力 UI**:
     - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」「山岳名EN」入力フィールドを表示
-    - matched（既存）ピーク: 同様に名称修正用の入力フィールドを表示（任意入力・未入力時は 変更 行を出力しない）
+    - matched（既存）ピーク: 入力フィールド不要（名称変更は申請対象外。`is_band_change_candidate=true` の場合は申請書エクスポート時に自動的に「変更」行を出力する）
     - dominant（削除候補ピーク）: 入力フィールド不要（GeoJSON データを使用）
   - **入力内容の保持（localStorage）**:
     - 入力した山岳名・名称修正はブラウザの localStorage に保存し、再訪時も維持する
@@ -485,7 +492,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
   - **申請書エクスポート（FR-011 準拠）**:
     - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
-    - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（名称修正を入力した matched サミットのみ）
+    - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
     - 列構成・根拠文フォーマットは [FR-011 参照](#fr-011-申請書-xlsx-生成)
   - **公開用エクスポート**:
     - 「公開用エクスポート」ボタンで、localStorage の入力内容（山岳名JP/EN・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** をブラウザダウンロードする
@@ -508,7 +515,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 | 追加（new） | summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 追加（dominant）| summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
-| 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | 新JP名 ※1 | 新EN名 ※1 | sota_alt_m | 変更根拠（自由記述） |
+| 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | round(peak_elev) | ※5 |
 
 ※1 HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-geojsonhtml-ビューア生成)）  
 ※2 追加根拠（ビューアが自動生成するフォーマット）:
@@ -520,7 +527,12 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 プロミネンス：{prominence}m
 ```
 ※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること  
-※4 削除根拠（ビューアが自動生成するフォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`
+※4 削除根拠（ビューアが自動生成するフォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`  
+※5 変更根拠（ビューアが自動生成するフォーマット）:
+```
+国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {round(peak_elev)}m ({peak_points}pt)
+座標: {peak_lat},{peak_lon}（{都道府県または振興局名} {市区町村名}）
+```
 
 #### FR-012: エビデンス CSV 生成
 
@@ -540,7 +552,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 | peak_lat | ピーク緯度 |
 | peak_lon | ピーク経度 |
 | peak_elev | ピーク標高（m） |
-| points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出 |
+| points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` を四捨五入した整数 m でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)） |
 | col_lat | コル緯度 |
 | col_lon | コル経度 |
 | col_elev | コル標高（m） |
@@ -552,7 +564,8 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 | sota_lat | SOTA リスト登録緯度（matched・dominant のみ。new は空欄） |
 | sota_lon | SOTA リスト登録経度（matched・dominant のみ。new は空欄） |
 | sota_alt_m | SOTA リスト登録標高（m）。matched・dominant のみ。new は空欄 |
-| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出。matched・dominant のみ。new は空欄 |
+| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched・dominant のみ。new は空欄 |
+| is_band_change_candidate | Points バンド遷移フラグ（bool）。`points ≠ sota_points` の場合 true（変更申請対象）。matched のみ。それ以外は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（dominant のみ） |
 | dominant_peak_dist_m | 主ピークから削除候補サミット座標までの距離 m（Haversine 公式）。dominant のみ |
@@ -839,7 +852,9 @@ URD セクション 5 より:
 - 日本以外の SOTA 申請
 - 北方領土に所在するピーク（SOTA 日本支部の管轄外のため。除外方法は FR-003・FR-017 で規定）
 - 新規サミットの山岳名取得（解析結果から自動取得する手段がなく技術的に困難なため対象外。HTML ビューアで OSM・国土地理院地図を参照しながら人間系で確認・記入すること）。既存サミットの日本語山岳名は SOTA 山名 GeoJSON（geojson_v{N}）から自動取得する
-- 既存サミットの座標・標高変更申請（既存登録情報は概ね正しいと判断し自動識別しない。名称変更はユーザーが HTML ビューアで確認しながら手動記入すること）
+- 既存サミットの**名称変更**申請（名称はピーク解析と無関係なため自動識別しない）
+- 既存サミットの**座標変更**申請（座標は概ね正しいと判断し自動識別しない）
+- **バンドをまたがない標高変動**（Points 値が変わらないため SOTA 本部にとって意味のない変更）
 - DEM1a（データ量が DEM5 の 25 倍、精度向上が僅少なため採用しない。根拠: [ADR-002](decisions/ADR-002-dem-hierarchy-fallback.md)）
 - SOTA 申請書の提出・承認プロセス（ツールは申請書生成まで。提出は手動）
 - サーバー側リアルタイム処理（解析・GeoJSON・CSV 生成はバッチ処理。申請書 XLSX は HTML ビューアでの操作によりクライアントサイドで生成）
