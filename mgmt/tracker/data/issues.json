@@ -582,12 +582,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "delete判定ゾーンポリゴン方式（max(col_elev, peak_elev - delete_zone_max_drop) 以上の Flood Fill）を採用し、コル等高線ポリゴンを廃止。実装可能な仕様レベルまで確定。\n\nPhase A 完了（SRS / ADR / GLOSSARY 改修）:\n- ADR-011 (delete判定ゾーンポリゴン採用) 新規作成\n- ADR-007 / ADR-008 を delete判定ゾーン仕様に更新\n- SRS FR-009 / FR-013 / FR-014 / FR-016 / 6.8 / 6.11 を delete判定ゾーン仕様に改修\n- GLOSSARY に delete判定ゾーン用語追加、コル等高線ポリゴン削除\n\nPhase B 完了（delete_zone_max_drop 実測確定）:\n- analysis/sota_dem_elevation_diff.py 新規作成（4,600 件の JA サミットで abs(SOTA-DEM) を実測）\n- 廃止サミット 86 件除外、有効 4,514 件の実測結果: 平均 2.09m / 最大 52.26m (JA/TK-014 大山)\n- delete_zone_max_drop = 250m に確定（= 150 + ceil(52.26/50)*50）\n- ADR-011 と SRS FR-016 を確定値で更新\n\nPhase C-E（実装）は別 ISSUE に切り出して進める:\n- ISSUE-040: C++/OpenCV で FR-016 実装（AZ + delete判定ゾーン、notes 更新済み）\n- ISSUE-043: merge.py 改修（AZ/delete-zone PIP, 不備フラグ, exit code, dominant 改名）\n- ISSUE-044: output_geojson.py 改修 + merged_viewer.html 実装\n- ISSUE-045: params/config.ini.example に delete_zone_max_drop = 250 追加",
       "notes": "【議論結論 2026-05-21】\n- 旧3案（A/B/C）は破棄。delete判定ゾーンポリゴン方式を採用。\n- Flood Fill 閾値: max(col_elev, peak_elev - 250m) 以上（プロミネンス連動 + 250m キャップ）\n- 250m の根拠: 暫定（感覚値）。Phase B で SOTA 全サミットの abs(SOTA標高-DEM標高) 分布から確定予定。\n- 250m は config.ini パラメータ化（delete_zone_max_drop）。\n- 既存サミットの判定: matched (AZ内) / delete (delete判定ゾーン内+AZ外) / unmatched (どちらでもない=エラー停止)\n- unmatched 発生時は merge.py を non-zero exit、FR-013 (GeoJSON/HTML) 生成スキップ\n- merged.csv に不備種別ごとの bool 列追加（is_unmatched_summit / is_area_incomplete / is_key_col_unresolved / is_out_of_range_summit / is_dem_invalid_summit）\n- ADR-007 維持（peak.match_status は matched/dominant/new、ポリゴンだけ置換）\n- ADR-008 維持（主ピーク特定はプロミネンス最小）\n- FR-014 広域解析の役割をコル特定のみに縮小（delete判定ゾーンは 3×3 完結）\n\n【段取り】ハイブリッド方式\n1. Phase A: SRS 改修（250m は TBD で記述）→ ユーザーレビュー\n2. Phase B: 250m 実データ検証 → 値確定\n3. Phase A 微更新（TBD → 確定値）\n4. Phase C-E: 実装（C エンジン → merge.py → output_geojson.py）\n\n【影響範囲】\n- docs/02_SRS.md FR-009/013/014/016\n- docs/decisions/ADR-007/008（影響確認）\n- docs/decisions/ADR-NNN-delete-zone-polygon.md（新規）\n- docs/00_GLOSSARY.md\n- src/analyze.c, src/mesh_analyze.c\n- scripts/merge.py, scripts/output_geojson.py\n- params/config.ini.example\n\n【別 ISSUE 切り出し候補】\n- area_complete=false ピークの隣接メッシュ合体問題\n- area_complete スコープ明確化（AZ 用 / delete判定ゾーン用の分離）\n- HTML ビューア（merged_viewer.html）実装範囲",
       "resolved_date": "2026-05-21",
-      "verified_date": null,
+      "verified_date": "2026-05-22",
       "history": [
         {
           "date": "2026-05-21T12:49:39",
@@ -602,6 +602,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "Phase A (SRS 改修) + Phase B (250m 実測確定) 完了。実装は ISSUE-040/043/044/045 に分離。"
+        },
+        {
+          "date": "2026-05-22T10:34:12",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -716,12 +723,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-009 の用語定義または GLOSSARY で標高バンド境界表を提示する（SOTA 日本支部の正式表を出典として引用）。緯度区分がある場合は区分も含めて表で記述。",
       "notes": "【2026-05-22 対応完了】GLOSSARY に SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく標高バンド表を追加（全国統一・地域依存なし）。SRS FR-009 に変更申請判定（Points バンド遷移）セクションを追加し、GLOSSARY への参照リンクで出典を明示。ref/SOURCES.md にも出典エントリを追加。本 ISSUE は ISSUE-046（変更申請判定スコープ変更）に統合。",
       "resolved_date": "2026-05-22",
-      "verified_date": null,
+      "verified_date": "2026-05-22",
       "history": [
         {
           "date": "2026-05-22T10:17:00",
@@ -736,6 +743,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "ISSUE-046 の作業内で吸収済み。GLOSSARY 標高バンド表・SRS FR-009 変更申請判定セクション追加完了。"
+        },
+        {
+          "date": "2026-05-22T10:34:12",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
