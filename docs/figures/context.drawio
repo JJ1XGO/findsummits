@@ -1,0 +1,120 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="システムコンテキスト" id="context-diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- システム本体（中央） -->
+        <mxCell id="sys-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;" value="findsummits システム" vertex="1">
+          <mxGeometry height="120" width="220" x="475" y="330" as="geometry" />
+        </mxCell>
+
+        <!-- 外部データソース：国土地理院 -->
+        <mxCell id="gsi" parent="1" style="shape=mxgraph.cisco.computers_and_peripherals.web_browser;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="130" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gsi-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="国土地理院&#xa;地理院地図" vertex="1">
+          <mxGeometry height="40" width="100" x="110" y="148" as="geometry" />
+        </mxCell>
+
+        <!-- 外部データソース：国土交通省 -->
+        <mxCell id="mlit" parent="1" style="shape=mxgraph.cisco.computers_and_peripherals.web_browser;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="130" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="mlit-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="国土交通省&#xa;国土数値情報" vertex="1">
+          <mxGeometry height="40" width="110" x="105" y="328" as="geometry" />
+        </mxCell>
+
+        <!-- 外部データソース：SOTA Reflector -->
+        <mxCell id="sota-in" parent="1" style="shape=mxgraph.cisco.computers_and_peripherals.web_browser;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="130" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="sota-in-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="SOTA Reflector&#xa;summitslist.csv" vertex="1">
+          <mxGeometry height="40" width="110" x="105" y="508" as="geometry" />
+        </mxCell>
+
+        <!-- 外部アクター：申請担当者（ユーザー） -->
+        <mxCell id="user" parent="1" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.user;" value="" vertex="1">
+          <mxGeometry height="60" width="47.5" x="541" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="user-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="申請担当者&#xa;（ユーザー）" vertex="1">
+          <mxGeometry height="40" width="100" x="515" y="148" as="geometry" />
+        </mxCell>
+
+        <!-- 外部アクター：SOTA日本支部マネージャ -->
+        <mxCell id="sota-mgr" parent="1" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.user;" value="" vertex="1">
+          <mxGeometry height="60" width="47.5" x="956" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="sota-mgr-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="SOTA日本支部&#xa;マネージャ" vertex="1">
+          <mxGeometry height="40" width="110" x="925" y="398" as="geometry" />
+        </mxCell>
+
+        <!-- 成果物：申請書XLSX -->
+        <mxCell id="xlsx" parent="1" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.webicons.json;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="830" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="xlsx-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="申請書 XLSX" vertex="1">
+          <mxGeometry height="30" width="90" x="815" y="285" as="geometry" />
+        </mxCell>
+
+        <!-- 成果物：エビデンスCSV -->
+        <mxCell id="csv" parent="1" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.webicons.json;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="830" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="csv-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="エビデンス CSV" vertex="1">
+          <mxGeometry height="30" width="100" x="810" y="415" as="geometry" />
+        </mxCell>
+
+        <!-- 成果物：証跡GeoJSON -->
+        <mxCell id="geojson" parent="1" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="830" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="geojson-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;" value="証跡 GeoJSON" vertex="1">
+          <mxGeometry height="30" width="100" x="810" y="545" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：国土地理院 → システム（標高タイル） -->
+        <mxCell id="e-gsi" parent="1" source="gsi" target="sys-box" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="標高タイル PNG&#xa;（DEM5a/b/c・DEM10b）" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：国土交通省 → システム（N03） -->
+        <mxCell id="e-mlit" parent="1" source="mlit" target="sys-box" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="N03 行政区域&#xa;GeoJSON" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：SOTA Reflector → システム（summitslist） -->
+        <mxCell id="e-sota-in" parent="1" source="sota-in" target="sys-box" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="summitslist.csv" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：申請担当者 → システム（操作） -->
+        <mxCell id="e-user-in" parent="1" source="user" target="sys-box" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="操作・メッシュコードリスト" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：システム → 申請書XLSX -->
+        <mxCell id="e-xlsx" parent="1" source="sys-box" target="xlsx" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：システム → エビデンスCSV -->
+        <mxCell id="e-csv" parent="1" source="sys-box" target="csv" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：システム → 証跡GeoJSON -->
+        <mxCell id="e-geojson" parent="1" source="sys-box" target="geojson" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- エッジ：申請書XLSX → SOTA日本支部マネージャ -->
+        <mxCell id="e-xlsx-mgr" parent="1" source="xlsx" target="sota-mgr" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="申請提出" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

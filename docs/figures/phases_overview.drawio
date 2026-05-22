@@ -1,0 +1,147 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="フェーズ俯瞰" id="phases-overview">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="827" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- フェーズ1 ボックス -->
+        <mxCell id="ph1-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ1：タイル取得・前処理" vertex="1">
+          <mxGeometry height="200" width="300" x="40" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ph1-fr017" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-017&#xa;N03 行政区域前処理" vertex="1">
+          <mxGeometry height="50" width="140" x="60" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="ph1-fr001" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-001&#xa;標高タイル事前取得" vertex="1">
+          <mxGeometry height="50" width="140" x="60" y="320" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ1 入力 -->
+        <mxCell id="in-tiles" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="標高タイル&#xa;（地理院）" vertex="1">
+          <mxGeometry height="40" width="90" x="40" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="in-n03" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="N03 行政区域&#xa;（国交省）" vertex="1">
+          <mxGeometry height="40" width="90" x="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e-tiles-ph1" parent="1" source="in-tiles" target="ph1-fr001" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-n03-ph1" parent="1" source="in-n03" target="ph1-fr017" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ1 出力ファイル -->
+        <mxCell id="out-tiles-cache" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="$DATA_DIR/tiles/&#xa;（タイルキャッシュ）" vertex="1">
+          <mxGeometry height="40" width="130" x="360" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="out-regions" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="N03_regions.geojson&#xa;N03_municipalities.geojson&#xa;excluded_tiles.txt" vertex="1">
+          <mxGeometry height="55" width="145" x="353" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="e-fr001-tiles" parent="1" source="ph1-fr001" target="out-tiles-cache" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-fr017-regions" parent="1" source="ph1-fr017" target="out-regions" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ2 ボックス -->
+        <mxCell id="ph2-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ2：ピーク解析（per-mesh）" vertex="1">
+          <mxGeometry height="200" width="300" x="560" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ph2-fr004" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-002/003 デコード・フォールバック&#xa;FR-004 3×3 メッシュ結合解析&#xa;FR-005 ピーク候補検出&#xa;FR-006 コル検出・プロミネンス計算&#xa;FR-007 プロミネンスフィルタ出力" vertex="1">
+          <mxGeometry height="110" width="260" x="580" y="260" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ2 出力 -->
+        <mxCell id="out-per-mesh" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="per-mesh CSV&#xa;per-mesh activation.geojson&#xa;terrain PNG" vertex="1">
+          <mxGeometry height="55" width="140" x="880" y="275" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ph2-out" parent="1" source="ph2-fr004" target="out-per-mesh" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ1→フェーズ2 エッジ -->
+        <mxCell id="e-ph1-ph2-tiles" parent="1" source="out-tiles-cache" target="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ph1-ph2-regions" parent="1" source="out-regions" target="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- メッシュコードリスト -->
+        <mxCell id="in-meshlist" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="メッシュコード&#xa;リスト" vertex="1">
+          <mxGeometry height="40" width="90" x="610" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mesh-ph1" parent="1" source="in-meshlist" target="ph1-fr001" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mesh-ph2" parent="1" source="in-meshlist" target="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ3/3.5 ボックス -->
+        <mxCell id="ph3-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ3/3.5：ピーク統合・独立峰対応" vertex="1">
+          <mxGeometry height="200" width="300" x="1080" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ph3-frs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-008 per-mesh CSV 統合&#xa;FR-018 activation.geojson 統合&#xa;FR-014 独立峰のコル探索（広域再解析）" vertex="1">
+          <mxGeometry height="80" width="260" x="1100" y="280" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ2→フェーズ3 エッジ -->
+        <mxCell id="e-ph2-ph3" parent="1" source="out-per-mesh" target="ph3-frs" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ3 出力 -->
+        <mxCell id="out-merged" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="merged.csv&#xa;merged.geojson" vertex="1">
+          <mxGeometry height="40" width="120" x="1400" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ph3-out" parent="1" source="ph3-frs" target="out-merged" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SOTA summitslist 入力 -->
+        <mxCell id="in-sota" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="SOTA&#xa;summitslist.csv" vertex="1">
+          <mxGeometry height="40" width="90" x="1130" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sota-ph3" parent="1" source="in-sota" target="ph3-frs" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ4 ボックス -->
+        <mxCell id="ph4-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ4：SOTA突合・出力生成" vertex="1">
+          <mxGeometry height="200" width="300" x="1080" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="ph4-frs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-009 SOTAリスト突合&#xa;FR-010 削除候補スコープ&#xa;FR-011 申請書 XLSX 生成&#xa;FR-012 エビデンス CSV 生成&#xa;FR-013 GeoJSON・HTML ビューア生成" vertex="1">
+          <mxGeometry height="110" width="260" x="1100" y="540" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ3→フェーズ4 エッジ -->
+        <mxCell id="e-ph3-ph4" parent="1" source="out-merged" target="ph4-frs" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- フェーズ4 出力 -->
+        <mxCell id="out-xlsx" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="申請書 XLSX" vertex="1">
+          <mxGeometry height="30" width="100" x="1400" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="out-ev-csv" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="エビデンス CSV" vertex="1">
+          <mxGeometry height="30" width="100" x="1400" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="out-geojson" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="証跡 GeoJSON" vertex="1">
+          <mxGeometry height="30" width="100" x="1400" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ph4-xlsx" parent="1" source="ph4-frs" target="out-xlsx" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ph4-csv" parent="1" source="ph4-frs" target="out-ev-csv" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ph4-geojson" parent="1" source="ph4-frs" target="out-geojson" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

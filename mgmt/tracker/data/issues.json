@@ -1200,12 +1200,12 @@
       "reporter": null,
       "created_date": "2026-05-22",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "drawio で FR-002/FR-003 のボックスを FR-001 の外に移動し、SVG を再エクスポートして docs/figures/ を更新する",
       "notes": null,
       "resolved_date": "2026-05-22",
-      "verified_date": null,
+      "verified_date": "2026-05-22",
       "history": [
         {
           "date": "2026-05-22T17:59:24",
@@ -1220,6 +1220,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "phase1.drawio から FR-002/003 を除去（Claude）、ユーザーがレイアウト調整・SVG 再エクスポートして完了"
+        },
+        {
+          "date": "2026-05-22T18:35:47",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK"
         }
       ]
     },
@@ -1233,13 +1240,21 @@
       "reporter": null,
       "created_date": "2026-05-22",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応中",
       "assignee": null,
       "resolution": "drawio でコンテキスト図を作成し、docs/figures/context.drawio.svg として保存。SRS 3.1 のプレースホルダーを図参照に置き換えてコミット",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-22T18:35:52",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        }
+      ]
     },
     {
       "id": "ISSUE-049",
@@ -1251,13 +1266,21 @@
       "reporter": null,
       "created_date": "2026-05-22",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応中",
       "assignee": null,
       "resolution": "drawio でフェーズ俯瞰図を作成し、docs/figures/phases_overview.drawio.svg として保存。SRS 3.3 のプレースホルダーを図参照に置き換えてコミット",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-22T18:35:52",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        }
+      ]
     },
     {
       "id": "ISSUE-050",
