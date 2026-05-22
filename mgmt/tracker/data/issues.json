@@ -1240,12 +1240,12 @@
       "reporter": null,
       "created_date": "2026-05-22",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "drawio でコンテキスト図を作成し、docs/figures/context.drawio.svg として保存。SRS 3.1 のプレースホルダーを図参照に置き換えてコミット",
       "notes": null,
       "resolved_date": "2026-05-22",
-      "verified_date": null,
+      "verified_date": "2026-05-22",
       "history": [
         {
           "date": "2026-05-22T18:35:52",
@@ -1260,6 +1260,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "context.drawio 作成・ユーザーが SVG エクスポート完了"
+        },
+        {
+          "date": "2026-05-22T18:46:03",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK。SVGレイアウトは後日調整予定"
         }
       ]
     },
@@ -1273,12 +1280,12 @@
       "reporter": null,
       "created_date": "2026-05-22",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "drawio でフェーズ俯瞰図を作成し、docs/figures/phases_overview.drawio.svg として保存。SRS 3.3 のプレースホルダーを図参照に置き換えてコミット",
       "notes": null,
       "resolved_date": "2026-05-22",
-      "verified_date": null,
+      "verified_date": "2026-05-22",
       "history": [
         {
           "date": "2026-05-22T18:35:52",
@@ -1293,6 +1300,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "phases_overview.drawio 作成・ユーザーが SVG エクスポート完了"
+        },
+        {
+          "date": "2026-05-22T18:46:03",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK。SVGレイアウトは後日調整予定"
         }
       ]
     },
