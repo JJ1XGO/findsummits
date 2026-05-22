@@ -17,7 +17,7 @@ SOTA 日本支部への申請対象「変更」の意味を再定義する。
 |---|---|
 | 標高バンド境界値 | SOTA 日本支部公式（全国統一・地域依存なし）。150/500/650/850/1100/1500m で 1/2/4/6/8/10pt |
 | 出典 | SOTA 日本支部参照マニュアル 2025年7月改定版 |
-| peak_elev の丸め | **四捨五入**（round）で整数 m に変換 |
+| peak_elev の丸め | **切り捨て**（floor）で整数 m に変換（1499.5m は 1499m → 8pt。四捨五入は不可） |
 | バンド判定タイミング | **丸めた後の値**でバンド判定（申請書記入値との整合性確保） |
 | 新規 ADR | 不要（公式値で設計裁量なし） |
 | Phase B（実データ検証） | **不実施**（ユーザー判断） |
@@ -60,18 +60,18 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 
 | 改訂対象 | 内容 |
 |---|---|
-| **FR-009 新セクション** | 「標高バンド・Points 算出」追加。半開区間定義、四捨五入による整数 m 丸め、丸め後値でのバンド判定を明記 |
-| **FR-009 突合ロジック** | matched ペアに対し `sota_points = band(sota_alt_m)`、`peak_points = band(round(peak_elev))`、`is_band_change_candidate = (sota_points ≠ peak_points)` を算出 |
+| **FR-009 新セクション** | 「標高バンド・Points 算出」追加。半開区間定義、切り捨て（floor）による整数 m 丸め、丸め後値でのバンド判定を明記 |
+| **FR-009 突合ロジック** | matched ペアに対し `sota_points = band(sota_alt_m)`、`peak_points = band(floor(peak_elev))`、`is_band_change_candidate = (sota_points ≠ peak_points)` を算出 |
 | **FR-007（L219-239）** | per-mesh CSV カラム表に `points` 列追加（peak_elev からの算出値）|
 | **FR-008（L254-267）** | merged.csv に `points` / `sota_points` / `is_band_change_candidate` 列追加 |
-| **FR-011（L497-523）** | 申請書「変更」行マッピングを書き換え（変更前 = sota_alt_m、変更後 = round(peak_elev)、山岳名は変更前後同値）。**対象 = `is_band_change_candidate=true` の matched 行**|
+| **FR-011（L497-523）** | 申請書「変更」行マッピングを書き換え（変更前 = sota_alt_m、変更後 = floor(peak_elev)、山岳名は変更前後同値）。**対象 = `is_band_change_candidate=true` の matched 行**|
 | **FR-012（L525-558）** | merged.csv 出力カラム表を FR-008 の追加列に追従 |
 | **FR-013（L478-495）** | matched ピーク用の名称修正入力フィールド（L480）と、関連 UI / localStorage を**削除**。XLSX エクスポートの「変更」行は `is_band_change_candidate=true` から自動生成 |
 | **9. スコープ外（L842）** | URD と同期した文に置換 |
 
 変更根拠文（FR-011 出力時の自動生成）テンプレ案:
 ```
-国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {round(peak_elev)}m ({peak_points}pt)
+国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {floor(peak_elev)}m ({peak_points}pt)
 座標: {peak_lat},{peak_lon}（{都道府県} {市区町村}）
 ```
 

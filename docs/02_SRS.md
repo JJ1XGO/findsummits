@@ -229,7 +229,7 @@ merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
 | peak_lat | float | 小数点8桁 | ピーク緯度 |
 | peak_lon | float | 小数点8桁 | ピーク経度 |
 | peak_elev | float | 小数点2桁 | ピーク標高（m） |
-| points | int | — | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` を四捨五入した整数 m でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)） |
+| points | int | — | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` を切り捨て（floor）した整数 m でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)） |
 | col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合は 0.0） |
 | col_lon | float | 小数点8桁 | コル経度（`key_col_resolved=false` の場合は 0.0） |
 | col_elev | float | 小数点2桁 | コル標高（m） |
@@ -383,8 +383,8 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
   - 列の追加は実装中に随時行ってよい（網羅性が必要）。新規不備種別を発見した場合は本リストに追記する
 - **変更申請判定（Points バンド遷移）**:
   - 判定対象: `peak.match_status="matched"` のピーク
-  - `peak_points = band(round(peak_elev))`: `peak_elev` を四捨五入した整数 m でバンド判定
-  - `sota_points = band(sota_alt_m)`: `sota_alt_m` は整数 m なので四捨五入不要
+  - `peak_points = band(floor(peak_elev))`: `peak_elev` を切り捨て（floor）した整数 m でバンド判定
+  - `sota_points = band(sota_alt_m)`: `sota_alt_m` は整数 m なので丸め不要
   - `is_band_change_candidate = (peak_points ≠ sota_points)`: true の場合、申請書エクスポートで「変更」行として自動出力
   - バンド定義は [`00_GLOSSARY.md` 標高バンド（Points 算出表）](00_GLOSSARY.md#標高バンドpoints-算出表) を参照
 
@@ -515,7 +515,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 | 追加（new） | summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 追加（dominant）| summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
 | 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
-| 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | round(peak_elev) | ※5 |
+| 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 |
 
 ※1 HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-geojsonhtml-ビューア生成)）  
 ※2 追加根拠（ビューアが自動生成するフォーマット）:
@@ -530,7 +530,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 ※4 削除根拠（ビューアが自動生成するフォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`  
 ※5 変更根拠（ビューアが自動生成するフォーマット）:
 ```
-国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {round(peak_elev)}m ({peak_points}pt)
+国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {floor(peak_elev)}m ({peak_points}pt)
 座標: {peak_lat},{peak_lon}（{都道府県または振興局名} {市区町村名}）
 ```
 
@@ -552,7 +552,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 | peak_lat | ピーク緯度 |
 | peak_lon | ピーク経度 |
 | peak_elev | ピーク標高（m） |
-| points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` を四捨五入した整数 m でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)） |
+| points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` を切り捨て（floor）した整数 m でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)） |
 | col_lat | コル緯度 |
 | col_lon | コル経度 |
 | col_elev | コル標高（m） |
