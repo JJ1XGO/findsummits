@@ -1317,15 +1317,15 @@
       "type": "機能追加",
       "priority": "低",
       "category": "その他",
-      "reporter": null,
+      "reporter": "Claude",
       "created_date": "2026-05-22",
       "stage": "SRS",
-      "status": "対応完了",
-      "assignee": null,
+      "status": "解決済",
+      "assignee": "JJ1XGO",
       "resolution": "drawio で各フェーズの機能関連図を作成し、docs/figures/phase2.drawio.svg 等として保存。SRS の各フェーズ節冒頭に図参照を追加してコミット",
-      "notes": null,
+      "notes": "【本日の決定事項】フェーズ別機能関連図（phase2〜4）の個別作成は中止し、phases_overview.drawio.svg（フェーズ俯瞰図）で代替する方針を確定。フェーズ1の機能関連図（phase1.drawio.svg）もSRSの参照削除済み（commit 12e2a45）のうえファイル削除。俯瞰図はフェーズ3出力ラベルをmerged_activation.geojsonに修正（SRS FR-018と整合）し、誤字「見つらない→見つからない」も修正してcommit ca09554でコミット済み。",
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T12:03:43",
@@ -1333,6 +1333,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "機能関連図は phases_overview で代替可能・保守コスト増のため不要と判断。フェーズ1の参照も SRS から削除済み（commit 12e2a45）"
+        },
+        {
+          "date": "2026-05-23T15:08:05",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     }
