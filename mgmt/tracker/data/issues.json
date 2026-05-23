@@ -688,12 +688,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "FR-017 に 'タイル中心点が北方領土6村ポリゴンに含まれるタイルを列挙' と明示し、ADR-005 と同じ規定を SRS に転記する。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:37:42",
@@ -708,6 +708,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "SRS FR-017 出力③の説明に「タイルの中心点が対象ポリゴン内に含まれるタイルを列挙する」と明示。ADR-005 L47 と整合。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -721,12 +728,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "NFR-003 に 'metadata.generated_at 等の実行時タイムスタンプを除き、ピーク座標・標高・突合結果・採番が同一であること' と除外規定を明記。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:38:48",
@@ -741,6 +748,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "SRS NFR-003 に「metadata.generated_at 等の実行時タイムスタンプを除く」旨の除外規定を追記。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -754,13 +768,21 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-015 に縮小方式を明示する（推奨: max pooling でダウンサンプル、NODATA は除外）。もしくは HLD で規定する旨を SRS に明記。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-05-23T16:39:57",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": ""
+        }
+      ],
       "planned_stage": "SRS"
     },
     {
@@ -853,12 +875,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "GLOSSARY に以下を追加:\n(1) '削除候補（deleted サミット）' を独立項目として追加（ISSUE-018 の sota_summit.match_status=deleted 定義と整合）\n(2) ISSUE-026 と協調して 'dominant peak' 見出しを英語表記に統一",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:45:35",
@@ -873,6 +895,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "GLOSSARY に「削除候補サミット」を独立項目として追加。dominant peak 見出し統一は ISSUE-026 で解決済み。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -886,12 +915,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "フォールバック規定を 1 箇所（推奨: FR-017 のみ）に集約し、他箇所からは '詳細は FR-017 参照' とリンクする。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:47:44",
@@ -906,6 +935,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "FR-003 と 6.9（3ファイル）の省略時動作をそれぞれ「詳細は FR-017 参照」に差し替え、フォールバック規定を FR-017 に集約。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -938,12 +974,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "URD",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "URD UR-006 の要件文または前提・制約に '作業用ビューア（山岳名入力・XLSX エクスポート）と公開用 HTML（閲覧専用）の 2 層構造' を反映する。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:49:04",
@@ -958,6 +994,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "URD UR-006 に「作業用（山岳名入力・XLSXエクスポート機能付き）と公開用（閲覧専用）の2種類を生成する」を追記。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -1056,12 +1099,12 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "tracker のレコード編集機能で ISSUE-018 の resolution フィールドを書き換え、「案 B（peak.match_status は変更せず、summit.dominant_peak_code で紐付けのみ）を採用」と明記する。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:50:30",
@@ -1076,6 +1119,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "ISSUE-018 の resolution を案 B 採用前提の記述に置き換え完了。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -1089,12 +1139,12 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Claude",
       "resolution": "北方領土の記述（ADR-005 参照）に準じて以下3箇所に竹島の記述を追加する:\n(1) 8.前提・制約（877行目）: 北方領土の記述の直後に「竹島（島根県）が含まれるメッシュ 5531 は mesh_list_japan.txt から除外済み（ADR-009 参照）」を追加\n(2) 9.スコープ外（892行目）: 北方領土の行の直後に「竹島に所在するピーク（韓国 SOTA サミット HL/GB-430 として登録済み。SOTA 日本支部の管轄外のため。除外方法は ADR-009 で規定）」を追加\n(3) FR-003（202行目付近）: 北方領土タイル除外の記述の後に「竹島はメッシュ除外（ADR-009）で対応するため FR-003 での追加処理はない」旨を注記",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:52:39",
@@ -1109,6 +1159,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "SRS 3箇所に竹島記述を追加: (1)8.前提・制約にメッシュ5531除外の記述、(2)9.スコープ外に北方領土と並列で追加、(3)FR-003に竹島はメッシュ除外で対応・FR-003追加処理なしを注記。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -1122,12 +1179,12 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "5531 を削除ではなくコメントアウト形式（# 5531 竹島のみのため除外（ADR-009））で除外。理由と根拠が履歴として残る。main.c は # 始まり行をスキップ済みのため動作上の変更なし。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T15:54:50",
@@ -1142,6 +1199,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "params/mesh_list_japan.txt の 5531 をコメントアウト形式で除外。"
+        },
+        {
+          "date": "2026-05-23T16:28:36",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
