@@ -7,6 +7,8 @@
 | 調査資料 | [`research/6x6-mesh-keycol-coverage-study.md`](research/6x6-mesh-keycol-coverage-study.md) |
 | 調査資料 | [`research/outliers_3x3_parent_connection.geojson`](research/outliers_3x3_parent_connection.geojson) |
 
+> ※ ADR-011（2026-05-21）により Decision／Consequences の一部を改訂済（広域モードのポリゴン生成廃止・`area_complete=false` トリガー対象外化）
+
 ---
 
 ## Context
@@ -49,11 +51,11 @@
 ## Decision
 
 - **パイプライン配置**: フェーズ3.5（FR-008 + FR-018 の全国統合が完了した直後、FR-009 突合より前）。per-mesh フェーズ2 で判定する設計は採らない（同一ピークが複数の per-mesh 解析に出現するため、`key_col_resolved=false` は per-mesh 段階では確定せず、全国統合後でないと真に独立峰となるピークを特定できない）
-- **入力**: `$DATA_DIR/results/merged.csv`（FR-008 出力）および `$DATA_DIR/results/merged_activation.geojson`（FR-018 出力）
-- **トリガー条件**: merged.csv 上で `key_col_resolved=false` **または** `area_complete=false` のピークを対象とする
+- **入力**: `$DATA_DIR/results/merged.csv`（FR-008 出力）
+- **トリガー条件**: merged.csv 上で `key_col_resolved=false` のピークを対象とする（ADR-011 によりトリガーを縮小、`area_complete=false` はトリガー対象外）
 - **基本方針: 縮小版パイプラインのループ**:
-  - FR-004 に「処理モード（メッシュ数 N + ズームレベル L）パラメータ」を追加し、N×N + L14 で per-mesh エンジン（FR-004→FR-005→FR-006→FR-016→FR-007）を呼び出して**広域 per-mesh CSV/GeoJSON を新規生成**する
-  - 通常 per-mesh ファイル群と広域 per-mesh ファイル群を**まとめて** FR-008/FR-018 に再投入し、`merged.csv`・`merged_activation.geojson` を再生成する
+  - FR-004 に「処理モード（メッシュ数 N + ズームレベル L）パラメータ」を追加し、N×N + L14 で per-mesh エンジン（FR-004→FR-005→FR-006→FR-007）を呼び出して**広域 per-mesh CSV を新規生成**する（FR-016 のポリゴン生成は呼び出さない）
+  - 通常 per-mesh ファイル群と広域 per-mesh ファイル群を**まとめて** FR-008 に再投入し、`merged.csv` を再生成する（広域モードは GeoJSON を生成しないため FR-018 は再入しない）
   - FR-008 の重複排除ロジック `(key_col_resolved=true, コル標高最高)` により、広域モードで解消された結果が自動的に代表として採用される（merged への差分上書きはしない）
 - **エスカレーション・ループ（N = 4 → 5 → 6）**:
   - **一次解析: 4×4 メッシュ + L14**（解析半径 111 km、推定メモリ ~25 GB）
@@ -62,9 +64,8 @@
   - **5×5 + L14**（148 km、~39 GB）— 4×4 後も対象ピークの `key_col_resolved=false` が残る場合に自動実行
   - **6×6 + L14**（185 km、~57 GB）— 5×5 後も残る場合に自動実行（最終段階）
   - **最終残存**: 6×6 後も `key_col_resolved=false` が残る場合はログ警告を出力し、当該フラグ状態を維持したまま処理継続（手動調査待ち）
-- `area_complete=false` のみのピークは 4×4 固定（エスカレーション不要）
-- **出力スコープ**: 広域モードでは**広域 per-mesh CSV/GeoJSON のみを新規出力**し、merged 系ファイルへの差分書き換えは行わない。merged の更新は FR-008/FR-018 の再実行に委ねる。通常 per-mesh ファイル（`<meshcode>.csv` 等）も**更新しない**
-- **広域 per-mesh ファイル命名**: 通常 per-mesh ファイルと区別できる命名（例: `widearea_<対象peak識別>_<n>x<n>_<col>_<row>.csv` / `..._activation.geojson`）を採用し、同一ディレクトリ `$DATA_DIR/results/csv/` に置く
+- **出力スコープ**: 広域モードでは**広域 per-mesh CSV のみを新規出力**し（GeoJSON は出力しない）、merged 系ファイルへの差分書き換えは行わない。merged.csv の更新は FR-008 の再実行に委ねる。通常 per-mesh ファイル（`<meshcode>.csv` 等）も**更新しない**
+- **広域 per-mesh ファイル命名**: 通常 per-mesh ファイルと区別できる命名（例: `widearea_<対象peak識別>_<n>x<n>_<col>_<row>.csv`）を採用し、同一ディレクトリ `$DATA_DIR/results/csv/` に置く
 
 **解析ウィンドウ決定: スライディングウィンドウ全パターン探索**
 
@@ -93,9 +94,7 @@ max pooling を選んだ理由: プロミネンス計算目的では山頂を保
 平均や最小値では山頂標高が過小評価される。Key コルは実際より高く評価される（プロミネンスが保守的方向に過小）が、
 申請において保守的であることは許容範囲。
 
-`area_complete=false` をトリガーに加えた理由: アクティベーションゾーンが途切れたまま
-FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサミットが deleted に
-誤分類される。FR-014 の広域再解析で activation.geojson を再生成すれば同時に解消できる。
+※ ADR-011（2026-05-21）により、`area_complete=false` のトリガー条件は廃止された。delete判定ゾーン 250m キャップにより AZ・delete判定ゾーンとも複数の 3×3 メッシュ統合段階で完結ポリゴンが見つかる想定となったため、FR-014 のトリガーは `key_col_resolved=false` のみで十分となった（詳細は ADR-011 副次効果「広域再解析のトリガー縮小」を参照）。
 
 ## Alternatives
 
@@ -107,6 +106,7 @@ FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサ�
 | 8×8 メッシュを通常処理に採用 | 計算コストが 7 倍以上に増大。ほぼ全サミットに適用するのは非現実的。 |
 | 6×6 + L14（当初案） | 解析半径 185 km・推定メモリ ~57 GB で 3×3/L15 と同等。対象 1〜2 件に対してオーバースペック。4×4+5×5 段階構成のほうがメモリ効率が良く対象ケースも十分カバーできる。 |
 | Key Col 方向への矩形メッシュ拡張 | 鳥海山のように N-S 方向だけ延ばす 4×2 等の矩形解析。8 タイルで済み level-14 より解像度を保てる。ただし MeshSet の非正方形対応と拡張方向の自動判定が必要。対象が 1〜2 件であるため実装コスト対効果の面から不採用。 |
+| `area_complete=false` をトリガーに追加（ADR-011 以前の旧設計） | AZ が解析境界で途切れたまま FR-009 に渡ると point-in-polygon 突合が失敗するリスクを懸念して追加していた。ADR-011（2026-05-21）で delete判定ゾーン 250m キャップが確定したことにより廃止。AZ・delete判定ゾーンはいずれも複数の 3×3 メッシュ統合段階で完結ポリゴンが見つかる想定となったため、`area_complete=false` が想定外に発生した場合は merge.py の `is_area_incomplete` 不備フラグで処理停止する設計に変更（ADR-011 参照）。 |
 | per-mesh フェーズ2 内配置（2026-05-16 暫定設計） | per-mesh CSV の `key_col_resolved=false` を直接トリガとする案。同一ピークが複数の per-mesh 解析に出現し、別解析では `key_col_resolved=true` となる可能性がある。per-mesh 段階で確定的に判定できないため、フェーズ3 統合で本来 confirmed になるピークまで広域再解析する無駄が生じる。SRS FR-018 とも循環参照を生んだ（ISSUE-033）。フェーズ3.5 配置に修正。 |
 | フェーズ3 末尾の単発処理 + merged 差分上書き（2026-05-18 午後の暫定） | FR-014 を「merged.csv / merged_activation.geojson を入力に取り、該当レコード・ポリゴンを差分上書きする独立処理」と位置付ける案。ユーザーが意図していた「per-mesh エンジン（FR-004）を広域モードで再呼び出しし、FR-008/FR-018 を再実行して merged を再生成する縮小版パイプライン」とは構造が異なり、merged を破壊的に書き換える点が問題。広域 per-mesh ファイル群を新規生成し FR-008/FR-018 のループに乗せる縮小版パイプライン方式（本決定）に修正。 |
 
@@ -135,11 +135,12 @@ FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサ�
    - `load_mesh_tile` が使う `elev_load_tile_into_big` はタイル本体 256×256 のみ読む
    - cross-tile pooling（境界をまたぐ 2×2 group）は実施しない
    - 隣接タイル境界での ~10m 格子誤差はプロミネンス 150m 判定に対して無視できる
-5. **merged 系ファイルの更新方法**: FR-014 自身は merged.csv / merged_activation.geojson を**直接書き換えない**。
+5. **merged 系ファイルの更新方法**: FR-014 自身は merged.csv を**直接書き換えない**。
    広域モードで `findsummits`（[ADR-010](ADR-010-cpp-opencv-migration.md) 移行後の C++ エンジン）が
-   per-mesh CSV/GeoJSON を新規出力し、それを通常 per-mesh ファイル群と一緒に FR-008/FR-018 に再投入する
-   ことで merged が再生成される。FR-014 自身の責務は「対象ピーク特定 → 広域モード呼び出し → 
-   FR-008/FR-018 再実行 → エスカレーション判定」のオーケストレーションに限定される。
+   per-mesh CSV を新規出力し、それを通常 per-mesh ファイル群と一緒に FR-008 に再投入する
+   ことで merged.csv が再生成される（広域モードは GeoJSON を生成しないため merged_activation.geojson は再生成しない）。
+   FR-014 自身の責務は「対象ピーク特定 → 広域モード呼び出し → 
+   FR-008 再実行 → エスカレーション判定」のオーケストレーションに限定される。
 
 6. **実装原則: per-mesh エンジン（C++）の拡張・再利用（ロジック重複禁止）**
    FR-014 は per-mesh 解析エンジン（[ADR-010](ADR-010-cpp-opencv-migration.md) 移行後の `findsummits` C++ 実装）を拡張して対応し、
@@ -152,10 +153,10 @@ FR-009 に渡ると point-in-polygon 突合が失敗し、本来 matched なサ�
      N×N メッシュコードリストの内容は呼び出し側（Python オーケストレーション）が指定する。
 
    Python の FR-014 オーケストレーション（新スクリプトまたは merge.py 拡張）の責務は:
-   - 対象ピーク特定（merged.csv で `key_col_resolved=false` / `area_complete=false` のレコード抽出）
+   - 対象ピーク特定（merged.csv で `key_col_resolved=false` のレコード抽出）
    - 対象ピーク座標 → メッシュコード変換 → N×N メッシュコードリスト生成
    - 拡張 `findsummits` の呼び出し（処理モード = N×N + L14 を指定）
-   - 広域 per-mesh CSV/GeoJSON 出力後の FR-008/FR-018 再実行（merge.py の関数を呼び直す）
+   - 広域 per-mesh CSV 出力後の FR-008 再実行（merge.py の関数を呼び直す）
    - 更新後 merged.csv で対象ピークの `key_col_resolved` 確認・早期終了・エスカレーション判定（N=4→5→6）
    のみとし、標高解析ロジックは C++ エンジン側に留める。
 
