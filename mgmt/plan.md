@@ -1,117 +1,60 @@
-# SOTA 申請「変更」基準の再定義 — URD/SRS/GLOSSARY 改訂
+# Plan: ISSUE-043/044 notes 補正（入力2系統の明記）
 
 ## Context
 
-SOTA 日本支部への申請対象「変更」の意味を再定義する。
+2026-05-21 セッションで「merged.csv に全情報を集約し、不備がなければ後続で merged.geojson と merged_viewer.html を生成する」というフロー合意があった（handover 2026-05-21_1830.md 記載）。
 
-- **旧仕様**: 「変更」= 山岳名の変更のみ（HTML ビューアでユーザーが手動記入）
-- **新仕様**: 「変更」= matched ペアで **Points バンドをまたぐ標高差** があるケース（自動識別）
+しかし AZ・delete判定ゾーンのポリゴン情報は CSV に載らないため、output_geojson.py の入力は実際には「merged.csv + merged_activation.geojson」の2系統である必要がある。
 
-**ユーザー判断**:「Points が変わらない変更は SOTA 本部側に意味のない作業を依頼するだけ。Points が変わるなら意味がある」「事実は事実として申請したい」。山岳名変更はピーク解析と無関係なので申請対象から外す。
+調査結果:
+- **SRS (02_SRS.md:440-444 FR-013)**: 既に「入力: merged.csv + merged_activation.geojson」と正しく規定済み → 補正不要
+- **ISSUE-043 notes**: 列計算（points/sota_points 等）のみ記載。merge.py が `merged.csv` と `merged_activation.geojson` の2系統を出力する点が未記載
+- **ISSUE-044 notes**: UI 廃止・自動エクスポートのみ記載。入力2系統が未記載
 
-本タスクは SRS フェーズの仕様改訂のみ。コード実装（merge.py / output_geojson.py 等）は別 ISSUE に切り出す。
+ISSUE notes と SRS は矛盾していないが、一昨日の口約束との差分が明示されていないため、後続セッションが handover を見て同じ誤解を踏みやすい。本 Plan はこの差分を ISSUE notes に追記して整合させる。
 
-## 確定済み判断
+## 補正方針
 
-| 項目 | 決定 |
-|---|---|
-| 標高バンド境界値 | SOTA 日本支部公式（全国統一・地域依存なし）。150/500/650/850/1100/1500m で 1/2/4/6/8/10pt |
-| 出典 | SOTA 日本支部参照マニュアル 2025年7月改定版 |
-| peak_elev の丸め | **切り捨て**（floor）で整数 m に変換（1499.5m は 1499m → 8pt。四捨五入は不可） |
-| バンド判定タイミング | **丸めた後の値**でバンド判定（申請書記入値との整合性確保） |
-| 新規 ADR | 不要（公式値で設計裁量なし） |
-| Phase B（実データ検証） | **不実施**（ユーザー判断） |
-| 名称変更入力 UI | 完全廃止（HTML ビューア） |
+### ISSUE-043 notes に追記
 
-## Phase A: ドキュメント改訂
+`venv/bin/python3 mgmt/tracker/track.py issue update 043 --notes "..."` で末尾追記。
 
-### A-1. GLOSSARY 改訂（docs/00_GLOSSARY.md）
+追記文面（要旨）:
+- merge.py の出力は `merged.csv`（ピーク台帳・ステータス・不備フラグ）と `merged_activation.geojson`（AZ・delete判定ゾーンポリゴンの per-mesh 統合）の2系統である（SRS FR-018 参照）
+- AZ/delete-zone PIP 判定の素材は per-mesh activation GeoJSON
+- 不備フラグ・exit code 判定は merged.csv 側で完結する
 
-「データソース関連」内の SOTA 関連項目に隣接して、標高バンド表を追加:
+### ISSUE-044 notes に追記
 
-```
-### 標高バンド（Points 算出表）
+`venv/bin/python3 mgmt/tracker/track.py issue update 044 --notes "..."` で末尾追記。
 
-SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全国統一値。
+追記文面（要旨）:
+- output_geojson.py の入力は `merged.csv` + `merged_activation.geojson` の2系統（SRS FR-013 参照）
+- ポリゴン情報（AZ・delete判定ゾーン）は merged_activation.geojson から取り込む
+- 出力は `merged.geojson`（Point + LineString + Polygon の可視化集約）と `merged_viewer.html`
 
-| 標高 [m]            | Points |
-|--------------------|--------|
-| 150 ≤ h < 500      | 1      |
-| 500 ≤ h < 650      | 2      |
-| 650 ≤ h < 850      | 4      |
-| 850 ≤ h < 1100     | 6      |
-| 1100 ≤ h < 1500    | 8      |
-| 1500 ≤ h           | 10     |
+### SRS（02_SRS.md）
 
-出典は ref/SOURCES.md を参照。本表が points / sota_points 算出の正となる。
-```
+補正不要。FR-013/FR-018 の記述は既に正確。
 
-`ref/SOURCES.md` にもマニュアル出典を追加（URL: `https://www.kawauchi.homeip.mydns.jp/sotajp/やってみよう/` のセクション 8）。
+## 不変箇所（合意のまま残る部分）
 
-### A-2. URD 改訂（docs/01_URD.md）
+- merge.py が merged.csv を生成し、不備があれば exit code で後続を止める（ISSUE-043 の根幹）
+- output_geojson.py が後続で merged.geojson と merged_viewer.html を生成する（ISSUE-044 の根幹）
+- merged.csv は「1レコード=1ピーク」のフラットなステータス原簿として有効
 
-- **UR-003（L43）**: 「現行 SOTA リストと突合し、新規・削除・**変更（標高バンドを跨ぐ標高差があるもの）**の候補を識別できること（既存サミットの名称変更・座標変更・バンドを跨がない標高変更は自動識別対象外）」
-- **6. スコープ外（L74）**: 旧文を以下 3 項目に分割
-  - 既存サミットの**名称変更**申請（自動識別せず）
-  - 既存サミットの**座標変更**申請（自動識別せず）
-  - **バンドを跨がない標高変動**（Points 値が変わらないため SOTA 本部にとって意味のない変更）
+## 触れないこと
 
-### A-3. SRS 改訂（docs/02_SRS.md）
+- merge.py / output_geojson.py のコード（仕様優先原則、SRS フェーズ中はコード変更しない）
+- SRS / ADR / GLOSSARY 本体（既に正しい）
+- handover 過去ログ（事実記録として残す）
 
-| 改訂対象 | 内容 |
-|---|---|
-| **FR-009 新セクション** | 「標高バンド・Points 算出」追加。半開区間定義、切り捨て（floor）による整数 m 丸め、丸め後値でのバンド判定を明記 |
-| **FR-009 突合ロジック** | matched ペアに対し `sota_points = band(sota_alt_m)`、`peak_points = band(floor(peak_elev))`、`is_band_change_candidate = (sota_points ≠ peak_points)` を算出 |
-| **FR-007（L219-239）** | per-mesh CSV カラム表に `points` 列追加（peak_elev からの算出値）|
-| **FR-008（L254-267）** | merged.csv に `points` / `sota_points` / `is_band_change_candidate` 列追加 |
-| **FR-011（L497-523）** | 申請書「変更」行マッピングを書き換え（変更前 = sota_alt_m、変更後 = floor(peak_elev)、山岳名は変更前後同値）。**対象 = `is_band_change_candidate=true` の matched 行**|
-| **FR-012（L525-558）** | merged.csv 出力カラム表を FR-008 の追加列に追従 |
-| **FR-013（L478-495）** | matched ピーク用の名称修正入力フィールド（L480）と、関連 UI / localStorage を**削除**。XLSX エクスポートの「変更」行は `is_band_change_candidate=true` から自動生成 |
-| **9. スコープ外（L842）** | URD と同期した文に置換 |
+## 検証手順
 
-変更根拠文（FR-011 出力時の自動生成）テンプレ案:
-```
-国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {floor(peak_elev)}m ({peak_points}pt)
-座標: {peak_lat},{peak_lon}（{都道府県} {市区町村}）
-```
+1. `venv/bin/python3 mgmt/tracker/track.py issue show 043` で notes に2系統出力が明記されたことを確認
+2. `venv/bin/python3 mgmt/tracker/track.py issue show 044` で notes に2系統入力が明記されたことを確認
+3. SRS FR-013（02_SRS.md:440-444）と ISSUE-044 notes が同じ表現で整合していることを目視確認
 
-### A-4. ISSUE 整理（mgmt/tracker/data/issues.json）
+## 後続作業
 
-| ISSUE | 操作 |
-|---|---|
-| ISSUE-025（標高バンド境界値の規定） | **本タスク完了時に close → verify**（A-1 で吸収済み） |
-| ISSUE-003（output_xlsx.py 新規作成） | notes 更新: 「MOVED/ELEV_CHANGE シート」言及を「FR-011 最新仕様の変更行 = バンド遷移 matched」に置換 |
-| ISSUE-043（merge.py: AZ/delete-zone PIP 等） | 作業範囲に「`points` / `sota_points` / `is_band_change_candidate` 列追加」を追記 |
-| ISSUE-044（output_geojson.py + merged_viewer.html） | 作業範囲に「名称修正 UI 廃止 + 変更行自動エクスポート（バンド遷移 matched）」を追記 |
-| **ISSUE-046（新規）** | 「SRS: 変更申請判定を Points バンド遷移基準に変更（URD/SRS/GLOSSARY 改訂）」を進捗管理用に登録 |
-
-## Commit 粒度（Phase A）
-
-1. `docs(glossary): SOTA 標高バンド表を追加（出典: 参照マニュアル 2025年7月版）`
-2. `docs(urd): UR-003 / スコープ外を Points バンド遷移基準に再定義`
-3. `docs(srs): FR-009 に標高バンド・Points 算出ロジックを追加`
-4. `docs(srs): FR-007/008/012 で points / sota_points / is_band_change_candidate を出力カラムに追加`
-5. `docs(srs): FR-011 変更行マッピング更新、FR-013 名称修正 UI を廃止`
-6. `mgmt: ISSUE-025 close、ISSUE-003/043/044 notes 更新、ISSUE-046 新規登録`
-
-## 検証
-
-- Phase A 完了後、URD → GLOSSARY → SRS の論理整合性を読み合わせ（用語・参照リンク・スコープの一貫性）
-- `mgmt/tracker/track.py issue show ISSUE-025` で本タスク完了後に「対応完了」化、ユーザー verify 待ち
-- `mgmt/tracker/track.py issue show ISSUE-046` で SRS 改訂完了を「対応完了」化、ユーザー verify 待ち
-- 実装系 ISSUE-003/043/044 は notes 更新のみ（ステータス変更なし）
-
-## 関連ファイル（絶対パス）
-
-- `/workspace/docs/00_GLOSSARY.md`
-- `/workspace/docs/01_URD.md`
-- `/workspace/docs/02_SRS.md`
-- `/workspace/ref/SOURCES.md`
-- `/workspace/mgmt/tracker/data/issues.json`
-- `/workspace/ref/SOTA-Summit-list-revision-request.xlsx`（参照のみ）
-
-## 参考（実装には踏み込まない）
-
-- `scripts/merge.py` には現在 `points` / `Points` / `band` の処理一切なし → ISSUE-043 で実装
-- `analysis/sota_dem_elevation_diff.py` は標高差分析専用で Points 計算なし → 本タスクと無関係
-- `ref/summitslist.csv` の Points 列（第 11 列、値 1/2/4/6/8/10）は突合の参照値として既に存在
+- 補正コミット後、ISSUE-043/044 を SRS フェーズ完了時点で改めて実装着手対象として扱う（SRS 確定後）
