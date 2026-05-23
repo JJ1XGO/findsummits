@@ -1,60 +1,71 @@
-# Plan: ISSUE-043/044 notes 補正（入力2系統の明記）
+# Plan: SRS 3.2 主要コンポーネント構成の抽象化（3.3・ADR-010 整合含む）
 
 ## Context
 
-2026-05-21 セッションで「merged.csv に全情報を集約し、不備がなければ後続で merged.geojson と merged_viewer.html を生成する」というフロー合意があった（handover 2026-05-21_1830.md 記載）。
+SRS `02_SRS.md` の「3.2 主要コンポーネント構成」が実装名（`findsummits` / `prefetch_tiles.py` / `merge.py` / `merged_viewer.html`）と実装言語（C / Python / JavaScript）を直書きしており、SRS の文書性質（What を書く層）から逸脱している。同様に「3.3 フェーズ分割の俯瞰」も `findsummits (C)` `merge.py (Python)` と引きずられている。
 
-しかし AZ・delete判定ゾーンのポリゴン情報は CSV に載らないため、output_geojson.py の入力は実際には「merged.csv + merged_activation.geojson」の2系統である必要がある。
+加えて ADR-010（採用済み・未実装）により C エンジンを C++ に移行する方針が決まっているが、3.2 表は現行 C 実装の名称・言語に固定されているため、C++ 移行時に陳腐化リスクがある。
 
-調査結果:
-- **SRS (02_SRS.md:440-444 FR-013)**: 既に「入力: merged.csv + merged_activation.geojson」と正しく規定済み → 補正不要
-- **ISSUE-043 notes**: 列計算（points/sota_points 等）のみ記載。merge.py が `merged.csv` と `merged_activation.geojson` の2系統を出力する点が未記載
-- **ISSUE-044 notes**: UI 廃止・自動エクスポートのみ記載。入力2系統が未記載
+仕様優先原則に従い、SRS は論理コンポーネント名と責務・主要 I/O で記述する。実装ファイル名・言語選定は ADR / HLD / LLD の管轄とし、SRS からは切り離す。
 
-ISSUE notes と SRS は矛盾していないが、一昨日の口約束との差分が明示されていないため、後続セッションが handover を見て同じ誤解を踏みやすい。本 Plan はこの差分を ISSUE notes に追記して整合させる。
+なお SRS 4 章以降（FR-002〜FR-013）は既に論理責務レベルで書かれており、3.2/3.3 のみが乖離しているため、本改修で SRS 全体の抽象度を一貫させる。
 
-## 補正方針
+## 改修方針
 
-### ISSUE-043 notes に追記
+### 1. SRS 3.2 主要コンポーネント構成（02_SRS.md:109-122）
 
-`venv/bin/python3 mgmt/tracker/track.py issue update 043 --notes "..."` で末尾追記。
+**表スキーマ変更**:
+- 現状: `コンポーネント | 言語 | 責務`
+- 改修後: `コンポーネント | 責務 | 主要入力 | 主要出力`
+- 「言語」列は削除（実装言語の決定は ADR-010 に委ねる旨を本節冒頭で注記）
 
-追記文面（要旨）:
-- merge.py の出力は `merged.csv`（ピーク台帳・ステータス・不備フラグ）と `merged_activation.geojson`（AZ・delete判定ゾーンポリゴンの per-mesh 統合）の2系統である（SRS FR-018 参照）
-- AZ/delete-zone PIP 判定の素材は per-mesh activation GeoJSON
-- 不備フラグ・exit code 判定は merged.csv 側で完結する
+**論理コンポーネント命名案**（実装名との対応関係はコメントで残さない／HLD/LLD で結びつける想定）:
 
-### ISSUE-044 notes に追記
+| 論理コンポーネント | 責務 | 主要入力 | 主要出力 |
+|---|---|---|---|
+| タイル取得コンポーネント | DEM タイルを国土地理院から取得・キャッシュ | メッシュコード／取得設定 | キャッシュ済み PNG タイル |
+| 行政区域前処理コンポーネント | 都道府県・振興局境界 GeoJSON を解析用形式に変換 | N03 行政区域 GeoJSON | 軽量化された境界 GeoJSON |
+| 地形解析エンジン | DEM からピーク／コル／プロミネンス／AZ・delete判定ゾーンを検出 | キャッシュ済み PNG タイル | per-mesh CSV、per-mesh activation GeoJSON、標高地形図 PNG |
+| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、不備フラグ判定 | per-mesh CSV／GeoJSON、SOTA リスト、行政区域 GeoJSON | merged.csv、merged_activation.geojson、exit code |
+| 可視化生成コンポーネント | 統合結果から GeoJSON と HTML ビューアを生成 | merged.csv、merged_activation.geojson | merged.geojson、merged_viewer.html |
+| 申請書生成 UI | HTML ビューア内でユーザー操作に応じ XLSX を生成 | merged_viewer.html、ユーザー操作 | 申請用 XLSX |
 
-`venv/bin/python3 mgmt/tracker/track.py issue update 044 --notes "..."` で末尾追記。
+### 2. SRS 3.3 フェーズ分割の俯瞰（02_SRS.md:124-149）
 
-追記文面（要旨）:
-- output_geojson.py の入力は `merged.csv` + `merged_activation.geojson` の2系統（SRS FR-013 参照）
-- ポリゴン情報（AZ・delete判定ゾーン）は merged_activation.geojson から取り込む
-- 出力は `merged.geojson`（Point + LineString + Polygon の可視化集約）と `merged_viewer.html`
+- `findsummits (C)` → 「地形解析エンジン」
+- `merge.py (Python)` → 「統合・突合コンポーネント」
+- `prefetch_tiles.py` → 「タイル取得コンポーネント」
+- `preprocess_pref_boundaries.py` → 「行政区域前処理コンポーネント」
+- フロー図テキスト内の実装名引用箇所を全て論理コンポーネント名で置換
+- もし図中に言語名（C/Python）が出ていれば削除
 
-### SRS（02_SRS.md）
+### 3. ADR-010 既存ドキュメントへの波及（ADR-010 行119-123）
 
-補正不要。FR-013/FR-018 の記述は既に正確。
+- 現状: 「SRS 3.2 アーキテクチャ概要『C エンジン』を『C++ エンジン』に変更（Phase 1 着手時に実施）」
+- 改修後: 「SRS 3.2/3.3 は論理コンポーネント名で記述するため、本 ADR の言語変更による影響を受けない（実装言語の選定は本 ADR で完結し、HLD/LLD で具体ファイル名・ビルド構成を扱う）」
 
-## 不変箇所（合意のまま残る部分）
+## 触る箇所（critical files）
 
-- merge.py が merged.csv を生成し、不備があれば exit code で後続を止める（ISSUE-043 の根幹）
-- output_geojson.py が後続で merged.geojson と merged_viewer.html を生成する（ISSUE-044 の根幹）
-- merged.csv は「1レコード=1ピーク」のフラットなステータス原簿として有効
+- `/workspace/docs/02_SRS.md` — 3.2（行109-122）と 3.3（行124-149）
+- `/workspace/docs/decisions/ADR-010-cpp-opencv-migration.md` — 波及セクション（行119-123 付近）
 
-## 触れないこと
+## 触らないこと
 
-- merge.py / output_geojson.py のコード（仕様優先原則、SRS フェーズ中はコード変更しない）
-- SRS / ADR / GLOSSARY 本体（既に正しい）
-- handover 過去ログ（事実記録として残す）
+- SRS 4 章以降（FR-002〜FR-013）: 既に論理責務レベルで書かれており整合済み
+- SRS 3.1（システムコンテキスト）: 抽象度問題なし
+- ADR-010 の Decision / Alternatives / Consequences 本体: 言語選定の意思決定は変更しない
+- 実装コード（src/, scripts/）: 仕様優先原則、SRS フェーズではコード変更しない
+- ADR-011 / GLOSSARY / 他 ADR: 今回のスコープ外
 
 ## 検証手順
 
-1. `venv/bin/python3 mgmt/tracker/track.py issue show 043` で notes に2系統出力が明記されたことを確認
-2. `venv/bin/python3 mgmt/tracker/track.py issue show 044` で notes に2系統入力が明記されたことを確認
-3. SRS FR-013（02_SRS.md:440-444）と ISSUE-044 notes が同じ表現で整合していることを目視確認
+1. `02_SRS.md` の 3.2 表に実装名（`findsummits` / `merge.py` 等）と言語列が残っていないことを目視確認
+2. `02_SRS.md` の 3.3 フェーズ俯瞰に実装名と言語が残っていないことを目視確認
+3. `grep -nE "findsummits|merge\.py|prefetch_tiles|preprocess_pref|merged_viewer\.html|\(C\)|\(Python\)" docs/02_SRS.md` で意図しない実装名引用が残っていないか確認
+4. ADR-010 波及セクションが「SRS は論理コンポーネント名のため影響なし」に書き換わっていることを確認
+5. SRS 4 章以降の FR から 3.2 へのテキスト参照（リンク）があれば、論理コンポーネント名で一貫しているか確認
+6. 更新後、CLAUDE.md ルールに従い `docs/` 配下の変更を Conventional Commits 形式・本文日本語で個別ファイル指定コミット
 
 ## 後続作業
 
-- 補正コミット後、ISSUE-043/044 を SRS フェーズ完了時点で改めて実装着手対象として扱う（SRS 確定後）
+- 本補正コミット後、ISSUE-040〜042（C++ 移行 Phase 1〜2 実装着手）の際に、3.2 を更新する必要がなくなる（論理コンポーネント名のため実装言語変更の影響を受けない）
