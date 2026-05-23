@@ -715,7 +715,7 @@ def issue_close(args):
     class _A: pass
     a = _A()
     a.id = args.id; a.status = "対応完了"; a.actor = args.actor; a.comment = args.comment
-    a.priority = a.type = a.stage = a.assignee = a.category = None
+    a.priority = a.type = a.stage = a.planned_stage = a.assignee = a.category = None
     a.description = a.resolution = a.notes = None
     issue_update(a)
 
