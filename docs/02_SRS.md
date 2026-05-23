@@ -108,18 +108,16 @@
 
 ### 3.2 主要コンポーネント構成
 
-C + Python ハイブリッド構成（ADR-001）。
+各コンポーネントの責務と主要 I/O を論理的に定義する。実装言語・実装ファイル名の決定は ADR に委ねる（[ADR-001](decisions/ADR-001-hybrid-c-python-architecture.md)、[ADR-010](decisions/ADR-010-cpp-opencv-migration.md) 参照）。
 
-| コンポーネント | 言語 | 役割 |
-|---|---|---|
-| `findsummits` | C | 標高デコード・ピーク/コル検出・ピーク域ポリゴン生成 |
-| `prefetch_tiles.py` | Python | 標高タイル事前取得 |
-| `preprocess_pref_boundaries.py` | Python | N03 行政区域前処理（初回のみ） |
-| `merge.py` | Python | per-mesh CSV 統合・SOTA 突合・出力生成 |
-| `merged_viewer.html` | JavaScript | GeoJSON 可視化・申請書 XLSX エクスポート |
-
-**C / Python 境界**: per-mesh CSV および ピーク域 GeoJSON ファイル。  
-詳細は [`decisions/ADR-001-hybrid-c-python-architecture.md`](decisions/ADR-001-hybrid-c-python-architecture.md) を参照。
+| コンポーネント | 責務 | 主要入力 | 主要出力 |
+|---|---|---|---|
+| タイル取得コンポーネント | DEM タイルを国土地理院から取得・キャッシュ | メッシュコード、取得設定 | キャッシュ済み PNG タイル |
+| 行政区域前処理コンポーネント | 都道府県・振興局境界 GeoJSON を解析用形式に変換（初回のみ） | N03 行政区域 GeoJSON | 軽量化された境界 GeoJSON |
+| 地形解析エンジン | DEM からピーク／コル／プロミネンス／AZ・delete判定ゾーンを検出 | キャッシュ済み PNG タイル | per-mesh CSV、per-mesh activation GeoJSON、標高地形図 PNG |
+| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、境界 GeoJSON | merged.csv、merged_activation.geojson |
+| 可視化生成コンポーネント | 統合結果から可視化 GeoJSON と HTML ビューアを生成 | merged.csv、merged_activation.geojson | merged.geojson、merged_viewer.html |
+| 申請書生成 UI | HTML ビューア内でユーザー操作に応じて申請書 XLSX を生成 | ユーザー操作（HTML ビューア上） | 申請用 XLSX |
 
 ### 3.3 フェーズ分割の俯瞰
 
@@ -129,20 +127,22 @@ C + Python ハイブリッド構成（ADR-001）。
 
 ```
 【ステップ1: データ取得・前処理】
-prefetch_tiles.py              タイル事前取得（フェーズ1）
-preprocess_pref_boundaries.py  N03 行政区域前処理（フェーズ1・初回のみ）
-       └─ $DATA_DIR/ref/N03-{n03_year}_regions.geojson  ← merge.py が参照
+タイル取得コンポーネント              タイル事前取得（フェーズ1）
+行政区域前処理コンポーネント           N03 行政区域前処理（フェーズ1・初回のみ）
+       └─ $DATA_DIR/ref/N03-{n03_year}_regions.geojson  ← 統合・突合コンポーネントが参照
        ↓
 【ステップ2: 解析・突合・確認】（GeoJSON/HTML で結果を確認してから次ステップへ）
-findsummits (C)      ピーク・コル検出・ピーク域ポリゴン生成（フェーズ2）
+地形解析エンジン         ピーク・コル検出・ピーク域ポリゴン生成（フェーズ2）
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
        ├─ per-peak polygons         ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
-merge.py (Python)    統合・突合・出力生成（フェーズ3〜4）
-       ├─ merged.csv         ($DATA_DIR/results/merged.csv)    ← エビデンス CSV
-       ├─ merged.geojson     ($DATA_DIR/results/merged.geojson) ← 証跡 GeoJSON
+統合・突合コンポーネント   統合・突合・出力生成（フェーズ3〜4）
+       ├─ merged.csv                ($DATA_DIR/results/merged.csv)    ← エビデンス CSV
+       └─ merged_activation.geojson ($DATA_DIR/results/merged_activation.geojson)
+可視化生成コンポーネント   GeoJSON・HTML ビューア生成（フェーズ4）
+       ├─ merged.geojson            ($DATA_DIR/results/merged.geojson) ← 証跡 GeoJSON
        └─ merged_viewer.html ← HTML ビューア（GeoJSON 埋め込み・申請書 XLSX エクスポート機能付き）
-【ステップ3: 申請書生成】（HTML ビューアで山岳名を入力後、申請書エクスポートボタンで XLSX 生成）
+【ステップ3: 申請書生成】（HTML ビューアで内容確認後、申請書エクスポートボタンで XLSX 生成）
 ```
 
 ---
