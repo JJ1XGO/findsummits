@@ -1,146 +1,337 @@
-<mxfile host="app.diagrams.net">
+<mxfile host="Electron">
   <diagram name="フェーズ俯瞰" id="phases-overview">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="827" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="1178" dy="723" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-
-        <!-- フェーズ1 ボックス -->
         <mxCell id="ph1-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ1：タイル取得・前処理" vertex="1">
-          <mxGeometry height="200" width="300" x="40" y="200" as="geometry" />
+          <mxGeometry height="140" width="440" x="200" y="220" as="geometry" />
         </mxCell>
-        <mxCell id="ph1-fr017" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-017&#xa;N03 行政区域前処理" vertex="1">
-          <mxGeometry height="50" width="140" x="60" y="260" as="geometry" />
-        </mxCell>
-        <mxCell id="ph1-fr001" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-001&#xa;標高タイル事前取得" vertex="1">
-          <mxGeometry height="50" width="140" x="60" y="320" as="geometry" />
-        </mxCell>
-
-        <!-- フェーズ1 入力 -->
-        <mxCell id="in-tiles" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="標高タイル&#xa;（地理院）" vertex="1">
-          <mxGeometry height="40" width="90" x="40" y="90" as="geometry" />
-        </mxCell>
-        <mxCell id="in-n03" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="N03 行政区域&#xa;（国交省）" vertex="1">
-          <mxGeometry height="40" width="90" x="150" y="90" as="geometry" />
-        </mxCell>
-        <mxCell id="e-tiles-ph1" parent="1" source="in-tiles" target="ph1-fr001" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-77" edge="1" parent="1" source="ph1-fr017" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-10">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-n03-ph1" parent="1" source="in-n03" target="ph1-fr017" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="ph1-fr017" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-017:&amp;nbsp;&lt;div&gt;N03 行政区域前処理&lt;/div&gt;&lt;div&gt;（データ準備）&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="140" x="442.5" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ph1-fr001" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-001:&amp;nbsp;&lt;div&gt;標高タイル事前取得&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="140" x="256" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="e-tiles-ph1" edge="1" parent="1" source="in-tiles" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ph1-fr001" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ1 出力ファイル -->
-        <mxCell id="out-tiles-cache" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="$DATA_DIR/tiles/&#xa;（タイルキャッシュ）" vertex="1">
-          <mxGeometry height="40" width="130" x="360" y="330" as="geometry" />
-        </mxCell>
-        <mxCell id="out-regions" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="N03_regions.geojson&#xa;N03_municipalities.geojson&#xa;excluded_tiles.txt" vertex="1">
-          <mxGeometry height="55" width="145" x="353" y="260" as="geometry" />
-        </mxCell>
-        <mxCell id="e-fr001-tiles" parent="1" source="ph1-fr001" target="out-tiles-cache" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="e-n03-ph1" edge="1" parent="1" source="in-n03" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="ph1-fr017" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-fr017-regions" parent="1" source="ph1-fr017" target="out-regions" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e-fr001-tiles" edge="1" parent="1" source="ph1-fr001" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="7kW802zkPkAvV46Z_aIt-15" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="190" y="480" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
-
-        <!-- フェーズ2 ボックス -->
         <mxCell id="ph2-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ2：ピーク解析（per-mesh）" vertex="1">
-          <mxGeometry height="200" width="300" x="560" y="200" as="geometry" />
+          <mxGeometry height="200" width="440" x="200" y="560" as="geometry" />
         </mxCell>
-        <mxCell id="ph2-fr004" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-002/003 デコード・フォールバック&#xa;FR-004 3×3 メッシュ結合解析&#xa;FR-005 ピーク候補検出&#xa;FR-006 コル検出・プロミネンス計算&#xa;FR-007 プロミネンスフィルタ出力" vertex="1">
-          <mxGeometry height="110" width="260" x="580" y="260" as="geometry" />
+        <mxCell id="7kW802zkPkAvV46Z_aIt-24" edge="1" parent="1" source="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-21">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="770" />
+              <mxPoint x="295" y="770" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-
-        <!-- フェーズ2 出力 -->
-        <mxCell id="out-per-mesh" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="per-mesh CSV&#xa;per-mesh activation.geojson&#xa;terrain PNG" vertex="1">
-          <mxGeometry height="55" width="140" x="880" y="275" as="geometry" />
-        </mxCell>
-        <mxCell id="e-ph2-out" parent="1" source="ph2-fr004" target="out-per-mesh" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-28" edge="1" parent="1" source="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-18">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ1→フェーズ2 エッジ -->
-        <mxCell id="e-ph1-ph2-tiles" parent="1" source="out-tiles-cache" target="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-29" edge="1" parent="1" source="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-27">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="770" />
+              <mxPoint x="552" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ph2-fr004" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="&lt;div&gt;FR-002: DEM 階層フォールバック&lt;/div&gt;&lt;div&gt;FR-003: 標高デコード・NODATA 処理&lt;/div&gt;&lt;div&gt;FR-004: 3×3 メッシュ結合解析&lt;/div&gt;&lt;div&gt;FR-005: ピーク候補検出&lt;/div&gt;&lt;div&gt;FR-006: コル検出・プロミネンス計算&lt;/div&gt;&lt;div&gt;FR-016: ピーク域ポリゴン生成&lt;/div&gt;&lt;div&gt;FR-007: プロミネンスフィルタ・per-mesh CSV 出力&lt;/div&gt;&lt;div&gt;FR-015: 標高地形図出力&lt;/div&gt;" vertex="1">
+          <mxGeometry height="130" width="320" x="260" y="595" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mesh-ph1" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-8" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="ph1-fr001" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-ph1-ph2-regions" parent="1" source="out-regions" target="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="ph3-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　&lt;span style=&quot;font-size: 11px; text-align: center;&quot;&gt;フェーズ3: ピーク統合（全国）&lt;/span&gt;" vertex="1">
+          <mxGeometry height="161" width="460" x="320" y="919" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-45" edge="1" parent="1" source="ph3-frs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-41">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- メッシュコードリスト -->
-        <mxCell id="in-meshlist" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="メッシュコード&#xa;リスト" vertex="1">
-          <mxGeometry height="40" width="90" x="610" y="90" as="geometry" />
-        </mxCell>
-        <mxCell id="e-mesh-ph1" parent="1" source="in-meshlist" target="ph1-fr001" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-57" edge="1" parent="1" source="ph3-frs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-37">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-mesh-ph2" parent="1" source="in-meshlist" target="ph2-fr004" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="ph3-frs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;FR-008: per-mesh CSV 統合&lt;/span&gt;&lt;/div&gt;&lt;div&gt;FR-018: per-mesh activation.geojson 統合&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="394" x="354.5" y="970" as="geometry" />
+        </mxCell>
+        <mxCell id="ph4-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ4: SOTAサミット 突合・出力" vertex="1">
+          <mxGeometry height="200" width="340" x="450" y="1250" as="geometry" />
+        </mxCell>
+        <mxCell id="ph4-frs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="&lt;div&gt;FR-009: SOTAリスト突合・match_status 判定&lt;/div&gt;&lt;div&gt;FR-010: 削除候補のスコープ&lt;/div&gt;&lt;div&gt;FR-013: GeoJSON・HTML ビューア生成&lt;/div&gt;&lt;div&gt;FR-011: 申請書 XLSX 生成&lt;/div&gt;&lt;div&gt;FR-012: エビデンス CSV 生成&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="260" x="489" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-2" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="88" width="90" x="281" y="111" as="geometry" />
+        </mxCell>
+        <mxCell id="in-tiles" parent="7kW802zkPkAvV46Z_aIt-2" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="標高タイル&#xa;（地理院）" vertex="1">
+          <mxGeometry height="40" width="90" y="48" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-1" parent="7kW802zkPkAvV46Z_aIt-2" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.container_registry_image;" value="" vertex="1">
+          <mxGeometry height="48" width="48" x="21" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-4" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="88" width="90" x="467.5" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="in-n03" parent="7kW802zkPkAvV46Z_aIt-4" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="N03 行政区域&#xa;（国交省）" vertex="1">
+          <mxGeometry height="40" width="90" y="48" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-3" parent="7kW802zkPkAvV46Z_aIt-4" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-9" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="88" width="90" x="89.995" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-8" parent="7kW802zkPkAvV46Z_aIt-9" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.file;pointerEvents=1;" value="" vertex="1">
+          <mxGeometry height="50" width="48.75" x="20.625" as="geometry" />
+        </mxCell>
+        <mxCell id="in-meshlist" parent="7kW802zkPkAvV46Z_aIt-9" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=none;strokeColor=none;" value="メッシュコード&#xa;リスト" vertex="1">
+          <mxGeometry height="40" width="90" y="48" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-13" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="145" x="440" y="401" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-11" parent="7kW802zkPkAvV46Z_aIt-13" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.file;pointerEvents=1;" value="" vertex="1">
+          <mxGeometry height="50" width="48.75" x="48.125" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-12" parent="7kW802zkPkAvV46Z_aIt-13" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="excluded_tiles.txt" vertex="1">
+          <mxGeometry height="20" width="145" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-14" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="78" width="145" x="607.5" y="391.5" as="geometry" />
+        </mxCell>
+        <mxCell id="out-regions" parent="7kW802zkPkAvV46Z_aIt-14" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="N03_regions.geojson&lt;br&gt;N03_municipalities.geojson" vertex="1">
+          <mxGeometry height="32.5" width="145" y="45.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-10" parent="7kW802zkPkAvV46Z_aIt-14" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="47.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-16" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="81" width="130" x="261" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="out-tiles-cache" parent="7kW802zkPkAvV46Z_aIt-16" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="$DATA_DIR/tiles/&lt;br&gt;（タイルキャッシュ）&lt;div&gt;Dem5a/b/c,Dem10b&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="130" y="48" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-15" parent="7kW802zkPkAvV46Z_aIt-16" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.container_registry_image;" value="" vertex="1">
+          <mxGeometry height="48" width="48" x="41" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-17" edge="1" parent="1" source="ph1-fr017" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="7kW802zkPkAvV46Z_aIt-11">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ3/3.5 ボックス -->
-        <mxCell id="ph3-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ3/3.5：ピーク統合・独立峰対応" vertex="1">
-          <mxGeometry height="200" width="300" x="1080" y="200" as="geometry" />
+        <mxCell id="7kW802zkPkAvV46Z_aIt-23" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="130" x="355" y="799" as="geometry" />
         </mxCell>
-        <mxCell id="ph3-frs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-008 per-mesh CSV 統合&#xa;FR-018 activation.geojson 統合&#xa;FR-014 独立峰のコル探索（広域再解析）" vertex="1">
-          <mxGeometry height="80" width="260" x="1100" y="280" as="geometry" />
+        <mxCell id="7kW802zkPkAvV46Z_aIt-18" parent="7kW802zkPkAvV46Z_aIt-23" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.users.csv_file;" value="" vertex="1">
+          <mxGeometry height="40" width="39.5" x="45.25" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ2→フェーズ3 エッジ -->
-        <mxCell id="e-ph2-ph3" parent="1" source="out-per-mesh" target="ph3-frs" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-22" parent="7kW802zkPkAvV46Z_aIt-23" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="per-mesh CSV" vertex="1">
+          <mxGeometry height="40" width="130" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-25" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="78" width="145" x="479" y="799" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-26" parent="7kW802zkPkAvV46Z_aIt-25" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="per-mesh activation.geojson" vertex="1">
+          <mxGeometry height="32.5" width="145" y="45.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-27" parent="7kW802zkPkAvV46Z_aIt-25" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="47.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-31" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="75" width="90" x="340" y="1335" as="geometry" />
+        </mxCell>
+        <mxCell id="in-sota" parent="7kW802zkPkAvV46Z_aIt-31" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="SOTA&#xa;summitslist.csv" vertex="1">
+          <mxGeometry height="40" width="90" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-30" parent="7kW802zkPkAvV46Z_aIt-31" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.users.csv_file;" value="" vertex="1">
+          <mxGeometry height="40" width="39.5" x="25.25" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ3.5: 独立峰対応（広域再解析）" vertex="1">
+          <mxGeometry height="150" width="300" x="810" y="1068" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-53" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1090" y="1150" />
+              <mxPoint x="1140" y="1150" />
+              <mxPoint x="1140" y="827" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-014: 独立峰のコル探索" vertex="1">
+          <mxGeometry height="80" width="260" x="829" y="1108" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-35" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="74" width="100" x="245" y="799" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-20" parent="7kW802zkPkAvV46Z_aIt-35" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;container=0;" value="per-mesh 標高地形図" vertex="1">
+          <mxGeometry height="25" width="100" y="49" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-21" parent="7kW802zkPkAvV46Z_aIt-35" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.container_registry_image;container=0;" value="" vertex="1">
+          <mxGeometry height="48" width="48" x="26" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-36" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="125.5" x="617.25" y="1128" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-38" parent="7kW802zkPkAvV46Z_aIt-36" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="merged.csv" vertex="1">
+          <mxGeometry height="40" width="125.5" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-37" parent="7kW802zkPkAvV46Z_aIt-36" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.users.csv_file;" value="" vertex="1">
+          <mxGeometry height="40" width="43.20096153846154" x="43.683653846153845" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-39" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="78" width="145" x="479" y="1120" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-40" parent="7kW802zkPkAvV46Z_aIt-39" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="merged_activation.geojson" vertex="1">
+          <mxGeometry height="32.5" width="145" y="45.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-41" parent="7kW802zkPkAvV46Z_aIt-39" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="47.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-42" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ph3-frs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="900" />
+              <mxPoint x="552" y="900" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-43" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ph3-frs">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ3 出力 -->
-        <mxCell id="out-merged" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="merged.csv&#xa;merged.geojson" vertex="1">
-          <mxGeometry height="40" width="120" x="1400" y="280" as="geometry" />
+        <mxCell id="7kW802zkPkAvV46Z_aIt-49" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="7kW802zkPkAvV46Z_aIt-33">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="920" y="1030" as="sourcePoint" />
+            <mxPoint x="940" y="1140" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="e-ph3-out" parent="1" source="ph3-frs" target="out-merged" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-50" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="130" x="894" y="807" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-52" parent="7kW802zkPkAvV46Z_aIt-50" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="widearea_&amp;lt;対象peak識別&amp;gt;_&amp;lt;n&amp;gt;x&amp;lt;n&amp;gt;_&amp;lt;col&amp;gt;_&amp;lt;row&amp;gt;.csv" vertex="1">
+          <mxGeometry height="40" width="130" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-51" parent="7kW802zkPkAvV46Z_aIt-50" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.users.csv_file;" value="" vertex="1">
+          <mxGeometry height="40" width="44.75" x="45.25" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sota-ph3" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-30" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ph4-frs" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- SOTA summitslist 入力 -->
-        <mxCell id="in-sota" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;" value="SOTA&#xa;summitslist.csv" vertex="1">
-          <mxGeometry height="40" width="90" x="1130" y="90" as="geometry" />
+        <mxCell id="7kW802zkPkAvV46Z_aIt-55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="コルが見つからないピークがなくなるまで&lt;div&gt;エスカレーショ&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(51, 51, 51), rgb(193, 193, 193));&quot;&gt;繰り返す（N = 4, 5, 6 の順）&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="210" x="855" y="1184" as="geometry" />
         </mxCell>
-        <mxCell id="e-sota-ph3" parent="1" source="in-sota" target="ph3-frs" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-58" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="ph4-frs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="552" y="1220" />
+              <mxPoint x="619" y="1220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-59" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ph4-frs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="680" y="1220" />
+              <mxPoint x="619" y="1220" />
+            </Array>
+            <mxPoint x="610" y="1340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-60" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="ph4-frs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1220" y="417" />
+              <mxPoint x="1220" y="1385" />
+            </Array>
+            <mxPoint x="781" y="1220" as="sourcePoint" />
+            <mxPoint x="710" y="1352" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-61" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="ph3-frs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="959" y="900" />
+              <mxPoint x="552" y="900" />
+            </Array>
+            <mxPoint x="510" y="900" as="sourcePoint" />
+            <mxPoint x="642" y="1001" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-62" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="78" width="145" x="442.5" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-63" parent="7kW802zkPkAvV46Z_aIt-62" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="証跡 GeoJSON" vertex="1">
+          <mxGeometry height="32.5" width="145" y="45.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-64" parent="7kW802zkPkAvV46Z_aIt-62" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="47.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-66" edge="1" parent="1" source="ph4-frs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-64">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="485" y="1439" as="sourcePoint" />
+            <mxPoint x="552" y="1571" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-67" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="125.5" x="654.5" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-68" parent="7kW802zkPkAvV46Z_aIt-67" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="エビデンス CSV" vertex="1">
+          <mxGeometry height="40" width="125.5" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-69" parent="7kW802zkPkAvV46Z_aIt-67" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.users.csv_file;" value="" vertex="1">
+          <mxGeometry height="40" width="43.20096153846154" x="43.683653846153845" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-70" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="125.5" x="554.25" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-71" parent="7kW802zkPkAvV46Z_aIt-70" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="申請書 xlsx" vertex="1">
+          <mxGeometry height="40" width="125.5" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-72" parent="7kW802zkPkAvV46Z_aIt-70" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.users.csv_file;" value="" vertex="1">
+          <mxGeometry height="40" width="43.20096153846154" x="43.683653846153845" as="geometry" />
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-73" edge="1" parent="1" source="ph4-frs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-72">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="620" y="1410" as="sourcePoint" />
+            <mxPoint x="690" y="1550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-74" edge="1" parent="1" source="ph4-frs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="7kW802zkPkAvV46Z_aIt-69">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="1460" />
+              <mxPoint x="720" y="1460" />
+            </Array>
+            <mxPoint x="620" y="1410" as="sourcePoint" />
+            <mxPoint x="650" y="1570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7kW802zkPkAvV46Z_aIt-75" edge="1" parent="1" source="out-tiles-cache" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="ph2-fr004">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ4 ボックス -->
-        <mxCell id="ph4-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=5;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=13;fontStyle=1;" value="　フェーズ4：SOTA突合・出力生成" vertex="1">
-          <mxGeometry height="200" width="300" x="1080" y="480" as="geometry" />
+        <mxCell id="7kW802zkPkAvV46Z_aIt-76" edge="1" parent="1" source="7kW802zkPkAvV46Z_aIt-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ph2-fr004">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="512" y="540" />
+              <mxPoint x="420" y="540" />
+            </Array>
+            <mxPoint x="420" y="590" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="ph4-frs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-009 SOTAリスト突合&#xa;FR-010 削除候補スコープ&#xa;FR-011 申請書 XLSX 生成&#xa;FR-012 エビデンス CSV 生成&#xa;FR-013 GeoJSON・HTML ビューア生成" vertex="1">
-          <mxGeometry height="110" width="260" x="1100" y="540" as="geometry" />
-        </mxCell>
-
-        <!-- フェーズ3→フェーズ4 エッジ -->
-        <mxCell id="e-ph3-ph4" parent="1" source="out-merged" target="ph4-frs" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-78" edge="1" parent="1" source="in-meshlist" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.003;entryY=0.582;entryDx=0;entryDy=0;entryPerimeter=0;" target="ph2-fr004">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- フェーズ4 出力 -->
-        <mxCell id="out-xlsx" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="申請書 XLSX" vertex="1">
-          <mxGeometry height="30" width="100" x="1400" y="520" as="geometry" />
-        </mxCell>
-        <mxCell id="out-ev-csv" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="エビデンス CSV" vertex="1">
-          <mxGeometry height="30" width="100" x="1400" y="560" as="geometry" />
-        </mxCell>
-        <mxCell id="out-geojson" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" value="証跡 GeoJSON" vertex="1">
-          <mxGeometry height="30" width="100" x="1400" y="600" as="geometry" />
-        </mxCell>
-        <mxCell id="e-ph4-xlsx" parent="1" source="ph4-frs" target="out-xlsx" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-ph4-csv" parent="1" source="ph4-frs" target="out-ev-csv" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e-ph4-geojson" parent="1" source="ph4-frs" target="out-geojson" style="edgeStyle=orthogonalEdgeStyle;html=1;" value="" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-
       </root>
     </mxGraphModel>
   </diagram>
