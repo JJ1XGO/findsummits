@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-23",
-    "counter": 50
+    "counter": 53
   },
   "issues": [
     {
@@ -1558,6 +1558,63 @@
           "comment": "[解決確認]"
         }
       ]
+    },
+    {
+      "id": "ISSUE-051",
+      "title": "SRS フェーズ3.5: area_complete=false トリガー外しの重複記述整理",
+      "description": "SRS フェーズ3.5 セクション冒頭と FR-014 トリガー条件で area_complete=false トリガー対象外の説明が2箇所に重複している。整理して片方に集約することで保守性を上げる。対象: L327-330 周辺と L336-338 周辺。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-23",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-052",
+      "title": "SRS FR-014: key_col_resolved=false と独立峰の対応関係を明示",
+      "description": "SRS FR-014 のトリガー条件周辺（L335-336 周辺）に「key_col_resolved=false = Key コルが 3×3 解析範囲外にある独立峰」という対応関係を注記として追加する。読者がコンテキストなしでトリガー条件の意味を理解できるようにする。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-23",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-053",
+      "title": "docs/figures/context.drawio: ラベル大文字統一（xlsx→XLSX、csv→CSV）",
+      "description": "context.drawio 内のラベル表記ゆらぎを修正。「申請書 xlsx」→「申請書 XLSX」、「エビデンス csv」→「エビデンス CSV」に統一する。SVG エクスポートはユーザーが draw.io で対応。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-23",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
