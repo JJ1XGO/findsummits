@@ -75,6 +75,7 @@
 | SOTA | [Summits On The Air](https://www.sota.org.uk/)。アマチュア無線の運用活動。本プロジェクトは[SOTA日本支部](https://www.kawauchi.homeip.mydns.jp/sotajp/)（JA）の山岳リスト更新申請を目的とする。 |
 | サミットコード | SOTAが各山岳に付与する識別コード。`JA/YN-001` の形式（`JA`: アソシエーション、`YN`: リージョン、`001`: サミット番号）。`summitslist.csv` の `SummitCode` 列が正式名称。matched サミットに対応。プロパティ名: `summit_code` |
 | 削除（delete） | summit.match_status の値。既存 SOTA サミット座標が検出ピークの delete判定ゾーン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |
+| 削除候補サミット | match_status=delete が確定した既存 SOTA サミット。サミット座標が dominant peak の delete判定ゾーン内に存在するがアクティベーションゾーン外であると判定されたもの。SOTA 日本支部への削除申請対象となる。 |
 | 仮サミットコード | 申請前の new ピークに暫定付与する識別コード。正式なサミットコードはSOTA審査後に確定する。`summit_code` プロパティに格納（`match_status="new"` の場合） |
 
 ### 標高バンド（Points 算出表）

@@ -379,6 +379,8 @@ def bug_update(args):
         changed.append(f"ステータス: {old} → {args.status}")
         if args.status == "対応完了" and not bug.get("resolved_date"):
             bug["resolved_date"] = date.today().isoformat()
+        if args.status == "却下" and not bug.get("verified_date"):
+            bug["verified_date"] = date.today().isoformat()
     for field, val in [
         ("severity",    args.severity),
         ("assignee",    args.assignee),
@@ -558,6 +560,7 @@ def new_issue(issue_id):
         "reporter":      None,
         "created_date":  date.today().isoformat(),
         "stage":         None,
+        "planned_stage": None,
         "status":        "未対応",
         "assignee":      None,
         "resolution":    None,
@@ -610,6 +613,7 @@ def issue_show(args):
     print(f"  報告者        : {issue.get('reporter') or '-'}")
     print(f"  作成日        : {issue.get('created_date') or '-'}")
     print(f"  発生ステージ  : {issue.get('stage') or '-'}")
+    print(f"  対応予定ステージ: {issue.get('planned_stage') or '-'}")
     print(f"  ステータス    : {colored(issue['status'], STATUS_COLOR.get(issue['status'], ''))}")
     print(f"  担当者        : {issue.get('assignee') or '-'}")
     if issue.get("resolution"):
@@ -639,11 +643,12 @@ def issue_add(args):
             "type":        args.type,
             "assignee":    args.assignee,
             "reporter":    args.reporter,
-            "stage":       args.stage,
-            "category":    args.category,
-            "description": args.description,
-            "resolution":  args.resolution,
-            "notes":       args.notes,
+            "stage":         args.stage,
+            "planned_stage": args.planned_stage,
+            "category":      args.category,
+            "description":   args.description,
+            "resolution":    args.resolution,
+            "notes":         args.notes,
         })
         data["issues"].append(issue)
         save(ISSUE_DATA, data)
@@ -682,11 +687,14 @@ def issue_update(args):
         changed.append(f"ステータス: {old} → {args.status}")
         if args.status == "対応完了" and not issue.get("resolved_date"):
             issue["resolved_date"] = date.today().isoformat()
+        if args.status == "却下" and not issue.get("verified_date"):
+            issue["verified_date"] = date.today().isoformat()
     for field, val in [
         ("priority",    args.priority),
         ("type",        args.type),
-        ("stage",       args.stage),
-        ("assignee",    args.assignee),
+        ("stage",         args.stage),
+        ("planned_stage", args.planned_stage),
+        ("assignee",      args.assignee),
         ("category",    args.category),
         ("description", args.description),
         ("resolution",  args.resolution),
@@ -783,7 +791,8 @@ def issue_export(args):
         ("カテゴリ",     "category",      16),
         ("報告者",       "reporter",      14),
         ("作成日",       "created_date",  14),
-        ("発生ステージ", "stage",         16),
+        ("発生ステージ",   "stage",          16),
+        ("対応予定ステージ", "planned_stage", 16),
         ("ステータス",   "status",        12),
         ("担当者",       "assignee",      14),
         ("対応方針",     "resolution",    30),
@@ -806,7 +815,7 @@ def issue_export(args):
     ws1.freeze_panes = "B2"
     last_row = len(issues) + 1
     for choices, field in [(VALID_STATUSES, "status"), (VALID_PRIORITIES, "priority"),
-                           (VALID_TYPES, "type"), (VALID_STAGES, "stage")]:
+                           (VALID_TYPES, "type"), (VALID_STAGES, "stage"), (VALID_STAGES, "planned_stage")]:
         col_idx = next(i for i, (_, f, _) in enumerate(columns, 1) if f == field)
         ws1.add_data_validation(make_dv(choices, get_column_letter(col_idx), last_row))
 
@@ -885,8 +894,8 @@ def build_issue_parser(sub):
 
     pl = s.add_parser("list");     pl.add_argument("--status"); pl.add_argument("--priority"); pl.add_argument("--type"); pl.add_argument("--stage"); pl.add_argument("--assignee"); pl.add_argument("--category"); pl.add_argument("--open", action="store_true")
     ps = s.add_parser("show");     ps.add_argument("id")
-    pa = s.add_parser("add");      pa.add_argument("--title"); pa.add_argument("--status", choices=VALID_STATUSES); pa.add_argument("--priority", choices=VALID_PRIORITIES); pa.add_argument("--type", choices=VALID_TYPES); pa.add_argument("--stage", choices=VALID_STAGES); pa.add_argument("--category", choices=VALID_CATEGORIES); pa.add_argument("--assignee"); pa.add_argument("--reporter"); pa.add_argument("--description"); pa.add_argument("--resolution"); pa.add_argument("--notes")
-    pu = s.add_parser("update");   pu.add_argument("id"); pu.add_argument("--status", choices=VALID_STATUSES); pu.add_argument("--priority", choices=VALID_PRIORITIES); pu.add_argument("--type", choices=VALID_TYPES); pu.add_argument("--stage", choices=VALID_STAGES); pu.add_argument("--category", choices=VALID_CATEGORIES); pu.add_argument("--assignee"); pu.add_argument("--description"); pu.add_argument("--resolution"); pu.add_argument("--notes"); pu.add_argument("--actor", default="不明"); pu.add_argument("--comment")
+    pa = s.add_parser("add");      pa.add_argument("--title"); pa.add_argument("--status", choices=VALID_STATUSES); pa.add_argument("--priority", choices=VALID_PRIORITIES); pa.add_argument("--type", choices=VALID_TYPES); pa.add_argument("--stage", choices=VALID_STAGES); pa.add_argument("--planned_stage", choices=VALID_STAGES); pa.add_argument("--category", choices=VALID_CATEGORIES); pa.add_argument("--assignee"); pa.add_argument("--reporter"); pa.add_argument("--description"); pa.add_argument("--resolution"); pa.add_argument("--notes")
+    pu = s.add_parser("update");   pu.add_argument("id"); pu.add_argument("--status", choices=VALID_STATUSES); pu.add_argument("--priority", choices=VALID_PRIORITIES); pu.add_argument("--type", choices=VALID_TYPES); pu.add_argument("--stage", choices=VALID_STAGES); pu.add_argument("--planned_stage", choices=VALID_STAGES); pu.add_argument("--category", choices=VALID_CATEGORIES); pu.add_argument("--assignee"); pu.add_argument("--description"); pu.add_argument("--resolution"); pu.add_argument("--notes"); pu.add_argument("--actor", default="不明"); pu.add_argument("--comment")
     pc = s.add_parser("close");    pc.add_argument("id"); pc.add_argument("--actor", default="不明"); pc.add_argument("--comment")
     pv = s.add_parser("verify");   pv.add_argument("id"); pv.add_argument("--actor", default="不明"); pv.add_argument("--comment")
     s.add_parser("summary")

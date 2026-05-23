@@ -74,13 +74,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "COD",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "JJ1XGO",
-      "resolution": null,
+      "resolution": "URD/SRS 再設計に伴い廃止。output_xlsx.py の仕様は SRS 確定後に改めて起票する。元の説明にあった4シート構成はテンプレート未確認のまま Claude が設計した誤り（実際は1シート縦並び）。",
       "notes": "【2026-05-22 更新】MOVED/ELEV_CHANGE シート言及は廃止。最新仕様: 変更行 = is_band_change_candidate=true の matched ピーク（FR-011）。変更前標高=sota_alt_m、変更後標高=round(peak_elev)、山岳名は変更前後同値。根拠文は自動生成（FR-011 ※5参照）。名称変更申請は廃止されたため変更シートは標高バンド遷移のみ対象。",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-05-23",
+      "history": [
+        {
+          "date": "2026-05-23T15:24:38",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "却下",
+          "comment": ""
+        }
+      ]
     },
     {
       "id": "ISSUE-004",
@@ -125,13 +133,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-04-27",
       "stage": "ST",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "JJ1XGO",
-      "resolution": null,
+      "resolution": "URD/SRS 再設計に伴い廃止。",
       "notes": "複数メッシュ境界付近の既知の山が GeoJSON で正しく1件表示されることも確認。DEM5なしメッシュの DEM10 フォールバック結果の妥当性も確認。",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-05-23",
+      "history": [
+        {
+          "date": "2026-05-23T15:28:56",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "却下",
+          "comment": ""
+        }
+      ]
     },
     {
       "id": "ISSUE-006",
@@ -222,8 +238,8 @@
       "created_date": "2026-04-27",
       "stage": "HLD",
       "status": "未対応",
-      "assignee": "JJ1XGO",
-      "resolution": null,
+      "assignee": "Claude",
+      "resolution": "SRS FR-009 に仕様記述済み。COD ステージで preprocess_pref_boundaries.py を実行して N03 GeoJSON を生成後に実装する。",
       "notes": "将来実装候補。フルパイプ検証・申請用出力フェーズ完了後に検討。",
       "resolved_date": null,
       "verified_date": null,
@@ -242,7 +258,8 @@
           "to": "未対応",
           "comment": "N03-2026_regions.geojson が未生成（preprocess_pref_boundaries.py 未実行）のため実際には ZZ/ZZ-A01 フォールバック状態。コードは実装済みだが機能として未完了のため差し戻し"
         }
-      ]
+      ],
+      "planned_stage": "COD"
     },
     {
       "id": "ISSUE-010",
@@ -361,12 +378,13 @@
       "created_date": "2026-05-08",
       "stage": "COD",
       "status": "未対応",
-      "assignee": "JJ1XGO",
-      "resolution": null,
+      "assignee": "Claude",
+      "resolution": "scripts/prefetch_tiles.py の enumerate_jobs() から隣接メッシュ拡張ロジック（nb not in mesh_set の分岐）を削除し、各メッシュ単独の mesh_to_tile_range(meshcode) のみを取得するよう修正する。",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "COD"
     },
     {
       "id": "ISSUE-014",
@@ -467,11 +485,12 @@
       "stage": "COD",
       "status": "未対応",
       "assignee": "Sonnet",
-      "resolution": null,
+      "resolution": "scripts/merge.py の load_peaks() に --mesh-list 指定時の絞り込みロジックを追加する。指定メッシュコードのセットを受け取り、csv_dir 配下から {meshcode}.csv のみを対象にする。省略時は現行の glob 全読み込みを維持する。",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "COD"
     },
     {
       "id": "ISSUE-017",
@@ -518,7 +537,7 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": null,
-      "resolution": "FR-009 に以下を追記:\n(1) 判定順序を明示: ①AZ 内に SOTA → matched, ②コル等高線内に SOTA → dominant, ③それ以外 → new\n(2) sota_summit feature の match_status を独立定義:\n   matched = FR-010 スコープ内で AZ にマッチ\n   deleted = FR-010 スコープ内で AZ にマッチせず\n(3) ADR-008 フォールバック時の peak.match_status と sota_summit の対応関係を明確化。案A（peak も dominant に昇格）または案B（peak の match_status は変えず sota_summit を独立扱い・FR-013 フィーチャ構成テーブルを更新）から選定。\n(4) GLOSSARY に '削除候補（deleted）' を追加。\n(5) ADR-007 / ADR-008 とも整合チェック。",
+      "resolution": "案 B（peak.match_status は変更せず、summit.dominant_peak_code で紐付けのみ）を採用。peak は常に match_status=new のまま、delete サミットが従属する dominant peak を dominant_peak_code で参照する形で実装。SRS FR-009・ADR-008 L29 参照。",
       "notes": null,
       "resolved_date": "2026-05-16",
       "verified_date": "2026-05-17",
@@ -669,13 +688,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
-      "assignee": null,
+      "status": "対応完了",
+      "assignee": "Claude",
       "resolution": "FR-017 に 'タイル中心点が北方領土6村ポリゴンに含まれるタイルを列挙' と明示し、ADR-005 と同じ規定を SRS に転記する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:37:42",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:37:42",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS FR-017 出力③の説明に「タイルの中心点が対象ポリゴン内に含まれるタイルを列挙する」と明示。ADR-005 L47 と整合。"
+        }
+      ]
     },
     {
       "id": "ISSUE-023",
@@ -687,13 +721,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
-      "assignee": null,
+      "status": "対応完了",
+      "assignee": "Claude",
       "resolution": "NFR-003 に 'metadata.generated_at 等の実行時タイムスタンプを除き、ピーク座標・標高・突合結果・採番が同一であること' と除外規定を明記。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:38:48",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:38:48",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS NFR-003 に「metadata.generated_at 等の実行時タイムスタンプを除く」旨の除外規定を追記。"
+        }
+      ]
     },
     {
       "id": "ISSUE-024",
@@ -711,7 +760,8 @@
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "SRS"
     },
     {
       "id": "ISSUE-025",
@@ -803,13 +853,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
-      "assignee": null,
+      "status": "対応完了",
+      "assignee": "Claude",
       "resolution": "GLOSSARY に以下を追加:\n(1) '削除候補（deleted サミット）' を独立項目として追加（ISSUE-018 の sota_summit.match_status=deleted 定義と整合）\n(2) ISSUE-026 と協調して 'dominant peak' 見出しを英語表記に統一",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:45:35",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:45:35",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "GLOSSARY に「削除候補サミット」を独立項目として追加。dominant peak 見出し統一は ISSUE-026 で解決済み。"
+        }
+      ]
     },
     {
       "id": "ISSUE-028",
@@ -821,13 +886,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
-      "assignee": null,
+      "status": "対応完了",
+      "assignee": "Claude",
       "resolution": "フォールバック規定を 1 箇所（推奨: FR-017 のみ）に集約し、他箇所からは '詳細は FR-017 参照' とリンクする。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:47:44",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:47:44",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "FR-003 と 6.9（3ファイル）の省略時動作をそれぞれ「詳細は FR-017 参照」に差し替え、フォールバック規定を FR-017 に集約。"
+        }
+      ]
     },
     {
       "id": "ISSUE-029",
@@ -845,7 +925,8 @@
       "notes": "【Opus相談推奨】URD/SRS構造に関わる設計哲学的判断。後から変更すると影響範囲が大きい。\n\n相談ポイント:\n(1) 案A・案B・案Cそれぞれの長所短所。要件管理の一般的なプラクティスに照らした評価\n(2) UR-008（環境構築から成果物生成までの実行可能性）とUR-009（仕様・実装の整合性）は本質的に '品質目標' であり、ユーザー要求とは性質が異なる。これをURDに残すべきか、NFRに移すべきか\n(3) ISO/IEC 25010 等の品質特性モデルとのマッピング\n(4) 既存のNFR-003 / NFR-007との対応関係を明示するか、独立した品質目標として扱うか\n(5) ISSUE-031（UR↔FR/NFRトレース調査）・ISSUE-032（RTM作成）の進め方への影響",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "SRS"
     },
     {
       "id": "ISSUE-030",
@@ -857,13 +938,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "URD",
-      "status": "未対応",
-      "assignee": null,
+      "status": "対応完了",
+      "assignee": "Claude",
       "resolution": "URD UR-006 の要件文または前提・制約に '作業用ビューア（山岳名入力・XLSX エクスポート）と公開用 HTML（閲覧専用）の 2 層構造' を反映する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:49:04",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:49:04",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "URD UR-006 に「作業用（山岳名入力・XLSXエクスポート機能付き）と公開用（閲覧専用）の2種類を生成する」を追記。"
+        }
+      ]
     },
     {
       "id": "ISSUE-031",
@@ -881,7 +977,8 @@
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "SRS"
     },
     {
       "id": "ISSUE-032",
@@ -899,7 +996,8 @@
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "SRS"
     },
     {
       "id": "ISSUE-033",
@@ -958,13 +1056,28 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": null,
-      "status": "未対応",
-      "assignee": null,
+      "status": "対応完了",
+      "assignee": "Claude",
       "resolution": "tracker のレコード編集機能で ISSUE-018 の resolution フィールドを書き換え、「案 B（peak.match_status は変更せず、summit.dominant_peak_code で紐付けのみ）を採用」と明記する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:50:30",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:50:30",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ISSUE-018 の resolution を案 B 採用前提の記述に置き換え完了。"
+        }
+      ]
     },
     {
       "id": "ISSUE-035",
@@ -976,13 +1089,28 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": "SRS",
-      "status": "未対応",
-      "assignee": null,
-      "resolution": null,
+      "status": "対応完了",
+      "assignee": "Claude",
+      "resolution": "北方領土の記述（ADR-005 参照）に準じて以下3箇所に竹島の記述を追加する:\n(1) 8.前提・制約（877行目）: 北方領土の記述の直後に「竹島（島根県）が含まれるメッシュ 5531 は mesh_list_japan.txt から除外済み（ADR-009 参照）」を追加\n(2) 9.スコープ外（892行目）: 北方領土の行の直後に「竹島に所在するピーク（韓国 SOTA サミット HL/GB-430 として登録済み。SOTA 日本支部の管轄外のため。除外方法は ADR-009 で規定）」を追加\n(3) FR-003（202行目付近）: 北方領土タイル除外の記述の後に「竹島はメッシュ除外（ADR-009）で対応するため FR-003 での追加処理はない」旨を注記",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:52:39",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:52:39",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS 3箇所に竹島記述を追加: (1)8.前提・制約にメッシュ5531除外の記述、(2)9.スコープ外に北方領土と並列で追加、(3)FR-003に竹島はメッシュ除外で対応・FR-003追加処理なしを注記。"
+        }
+      ]
     },
     {
       "id": "ISSUE-036",
@@ -994,13 +1122,28 @@
       "reporter": null,
       "created_date": "2026-05-17",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": "Sonnet",
-      "resolution": null,
+      "resolution": "5531 を削除ではなくコメントアウト形式（# 5531 竹島のみのため除外（ADR-009））で除外。理由と根拠が履歴として残る。main.c は # 始まり行をスキップ済みのため動作上の変更なし。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-05-23",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-23T15:54:50",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-23T15:54:50",
+          "actor": "Claude",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "params/mesh_list_japan.txt の 5531 をコメントアウト形式で除外。"
+        }
+      ]
     },
     {
       "id": "ISSUE-037",
@@ -1018,7 +1161,8 @@
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "LLD"
     },
     {
       "id": "ISSUE-038",
@@ -1036,7 +1180,8 @@
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "LLD"
     },
     {
       "id": "ISSUE-039",
@@ -1054,7 +1199,8 @@
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "LLD"
     },
     {
       "id": "ISSUE-040",
@@ -1072,7 +1218,8 @@
       "notes": "【ADR-011 適用 2026-05-21】仕様を delete判定ゾーン方式に更新。\n\n【作業範囲】\n- ピーク位置を起点とした cv::floodFill で標高差 25m 以内の連続領域（AZ）を抽出\n  - 4 連結 + FLOODFILL_FIXED_RANGE + FLOODFILL_MASK_ONLY を使用\n- cv::findContours で外周輪郭を取得（CHAIN_APPROX_SIMPLE モードで lossless 出力）\n- 形状を変える簡略化（Douglas-Peucker / approxPolyDP / 等間隔抽出）は使用しない\n- ピクセル座標 → 緯度経度変換は既存の pixel_to_latlon() を再利用\n- Flood Fill が解析対象メッシュ地理的範囲内で完結→ area_complete=true、範囲外で途切れ→ false\n- 同じ Flood Fill を max(col_elev, peak_elev - delete_zone_max_drop) 閾値で再実行して delete判定ゾーンポリゴンを生成\n  - key_col_resolved=false（col_elev 未確定）でも peak_elev - delete_zone_max_drop を閾値として生成可能\n- per-mesh GeoJSON ファイル <meshcode>_activation.geojson を出力\n  - feature_type: 'activation_zone' または 'delete_zone'\n  - delete_zone_max_drop は params/config.ini から読み込み（値 250m、ADR-011 で実測確定）\n\n【新規モジュール】\n- src/activation.cpp / activation.h（Flood Fill 呼び出し + 輪郭抽出 + GeoJSON シリアライズ）\n- mesh_analyze.cpp の CSV 出力ループ内から呼び出し\n\n【検証ポイント】\n- per-mesh <meshcode>_activation.geojson が生成される（AZ + delete判定ゾーンの2種類）\n- 地理院地図上に重ねて目視確認（AZ は 25m 連続、delete判定ゾーンはプロミネンス連動 + 250m キャップ）\n- area_complete フラグが解析範囲端のケースで正しく付与される\n- 独立峰（プロミネンス >> 250m）でも delete判定ゾーンが 3×3 メッシュで完結する\n- key_col_resolved=false のピークでも delete判定ゾーンが生成される\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- ADR-011 docs/decisions/ADR-011-delete-zone-polygon.md（新仕様）\n- SRS FR-016 docs/02_SRS.md\n- SRS 6.8 中間ファイル: メッシュ別ピーク域 GeoJSON\n\n【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_complete 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件 × 2 種類ポリゴン（AZ + delete判定ゾーン）の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "LLD"
     },
     {
       "id": "ISSUE-041",
@@ -1090,7 +1237,8 @@
       "notes": "【背景】commit 633e54b (is_tile_top → key_col_unresolved) + commit ea6bbbe (key_col_unresolved → key_col_resolved + area_truncated → area_complete) で仕様側を更新済み。実装側はまだ旧名のまま。仕様優先原則のため仕様変更が先行している。\n\n【関連 ISSUE】\n- ISSUE-014: 仕様変更の母 ISSUE（対応中）\n- ISSUE-037 (ADR-010 Phase 1): elevation.c の C++/OpenCV 化\n- ISSUE-038 (ADR-010 Phase 2): 残り src/ の C++ 翻訳\n- ISSUE-040 (ADR-010 Phase 4): FR-016 (area_complete を含む) C++ 新規実装",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "COD"
     },
     {
       "id": "ISSUE-042",
@@ -1108,7 +1256,8 @@
       "notes": "ISSUE-019 のクローズ時にユーザーから登録要望が出た案件。",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "HLD"
     },
     {
       "id": "ISSUE-043",
@@ -1126,7 +1275,8 @@
       "notes": "【2026-05-22 追記】merge.py 改修スコープに以下を追加: points/sota_points/is_band_change_candidate 列の計算・追加（FR-009 変更申請判定セクション参照）。バンド定義は GLOSSARY 標高バンド（Points 算出表）に従う。peak_elev は切り捨て（floor）した整数 m でバンド判定（例: 1499.5m → 1499m → 8pt）、sota_alt_m はそのまま判定。\n【2026-05-23 補正】merge.py の出力は merged.csv（ピーク台帳・ステータス・不備フラグ）と merged_activation.geojson（AZ・delete判定ゾーンポリゴンの per-mesh 統合）の2系統（SRS FR-018 参照）。AZ/delete-zone PIP 判定の素材は per-mesh activation GeoJSON。不備フラグ・exit code 判定は merged.csv 側で完結する。",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "LLD"
     },
     {
       "id": "ISSUE-044",
@@ -1144,7 +1294,8 @@
       "notes": "【2026-05-22 追記】output_geojson.py + merged_viewer.html 改修スコープに以下を追加: (1) 名称修正 UI 廃止（matched ピークの入力フィールドを削除）。(2) 変更行自動エクスポート（is_band_change_candidate=true の matched ピークを申請書の変更行として自動生成、FR-011 ※5フォーマット準拠）。\n【2026-05-23 補正】output_geojson.py の入力は merged.csv + merged_activation.geojson の2系統（SRS FR-013 参照）。ポリゴン情報（AZ・delete判定ゾーン）は merged_activation.geojson から取り込む。出力は merged.geojson（Point + LineString + Polygon の可視化集約）と merged_viewer.html。",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "LLD"
     },
     {
       "id": "ISSUE-045",
@@ -1162,7 +1313,8 @@
       "notes": "【作業範囲】\n- params/config.ini.example の [analysis] セクション（または相当箇所）に delete_zone_max_drop = 250 を追加\n- 値の根拠コメントとして ADR-011 を参照\n- 既存のローカル params/config.ini（gitignore）は手動で同期する旨をユーザーに通知\n\n【参照】\n- ADR docs/decisions/ADR-011-delete-zone-polygon.md\n- SRS FR-016\n\n【元 ISSUE】ISSUE-020 から分離",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [],
+      "planned_stage": "COD"
     },
     {
       "id": "ISSUE-046",
