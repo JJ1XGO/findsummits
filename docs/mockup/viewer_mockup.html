@@ -72,6 +72,33 @@
       border-radius: 2px;
     }
     .popup-hint { font-size: 11px; color: #888; margin-top: 4px; }
+
+    /* エクスポートコントロール */
+    .export-control .leaflet-control-layers-toggle {
+      background-image: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 16px;
+    }
+    .export-control .leaflet-control-layers-list {
+      min-width: 130px;
+    }
+    .export-ctrl-btn {
+      display: block;
+      width: 100%;
+      padding: 5px 10px;
+      margin: 2px 0;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      border-radius: 2px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .export-ctrl-btn:hover { background: #e0e0e0; }
   </style>
 </head>
 <body>
@@ -87,8 +114,6 @@
     <label data-cat="changed">   <input type="checkbox" data-cat="changed"   checked> 変更あり</label>
     <label data-cat="unchanged"> <input type="checkbox" data-cat="unchanged" checked> 変更なし</label>
   </div>
-  <button id="btn-export">申請書エクスポート</button>
-  <button id="btn-publish">公開用エクスポート</button>
 </div>
 
 <div id="map"></div>
@@ -576,6 +601,36 @@ function saveInput(key) {
     if (b.classList.contains("active")) filterGroups[b.dataset.cat].addTo(map);
   });
 }
+
+// ---- エクスポートコントロール（ズームボタン下・topright）----
+const ExportControl = L.Control.extend({
+  options: { position: "topright" },
+  onAdd() {
+    const container = L.DomUtil.create("div", "leaflet-control-layers leaflet-control export-control");
+
+    const toggle = L.DomUtil.create("a", "leaflet-control-layers-toggle", container);
+    toggle.href = "#";
+    toggle.title = "エクスポート";
+    toggle.innerHTML = '<i class="fa-solid fa-file-export" style="pointer-events:none;"></i>';
+
+    const list = L.DomUtil.create("div", "leaflet-control-layers-list", container);
+
+    const mkBtn = (label, id) => {
+      const btn = L.DomUtil.create("button", "export-ctrl-btn", list);
+      btn.id = id;
+      btn.textContent = label;
+    };
+    mkBtn("申請書エクスポート", "btn-export");
+    mkBtn("公開用エクスポート", "btn-publish");
+
+    L.DomEvent.on(container, "mouseenter", () => L.DomUtil.addClass(container, "leaflet-control-layers-expanded"));
+    L.DomEvent.on(container, "mouseleave", () => L.DomUtil.removeClass(container, "leaflet-control-layers-expanded"));
+    L.DomEvent.disableClickPropagation(container);
+    L.DomEvent.disableScrollPropagation(container);
+    return container;
+  }
+});
+new ExportControl().addTo(map);
 
 // ---- ボタン ----
 document.getElementById("btn-export").addEventListener("click", () => {
