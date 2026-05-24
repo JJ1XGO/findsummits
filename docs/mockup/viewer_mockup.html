@@ -157,17 +157,6 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
       properties: { feature_type: "prominence_range", summit_code: "JA/NEW-002" } },
 
-    // ── new: 陸地最高峰（key_col_resolved=false・本州最高 2530m → 10pt）──────
-    // is_island=false → 陸地最高峰。col・prominence_range は含めない（SRS 仕様）
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.75, 35.55] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-003",
-                    peak_elev: 2530, prominence: 2530, stability: "unstable",
-                    key_col_resolved: false, is_island: false, points: 10 } },
-    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.740,35.540],[138.760,35.540],[138.760,35.560],[138.740,35.560],[138.740,35.540]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/NEW-003", area_complete: true, points: 10 } },
-    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.520],[138.780,35.520],[138.780,35.580],[138.720,35.580],[138.720,35.520]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/NEW-003" } },
-
     // ── new: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
     // is_island=true → 島嶼部最高峰。col・prominence_range は含めない（SRS 仕様）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
@@ -179,22 +168,20 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
       properties: { feature_type: "delete_zone", summit_code: "JA/NEW-004" } },
 
-    // ── matched: 既存サミットと一致（3776m → 10pt）───────────────────
+    // ── matched: 陸地最高峰・既存サミットと一致（3776m → 10pt）──────────────
+    // 富士山: 日本本土最高峰のため Key コル未定義（key_col_resolved=false, is_island=false）
+    // col・prominence_range は含めない（SRS 仕様）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
       properties: { feature_type: "peak", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
-                    peak_elev: 3776, prominence: 3776, stability: "confirmed", key_col_resolved: true,
-                    points: 10 } },
+                    peak_elev: 3776, prominence: 3776, stability: "unstable",
+                    key_col_resolved: false, is_island: false, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
       properties: { feature_type: "activation_zone", summit_code: "JA/YN-001", area_complete: true, points: 10 } },
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.76, 35.38] },
-      properties: { feature_type: "col", summit_code: "JA/YN-001", col_elev: 1200, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
       properties: { feature_type: "summit", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     sota_alt_m: 3776, sota_points: 10 } },
-    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.76,35.38]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/YN-001" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.78,35.39]] },
       properties: { feature_type: "coord_diff", summit_code: "JA/YN-001", match_status: "matched" } },
 
