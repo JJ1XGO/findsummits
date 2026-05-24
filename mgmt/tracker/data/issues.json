@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-24",
-    "counter": 54
+    "counter": 55
   },
   "issues": [
     {
@@ -1664,6 +1664,25 @@
           "comment": ""
         }
       ]
+    },
+    {
+      "id": "ISSUE-055",
+      "title": "SRS: GeoJSONビューア（HTMLビュー）のUI要件追加",
+      "description": null,
+      "type": "機能追加",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-24",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "HTMLビューアはユーザーI/Fの1つ（外部I/F）であり、SRSに以下を記載する必要がある。\n- match_status別の視覚的区別表示要件\n- key_col_resolved=falseピークの陸地最高峰/島嶼部最高峰特別表示\n- ポップアップ表示項目と編集可否（山岳名は新規のみ入力可など）\n- 変更の根拠フィールドの入力要件・初期値テンプレート（※2/※4/※5）\n- エクスポート機能の存在と出力内容\n実装手段（Leaflet・HTML単体・localStorage等）はHLDに記載する。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
