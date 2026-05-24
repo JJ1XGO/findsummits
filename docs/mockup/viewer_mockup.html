@@ -157,6 +157,28 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
       properties: { feature_type: "prominence_range", summit_code: "JA/NEW-002" } },
 
+    // ── new: 陸地最高峰（key_col_resolved=false・本州最高 2530m → 10pt）──────
+    // is_island=false → 陸地最高峰。col・prominence_range は含めない（SRS 仕様）
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.75, 35.55] },
+      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-003",
+                    peak_elev: 2530, prominence: 2530, stability: "unstable",
+                    key_col_resolved: false, is_island: false, points: 10 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.740,35.540],[138.760,35.540],[138.760,35.560],[138.740,35.560],[138.740,35.540]]] },
+      properties: { feature_type: "activation_zone", summit_code: "JA/NEW-003", area_complete: true, points: 10 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.520],[138.780,35.520],[138.780,35.580],[138.720,35.580],[138.720,35.520]]] },
+      properties: { feature_type: "delete_zone", summit_code: "JA/NEW-003" } },
+
+    // ── new: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
+    // is_island=true → 島嶼部最高峰。col・prominence_range は含めない（SRS 仕様）
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
+      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-004",
+                    peak_elev: 820, prominence: 820, stability: "unstable",
+                    key_col_resolved: false, is_island: true, points: 6 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.910,35.210],[138.930,35.210],[138.930,35.230],[138.910,35.230],[138.910,35.210]]] },
+      properties: { feature_type: "activation_zone", summit_code: "JA/NEW-004", area_complete: true, points: 6 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
+      properties: { feature_type: "delete_zone", summit_code: "JA/NEW-004" } },
+
     // ── matched: 既存サミットと一致（3776m → 10pt）───────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
       properties: { feature_type: "peak", match_status: "matched",
@@ -497,15 +519,25 @@ function renderFeatures() {
 
       const pkLat = geom.coordinates[1].toFixed(5);
       const pkLon = geom.coordinates[0].toFixed(5);
+      // key_col_resolved=false → 陸地最高峰 or 島嶼部最高峰
+      const domLabel = !p.key_col_resolved ? (p.is_island ? '島嶼部最高峰' : '陸地最高峰') : null;
+      const domBadge = domLabel
+        ? `<span class="popup-badge" style="background:#7B2FBE">${domLabel}</span>`
+        : '';
+      const colRow = domLabel
+        ? `<div class="popup-row"><label>Keyコル</label><span style="color:#888">未定義（${domLabel}）</span></div>`
+        : '';
+
       if (p.match_status === "new") {
         marker.bindPopup(`
-          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span></div>
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span>${domBadge}</div>
           <div class="popup-row"><label>仮コード</label>${p.summit_code}</div>
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>標高</label>${p.peak_elev}m</div>
           <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
+          ${colRow}
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
           <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="例: Maruyama"></div>
           <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
@@ -513,12 +545,13 @@ function renderFeatures() {
         `);
       } else if (p.match_status === "matched") {
         marker.bindPopup(`
-          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span></div>
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span>${domBadge}</div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
           <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
+          ${colRow}
           <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
           <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="${p.summit_name}"></div>
@@ -527,13 +560,14 @@ function renderFeatures() {
         `);
       } else {
         marker.bindPopup(`
-          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">dominant</span></div>
+          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">dominant</span>${domBadge}</div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
           <div class="popup-row"><label>緯度</label>${pkLat}</div>
           <div class="popup-row"><label>経度</label>${pkLon}</div>
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
           <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
+          ${colRow}
         `);
       }
       marker.addTo(filterGroups[cat]);
