@@ -72,6 +72,12 @@
       border-radius: 2px;
     }
     .popup-hint { font-size: 11px; color: #888; margin-top: 4px; }
+    .popup-notes-label { margin-top: 6px; font-size: 12px; color: #555; }
+    .popup-textarea {
+      width: 100%; min-height: 58px; margin-top: 2px;
+      padding: 3px 4px; font-size: 11px; font-family: sans-serif;
+      border: 1px solid #aaa; border-radius: 2px; resize: vertical; box-sizing: border-box;
+    }
 
     /* エクスポートコントロール */
     .export-control .leaflet-control-layers-toggle {
@@ -175,7 +181,8 @@ const GEOJSON_DATA = {
       properties: { feature_type: "peak", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     peak_elev: 3776, prominence: 3776, stability: "unstable",
-                    key_col_resolved: false, is_island: false, points: 10 } },
+                    key_col_resolved: false, is_island: false,
+                    is_band_change_candidate: false, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
       properties: { feature_type: "activation_zone", summit_code: "JA/YN-001", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
@@ -184,6 +191,25 @@ const GEOJSON_DATA = {
                     sota_alt_m: 3776, sota_points: 10 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
       properties: { feature_type: "coord_diff", summit_code: "JA/YN-001", match_status: "matched" } },
+
+    // ── matched: 変更候補（is_band_change_candidate=true・2100m/8pt・SOTAは1950m/6pt）──
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.85, 35.50] },
+      properties: { feature_type: "peak", match_status: "matched",
+                    summit_code: "JA/SZ-001", summit_name: "Sample-dake", summit_name_jp: "サンプル岳",
+                    peak_elev: 2100, prominence: 450, stability: "confirmed",
+                    key_col_resolved: true, is_band_change_candidate: true, points: 8 } },
+    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.840,35.490],[138.860,35.490],[138.860,35.510],[138.840,35.510],[138.840,35.490]]] },
+      properties: { feature_type: "activation_zone", summit_code: "JA/SZ-001", area_complete: true, points: 8 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.83, 35.48] },
+      properties: { feature_type: "col", summit_code: "JA/SZ-001", col_elev: 1650, points: 8 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.84, 35.47] },
+      properties: { feature_type: "summit", match_status: "matched",
+                    summit_code: "JA/SZ-001", summit_name: "Sample-dake", summit_name_jp: "サンプル岳",
+                    sota_alt_m: 1950, sota_points: 6 } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.85,35.50],[138.83,35.48]] },
+      properties: { feature_type: "prominence_range", summit_code: "JA/SZ-001" } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.85,35.50],[138.84,35.47]] },
+      properties: { feature_type: "coord_diff", summit_code: "JA/SZ-001", match_status: "matched" } },
 
     // ── dominant: 削除候補（ピーク 1050m → 8pt・SOTA サミット 880m → 6pt）──
     // 本ツール検出ピーク(8pt)のコル等高線内に SOTA 既存サミット(6pt)が位置しているが
@@ -200,7 +226,8 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
       properties: { feature_type: "summit", match_status: "delete",
                     summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
-                    sota_alt_m: 880, sota_points: 6 } },
+                    sota_alt_m: 880, sota_points: 6,
+                    dominant_peak_code: "JA/YN-A01" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
       properties: { feature_type: "delete_zone", summit_code: "JA/YN-A01" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
@@ -453,8 +480,13 @@ function renderFeatures() {
 
   // summit_code → peak feature のマップ（各フィーチャのカテゴリ解決用）
   const peakByCode = {};
+  const colByCode = {};
+  const summitByCode = {};
   GEOJSON_DATA.features.forEach(f => {
-    if (f.properties.feature_type === "peak") peakByCode[f.properties.summit_code] = f;
+    const ft = f.properties.feature_type;
+    if (ft === "peak")   peakByCode[f.properties.summit_code]   = f;
+    if (ft === "col")    colByCode[f.properties.summit_code]     = f;
+    if (ft === "summit") summitByCode[f.properties.summit_code]  = f;
   });
 
   GEOJSON_DATA.features.forEach(f => {
@@ -515,6 +547,9 @@ function renderFeatures() {
         : '';
 
       if (p.match_status === "new") {
+        const colF = colByCode[p.summit_code];
+        const colElevStr = colF ? `${colF.properties.col_elev}m` : '（陸地最高峰のため未定義）';
+        const initNotes = `国土地理院標高タイルで解析\n${pkLat},${pkLon}\n所在地：\nコル標高：${colElevStr}\nプロミネンス：${p.prominence}m`;
         marker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> 新規ピーク<span class="popup-badge">new</span>${domBadge}</div>
           <div class="popup-row"><label>仮コード</label>${p.summit_code}</div>
@@ -526,22 +561,51 @@ function renderFeatures() {
           ${colRow}
           <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="例: ○○山"></div>
           <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="例: Maruyama"></div>
+          <div class="popup-notes-label">変更の根拠</div>
+          <textarea class="popup-textarea" id="notes_${coordKey}">${saved.notes || initNotes}</textarea>
           <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
           <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
         `);
       } else if (p.match_status === "matched") {
-        marker.bindPopup(`
-          <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span>${domBadge}</div>
-          <div class="popup-row"><label>コード</label>${p.summit_code}</div>
-          <div class="popup-row"><label>緯度</label>${pkLat}</div>
-          <div class="popup-row"><label>経度</label>${pkLon}</div>
-          <div class="popup-row"><label>山岳名JP</label>${p.summit_name_jp || '—'}</div>
-          <div class="popup-row"><label>山岳名EN</label>${p.summit_name || '—'}</div>
-          <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
-          <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
-          ${colRow}
-        `);
+        if (p.is_band_change_candidate) {
+          const sumF = summitByCode[p.summit_code];
+          const sotaAltM = sumF?.properties.sota_alt_m ?? '';
+          const sotaPts  = sumF?.properties.sota_points ?? '';
+          const initNotes = `国土地理院 DEM 解析による標高再測定: ${sotaAltM}m (${sotaPts}pt) → ${Math.floor(p.peak_elev)}m (${p.points}pt)\n座標: ${pkLat},${pkLon}（）`;
+          marker.bindPopup(`
+            <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span>${domBadge}</div>
+            <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+            <div class="popup-row"><label>緯度</label>${pkLat}</div>
+            <div class="popup-row"><label>経度</label>${pkLon}</div>
+            <div class="popup-row"><label>山岳名JP</label>${p.summit_name_jp || '—'}</div>
+            <div class="popup-row"><label>山岳名EN</label>${p.summit_name || '—'}</div>
+            <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+            <div class="popup-row"><label>ポイント</label>${p.points}pt（SOTA: ${sotaPts}pt → 変更候補）</div>
+            ${colRow}
+            <div class="popup-notes-label">変更の根拠</div>
+            <textarea class="popup-textarea" id="notes_${coordKey}">${saved.notes || initNotes}</textarea>
+            <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
+            <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
+          `);
+        } else {
+          marker.bindPopup(`
+            <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">matched</span>${domBadge}</div>
+            <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+            <div class="popup-row"><label>緯度</label>${pkLat}</div>
+            <div class="popup-row"><label>経度</label>${pkLon}</div>
+            <div class="popup-row"><label>山岳名JP</label>${p.summit_name_jp || '—'}</div>
+            <div class="popup-row"><label>山岳名EN</label>${p.summit_name || '—'}</div>
+            <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
+            <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
+            ${colRow}
+            <div class="popup-notes-label">変更の根拠</div>
+            <div style="color:#888;font-size:11px">—（変更なし）</div>
+          `);
+        }
       } else {
+        const colF = colByCode[p.summit_code];
+        const colElevStr = colF ? `${colF.properties.col_elev}m` : '（陸地最高峰のため未定義）';
+        const initNotes = `国土地理院標高タイルで解析\n${pkLat},${pkLon}\n所在地：\nコル標高：${colElevStr}\nプロミネンス：${p.prominence}m`;
         marker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-up" style="color:${color}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">dominant</span>${domBadge}</div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
@@ -553,6 +617,10 @@ function renderFeatures() {
           <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           <div class="popup-row"><label>プロミネンス</label>${p.prominence}m</div>
           ${colRow}
+          <div class="popup-notes-label">変更の根拠</div>
+          <textarea class="popup-textarea" id="notes_${coordKey}">${saved.notes || initNotes}</textarea>
+          <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
+          <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
         `);
       }
       marker.addTo(filterGroups[cat]);
@@ -584,15 +652,33 @@ function renderFeatures() {
       const badge = p.match_status === "delete" ? "delete" : "matched";
       const sotaLat = geom.coordinates[1].toFixed(5);
       const sotaLon = geom.coordinates[0].toFixed(5);
-      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(sotaColor) })
-        .bindPopup(`
+      let summitPopupHtml;
+      if (p.match_status === "delete") {
+        const defaultNotes = `国土地理院標高タイルを解析し、${p.dominant_peak_code}に従属している事を確認`;
+        const savedNotes = savedInputs[p.summit_code]?.notes ?? defaultNotes;
+        summitPopupHtml = `
           <div class="popup-title"><i class="fa-solid fa-circle" style="color:${sotaColor}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
           <div class="popup-row"><label>コード</label>${p.summit_code}</div>
           <div class="popup-row"><label>緯度</label>${sotaLat}</div>
           <div class="popup-row"><label>経度</label>${sotaLon}</div>
           <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
           <div class="popup-row"><label>ポイント</label>${p.sota_points}pt</div>
-        `)
+          <div class="popup-notes-label">変更の根拠</div>
+          <textarea id="notes_${p.summit_code}" class="popup-textarea">${savedNotes}</textarea>
+          <button onclick="saveInput('${p.summit_code}')" style="margin-top:4px;width:100%;font-size:11px;">保存</button>
+        `;
+      } else {
+        summitPopupHtml = `
+          <div class="popup-title"><i class="fa-solid fa-circle" style="color:${sotaColor}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge">${badge}</span></div>
+          <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>緯度</label>${sotaLat}</div>
+          <div class="popup-row"><label>経度</label>${sotaLon}</div>
+          <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
+          <div class="popup-row"><label>ポイント</label>${p.sota_points}pt</div>
+        `;
+      }
+      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(sotaColor) })
+        .bindPopup(summitPopupHtml)
         .addTo(filterGroups[cat]);
     }
   });
@@ -610,9 +696,10 @@ document.querySelectorAll("#filters input[type='checkbox']").forEach(cb => {
 
 // ---- localStorage 保存 ----
 function saveInput(key) {
-  const jp = document.getElementById("jp_" + key)?.value || "";
-  const en = document.getElementById("en_" + key)?.value || "";
-  savedInputs[key] = { jp, en };
+  const jp    = document.getElementById("jp_"    + key)?.value || "";
+  const en    = document.getElementById("en_"    + key)?.value || "";
+  const notes = document.getElementById("notes_" + key)?.value || "";
+  savedInputs[key] = { jp, en, notes };
   localStorage.setItem(storageKey, JSON.stringify(savedInputs));
   renderFeatures(); // 変更あり/なし の再分類
   // 再描画後に変更したフィルターグループを地図に反映
