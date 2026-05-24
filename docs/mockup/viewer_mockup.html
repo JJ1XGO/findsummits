@@ -434,11 +434,10 @@ const filterGroups = {
 const peakCategory = {};
 
 // カテゴリ判定（peak フィーチャ用）
-function categorize(matchStatus, summitCode) {
+function categorize(matchStatus) {
   if (matchStatus === "new")      return "new";
   if (matchStatus === "dominant") return "dominant";
-  const s = savedInputs[summitCode] || {};
-  return (s.jp || s.en) ? "changed" : "unchanged";
+  return "unchanged";
 }
 
 // フィーチャをカテゴリに振り分けて描画
@@ -449,7 +448,7 @@ function renderFeatures() {
   GEOJSON_DATA.features.forEach(f => {
     const p = f.properties;
     if (p.feature_type !== "peak") return;
-    peakCategory[p.summit_code] = categorize(p.match_status, p.summit_code);
+    peakCategory[p.summit_code] = categorize(p.match_status);
   });
 
   // summit_code → peak feature のマップ（各フィーチャのカテゴリ解決用）
@@ -539,11 +538,6 @@ function renderFeatures() {
           <div class="popup-row"><label>解析標高</label>${p.peak_elev}m</div>
           <div class="popup-row"><label>ポイント</label>${p.points}pt</div>
           ${colRow}
-          <div class="popup-row" style="margin-top:6px;color:#555">名称修正（任意）</div>
-          <div class="popup-row"><label>山岳名JP</label><input class="popup-input" id="jp_${coordKey}" value="${saved.jp||''}" placeholder="${p.summit_name_jp||''}"></div>
-          <div class="popup-row"><label>山岳名EN</label><input class="popup-input" id="en_${coordKey}" value="${saved.en||''}" placeholder="${p.summit_name}"></div>
-          <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
-          <div class="popup-hint">未入力時は変更行を出力しません</div>
         `);
       } else {
         marker.bindPopup(`
