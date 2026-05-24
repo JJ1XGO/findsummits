@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-24",
-    "counter": 53
+    "counter": 54
   },
   "issues": [
     {
@@ -1623,6 +1623,25 @@
       "created_date": "2026-05-23",
       "stage": "SRS",
       "planned_stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-054",
+      "title": "モックアップ: 陸地最高峰ピークの専用表示追加",
+      "description": "viewer_mockup.html の対象ピーク表示において、key_col_resolved=false（広域再解析でも親ピークが見つからないピーク）に対して「陸地最高峰」（島嶼部の場合は「島嶼部最高峰」）であることが視認できる表示を追加する。\n\n## 背景\n- ADR-008 / ADR-011 で「陸地最高峰」「島嶼部最高峰」が key_col_resolved=false のケースとして定義済み\n- このようなピークはプロミネンス = 標高となり、Key コルが定義されない特殊ケース\n- 申請レビュー時に「なぜ Key コルが空なのか」が一目でわかる必要がある\n\n## 想定する表示案（実装時に再検討）\n- 対象ピークのポップアップ内に「陸地最高峰」バッジを表示\n- Key コル情報欄を「— 陸地最高峰のため未定義」のような注記に置き換える\n\n## 注意\n- 用語「陸地最高峰」「島嶼部最高峰」は現状 ADR にのみ登場。GLOSSARY や URD/SRS への正式取り込みが先に必要かは別途判断\n- モックアップ改修タイミングでまとめて対応するのが望ましい",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-24",
+      "stage": null,
+      "planned_stage": null,
       "status": "未対応",
       "assignee": null,
       "resolution": null,
