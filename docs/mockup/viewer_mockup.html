@@ -130,7 +130,7 @@ const GEOJSON_DATA = {
   },
   features: [
     // ── new: 新規ピーク候補（1521m → 10pt）────────────────────────────
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
       properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-001",
                     peak_elev: 1521, prominence: 210, stability: "confirmed", key_col_resolved: true,
                     points: 10 } },
@@ -140,7 +140,7 @@ const GEOJSON_DATA = {
       properties: { feature_type: "col", summit_code: "JA/NEW-001", col_elev: 1311, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.695,35.315],[138.725,35.315],[138.725,35.345],[138.695,35.345],[138.695,35.315]]] },
       properties: { feature_type: "delete_zone", summit_code: "JA/NEW-001" } },
-    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.71,35.33]] },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.71,35.33]] },
       properties: { feature_type: "prominence_range", summit_code: "JA/NEW-001" } },
 
     // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
@@ -171,7 +171,7 @@ const GEOJSON_DATA = {
     // ── matched: 陸地最高峰・既存サミットと一致（3776m → 10pt）──────────────
     // 富士山: 日本本土最高峰のため Key コル未定義（key_col_resolved=false, is_island=false）
     // col・prominence_range は含めない（SRS 仕様）
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
       properties: { feature_type: "peak", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     peak_elev: 3776, prominence: 3776, stability: "unstable",
@@ -182,7 +182,7 @@ const GEOJSON_DATA = {
       properties: { feature_type: "summit", match_status: "matched",
                     summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     sota_alt_m: 3776, sota_points: 10 } },
-    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.78,35.39]] },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
       properties: { feature_type: "coord_diff", summit_code: "JA/YN-001", match_status: "matched" } },
 
     // ── dominant: 削除候補（ピーク 1050m → 8pt・SOTA サミット 880m → 6pt）──
