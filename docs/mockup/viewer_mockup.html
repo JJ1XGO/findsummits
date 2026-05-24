@@ -207,8 +207,8 @@ function sotaIcon(color) {
 
 // ---- 地図初期化 ----
 const map = L.map("map", { zoomControl: false }).setView([35.33, 138.72], 10);
-L.control.scale({ position: "bottomright", imperial: false, maxWidth: 150 }).addTo(map);
-L.control.zoom({ position: "bottomright" }).addTo(map);
+L.control.scale({ position: "bottomleft", imperial: false, maxWidth: 150 }).addTo(map);
+L.control.zoom({ position: "topright" }).addTo(map);
 
 const baseLayers = {
   "国土地理院": L.tileLayer(
@@ -380,7 +380,7 @@ function createCpLayer() {
 const cpLayer = createCpLayer();
 
 // ---- レイヤーコントロール ----
-L.control.layers(baseLayers, { "1次メッシュ": meshGrid, "基準点": cpLayer }, { position: "topright" }).addTo(map);
+L.control.layers(baseLayers, { "1次メッシュ": meshGrid, "基準点": cpLayer }, { position: "topleft" }).addTo(map);
 
 // ---- localStorage ----
 const storageKey = "sota_viewer_" + GEOJSON_DATA.metadata.generated_at;
