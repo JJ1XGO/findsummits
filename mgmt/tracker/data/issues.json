@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-23",
+    "last_updated": "2026-05-24",
     "counter": 53
   },
   "issues": [
@@ -955,13 +955,28 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "URD",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "以下のいずれかに整理:\n案A: UR-008 / UR-009 を URD に残しつつ '(品質要件)' と明示し、SRS で NFR-XXX に明示マップ\n案B: URD から削除し、SRS の NFR として独立記載\n案C: URD に残し、トレース確認のための専用節を新設",
       "notes": "【Opus相談推奨】URD/SRS構造に関わる設計哲学的判断。後から変更すると影響範囲が大きい。\n\n相談ポイント:\n(1) 案A・案B・案Cそれぞれの長所短所。要件管理の一般的なプラクティスに照らした評価\n(2) UR-008（環境構築から成果物生成までの実行可能性）とUR-009（仕様・実装の整合性）は本質的に '品質目標' であり、ユーザー要求とは性質が異なる。これをURDに残すべきか、NFRに移すべきか\n(3) ISO/IEC 25010 等の品質特性モデルとのマッピング\n(4) 既存のNFR-003 / NFR-007との対応関係を明示するか、独立した品質目標として扱うか\n(5) ISSUE-031（UR↔FR/NFRトレース調査）・ISSUE-032（RTM作成）の進め方への影響",
-      "resolved_date": null,
+      "resolved_date": "2026-05-24",
       "verified_date": null,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-05-24T09:25:48",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-24T09:26:44",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": ""
+        }
+      ],
       "planned_stage": "SRS"
     },
     {
@@ -1017,7 +1032,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "(1) UR-001 〜 UR-010 を縦軸、現状の対応 FR/NFR を横軸に整理した一覧表を作成し漏れを抽出\n(2) 漏れている対応関係を該当 FR / NFR の '対応 UR' フィールドに追記\n(3) ISSUE-031（RTM）作成の前提データとして提供",
-      "notes": null,
+      "notes": "UR-009 削除・NFR-003 対応 UR を UR-004/005 に・NFR-007 対応 UR を UR-008 に振り替え済み（ISSUE-029 対応、2026-05-24）",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
