@@ -211,18 +211,30 @@
 - メッシュコードリストをコード昇順にソートしてから、1 メッシュずつ順番に解析する
 - 解析対象メッシュの決定: 対象メッシュを中心とした 3×3 のメッシュグリッド（最大 9 メッシュ）のうち、メッシュコードリストに存在するものを解析対象とする。
 
-  ```
-  抽象                        具体例（メッシュコード 5239 を中心とした場合）
+  <table border="1">
+  <tr>
+    <th colspan="3" align="center">抽象</th>
+    <th width="30"></th>
+    <th colspan="3" align="center">具体例（5239 を中心とした場合）</th>
+  </tr>
+  <tr>
+    <td align="center">隣接</td><td align="center">隣接</td><td align="center">隣接</td>
+    <td></td>
+    <td align="center">5338</td><td align="center">5339</td><td align="center">5340</td>
+  </tr>
+  <tr>
+    <td align="center">隣接</td><td align="center"><b>対象</b></td><td align="center">隣接</td>
+    <td></td>
+    <td align="center">5238</td><td align="center"><b>5239</b></td><td align="center">5240</td>
+  </tr>
+  <tr>
+    <td align="center">隣接</td><td align="center">隣接</td><td align="center">隣接</td>
+    <td></td>
+    <td align="center">5138</td><td align="center">5139</td><td align="center">NODATA</td>
+  </tr>
+  </table>
 
-  ┌──────┬──────┬──────┐   ┌──────┬──────┬──────┐
-  │ 隣接 │ 隣接 │ 隣接 │   │ 5338 │ 5339 │ 5340 │
-  ├──────┼──────┼──────┤   ├──────┼──────┼──────┤
-  │ 隣接 │ 対象 │ 隣接 │   │ 5238 │ 5239 │ 5240 │
-  ├──────┼──────┼──────┤   ├──────┼──────┼──────┤
-  │ 隣接 │ 隣接 │ 隣接 │   │ 5138 │ 5139 │NODATA│
-  └──────┴──────┴──────┘   └──────┴──────┴──────┘
-  （上が北・右が東）           5140 はリスト外（海域）→ タイル未取得のため NODATA として解析
-  ```
+  上が北・右が東。5140 はリスト外（海域）→ タイル未取得のため NODATA として解析
 - 解析対象メッシュ全体の四隅の緯度経度を求め（[メッシュコード → 緯度経度変換](00_GLOSSARY.md#mesh-to-latlon) 参照）、その緯度経度をもとに標高タイル（ズームレベル 15）のタイル番号を特定する（[緯度経度 → XYZ タイル番号変換](00_GLOSSARY.md#latlon-to-tile) 参照）
 - 特定したタイルを 1 枚の画像に結合する。タイルとメッシュの境界は一致しないため、結合画像はメッシュ境界より数十 m はみ出す
 - 結合範囲の外周に 1px 幅の海面ボーダー（0m）を付加し、メッシュ端を海岸線とみなす
