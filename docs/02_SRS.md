@@ -275,8 +275,8 @@
   - **Flood Fill 閾値**: `peak_elev - 25.0m` 以上
   - **area_complete の扱い**: 共通仕様の通り。標高差 25m 以内のため、いずれかの 3×3 解析で必ず完結する想定
 - **delete判定ゾーンポリゴン**（`feature_type="delete_zone"`）:
-  - **定義**: 既存 SOTA サミットの削除判定に使用する。ピーク標高から `min(prominence, delete_zone_max_drop)` 以内の連続エリア（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
-  - **Flood Fill 閾値**: `max(col_elev, peak_elev - delete_zone_max_drop)` 以上。`key_col_resolved=false`（`col_elev` 未確定）のピークでは `peak_elev - delete_zone_max_drop` を閾値として使用する（`delete_zone_max_drop` 上限キャップによりプロミネンス不明でもポリゴン生成が可能）
+  - **定義**: 既存 SOTA サミットの削除判定に使用する。ピーク頂上から、プロミネンスと上限値（`delete_zone_max_drop` = 250m）のどちらか小さい方の標高差以内の連続エリア（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+  - **Flood Fill 閾値**: Key コルの標高と「ピーク標高 − 250m」のどちらか高い方以上を対象として Flood Fill する。`key_col_resolved=false`（Key コルの標高が未確定）のピークでは「ピーク標高 − 250m」を下限として使用する（250m の上限キャップにより、プロミネンス未確定でもポリゴン生成が可能）
   - **パラメータ**: `delete_zone_max_drop` は `params/config.ini` で管理（値 250m、実測による確定値。詳細は [ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **area_complete の扱い**: 共通仕様の通り。`delete_zone_max_drop` 上限キャップにより、いずれかの 3×3 解析で必ず完結する想定
 - 出力先: `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（2種類のポリゴンを同一ファイルに収録）
