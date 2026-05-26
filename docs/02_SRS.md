@@ -335,7 +335,7 @@
 #### FR-018: per-mesh activation.geojson 統合
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003), [UR-006](01_URD.md#ur-006)
-- **入力**: `$DATA_DIR/results/csv/` 配下の per-mesh `*_activation.geojson`。メッシュコードリストが指定された場合はそのメッシュの GeoJSON のみ読み込む（省略時は全 GeoJSON）
+- **入力**: FR-016 がメッシュごとに生成したポリゴンファイル（`$DATA_DIR/results/csv/<メッシュコード>_activation.geojson`）。メッシュコードリストが指定された場合はそのメッシュのファイルのみ読み込む（省略時は全ファイル）
 - 通常 per-mesh の `<meshcode>_activation.geojson`（[FR-016](#fr-016-ピーク域ポリゴン生成) 出力）のみを統合対象とする。広域モード（[FR-014](#fr-014-独立峰のコル探索)）は GeoJSON を生成しないため、広域 per-mesh ファイルは本機能の入力に含まれない
 - 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_complete=true`（完全なポリゴン）のものを採用する
 - `area_complete=true` がどこにも存在しない場合は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグが true となり、後続の [FR-013](#fr-013-geojsonhtml-ビューア生成)（GeoJSON/HTML 生成）は実施されない（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
