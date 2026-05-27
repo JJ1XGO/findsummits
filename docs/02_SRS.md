@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-26 |
+| 最終更新日 | 2026-05-27 |
 | ステータス | ドラフト（FR-002/003 フェーズ2 移動済み・3章小節化） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
@@ -485,53 +485,92 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 ##### 各フィーチャのプロパティ
 
 **Point: ピーク**
-- `feature_type`: "peak"
-- `match_status`: matched / new / dominant
-- `summit_code`: サミットコード（matched のみ）または仮サミットコード（new / dominant。`JAx/XX-A01` 形式）
-- `summit_name`: サミット名（matched / dominant のみ・英語/ローマ字）
-- `summit_name_jp`: 日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字）
-- `peak_elev`: 検出標高（m）
-- `prominence`: プロミネンス（m）
-- `stability`: confirmed / unstable
-- `key_col_resolved`: コル確定フラグ（true=確定 / false=未確定）
-- `points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出
 
-**Point: コル**
-- `feature_type`: "col"
-- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- `col_elev`: コル標高（m）
-- `points`: 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出）
-- `key_col_resolved=false` の場合は含めない
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"peak"</td></tr>
+<tr><td><code>match_status</code></td><td>matched / new / dominant</td></tr>
+<tr><td><code>summit_code</code></td><td>サミットコード（matched のみ）または仮サミットコード（new / dominant。<code>JAx/XX-A01</code> 形式）</td></tr>
+<tr><td><code>summit_name</code></td><td>サミット名（matched / dominant のみ・英語/ローマ字）</td></tr>
+<tr><td><code>summit_name_jp</code></td><td>日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字）</td></tr>
+<tr><td><code>peak_elev</code></td><td>検出標高（m）</td></tr>
+<tr><td><code>prominence</code></td><td>プロミネンス（m）</td></tr>
+<tr><td><code>stability</code></td><td>confirmed / unstable</td></tr>
+<tr><td><code>key_col_resolved</code></td><td>コル確定フラグ（true=確定 / false=未確定）</td></tr>
+<tr><td><code>points</code></td><td>標高バンドに基づくポイント数（1/2/4/6/8/10）。<code>peak_elev</code> から算出</td></tr>
+</tbody>
+</table>
+
+**Point: コル**（`key_col_resolved=false` の場合は含めない）
+
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"col"</td></tr>
+<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
+<tr><td><code>col_elev</code></td><td>コル標高（m）</td></tr>
+<tr><td><code>points</code></td><td>対応ピークの <code>points</code> と同値（コル自身の標高ではなくピークの標高から算出）</td></tr>
+</tbody>
+</table>
 
 **Point: 既存 SOTA サミット**
-- `feature_type`: "summit"
-- `match_status`: matched / delete
-- `summit_code`: SOTA サミットコード
-- `summit_name`: サミット名（summitslist.csv の SummitName、英語/ローマ字）
-- `summit_name_jp`: 日本語山岳名（geojson_v{N} から取得。未取得時は空文字）
-- `sota_alt_m`: SOTA 登録標高（m）
-- `sota_points`: 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出
+
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"summit"</td></tr>
+<tr><td><code>match_status</code></td><td>matched / delete</td></tr>
+<tr><td><code>summit_code</code></td><td>SOTA サミットコード</td></tr>
+<tr><td><code>summit_name</code></td><td>サミット名（summitslist.csv の SummitName、英語/ローマ字）</td></tr>
+<tr><td><code>summit_name_jp</code></td><td>日本語山岳名（geojson_v{N} から取得。未取得時は空文字）</td></tr>
+<tr><td><code>sota_alt_m</code></td><td>SOTA 登録標高（m）</td></tr>
+<tr><td><code>sota_points</code></td><td>標高バンドに基づくポイント数（1/2/4/6/8/10）。<code>sota_alt_m</code> から算出</td></tr>
+</tbody>
+</table>
 
 **Polygon: アクティベーションゾーン**
-- `feature_type`: "activation_zone"
-- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- `area_complete`: true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false）
-- `points`: 対応ピークの `points` と同値（ビューアでの色付け用）
 
-**Polygon: delete判定ゾーン**（new / dominant）
-- `feature_type`: "delete_zone"
-- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- 対応ピークの delete判定ゾーンポリゴン（FR-016 出力から取得。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"activation_zone"</td></tr>
+<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
+<tr><td><code>area_complete</code></td><td>true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false）</td></tr>
+<tr><td><code>points</code></td><td>対応ピークの <code>points</code> と同値（ビューアでの色付け用）</td></tr>
+</tbody>
+</table>
 
-**LineString: ピーク → コル**
-- `feature_type`: "prominence_range"
-- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- `key_col_resolved=false` の場合は生成しない
+**Polygon: delete判定ゾーン**（new / dominant。FR-016 出力から取得。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"delete_zone"</td></tr>
+<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
+</tbody>
+</table>
+
+**LineString: ピーク → コル**（`key_col_resolved=false` の場合は生成しない）
+
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"prominence_range"</td></tr>
+<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
+</tbody>
+</table>
 
 **LineString: ピーク → SOTA サミット**（matched / dominant）
-- `feature_type`: "coord_diff"
-- `summit_code`: 対応ピークのサミットコード（ピーク Point との対応付け用）
-- `match_status`: matched / dominant
+
+<table border="1">
+<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td><code>feature_type</code></td><td>"coord_diff"</td></tr>
+<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
+<tr><td><code>match_status</code></td><td>matched / dominant</td></tr>
+</tbody>
+</table>
 
 ##### HTML ビューア仕様
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
