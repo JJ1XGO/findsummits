@@ -484,7 +484,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 
 ##### 各フィーチャのプロパティ
 
-**Point: ピーク**
+###### Point: ピーク
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
@@ -502,7 +502,9 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 </tbody>
 </table>
 
-**Point: コル**（`key_col_resolved=false` の場合は含めない）
+###### Point: コル
+
+`key_col_resolved=false` の場合は含めない。
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
@@ -514,7 +516,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 </tbody>
 </table>
 
-**Point: 既存 SOTA サミット**
+###### Point: 既存 SOTA サミット
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
@@ -529,7 +531,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 </tbody>
 </table>
 
-**Polygon: アクティベーションゾーン**
+###### Polygon: アクティベーションゾーン
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
@@ -541,7 +543,9 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 </tbody>
 </table>
 
-**Polygon: delete判定ゾーン**（new / dominant。FR-016 出力から取得。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+###### Polygon: delete判定ゾーン
+
+new / dominant のみ。FR-016 出力から取得（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）。
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
@@ -551,7 +555,9 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 </tbody>
 </table>
 
-**LineString: ピーク → コル**（`key_col_resolved=false` の場合は生成しない）
+###### LineString: ピーク → コル
+
+`key_col_resolved=false` の場合は生成しない。
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
@@ -561,7 +567,9 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 </tbody>
 </table>
 
-**LineString: ピーク → SOTA サミット**（matched / dominant）
+###### LineString: ピーク → SOTA サミット
+
+matched / dominant のみ。
 
 <table border="1">
 <thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
