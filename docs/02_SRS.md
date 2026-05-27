@@ -484,101 +484,80 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 
 ##### 各フィーチャのプロパティ
 
-###### Point: ピーク
+**Point: ピーク**
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"peak"</td></tr>
-<tr><td><code>match_status</code></td><td>matched / new / dominant</td></tr>
-<tr><td><code>summit_code</code></td><td>サミットコード（matched のみ）または仮サミットコード（new / dominant。<code>JAx/XX-A01</code> 形式）</td></tr>
-<tr><td><code>summit_name</code></td><td>サミット名（matched / dominant のみ・英語/ローマ字）</td></tr>
-<tr><td><code>summit_name_jp</code></td><td>日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字）</td></tr>
-<tr><td><code>peak_elev</code></td><td>検出標高（m）</td></tr>
-<tr><td><code>prominence</code></td><td>プロミネンス（m）</td></tr>
-<tr><td><code>stability</code></td><td>confirmed / unstable</td></tr>
-<tr><td><code>key_col_resolved</code></td><td>コル確定フラグ（true=確定 / false=未確定）</td></tr>
-<tr><td><code>points</code></td><td>標高バンドに基づくポイント数（1/2/4/6/8/10）。<code>peak_elev</code> から算出</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "peak" |
+| `match_status` | matched / new / dominant |
+| `summit_code` | サミットコード（matched のみ）または仮サミットコード（new / dominant。`JAx/XX-A01` 形式） |
+| `summit_name` | サミット名（matched / dominant のみ・英語/ローマ字） |
+| `summit_name_jp` | 日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字） |
+| `peak_elev` | 検出標高（m） |
+| `prominence` | プロミネンス（m） |
+| `stability` | confirmed / unstable |
+| `key_col_resolved` | コル確定フラグ（true=確定 / false=未確定） |
+| `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出 |
 
-###### Point: コル
+**Point: コル**
 
 `key_col_resolved=false` の場合は含めない。
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"col"</td></tr>
-<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
-<tr><td><code>col_elev</code></td><td>コル標高（m）</td></tr>
-<tr><td><code>points</code></td><td>対応ピークの <code>points</code> と同値（コル自身の標高ではなくピークの標高から算出）</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "col" |
+| `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
+| `col_elev` | コル標高（m） |
+| `points` | 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出） |
 
-###### Point: 既存 SOTA サミット
+**Point: 既存 SOTA サミット**
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"summit"</td></tr>
-<tr><td><code>match_status</code></td><td>matched / delete</td></tr>
-<tr><td><code>summit_code</code></td><td>SOTA サミットコード</td></tr>
-<tr><td><code>summit_name</code></td><td>サミット名（summitslist.csv の SummitName、英語/ローマ字）</td></tr>
-<tr><td><code>summit_name_jp</code></td><td>日本語山岳名（geojson_v{N} から取得。未取得時は空文字）</td></tr>
-<tr><td><code>sota_alt_m</code></td><td>SOTA 登録標高（m）</td></tr>
-<tr><td><code>sota_points</code></td><td>標高バンドに基づくポイント数（1/2/4/6/8/10）。<code>sota_alt_m</code> から算出</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "summit" |
+| `match_status` | matched / delete |
+| `summit_code` | SOTA サミットコード |
+| `summit_name` | サミット名（summitslist.csv の SummitName、英語/ローマ字） |
+| `summit_name_jp` | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
+| `sota_alt_m` | SOTA 登録標高（m） |
+| `sota_points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出 |
 
-###### Polygon: アクティベーションゾーン
+**Polygon: アクティベーションゾーン**
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"activation_zone"</td></tr>
-<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
-<tr><td><code>area_complete</code></td><td>true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false）</td></tr>
-<tr><td><code>points</code></td><td>対応ピークの <code>points</code> と同値（ビューアでの色付け用）</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "activation_zone" |
+| `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
+| `area_complete` | true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false） |
+| `points` | 対応ピークの `points` と同値（ビューアでの色付け用） |
 
-###### Polygon: delete判定ゾーン
+**Polygon: delete判定ゾーン**
 
 new / dominant のみ。FR-016 出力から取得（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）。
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"delete_zone"</td></tr>
-<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "delete_zone" |
+| `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 
-###### LineString: ピーク → コル
+**LineString: ピーク → コル**
 
 `key_col_resolved=false` の場合は生成しない。
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"prominence_range"</td></tr>
-<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "prominence_range" |
+| `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 
-###### LineString: ピーク → SOTA サミット
+**LineString: ピーク → SOTA サミット**
 
 matched / dominant のみ。
 
-<table border="1">
-<thead><tr><th>プロパティ名</th><th>説明</th></tr></thead>
-<tbody>
-<tr><td><code>feature_type</code></td><td>"coord_diff"</td></tr>
-<tr><td><code>summit_code</code></td><td>対応ピークのサミットコード（ピーク Point との対応付け用）</td></tr>
-<tr><td><code>match_status</code></td><td>matched / dominant</td></tr>
-</tbody>
-</table>
+| プロパティ名 | 説明 |
+|---|---|
+| `feature_type` | "coord_diff" |
+| `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
+| `match_status` | matched / dominant |
 
 ##### HTML ビューア仕様
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
@@ -630,22 +609,22 @@ matched / dominant のみ。
 | 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
 | 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 |
 
-※1 HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-geojsonhtml-ビューア生成)）  
-※2 追加根拠（ビューアが自動生成するフォーマット）:
-```
-国土地理院標高タイルで解析
-{peak_lat},{peak_lon}
-所在地：{都道府県または振興局名} {市区町村名}
-コル標高：{col_elev}m
-プロミネンス：{prominence}m
-```
-※3 summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること  
-※4 削除根拠（ビューアが自動生成するフォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`  
-※5 変更根拠（ビューアが自動生成するフォーマット）:
-```
-国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {floor(peak_elev)}m ({peak_points}pt)
-座標: {peak_lat},{peak_lon}（{都道府県または振興局名} {市区町村名}）
-```
+- **※1**: HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-geojsonhtml-ビューア生成)）
+- **※2**: 追加根拠（ビューアが自動生成するフォーマット）:
+  ```
+  国土地理院標高タイルで解析
+  {peak_lat},{peak_lon}
+  所在地：{都道府県または振興局名} {市区町村名}
+  コル標高：{col_elev}m
+  プロミネンス：{prominence}m
+  ```
+- **※3**: summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること
+- **※4**: 削除根拠（ビューアが自動生成するフォーマット）: `国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認`
+- **※5**: 変更根拠（ビューアが自動生成するフォーマット）:
+  ```
+  国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {floor(peak_elev)}m ({peak_points}pt)
+  座標: {peak_lat},{peak_lon}（{都道府県または振興局名} {市区町村名}）
+  ```
 
 #### FR-012: エビデンス CSV 生成
 
@@ -687,7 +666,7 @@ matched / dominant のみ。
 
 ## 5. 非機能要件
 
-#### NFR-001: 精度（プロミネンス判定）
+### NFR-001: 精度（プロミネンス判定）
 
 - **対応 UR**: [UR-002](01_URD.md#ur-002)
 - プロミネンス ≥ 150m のピークを出力すること
@@ -695,20 +674,20 @@ matched / dominant のみ。
 - 最終 150m 判定は FR-008（フェーズ3）で実施
 - 使用する標高データは DEM5（5m解像度）。地理院地図が優先表示する DEM1（1m解像度）より解像度は低く、標高値が数m程度異なることがある。ただしプロミネンス 150m 判定への実質的な影響は軽微である（参照: [ADR-004](decisions/ADR-004-level14-max-pooling-isolated-peaks.md)）
 
-#### NFR-002: メモリ使用量
+### NFR-002: メモリ使用量
 
 - **対応 UR**: [UR-001](01_URD.md#ur-001), [UR-002](01_URD.md#ur-002), [UR-003](01_URD.md#ur-003), [UR-007](01_URD.md#ur-007)
 - 本ツールの動作前提マシン（物理メモリ 62.72GB + スワップ 39.7GB、詳細は [environment.md](environment.md)）で動作すること
 - 実測値（9メッシュ最大解析時）: 解析ピーク時 90.8%（≒56.9GB）、スワップ使用あり・完走確認済み
 
-#### NFR-003: 再現性（決定論的出力）
+### NFR-003: 再現性（決定論的出力）
 
 - **対応 UR**: [UR-004](01_URD.md#ur-004), [UR-005](01_URD.md#ur-005)
 - 同一タイルキャッシュ・同一パラメータで実行した場合、すべての出力（CSV・GeoJSON・XLSX）が同一の内容になること（`metadata.generated_at` 等の実行時タイムスタンプを除く。ピーク座標・標高・突合結果・採番が同一であることを保証する）
 - ピークのソート順を決定論化するため、標高降順ソートに 2次キー（x→y 座標）を設ける
 - 仮サミットコードの採番順序は [FR-009](#fr-009-sotaリスト突合match_status-判定) で規定する（標高降順 → プロミネンス降順 → `peak_lat` 降順 → `peak_lon` 昇順）。同一の入力 per-mesh CSV 集合からは常に同一の仮サミットコードが得られる
 
-#### NFR-004: アクセスマナー
+### NFR-004: アクセスマナー
 
 - **対応 UR**: [UR-010](01_URD.md#ur-010)
 - タイル取得時に User-Agent（HTTPリクエストでサーバー側にアクセス元を伝えるための識別文字列）を必ず付与すること。地理院側で問題発生時に連絡が取れるよう、メールアドレスを含む形式とする
@@ -716,20 +695,20 @@ matched / dominant のみ。
 - リクエスト間隔: パラメータファイルで指定（デフォルト: 100ms、詳細は HLD）
 - HTTP 429/503（サーバーが「アクセスが多すぎる」と返すエラー）受信時は待機時間を段階的に延ばしながらリトライする
 
-#### NFR-005: 処理時間目標
+### NFR-005: 処理時間目標
 
 - **対応 UR**: [UR-001](01_URD.md#ur-001)
 - タイル取得: 全176メッシュで12時間以内（約4分/メッシュ）を目標とする
 - 解析: 全176メッシュで24時間以内（約8分/メッシュ）を目標とする
 - 参考: 1メッシュ当たり数分〜十数分（メッシュの地形・解析範囲による）
 
-#### NFR-006: 可搬性・環境
+### NFR-006: 可搬性・環境
 
 - **対応 UR**: [UR-008](01_URD.md#ur-008)
 - [environment.md](environment.md) に定めるマシンスペック（物理メモリ 62.72GB 等）と同等以上の環境で動作すること
 - サーバー構成・マルチユーザー運用は対象外
 
-#### NFR-007: ログ出力
+### NFR-007: ログ出力
 
 - **対応 UR**: [UR-008](01_URD.md#ur-008)
 - 本ツールのすべてのバッチ処理（タイル取得・行政区域前処理・解析・CSV統合・出力生成）においてログを出力すること
@@ -743,7 +722,7 @@ matched / dominant のみ。
 - ログディレクトリが存在しない場合は自動生成すること
 - ログファイル命名規則・ログディレクトリの設定キー名の詳細は HLD で定める
 
-#### NFR-008: UI レスポンス
+### NFR-008: UI レスポンス
 
 - **対応 UR**: [UR-006](01_URD.md#ur-006)
 - HTML ビューア（FR-013）上のボタンクリック・地図操作などの UI 操作に対して、1秒以内に応答すること
