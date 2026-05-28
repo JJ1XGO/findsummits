@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-25",
+    "last_updated": "2026-05-28",
     "counter": 56
   },
   "issues": [
@@ -1351,7 +1351,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【2026-05-22 追記】merge.py 改修スコープに以下を追加: points/sota_points/is_band_change_candidate 列の計算・追加（FR-009 変更申請判定セクション参照）。バンド定義は GLOSSARY 標高バンド（Points 算出表）に従う。peak_elev は切り捨て（floor）した整数 m でバンド判定（例: 1499.5m → 1499m → 8pt）、sota_alt_m はそのまま判定。\n【2026-05-23 補正】merge.py の出力は merged.csv（ピーク台帳・ステータス・不備フラグ）と merged_activation.geojson（AZ・delete判定ゾーンポリゴンの per-mesh 統合）の2系統（SRS FR-018 参照）。AZ/delete-zone PIP 判定の素材は per-mesh activation GeoJSON。不備フラグ・exit code 判定は merged.csv 側で完結する。",
+      "notes": "【ADR-013 採用後のスコープ再評価が必要】merged.geojson が中心成果物となったため、merge.py が GeoJSON を直接出力するか・output_geojson.py との責務分担を本 SRS 改訂後に決定する。",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1370,7 +1370,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【2026-05-22 追記】output_geojson.py + merged_viewer.html 改修スコープに以下を追加: (1) 名称修正 UI 廃止（matched ピークの入力フィールドを削除）。(2) 変更行自動エクスポート（is_band_change_candidate=true の matched ピークを申請書の変更行として自動生成、FR-011 ※5フォーマット準拠）。\n【2026-05-23 補正】output_geojson.py の入力は merged.csv + merged_activation.geojson の2系統（SRS FR-013 参照）。ポリゴン情報（AZ・delete判定ゾーン）は merged_activation.geojson から取り込む。出力は merged.geojson（Point + LineString + Polygon の可視化集約）と merged_viewer.html。",
+      "notes": "【ADR-013 採用後のスコープ再評価が必要】merged.geojson が中心成果物となったため、output_geojson.py の責務（merged.csv + merged_activation.geojson → merged.geojson 統合）が変わる可能性あり。merge.py との責務分担を SRS 改訂後に決定する。",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1676,13 +1676,21 @@
       "created_date": "2026-05-24",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "HTMLビューアはユーザーI/Fの1つ（外部I/F）であり、SRSに以下を記載する必要がある。\n- match_status別の視覚的区別表示要件\n- key_col_resolved=falseピークの陸地最高峰/島嶼部最高峰特別表示\n- ポップアップ表示項目と編集可否（山岳名は新規のみ入力可など）\n- 変更の根拠フィールドの入力要件・初期値テンプレート（※2/※4/※5）\n- エクスポート機能の存在と出力内容\n実装手段（Leaflet・HTML単体・localStorage等）はHLDに記載する。",
-      "resolved_date": null,
+      "resolved_date": "2026-05-28",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-05-28T17:04:02",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS 改訂（ADR-013 採用: merged.geojson 中心成果物モデル）に統合。FR-013・FR-009 に rationale 編集 UI 要件・初期値テンプレート（※2/※4/※5）・XLSX 反映要件・ポップアップ表示項目・編集可否を記載。"
+        }
+      ]
     },
     {
       "id": "ISSUE-056",

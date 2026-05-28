@@ -105,9 +105,11 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 - **FR-014**: 再解析トリガーを `key_col_resolved=false` のみに限定（AZ・delete判定ゾーンの `area_complete=false` はトリガー対象外）。広域モードでは Key コル特定のみ行い、ポリゴン生成（FR-016）は実行しない。出力は広域 per-mesh CSV のみで GeoJSON は出力しない
 - **GLOSSARY**: 「delete判定ゾーン」用語追加、「コル等高線ポリゴン」用語削除
 - **C エンジン** (`src/analyze.c`, `src/mesh_analyze.c`): Flood Fill 閾値とポリゴン種別の変更
-- **merge.py**: AZ / delete判定ゾーンの point-in-polygon 実装、不備フラグ列追加、exit code 制御
+- **merge.py**: AZ / delete判定ゾーンの point-in-polygon 実装、不備フラグ格納、exit code 制御
 - **output_geojson.py**: dominant フィーチャ構成変更
 - **params/config.ini.example**: `delete_zone_max_drop` パラメータ追加
+
+> **補足（ADR-013 採用後）**: 不備フラグは `merged.csv` の列ではなく `merged.geojson` のメタデータプロパティに格納する（詳細は [ADR-013](ADR-013-merged-geojson-as-central-data.md)）。`merged.csv` は `merged.geojson` から派生するエビデンス CSV であり不備フラグは含めない。
 
 ### 未確定事項
 
