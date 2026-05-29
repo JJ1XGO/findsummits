@@ -1749,11 +1749,11 @@
       "created_date": "2026-05-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応中",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "ステップ層撤廃・フェーズ3.5内包・FR-013をビューア生成仕様(残置)とビューア機能仕様(FR-019新規)に分割・フェーズ5:申請書生成新設(FR-019/011/012/020)・公開用HTML生成FR-020新規追加。詳細: mgmt/plan.md",
-      "resolved_date": null,
+      "resolved_date": "2026-05-29",
       "verified_date": null,
       "history": [
         {
@@ -1761,6 +1761,13 @@
           "actor": "不明",
           "from": "未対応",
           "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-05-29T12:08:00",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
           "comment": ""
         }
       ]
