@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-28 |
+| 最終更新日 | 2026-05-29 |
 | ステータス | ドラフト（merged.geojson 中心成果物モデルへ改訂・rationale プロパティ追加） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
@@ -33,14 +33,16 @@
    - [フェーズ3: ピーク統合（全国）](#フェーズ3-ピーク統合全国)
      - [FR-008: per-mesh CSV 統合](#fr-008-per-mesh-csv-統合)
      - [FR-018: per-mesh activation.geojson 統合](#fr-018-per-mesh-activationgeojson-統合)
-   - [フェーズ3.5: 独立峰対応（広域再解析）](#フェーズ35-独立峰対応広域再解析)
      - [FR-014: 独立峰のコル探索](#fr-014-独立峰のコル探索)
-   - [フェーズ4: SOTA突合・中心成果物生成・可視化](#フェーズ4-sota突合中心成果物生成可視化)
+   - [フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成](#フェーズ4-sota突合中心成果物生成html-ビューア生成)
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
      - [FR-010: 削除候補のスコープ](#fr-010-削除候補のスコープ)
      - [FR-013: HTML ビューア生成](#fr-013-html-ビューア生成)
+   - [フェーズ5: 申請書生成](#フェーズ5-申請書生成)
+     - [FR-019: HTML ビューア機能仕様](#fr-019-html-ビューア機能仕様)
      - [FR-011: 申請書 XLSX 生成](#fr-011-申請書-xlsx-生成)
      - [FR-012: エビデンス CSV 生成](#fr-012-エビデンス-csv-生成)
+     - [FR-020: 公開用 HTML ビューア生成](#fr-020-公開用-html-ビューア生成)
 5. [非機能要件](#5-非機能要件)
    - [NFR-001: 精度（プロミネンス判定）](#nfr-001-精度プロミネンス判定)
    - [NFR-002: メモリ使用量](#nfr-002-メモリ使用量)
@@ -123,26 +125,36 @@
 
 ![フェーズ分割の俯瞰図](figures/phases_overview.drawio.svg)
 
-3ステップの運用フローで使用する。
+フェーズ1〜4 はバッチ処理、フェーズ5 はローカル HTML ビューア上のユーザー操作で構成される。
 
 ```
-【ステップ1: データ取得・前処理】
-タイル取得コンポーネント              タイル事前取得（フェーズ1）
-行政区域前処理コンポーネント           N03 行政区域前処理（フェーズ1・初回のみ）
+【フェーズ1: タイル取得・前処理】
+タイル取得コンポーネント              タイル事前取得
+行政区域前処理コンポーネント           N03 行政区域前処理（初回のみ）
        └─ $DATA_DIR/ref/N03-{n03_year}_regions.geojson  ← 統合・突合コンポーネントが参照
-       ↓
-【ステップ2: 解析・突合・確認】（GeoJSON/HTML で結果を確認してから次ステップへ）
-地形解析エンジン         ピーク・コル検出・ピーク域ポリゴン生成（フェーズ2）
+       ↓ ユーザーが解析コマンドを実行
+【フェーズ2: ピーク解析（per-mesh）】
+地形解析エンジン         ピーク・コル検出・ピーク域ポリゴン生成
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
        ├─ per-peak polygons         ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
-統合・突合コンポーネント   統合・突合・中心成果物生成（フェーズ3）
-       ├─ merged.geojson            ($DATA_DIR/results/merged.geojson) ← 中心成果物（全フィーチャ + rationale）
-       ├─ merged.csv                ($DATA_DIR/results/merged.csv)     ← 派生エビデンス CSV（merged.geojson から生成）
+       ↓
+【フェーズ3: ピーク統合（全国・独立峰広域再解析を内包）】
+統合コンポーネント        ピーク統合・独立峰コル探索
+       ├─ merged.csv                （内部 work CSV）
        └─ merged_activation.geojson ($DATA_DIR/results/merged_activation.geojson) ← 内部中間ファイル
-可視化生成コンポーネント   HTML ビューア生成（フェーズ4）
-       └─ merged_viewer.html ← HTML ビューア（GeoJSON 埋め込み・rationale 編集・申請書 XLSX エクスポート機能付き）
-【ステップ3: 申請書生成】（HTML ビューアで rationale を確認・編集後、申請書エクスポートボタンで XLSX 生成）
+       ↓
+【フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成】
+統合・突合コンポーネント   SOTA突合・中心成果物生成
+       ├─ merged.geojson            ($DATA_DIR/results/merged.geojson) ← 中心成果物（全フィーチャ + rationale）
+       └─ merged.csv                ($DATA_DIR/results/merged.csv)     ← 派生エビデンス CSV（merged.geojson から生成）
+可視化生成コンポーネント   HTML ビューア生成
+       └─ merged_viewer.html        ← 編集可能なローカル HTML ビューア（GeoJSON 埋め込み・rationale 編集機能付き）
+       ↓ ユーザーが HTML ビューアで確認・rationale 編集後にエクスポートを実行
+【フェーズ5: 申請書生成（ローカル HTML ビューア上のユーザー操作）】
+       ├─ 申請書 XLSX               （ブラウザダウンロード）
+       ├─ エビデンス CSV            ($DATA_DIR/results/merged.csv)
+       └─ 公開用 HTML               （ブラウザダウンロード）
 ```
 
 ---
@@ -380,8 +392,6 @@
 
 ---
 
-### フェーズ3.5: 独立峰対応（広域再解析）
-
 フェーズ3 の統合結果（内部 work CSV `merged.csv`）で `key_col_resolved=false` が残ったピークを対象に、per-mesh 解析エンジンを
 広域モード（[FR-004](#fr-004-33-メッシュ結合解析) の N×N + L14 パラメータ）で再呼び出しし、
 Key コルを特定する。生成された広域 per-mesh CSV は通常 per-mesh CSV とともに
@@ -393,7 +403,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 #### FR-014: 独立峰のコル探索
 
 - **対応 UR**: [UR-007](01_URD.md#ur-007)
-- **概要**: merged.csv の `key_col_resolved=false` ピークに対して、N×N メッシュ + L14 max pooling の広域モードで FR-004 ピーク解析を再呼び出しし、Key コルを特定する。フェーズ3.5（フェーズ3 統合の直後、フェーズ4 突合の直前）に位置する。
+- **概要**: merged.csv の `key_col_resolved=false` ピークに対して、N×N メッシュ + L14 max pooling の広域モードで FR-004 ピーク解析を再呼び出しし、Key コルを特定する。フェーズ3（統合の直後・フェーズ4 突合の直前）に位置する。
 - **入力**: [FR-008](#fr-008-per-mesh-csv-統合) 出力の内部 work CSV `$DATA_DIR/results/merged.csv`
 - **出力**: 広域 per-mesh CSV（`widearea_<peak>_<n>x<n>_<col>_<row>.csv`） → FR-008 再実行による更新済み merged.csv（コル探索完了後の最終状態は [FR-009](#fr-009-sotaリスト突合match_status-判定) が merged.geojson として出力する）
 - **詳細**:
@@ -426,14 +436,14 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 
 ---
 
-### フェーズ4: SOTA突合・中心成果物生成・可視化
+### フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成
 
 #### FR-009: SOTAリスト突合・match_status 判定
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
 - **概要**: merged.csv と SOTA サミットリストを point-in-polygon 突合し、全 Point/Polygon/LineString フィーチャ・rationale プロパティ・不備フラグ metadata を含む merged.geojson（中心成果物）を出力する。
 - **入力**:
-  - **内部 work CSV**: フェーズ3 ([FR-008](#fr-008-per-mesh-csv-統合)) で統合され、フェーズ3.5 ([FR-014](#fr-014-独立峰のコル探索)) の広域再解析でコル特定を経た `$DATA_DIR/results/merged.csv`。全ピークが `key_col_resolved=true` かつ全ポリゴンが `area_complete=true` であることを前提とする（不備があれば不備フラグとして後続に引き継ぎ、本 FR を非ゼロ exit で終了する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+  - **内部 work CSV**: フェーズ3 ([FR-008](#fr-008-per-mesh-csv-統合)) で統合され、[FR-014](#fr-014-独立峰のコル探索) の広域再解析でコル特定を経た `$DATA_DIR/results/merged.csv`。全ピークが `key_col_resolved=true` かつ全ポリゴンが `area_complete=true` であることを前提とする（不備があれば不備フラグとして後続に引き継ぎ、本 FR を非ゼロ exit で終了する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **merged_activation.geojson**: フェーズ3 ([FR-018](#fr-018-per-mesh-activationgeojson-統合)) で統合された `$DATA_DIR/results/merged_activation.geojson`。通常 per-mesh の GeoJSON のみから統合される（広域モードは GeoJSON を生成しない）
   - `ref/summitslist.csv`（JA プレフィックスサミット一覧）
   - メッシュコードリスト（オプション）: FR-008・FR-018 と同じリストを受け取る。省略時は全範囲を対象とする。FR-010 の削除候補スコープ判定に使用する
@@ -627,11 +637,22 @@ matched / dominant のみ。
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `match_status` | matched / dominant |
 
-##### HTML ビューア仕様
+---
+
+### フェーズ5: 申請書生成
+
+フェーズ5 はバッチ処理ではなく、フェーズ4 で生成された編集可能なローカル HTML ビューア（`merged_viewer.html`）上でユーザーが行う操作で構成される。
+
+#### FR-019: HTML ビューア機能仕様
+
+- **対応 UR**: [UR-006](01_URD.md#ur-006)
+- **概要**: FR-013 で生成された `merged_viewer.html` がブラウザ上で提供する機能（マップ表示・編集 UI・localStorage・エクスポート機能）の仕様を定義する。
+- **入力**: `merged_viewer.html`（FR-013 出力）に埋め込まれた GeoJSON データ
+- **出力**: ビューア上のユーザー操作に応じた表示・編集状態・各エクスポート（[FR-011](#fr-011-申請書-xlsx-生成)・[FR-012](#fr-012-エビデンス-csv-生成)・[FR-020](#fr-020-公開用-html-ビューア生成) 経由）
+- **詳細**:
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
-  - フェーズ4 処理は `merged.geojson` を生成したうえで、HTML テンプレートに GeoJSON データを JavaScript 変数として埋め込み `$DATA_DIR/results/merged_viewer.html` を生成する
+  - フェーズ4（FR-013）で `merged.geojson` の GeoJSON データが JavaScript 変数として埋め込まれた `$DATA_DIR/results/merged_viewer.html` を生成する。本 FR はその HTML をブラウザで開いた際に提供される機能を定義する
   - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
-  - `merged.geojson` は証跡用として引き続き別ファイルで出力する（HTML への埋め込みとは独立）
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）
   - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-006](decisions/ADR-006-viewer-background-tile-selection.md)）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
@@ -649,23 +670,22 @@ matched / dominant のみ。
   - **rationale 編集 UI**:
     - new / dominant ピーク・match_status=delete サミット・`is_band_change_candidate=true` の matched ピーク: ポップアップまたはサイドパネルに `rationale` プロパティを表示する textarea を設ける
     - 初期値: merged.geojson の `rationale` プロパティ（FR-009 が自動生成したテンプレート文字列）
-    - ユーザーが textarea を編集した場合、その内容が申請書 XLSX（FR-011）の列 I に反映される
+    - ユーザーが textarea を編集した場合、その内容が申請書 XLSX（[FR-011](#fr-011-申請書-xlsx-生成)）の列 I に反映される
     - 未編集の場合は初期値（自動生成テンプレート）がそのまま使用される
     - matched（バンド変更なし）: rationale 表示不要（XLSX 列 I は空白）
   - **入力内容の保持（localStorage）**:
     - 入力した山岳名・rationale 編集内容・名称修正はブラウザの localStorage に保存し、再訪時も維持する
     - キー: 埋め込みデータの `metadata.generated_at` を含む文字列
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
-  - **申請書エクスポート（FR-011 準拠）**:
+  - **申請書エクスポート（[FR-011](#fr-011-申請書-xlsx-生成) 準拠）**:
     - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
     - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
     - XLSX 列 I（根拠）: 各フィーチャの `rationale` プロパティ値（ビューア上で編集済みの場合は編集後の値、未編集の場合は自動生成値）を転記する（詳細は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
-  - **公開用エクスポート**:
+  - **公開用エクスポート（[FR-020](#fr-020-公開用-html-ビューア生成) 準拠）**:
     - 「公開用エクスポート」ボタンで、localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** をブラウザダウンロードする
-    - 出力 HTML は自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートボタンなし・localStorage 不使用）
-    - ユーザーはダウンロードした HTML を GitHub Pages 等の公開フォルダに配置することで外部公開できる
-    - 公開用 HTML に使用する別テンプレート（閲覧専用）をソースコードに同梱する（詳細は HLD）
-    - 公開用 HTML には「GeoJSON ダウンロード」ボタンを設ける。埋め込みデータを JSON ファイルとしてブラウザダウンロードする（受付側が QGIS 等で独自に確認できるよう）
+    - 詳細は [FR-020 参照](#fr-020-公開用-html-ビューア生成)
+
+---
 
 #### FR-011: 申請書 XLSX 生成
 
@@ -731,6 +751,22 @@ matched / dominant のみ。
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03-{n03_year}_municipalities.geojson 未存在時は空文字 |
 | dominant_peak_code | 従属ピークコード（dominant のみ） |
 | dominant_peak_dist_m | 主ピークから削除候補サミット座標までの距離 m（Haversine 公式）。dominant のみ |
+
+---
+
+#### FR-020: 公開用 HTML ビューア生成
+
+- **対応 UR**: [UR-006](01_URD.md#ur-006)
+- **概要**: ローカル HTML ビューア（FR-013）上の「公開用エクスポート」ボタンで、外部公開用の閲覧専用 HTML を生成しブラウザダウンロードする。
+- **入力**: ローカル HTML ビューアに埋め込まれた GeoJSON データ + localStorage の編集内容（[FR-019](#fr-019-html-ビューア機能仕様) が管理）
+- **出力**: 公開用 HTML ファイル（ブラウザダウンロード経由）
+- **詳細**:
+  - 公開用は閲覧専用（編集 UI なし・XLSX エクスポートなし・localStorage 不使用）
+  - localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージしたうえで、公開用テンプレートに GeoJSON データを埋め込み、自己完結型 HTML を生成する
+  - ユーザーはダウンロードした HTML を GitHub Pages 等の静的ホスティングに配置することで外部公開できる
+  - 公開用 HTML には「GeoJSON ダウンロード」ボタンを設ける。埋め込みデータを JSON ファイルとしてブラウザダウンロードする（受領側が QGIS 等で独自に確認できるよう）
+  - 公開用 HTML に使用する別テンプレート（閲覧専用）をソースコードに同梱する（詳細は HLD）
+  - 詳細仕様は [6.12 出力: 公開用 HTML](#612-出力-公開用-html閲覧専用ブラウザダウンロード) を参照
 
 ---
 
