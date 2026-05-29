@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-28",
-    "counter": 56
+    "last_updated": "2026-05-29",
+    "counter": 57
   },
   "issues": [
     {
@@ -1710,6 +1710,33 @@
       "resolved_date": null,
       "verified_date": null,
       "history": []
+    },
+    {
+      "id": "ISSUE-057",
+      "title": "SRS 機能要件セクション: 各 FR を統一フォーマット（対応UR/概要/入力/出力/詳細）に整理",
+      "description": "現状の docs/02_SRS.md 機能要件セクション（FR-001〜FR-018 計20件）は項目順序と見出し付けがバラバラで読みづらい。全 FR を 対応UR → 概要 → 入力 → 出力 → 詳細 の順に統一する。形式は - **ラベル**: の bullet 形式に揃え、入出力欄は全 FR で必ず埋める。詳細は mgmt/plan.md を参照。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-29",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": "形式・入出力欄の扱いはユーザーと事前合意済み（plan.md 参照）。20 FR 各々の概要・入力・出力は plan.md の表で確定済み。",
+      "resolved_date": "2026-05-29",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-05-29T11:15:41",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": ""
+        }
+      ]
     }
   ]
 }

@@ -1,154 +1,116 @@
-# 中心データ＝merged.geojson モデルへの SRS 改訂（rationale プロパティ追加を含む）
+# SRS 機能要件セクションのフォーマット統一
 
 ## Context
 
-findsummits4sotaja プロジェクトの SRS（`docs/02_SRS.md`）は現在、フェーズ3 末尾の中心データを以下の 2 ファイルに分割している：
+現行の `docs/02_SRS.md` の機能要件セクション（FR-001 〜 FR-018、計20件）は、項目順序とラベル付けがバラバラで読みづらい。たとえば FR-017 は冒頭に説明文 → 入力 → 出力の順、FR-001 は対応UR → 入力 → 説明 → 出力（暗黙）、FR-002/003/005/006 は対応UR → そのまま詳細 bullet と、各 FR で違う構造になっている。
 
-- `merged.csv`（FR-012 規定）: ピーク・サミットの表データ
-- `merged_activation.geojson`（6.11 規定）: ポリゴン（活性化ゾーン・delete判定ゾーン）のみ・Point フィーチャなし
+ユーザーの指示は「対応URの後は **機能要件の概要 → 入力 → 出力 → 機能要件の詳細** の形で統一」。全 FR を同じ骨格に揃え、読み手が「何のため・何を受け取り・何を出すか」を冒頭で必ず把握できるようにする。
 
-最終 `merged.geojson` はフェーズ4 の FR-013 で上記 2 つを統合して組み立てる構造。
+事前確認で以下を合意済み:
 
-一方、ユーザーの本来のイメージは「**フェーズ3 末尾で `merged.geojson` 1 つに全てが集約**され、HTML ビューアはそれを表示するだけ（rationale を編集する以外は読み取り専用）」というもの。
+- **形式**: 全項目を `- **ラベル**:` の bullet で記述。詳細はネストした bullet で展開する
+- **入出力欄の扱い**: 全 FR で必ず埋める。明確なファイル入出力がない処理規則型 FR（FR-002/003/005/006/010）は「適用されるピクセル/データ」「効果として得られる値/状態」として記述する
 
-申請書 XLSX に出力する「I: 根拠」テキスト（FR-011 の ※2/※4/※5 テンプレート）をピーク・サミットフィーチャのプロパティとして持たせる議論を契機に、中心データの位置付けを根本から見直し、ユーザー本来のイメージに合わせる SRS 改訂を行う。
+## 統一フォーマット仕様
 
-また、ISSUE-055（GeoJSON ビューア HTML UI 要件追加）を本改訂に統合する（rationale 編集 UI・初期値テンプレート・XLSX 反映の要件が重複するため）。
+各 FR は以下の骨格で記述する:
 
-## 設計判断
+```markdown
+#### FR-XXX: タイトル
 
-### 中心データの位置付け
-
-| 項目 | 新しい位置付け |
-|---|---|
-| `merged.geojson` | **フェーズ3 末尾の中心成果物**（全 Point + 全 Polygon + rationale + 不備フラグを含む） |
-| `merged.csv` | merged.geojson から派生する**エビデンス CSV**（UR-005）。**`rationale` 列は含めない** |
-| `merged_activation.geojson` | per-mesh activation 統合の**内部中間ファイル**。**物理出力は残す**（デバッグ・差分検査用） |
-| `merged_viewer.html` | フェーズ4 で `merged.geojson` のみを入力に生成（責務縮小） |
-
-### rationale プロパティの配置
-
-- **ピークフィーチャ**（new / dominant / matched_band_change）の `rationale` プロパティ ← FR-009 で生成（※2 追加根拠 or ※5 変更根拠）
-- **削除サミットフィーチャ**（dominant ケースの既存 SOTA サミット側）の `rationale` プロパティ ← FR-009 で生成（※4 削除根拠）
-
-dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開されるため、ピーク Point と削除サミット Point の 2 つに独立した `rationale` を持たせる必要がある。Point フィーチャが独立しているため自然に両立する。
-
-### テンプレート定義の置き場
-
-※2/※4/※5 のフォーマット定義を **FR-009 に集約**し、FR-011 からは「FR-009 で生成された `rationale` プロパティを XLSX 列 I に転記」と参照する形に変える。
-
-### HTML ビューアでの編集と XLSX 反映
-
-- rationale はビューア上で編集可能（textarea）
-- 編集結果は XLSX 出力時に反映される（編集後の値が優先・未編集なら初期値）
-- 永続化方式（localStorage 等）と XLSX 出力時の値マージロジックの詳細は **HLD 範疇** とし、SRS では要件のみ明記
-- 公開用 HTML エクスポート時の rationale 編集内容の扱いも SRS で明示
-
-## SRS 改訂箇所
-
-| セクション | 変更概要 |
-|---|---|
-| **3.2 主要コンポーネント構成** | 統合・突合コンポーネントの主要出力を `merged.geojson` に一本化。可視化生成コンポーネントの責務を「`merged.geojson` から HTML ビューア生成」に縮小 |
-| **3.3 フェーズ俯瞰** | フェーズ3 末尾を「`merged.geojson`（中心）+ `merged.csv`（派生エビデンス）」に書き換え。`merged_activation.geojson` は内部中間として表示 |
-| **FR-008（per-mesh CSV 統合）** | 出力を「内部 work CSV」と位置付け（物理 `merged.csv` の責務は FR-012 へ） |
-| **FR-009（SOTA リスト突合・match_status 判定）** | 出力を **`merged.geojson` のフィーチャプロパティ集合**として記述。**※2/※4/※5 テンプレート定義を集約**。`peak_rationale` / `summit_rationale` を生成しフィーチャの `rationale` プロパティに付与。不備フラグの格納先も merged.geojson プロパティに |
-| **FR-011（申請書 XLSX 生成）** | ※2/※4/※5 を FR-009 への参照に変更。XLSX 列 I は `rationale` プロパティ（ビューア編集後の値）を転記。HTML ビューア内編集→XLSX 反映の要件を明示 |
-| **FR-012（エビデンス CSV 生成）** | 「merged.geojson から派生する CSV」と再定義。**`rationale` 列は含めない**。Polygon 情報も含まない（Point のみが行に変換される） |
-| **FR-013（GeoJSON・HTML ビューア生成）** | **merged.geojson 生成をフェーズ3 末尾に前倒し**。フェーズ4 は HTML ビューア生成のみ。フィーチャプロパティ表に `rationale` 行を追加（ピーク・削除サミット）。ISSUE-055 由来の UI 要件（ポップアップ表示項目・編集可否・初期値テンプレート参照・XLSX エクスポート）を統合 |
-| **FR-014（独立峰のコル探索）** | 入力は引き続き内部 work CSV（merged.csv 相当）。最終結果は merged.geojson 経由で表現される旨を補足 |
-| **FR-018（per-mesh activation 統合）** | 出力 `merged_activation.geojson` を「内部中間ファイル」と明記。物理出力は残す |
-| **6.4 出力: エビデンス CSV** | merged.geojson 派生として再定義。`rationale` 列を含めない旨と Polygon 不含を明記 |
-| **6.5 出力: GeoJSON**（既存節を中心成果物として書き換え） | 中心成果物として再定義。`rationale` プロパティ仕様（ピーク・削除サミット）を追記 |
-| **6.11 中間ファイル: 全国統合済みピーク域 GeoJSON** | 役割を「per-mesh activation の全国統合用の内部中間」と再定義。HTML ビューア生成への直接参照を削除 |
-
-## 新規 ADR-013 の作成
-
-ファイル名: `docs/decisions/ADR-013-merged-geojson-as-central-data.md`
-
-骨子：
-- **Context**: 現状の 2 ファイル分割（merged.csv + merged_activation.geojson）はユーザー想定との乖離・rationale 編集機構の設計困難・実装の複雑化を生む
-- **Decision**: 中心データを `merged.geojson` 1 つに統一。CSV は派生、activation GeoJSON は内部中間
-- **Alternatives**:
-  - (A) 現状維持（2 ファイル分割）
-  - (B) GeoJSON 中心化 + rationale を localStorage のみに保持（公開用 HTML 配布時に rationale 消失）
-  - (C) CSV 中心化（Polygon を扱えないため非現実的）
-- **Consequences**: SRS 改訂・ADR-011 への補足追記・ISSUE-043/044/055 のスコープ見直し
-
-## 既存 ADR への波及
-
-### ADR-011（delete-zone-polygon）への補足追記
-
-Consequences の「不備フラグ列は merged.csv に追加」記述を「**不備フラグは merged.geojson のフィーチャプロパティに格納し、merged.csv（派生エビデンス）には含めない**」と書き換える。
-
-### ADR-004 / ADR-010
-
-影響なし（per-mesh 段階の出力フォーマットは変更不要・C エンジンの責務も変わらない）。
-
-## 関連 ISSUE への影響
-
-| ISSUE | 影響 |
-|---|---|
-| **ISSUE-055**（HTML ビューア UI 要件追加） | 本改訂に統合・対応完了としてクローズ |
-| **ISSUE-043**（merge.py: delete判定ゾーン対応） | スコープ要再評価。merge.py が GeoJSON を出力するか・output_geojson.py との責務分担を本 SRS 改訂後に決定。notes に「ADR-013 採用後にスコープ見直し」を追記 |
-| **ISSUE-044**（output_geojson.py: delete判定ゾーン対応） | スコープ要再評価。同上 |
-
-## 修正対象ファイル（本セッション）
-
-| ファイル | 修正内容 |
-|---|---|
-| `docs/02_SRS.md` | 上記改訂箇所すべて |
-| `docs/decisions/ADR-013-merged-geojson-as-central-data.md` | 新規作成 |
-| `docs/decisions/ADR-011-delete-zone-polygon.md` | Consequences の不備フラグ格納先記述を補足追記 |
-| `mgmt/tracker/data/issues.json` | ISSUE-055 クローズ、ISSUE-043/044 notes に再評価メモ追記 |
-| `mgmt/tracker/reports/issues_export.xlsx` | 再生成 |
-
-## 新方針データフロー（フェーズ3 末尾）
-
+- **対応 UR**: [UR-001](01_URD.md#ur-001), [UR-XXX](...)
+- **概要**: 1〜2 文で「何のために・何をする FR か」を簡潔に
+- **入力**: 入力ファイル / 上流 FR から受け取るデータ
+- **出力**: 出力ファイル / 後続 FR に引き渡すデータ
+- **詳細**:
+  - 詳細条件1
+  - 詳細条件2
+  - （テーブル・コードブロックは詳細配下に配置）
 ```
-per-mesh CSV     ──→ FR-008 ──→ [内部 work CSV]                ─┐
-per-mesh GeoJSON ──→ FR-018 ──→ merged_activation.geojson      │
-                                  （内部中間・物理出力残置）         │
-                                                                  ↓
-                                FR-009: SOTA突合 + match_status判定
-                                       + rationale テンプレ展開
-                                       + 不備フラグ
-                                                ↓
-                                       ★ merged.geojson（中心成果物）
-                                          ├ Point: peak（rationaleプロパティ含む）
-                                          ├ Point: col
-                                          ├ Point: summit（削除サミットはrationaleプロパティ含む）
-                                          ├ Polygon: activation_zone
-                                          ├ Polygon: delete_zone
-                                          ├ LineString: peak→col, peak→summit
-                                          └ metadata（summitslist_date, generated_at, 不備フラグ）
-                                                ↓
-                          ┌─────────────────────┴─────────────────────┐
-                          ↓                                            ↓
-                FR-012: merged.csv（派生）             FR-013: merged_viewer.html
-                rationale列なし・Point属性のみ        rationale編集可能（textarea）
-                                                              ↓
-                                                  FR-011: 申請書XLSX
-                                                  （ビューア内生成・編集後のrationaleを反映）
-```
+
+ルール:
+
+- `- **対応 UR**:` は既存のものを維持
+- `- **概要**:` は新規追加。既存の冒頭説明文を 1〜2 文に圧縮して転用する
+- `- **入力**:` / `- **出力**:` は既存項目がある場合は流用、ない場合は新規追加
+- `- **詳細**:` 配下に既存の bullet 群（テーブル・コードブロック・サブ条件）を全部収める
+- 既存内容（テーブル・コードブロック・出典リンク・ADR リンク）はすべて温存し、配置場所だけ整理する
+
+## 各 FR の改訂方針
+
+下記の表に従って 20 個の FR を改訂する。「概要」「入力」「出力」だけ事前に整理し、「詳細」は既存内容をそのまま詳細配下に移すだけ。
+
+### フェーズ1
+
+| FR | 概要 | 入力 | 出力 |
+|---|---|---|---|
+| FR-017 N03 行政区域前処理 | 国土数値情報の市区町村単位の行政区域データを前処理し、FR-009 用の都道府県/振興局・市区町村 GeoJSON と FR-003 用の北方領土除外タイルリストを生成する初回のみのデータ準備スクリプト | `$DATA_DIR/ref/N03-{n03_year}.geojson`（ユーザーが事前配置） | (1) `N03-{n03_year}_regions.geojson` (2) `N03-{n03_year}_municipalities.geojson` (3) `N03-{n03_year}_excluded_tiles.txt` |
+| FR-001 標高タイル事前取得 | 解析対象メッシュをカバーする国土地理院標高タイル（PNG）を取得し `$DATA_DIR/tiles/` にキャッシュする | メッシュコードリストファイル（例: `params/mesh_list_japan.txt`） | `$DATA_DIR/tiles/{z}/{x}/{y}_{dem}.png`（DEM 種別ごと） |
+
+### フェーズ2
+
+| FR | 概要 | 入力 | 出力 |
+|---|---|---|---|
+| FR-002 DEM 階層フォールバック | タイル読み込み時にピクセル単位で DEM5a→DEM5b→DEM5c→DEM10b の順でフォールバックし、有効な標高値を得る | タイル読み込み時のピクセル（FR-004 のタイル読み込み処理から適用される） | フォールバック適用後の標高値（有効値または -9999m） |
+| FR-003 標高デコード・NODATA 処理 | PNG タイルの RGB ピクセルから標高値をデコードし、NODATA・海面・北方領土・竹島・マイナス標高を統一的に処理する | PNG タイルピクセル（FR-002 のフォールバック後） | デコード済みピクセル標高値（NODATA は -9999m、海面下は ELEV_SEA=0.0m に統一） |
+| FR-004 3×3 メッシュ結合解析 | メッシュコードリストの各メッシュを 3×3 単位（中心+隣接最大8）で解析対象として結合画像を生成し、per-mesh パイプライン（FR-005〜FR-007/FR-016）に引き渡すオーケストレーション | メッシュコードリストファイル（FR-001 と同じ） | 結合画像 + 解析対象メッシュ範囲（メモリ上。後段の FR-005/006/016/007 に引き渡し、最終的に per-mesh CSV/GeoJSON として出力） |
+| FR-005 ピーク候補検出 | 結合画像の全ピクセルを標高降順に走査し、8 近傍に処理済みピクセルが無いピクセルを新規ピーク候補とする | 結合画像のピクセル群（FR-004 から） | ピーク候補リスト + 山塊グループ（Union-Find 構造。FR-006/007 に引き継ぎ） |
+| FR-006 コル検出・プロミネンス計算 | FR-005 の走査中に 2 つ以上の山塊グループが初接触するピクセルをコルとし、ピーク標高 − コル標高でプロミネンスを算出する | ピーク候補と山塊グループ（FR-005 から） | 各ピークのコル座標・コル標高・プロミネンス・key_col_resolved フラグ |
+| FR-016 ピーク域ポリゴン生成 | 各ピークについてアクティベーションゾーン（標高差25m以内）と delete判定ゾーン（プロミネンスと 250m の小さい方）のポリゴンを Flood Fill で生成し、per-mesh GeoJSON として出力する | ピーク座標・プロミネンス・コル標高（FR-005/006 から） + 結合画像 | `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（2種類のポリゴン同梱） |
+| FR-007 プロミネンスフィルタ・per-mesh CSV 出力 | 一次フィルタ（プロミネンス ≥ 130m）を適用してピーク・コル情報を per-mesh CSV に出力する | ピーク・コル情報（FR-005/006 から） | `$DATA_DIR/results/csv/<meshcode>.csv` |
+| FR-015 標高地形図出力 | 解析開始前に結合画像から色分け PNG を生成し、解析範囲を目視確認できるようにする | 結合画像（FR-004 のタイル読み込み完了直後） | `$DATA_DIR/images/<meshcode>_terrain.png` |
+
+### フェーズ3
+
+| FR | 概要 | 入力 | 出力 |
+|---|---|---|---|
+| FR-008 per-mesh CSV 統合 | per-mesh CSV を同一ピーク座標で重複排除し、プロミネンス最終フィルタ（≥150m）を適用した内部 work CSV を生成する | `$DATA_DIR/results/csv/` 配下の per-mesh CSV（通常+広域モード混在可）+ メッシュコードリスト（オプション） | `$DATA_DIR/results/merged.csv`（内部 work CSV） |
+| FR-018 per-mesh activation.geojson 統合 | per-mesh GeoJSON を同一ピーク座標で統合し、`area_complete=true` を採用して中間 GeoJSON を生成する | `$DATA_DIR/results/csv/<meshcode>_activation.geojson`（FR-016 出力。通常 per-mesh のみ） + メッシュコードリスト（オプション） | `$DATA_DIR/results/merged_activation.geojson`（内部中間ファイル） |
+
+### フェーズ3.5
+
+| FR | 概要 | 入力 | 出力 |
+|---|---|---|---|
+| FR-014 独立峰のコル探索 | merged.csv の `key_col_resolved=false` ピークに対して、N×N メッシュ + L14 max pooling の広域モードで FR-004 ピーク解析を再呼び出しし、Key コルを特定する | `$DATA_DIR/results/merged.csv`（FR-008 出力） | 広域 per-mesh CSV（`widearea_<peak>_<n>x<n>_<col>_<row>.csv`） → FR-008 再実行による更新済み merged.csv |
+
+### フェーズ4
+
+| FR | 概要 | 入力 | 出力 |
+|---|---|---|---|
+| FR-009 SOTAリスト突合・match_status 判定 | merged.csv と SOTA サミットリストを point-in-polygon 突合し、全 Point/Polygon/LineString フィーチャ・rationale プロパティ・不備フラグ metadata を含む merged.geojson（中心成果物）を出力する | (1) `merged.csv` (2) `merged_activation.geojson` (3) `ref/summitslist.csv` (4) `ref/geojson_v{N}/` (5) メッシュコードリスト（オプション） | `$DATA_DIR/results/merged.geojson`（フェーズ4 末尾の中心成果物） |
+| FR-010 削除候補のスコープ | メッシュコードリストの地理的範囲内の SOTA サミットのみを削除候補対象とし、範囲外サミットの誤削除を防ぐ | メッシュコードリスト（オプション。FR-009 経由で受領） | 削除候補対象サミットの絞り込み結果（FR-009 内のフィルタとして機能） |
+| FR-013 HTML ビューア生成 | merged.geojson を JavaScript 変数として埋め込んだ静的 HTML ビューアを生成し、目視確認・rationale 編集・申請書 XLSX エクスポート・公開用 HTML エクスポートを可能にする | `$DATA_DIR/results/merged.geojson`（FR-009 出力） | `$DATA_DIR/results/merged_viewer.html`（静的 HTML ビューア） |
+| FR-011 申請書 XLSX 生成 | 申請書 XLSX を HTML ビューア（FR-013）のブラウザ内で SheetJS により生成・ダウンロードする（Python バッチは XLSX を生成しない） | merged.geojson 埋め込みデータ + HTML ビューア上のユーザー入力（山岳名・rationale 編集値） | 申請書 XLSX（ブラウザダウンロード。テンプレート列 A〜J 構成） |
+| FR-012 エビデンス CSV 生成 | merged.geojson の Point フィーチャから派生したエビデンス CSV を生成し、解析結果の証跡を CSV 形式で保持する（Polygon/LineString・rationale は含めない） | `$DATA_DIR/results/merged.geojson`（FR-009 出力） | `$DATA_DIR/results/merged.csv`（派生エビデンス CSV） |
+
+## 実装手順
+
+1. `docs/02_SRS.md` の機能要件セクション（4. 機能要件、150〜689 行）を改訂する
+2. フェーズ単位（フェーズ1 → フェーズ2 → フェーズ3 → フェーズ3.5 → フェーズ4）で順次書き換える
+3. 各 FR について以下を実施:
+   - 既存の冒頭説明文を「概要」に圧縮して `- **概要**:` として配置
+   - 既存の `- **入力**:` を流用（無い FR は新規追加）
+   - 「出力」を新規追加（既存に `**出力**:` がある FR は配置だけ整理）
+   - 既存の本文 bullet を `- **詳細**:` 配下にネストして配置
+   - テーブル・コードブロックは詳細配下のサブ bullet として読みやすく配置
+4. 内容（仕様・閾値・パラメータ・ADR 参照）は一切変更しない。配置のみ整理
+5. 目次（12〜68 行）は影響なし（H4 アンカーは変わらない）
 
 ## 検証方法
 
-### ドキュメント整合性チェック
+- `grep -n "^####" docs/02_SRS.md` で FR 見出し一覧を取得し、全 FR が `- **対応 UR**:` / `- **概要**:` / `- **入力**:` / `- **出力**:` / `- **詳細**:` の順で揃っていることを確認
+- `grep -nE "^- \*\*(対応 UR|概要|入力|出力|詳細)\*\*:" docs/02_SRS.md | wc -l` で 5 ラベル × 20 FR = 100 行が並んでいることを確認
+- 内容（テーブル・コードブロック・ADR リンク・出典）が削れていないか、変更前後で `wc -l` の行数を比較し、減りすぎ（削除）・増えすぎ（重複）がないかチェック
+- 目次の各 FR リンク（`#fr-001-...` 等）が有効なまま機能することをアンカー比較で確認
 
-- SRS 全 FR の入出力定義が新方針と整合していること
-- ADR-013 と SRS の整合
-- ADR-011 補足追記が SRS と矛盾しないこと
-- `docs/mockup/viewer_mockup.html` の rationale 編集 UI と SRS 要件の整合
-- `docs/figures/phases_overview.drawio.svg` の現状フローと SRS 記述のズレ確認（更新は別タスクとして発出）
+## 重要ファイル
 
-### 関連 ISSUE スコープ調整の確認
+- `docs/02_SRS.md` — 改訂対象（150〜689 行の機能要件セクション）
 
-- ISSUE-055 が verify 待ちまで進んでいること
-- ISSUE-043/044 の notes に「ADR-013 採用後のスコープ再評価が必要」が記載されていること
+## 変更外のもの
 
-## 注意事項・スコープ外
-
-- **本改訂は SRS ステージの作業**。コード（merge.py, output_geojson.py 等）の修正は HLD/COD ステージで対応（ISSUE-043/044 として継続）
-- **ADR-010 C++ 移行**（ISSUE-037/038/040）は per-mesh 段階のみが対象で本改訂の影響を受けないため独立して進行可能
-- **図表更新**（phases_overview.drawio.svg 等）は本 Plan のスコープ外。別途タスク発出
-- **編集機能の HLD 詳細**（localStorage 管理・XLSX マージロジック）は HLD ステージで詰める。SRS では要件のみ
+- 内容（仕様・閾値・ADR 参照・ロジック記述）
+- 目次の構成・アンカー
+- 非機能要件（NFR-001〜008）
+- 外部インターフェース仕様（6章）
+- 制約・前提条件・スコープ外
