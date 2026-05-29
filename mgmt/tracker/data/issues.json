@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-29",
-    "counter": 61
+    "counter": 62
   },
   "issues": [
     {
@@ -1774,7 +1774,7 @@
     },
     {
       "id": "ISSUE-059",
-      "title": "実装側ファイル名追従: merged_peak.csv / merged_summit.csv リネーム",
+      "title": "実装側ファイル名追従: merged_peak.csv / merged_summit.xlsx リネーム",
       "description": "SRS 改訂（merged.csv 命名整理）に伴う実装追従。scripts/merge.py:50 の DEFAULT_OUTPUT を merged_peak.csv に変更、scripts/output_geojson.py:34 の DEFAULT_INPUT を merged_peak.csv に変更。FR-009 から merged_summit.csv 出力ロジックを新規追加（カラム構成は FR-012 と同じ）。",
       "type": "改善",
       "priority": "高",
@@ -1786,7 +1786,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "merge.py の DEFAULT_OUTPUT 変更 + output_geojson.py の DEFAULT_INPUT 変更 + output_geojson.py に merged_summit.csv 出力処理追加",
-      "notes": null,
+      "notes": "SRS 改訂（2026-05-29: xlsx 化）に伴い追加スコープ: merged_summit.csv → merged_summit.xlsx（scripts/merge.py の出力変更）、output_geojson.py の DEFAULT_INPUT を merged_peak.csv に変更。FR-012 実装（merged_summit_revised.xlsx 生成）は ISSUE-062 として分離起票のため本 ISSUE のスコープには含めない。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -1805,7 +1805,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "CLAUDE.md・README.md 内の merged.csv 参照を検索し新命名に置換",
-      "notes": null,
+      "notes": "merged.csv 命名整理に加えて、2026-05-29 の xlsx 化により merged_summit.xlsx の言及も追加対象。CLAUDE.md L63 他を更新。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -1843,6 +1843,25 @@
           "comment": "docs/02_SRS.md の merged.csv 命名整理完了。FR-008→merged_peak.csv、FR-009→merged_summit.csv 追加、FR-012 出力→TBD マーカー化。§3.3・FR-014・§6 の全参照箇所を追従修正済み"
         }
       ]
+    },
+    {
+      "id": "ISSUE-062",
+      "title": "FR-012 実装: merged_summit_revised.xlsx 生成スクリプト新規開発",
+      "description": "SRS FR-012（サミット一覧（申請内容反映版）生成）の実装。merged.geojson の Point フィーチャから FR-019 でのユーザー編集内容を反映した merged_summit_revised.xlsx を生成するスクリプトを新規開発する。HTML ビューアの「エクスポート」ボタン（FR-019 経由）との連携も必要。",
+      "type": "機能追加",
+      "priority": "高",
+      "category": "GeoJSON出力",
+      "reporter": null,
+      "created_date": "2026-05-29",
+      "stage": null,
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "新規スクリプト scripts/export_summit_revised.py 等を作成し、merged.geojson + HTML ビューア編集内容を入力として merged_summit_revised.xlsx を出力するロジックを実装。FR-013 HTML ビューア改修（エクスポートトリガー連携）も別途必要。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
