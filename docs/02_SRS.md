@@ -4,7 +4,7 @@
 |---|---|
 | 作成日 | 2026-04-30 |
 | 最終更新日 | 2026-05-29 |
-| ステータス | ドラフト（merged.geojson 中心成果物モデルへ改訂・rationale プロパティ追加） |
+| ステータス | ドラフト（merged.csv 命名整理: merged_peak.csv / merged_summit.csv 導入・FR-009 出力 CSV 追加） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
 ---
@@ -117,7 +117,7 @@
 | タイル取得コンポーネント | DEM タイルを国土地理院から取得・キャッシュ | メッシュコード、取得設定 | キャッシュ済み PNG タイル |
 | 行政区域前処理コンポーネント | 都道府県・振興局境界 GeoJSON を解析用形式に変換（初回のみ） | N03 行政区域 GeoJSON | 軽量化された境界 GeoJSON |
 | 地形解析エンジン | DEM からピーク／コル／プロミネンス／AZ・delete判定ゾーンを検出 | キャッシュ済み PNG タイル | 処理モードにより異なる（通常モード: per-mesh CSV / per-mesh activation GeoJSON / 標高地形図 PNG、広域モード: per-mesh CSV のみ） |
-| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、rationale 生成・不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、境界 GeoJSON | **merged.geojson**（中心成果物）、merged_activation.geojson（内部中間） |
+| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、rationale 生成・不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、境界 GeoJSON | **merged.geojson**（中心成果物）、merged_summit.csv（サミット一覧 CSV）、merged_peak.csv（内部 work CSV）、merged_activation.geojson（内部中間） |
 | 可視化生成コンポーネント | merged.geojson から HTML ビューアを生成 | merged.geojson | merged_viewer.html |
 | 申請書生成 UI | HTML ビューア内でユーザー操作に応じて申請書 XLSX を生成 | ユーザー操作（HTML ビューア上） | 申請用 XLSX |
 
@@ -141,19 +141,19 @@
        ↓
 【フェーズ3: ピーク統合（全国・独立峰広域再解析を内包）】
 統合コンポーネント        ピーク統合・独立峰コル探索
-       ├─ merged.csv                （内部 work CSV）
+       ├─ merged_peak.csv           （内部 work CSV）
        └─ merged_activation.geojson ($DATA_DIR/results/merged_activation.geojson) ← 内部中間ファイル
        ↓
 【フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成】
 統合・突合コンポーネント   SOTA突合・中心成果物生成
        ├─ merged.geojson            ($DATA_DIR/results/merged.geojson) ← 中心成果物（全フィーチャ + rationale）
-       └─ merged.csv                ($DATA_DIR/results/merged.csv)     ← 派生エビデンス CSV（merged.geojson から生成）
+       └─ merged_summit.csv         ($DATA_DIR/results/merged_summit.csv) ← サミット一覧 CSV（バッチ生成時点・中身確認用）
 可視化生成コンポーネント   HTML ビューア生成
        └─ merged_viewer.html        ← 編集可能なローカル HTML ビューア（GeoJSON 埋め込み・rationale 編集機能付き）
        ↓ ユーザーが HTML ビューアで確認・rationale 編集後にエクスポートを実行
 【フェーズ5: 申請書生成（ローカル HTML ビューア上のユーザー操作）】
        ├─ 申請書 XLSX               （ブラウザダウンロード）
-       ├─ エビデンス CSV            ($DATA_DIR/results/merged.csv)
+       ├─ エビデンス CSV            <TBD: フェーズ5 レビュー後確定>
        └─ 公開用 HTML               （ブラウザダウンロード）
 ```
 
@@ -365,7 +365,7 @@
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
 - **概要**: per-mesh CSV を同一ピーク座標で重複排除し、プロミネンス最終フィルタ（≥150m）を適用した内部 work CSV を生成する。
 - **入力**: `$DATA_DIR/results/csv/` 配下の per-mesh CSV（通常モード + 広域モード混在可）+ メッシュコードリスト（オプション。指定時はそのメッシュの CSV のみ読み込む）
-- **出力**: `$DATA_DIR/results/merged.csv`（内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用される中間ファイル。最終的な中心成果物は FR-009 が出力する `merged.geojson`）
+- **出力**: `$DATA_DIR/results/merged_peak.csv`（内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用される中間ファイル。最終的な中心成果物は FR-009 が出力する `merged.geojson`）
 - **詳細**:
   - **通常モード（フェーズ2）の per-mesh CSV** と **広域モード（[FR-014](#fr-014-独立峰のコル探索) から生成）の per-mesh CSV** が同一ディレクトリ配下に混在することがある。両方を読み込み、同一ピーク座標で重複排除する
   - 同一ピーク座標（ズームレベル15 タイル座標が一致）のレコードを同一ピークとして重複排除し、統合する
@@ -375,7 +375,7 @@
     - `expected_count`: メッシュコードリスト（オプション）をもとに算出する期待解析回数。リストが省略された場合は空欄
     - `stability`: `key_col_resolved=false` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`
   - プロミネンス最終フィルタ: ≥ 150m（FR-007 の 130m フィルタ通過済みのレコードに適用）
-  - **再入可能性**: 本機能は FR-014 のループから複数回呼び出され、その都度 merged.csv（内部 work CSV）が再生成される
+  - **再入可能性**: 本機能は FR-014 のループから複数回呼び出され、その都度 merged_peak.csv（内部 work CSV）が再生成される
 
 #### FR-018: per-mesh activation.geojson 統合
 
@@ -392,10 +392,10 @@
 
 ---
 
-フェーズ3 の統合結果（内部 work CSV `merged.csv`）で `key_col_resolved=false` が残ったピークを対象に、per-mesh 解析エンジンを
+フェーズ3 の統合結果（内部 work CSV `merged_peak.csv`）で `key_col_resolved=false` が残ったピークを対象に、per-mesh 解析エンジンを
 広域モード（[FR-004](#fr-004-33-メッシュ結合解析) の N×N + L14 パラメータ）で再呼び出しし、
 Key コルを特定する。生成された広域 per-mesh CSV は通常 per-mesh CSV とともに
-[FR-008](#fr-008-per-mesh-csv-統合) に再投入され、内部 work CSV の `key_col_resolved` ・`col_elev` ・`prominence` が更新される。
+[FR-008](#fr-008-per-mesh-csv-統合) に再投入され、内部 work CSV `merged_peak.csv` の `key_col_resolved` ・`col_elev` ・`prominence` が更新される。
 N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮小版パイプラインのループ）。
 広域モードでは [FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成は実行しない（広域再解析の目的は Key コル特定のみであり、ポリゴンは通常 per-mesh の結果を使用する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）。
 アクティベーションゾーンポリゴン・delete判定ゾーンポリゴンは通常 per-mesh で常に 3×3 内で完結する想定のため、`area_complete=false` は広域再解析のトリガー対象外とする。
@@ -403,26 +403,26 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 #### FR-014: 独立峰のコル探索
 
 - **対応 UR**: [UR-007](01_URD.md#ur-007)
-- **概要**: merged.csv の `key_col_resolved=false` ピークに対して、N×N メッシュ + L14 max pooling の広域モードで FR-004 ピーク解析を再呼び出しし、Key コルを特定する。フェーズ3（統合の直後・フェーズ4 突合の直前）に位置する。
-- **入力**: [FR-008](#fr-008-per-mesh-csv-統合) 出力の内部 work CSV `$DATA_DIR/results/merged.csv`
-- **出力**: 広域 per-mesh CSV（`widearea_<peak>_<n>x<n>_<col>_<row>.csv`） → FR-008 再実行による更新済み merged.csv（コル探索完了後の最終状態は [FR-009](#fr-009-sotaリスト突合match_status-判定) が merged.geojson として出力する）
+- **概要**: merged_peak.csv の `key_col_resolved=false` ピークに対して、N×N メッシュ + L14 max pooling の広域モードで FR-004 ピーク解析を再呼び出しし、Key コルを特定する。フェーズ3（統合の直後・フェーズ4 突合の直前）に位置する。
+- **入力**: [FR-008](#fr-008-per-mesh-csv-統合) 出力の内部 work CSV `$DATA_DIR/results/merged_peak.csv`
+- **出力**: 広域 per-mesh CSV（`widearea_<peak>_<n>x<n>_<col>_<row>.csv`） → FR-008 再実行による更新済み merged_peak.csv（コル探索完了後の最終状態は [FR-009](#fr-009-sotaリスト突合match_status-判定) が merged.geojson として出力する）
 - **詳細**:
-  - **再解析トリガー**: `merged.csv` の各ピークのうち `key_col_resolved=false`（コルが通常 per-mesh 3×3 解析範囲外 → プロミネンス未確定）のピークを対象とする
+  - **再解析トリガー**: `merged_peak.csv` の各ピークのうち `key_col_resolved=false`（コルが通常 per-mesh 3×3 解析範囲外 → プロミネンス未確定）のピークを対象とする
     - アクティベーションゾーン・delete判定ゾーンの `area_complete=false` はトリガー対象外（通常 per-mesh で 3×3 内に完結する想定であり、想定外発生時は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグで処理停止。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **基本フロー（縮小版パイプラインのループ）**:
-    1. **対象ピーク特定**: 上記トリガー条件で `merged.csv` から対象ピークを抽出する
+    1. **対象ピーク特定**: 上記トリガー条件で `merged_peak.csv` から対象ピークを抽出する
     2. **エスカレーション・ループ（N = 4, 5, 6 の順）**:
        - 各対象ピークの緯度経度から、ピークが属するメッシュコードを算出
        - そのメッシュコードを含む N×N メッシュコードリストを生成（対象メッシュの位置は (1,1)〜(N,N) の N² 通り。後述の全パターン探索で順に試す）
        - **[FR-004](#fr-004-33-メッシュ結合解析) を「処理モード = N×N + L14」パラメータ付きで呼び出す**。per-mesh パイプライン（FR-004→[FR-005](#fr-005-ピーク候補検出)→[FR-006](#fr-006-コル検出プロミネンス計算)→[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力)）が広域モードで実行され、広域 per-mesh CSV が出力される（[FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成は実行しない。広域再解析の目的は Key コル特定のみであり、ポリゴンは通常 per-mesh の結果を使用する）
        - **対象ピーク絞り込み**: 広域モードでは、解析範囲内に検出される他のピークは出力せず、対象ピークの行だけを per-mesh CSV に出力する（merged 統合時のノイズを防ぐため）
-       - **[FR-008](#fr-008-per-mesh-csv-統合) を再実行**: 通常 per-mesh CSV と広域 per-mesh CSV を**まとめて**入力として再統合し、`merged.csv` を更新する
-       - 更新後の `merged.csv` で対象ピークの `key_col_resolved=false` が解消されていなければ、N+1 にエスカレーションして 2 を繰り返す
+       - **[FR-008](#fr-008-per-mesh-csv-統合) を再実行**: 通常 per-mesh CSV と広域 per-mesh CSV を**まとめて**入力として再統合し、`merged_peak.csv` を更新する
+       - 更新後の `merged_peak.csv` で対象ピークの `key_col_resolved=false` が解消されていなければ、N+1 にエスカレーションして 2 を繰り返す
     3. **最終残存**: N=6 でも `key_col_resolved=false` のピークが残った場合、当該フラグ状態を維持したまま処理を継続する（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_key_col_unresolved` 不備フラグが true となり、[FR-009](#fr-009-sotaリスト突合match_status-判定) が非ゼロ exit で終了する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **解析ウィンドウ全パターン探索**: 各 N の段階で、対象メッシュを N×N ウィンドウ内 (1,1)〜(N,N) の各位置に置いた N² 通りのパターンを順に試す。`key_col_resolved=true` を得たパターンが見つかった時点で早期終了する（次のパターン・次の N へは進まない）。存在しないメッシュ（海上・日本国外等）を含むパターンはスキップする
   - **広域 per-mesh ファイル命名**（区別のため通常 per-mesh と異なる名前にする）:
     - CSV: `$DATA_DIR/results/csv/widearea_<対象peak識別>_<n>x<n>_<col>_<row>.csv`
-    - 対象 peak 識別子は merged.csv の行を一意に特定できる値（例: peak_lat と peak_lon を結合した文字列）を用いる
+    - 対象 peak 識別子は merged_peak.csv の行を一意に特定できる値（例: peak_lat と peak_lon を結合した文字列）を用いる
   - **実装方針（[ADR-010](decisions/ADR-010-cpp-opencv-migration.md) 移行後の C++ エンジン前提）**:
     - C++ エンジンに「処理モード（N, L）」入力を追加するだけで、`mesh` / `elevation` / `unionfind` / `analyze` / `mesh_analyze` モジュールを通常モードと共有する（広域モード専用のロジック実装は行わない）
     - 広域モードでは `activation` モジュール（[FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成）は呼び出さない（広域再解析の目的は Key コル特定のみ）
@@ -441,20 +441,22 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
 #### FR-009: SOTAリスト突合・match_status 判定
 
 - **対応 UR**: [UR-003](01_URD.md#ur-003)
-- **概要**: merged.csv と SOTA サミットリストを point-in-polygon 突合し、全 Point/Polygon/LineString フィーチャ・rationale プロパティ・不備フラグ metadata を含む merged.geojson（中心成果物）を出力する。
+- **概要**: merged_peak.csv（ピーク中心の内部 work CSV）と SOTA サミットリストを point-in-polygon 突合し、全 Point/Polygon/LineString フィーチャ・rationale プロパティ・不備フラグ metadata を含む merged.geojson（中心成果物）と merged_summit.csv（サミット中心の確認用 CSV）を出力する。本 FR はデータ概念が「ピーク中心 → サミット中心」へ切り替わる節目である。
 - **入力**:
-  - **内部 work CSV**: フェーズ3 ([FR-008](#fr-008-per-mesh-csv-統合)) で統合され、[FR-014](#fr-014-独立峰のコル探索) の広域再解析でコル特定を経た `$DATA_DIR/results/merged.csv`。全ピークが `key_col_resolved=true` かつ全ポリゴンが `area_complete=true` であることを前提とする（不備があれば不備フラグとして後続に引き継ぎ、本 FR を非ゼロ exit で終了する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
+  - **内部 work CSV**: フェーズ3 ([FR-008](#fr-008-per-mesh-csv-統合)) で統合され、[FR-014](#fr-014-独立峰のコル探索) の広域再解析でコル特定を経た `$DATA_DIR/results/merged_peak.csv`。全ピークが `key_col_resolved=true` かつ全ポリゴンが `area_complete=true` であることを前提とする（不備があれば不備フラグとして後続に引き継ぎ、本 FR を非ゼロ exit で終了する。[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - **merged_activation.geojson**: フェーズ3 ([FR-018](#fr-018-per-mesh-activationgeojson-統合)) で統合された `$DATA_DIR/results/merged_activation.geojson`。通常 per-mesh の GeoJSON のみから統合される（広域モードは GeoJSON を生成しない）
   - `ref/summitslist.csv`（JA プレフィックスサミット一覧）
   - メッシュコードリスト（オプション）: FR-008・FR-018 と同じリストを受け取る。省略時は全範囲を対象とする。FR-010 の削除候補スコープ判定に使用する
   - `ref/geojson_v{N}/`（ja0〜ja9 ファイル群）: 既存 SOTA サミットの日本語山岳名（`summit_name_jp`）取得用。バージョン番号 `{N}` は `params/config.ini` の `geojson_version` パラメータで指定する
-- **出力**: `$DATA_DIR/results/merged.geojson`（フェーズ4 末尾の中心成果物）。全 Point フィーチャ・全 Polygon フィーチャ・`rationale` プロパティ・不備フラグを含む metadata を持つ。フィーチャ構成の詳細は [FR-013](#fr-013-html-ビューア生成) のフィーチャ構成テーブルに記載。`merged.csv`（派生エビデンス CSV）は [FR-012](#fr-012-エビデンス-csv-生成) で merged.geojson から生成する
+- **出力**:
+  - `$DATA_DIR/results/merged.geojson`（フェーズ4 末尾の中心成果物）。全 Point フィーチャ・全 Polygon フィーチャ・`rationale` プロパティ・不備フラグを含む metadata を持つ。フィーチャ構成の詳細は [FR-013](#fr-013-html-ビューア生成) のフィーチャ構成テーブルに記載
+  - `$DATA_DIR/results/merged_summit.csv`（サミット一覧 CSV。バッチ生成時点の中身確認用。カラム構成は [FR-012](#fr-012-エビデンス-csv-生成) と同じ）。ユーザーが HTML ビューアで編集した山岳名・rationale は反映しない
 - **詳細**:
   - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
   - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
   - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-activationgeojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-011](decisions/ADR-011-delete-zone-polygon.md)）
   - マッチング一意性: プロミネンス ≥ 150m の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない（delete判定ゾーン内には縦走路上などで複数 SOTA サミットが含まれうるが、主ピーク特定アルゴリズム（[ADR-008](decisions/ADR-008-dominant-peak-identification.md)）で各サミットの主ピークが一意に決まる）
-  - **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
+  - **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を `N03-{n03_year}_municipalities.geojson`（FR-017 生成・市区町村単位）と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged_summit.csv に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
   - **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-007](decisions/ADR-007-peak-match-status-terminology.md)、ポリゴン種別変更の経緯は [ADR-011](decisions/ADR-011-delete-zone-polygon.md) 参照）:
     1. ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する → `matched`
     2. ピークの delete判定ゾーン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外 → `dominant`（そのサミットが削除候補となり、このピークが主ピークとなる）
@@ -715,11 +717,11 @@ matched / dominant のみ。
 #### FR-012: エビデンス CSV 生成
 
 - **対応 UR**: [UR-005](01_URD.md#ur-005)
-- **概要**: `merged.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心成果物）から派生するエビデンス CSV（UR-005 対応）。
-- **入力**: `$DATA_DIR/results/merged.geojson`（FR-009 出力）
-- **出力**: `$DATA_DIR/results/merged.csv`
+- **概要**: `merged.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心成果物）から、FR-019 でユーザーが編集した山岳名・rationale を反映したエビデンス CSV を生成する（UR-005 対応）。
+- **入力**: `$DATA_DIR/results/merged.geojson`（FR-009 出力）+ HTML ビューアでのユーザー編集内容
+- **出力**: `<TBD: フェーズ5 レビュー後確定>`
 - **詳細**:
-  - merged.csv は純粋なバッチ解析結果であり、HTML ビューアでのユーザー入力（山岳名・rationale 編集等）は反映しない
+  - FR-009 出力の `merged_summit.csv`（バッチ生成時点のサミット一覧）とは異なり、ユーザーが HTML ビューアで入力した山岳名・rationale 編集内容を反映する（フェーズ5 で生成）
   - **Point フィーチャのみが行に変換される**（Polygon / LineString フィーチャは含めない）
   - `rationale` プロパティは含めない（申請書根拠テキストは HTML ビューアで確認・編集し XLSX に直接反映する。エビデンス CSV は座標・標高・突合結果のみを記録する）
   - **出力カラム**:
@@ -871,8 +873,8 @@ matched / dominant のみ。
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `$DATA_DIR/results/merged.csv` |
-| 生成元 | `merged.geojson`（[FR-012](#fr-012-エビデンス-csv-生成) が merged.geojson の Point フィーチャから派生生成） |
+| ファイル | `<TBD: フェーズ5 レビュー後確定>` |
+| 生成元 | `merged.geojson`（[FR-012](#fr-012-エビデンス-csv-生成) が merged.geojson の Point フィーチャから派生生成。FR-019 でのユーザー編集内容を反映） |
 | エンコーディング | UTF-8 |
 | 区切り文字 | カンマ |
 | 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
@@ -884,7 +886,7 @@ matched / dominant のみ。
 
 | 項目 | 仕様 |
 |---|---|
-| 生成 | フェーズ3 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心成果物） |
+| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心成果物。同時に `merged_summit.csv` も生成） |
 | ファイル | `$DATA_DIR/results/merged.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
 | メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601 形式、例: `"2026-05-13T14:30:00+09:00"`、不備フラグ群）を付与 |
