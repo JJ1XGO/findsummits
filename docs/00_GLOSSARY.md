@@ -170,8 +170,14 @@ per-mesh CSV / GeoJSON の列名・フラグ・コード体系。
 
 `ADR-{STAGE}-NNN-kebab-case-description.md`
 
-- `{STAGE}`: 判断が発生したステージ。**URD / SRS の2種類のみ**（HLD/LLD 文書が未作成のため、それらに相当する判断も SRS に分類する）
-- `NNN`: 3桁連番。ステージ種別を跨いだ全体通し番号（ステージごとには分けない）
-- ステージ判定ルール: 上流ステージから見て最初に該当するステージを選ぶ
+- `{STAGE}`: 判断が発生したステージ。**URD / SRS / HLD / LLD / COD / UT / IT / ST / OPS** の 9 種類から選ぶ
+  - 当該ステージの正式文書が未作成でも、判断種別として該当すれば使用してよい
+  - 判定ルール: 判断の中身が最も自然に属するステージを選ぶ（上流側で決められるなら上流を優先）
+- `NNN`: 3 桁連番。**ステージごとに独立した連番**（各ステージ内で 001 から採番）
+  - 既存 ADR（URD: 005/007/009/014、SRS: 001/002/003/004/006/008/010/011/012/013）は前回刷新時の経緯で全体通し番号を維持しているため、ステージ別に見ると番号に欠番がある
+  - 新規 ADR は各ステージの現状最大値 + 1 から採番する
+    - 次の URD: `ADR-URD-015-...`
+    - 次の SRS: `ADR-SRS-014-...`
+    - 初の HLD: `ADR-HLD-001-...`（以降のステージも同様に 001 から）
 
-例: `ADR-URD-005-northern-territories-exclusion.md`（スコープ判断）、`ADR-SRS-001-hybrid-c-python-architecture.md`（アーキテクチャ判断）
+例: `ADR-URD-005-northern-territories-exclusion.md`（スコープ判断）、`ADR-SRS-001-hybrid-c-python-architecture.md`（アーキテクチャ判断）、（将来）`ADR-HLD-001-...`

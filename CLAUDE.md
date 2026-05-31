@@ -229,9 +229,10 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 **命名規則**: `docs/decisions/ADR-{STAGE}-NNN-kebab-case-description.md`
 
-- `{STAGE}` は `URD` または `SRS`（HLD/LLD 文書未作成のため当面この2種類）
-- ステージ判定: 「上流ステージから見て最初に該当するステージ」を採用
-- `NNN` は3桁連番。ステージ種別を跨いだ全体通し番号（ステージ別には分けない）
+- `{STAGE}` は `URD` / `SRS` / `HLD` / `LLD` / `COD` / `UT` / `IT` / `ST` / `OPS` の 9 種類
+- 判断の中身が最も自然に属するステージを選ぶ（上流側で決められるなら上流を優先）
+- `NNN` は 3 桁連番で **ステージごとに独立**
+- 既存 ADR の番号は維持。新規は各ステージの現状最大値 + 1 から採番（次の URD = 015、次の SRS = 014、初の HLD = 001）
 - 詳細は `docs/00_GLOSSARY.md` の「ADR 命名規約」を参照
 
 **フォーマット**:
