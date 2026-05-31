@@ -1,142 +1,125 @@
-# FR-009/FR-012 出力の xlsx 化と FR-012 呼称変更
+# viewer モックアップ機能追加と SRS 整合
 
 ## Context
 
-直前の SRS 命名整理（ISSUE-061・コミット `8b640e7`）で次の状態に整理した:
+viewer モックアップ（`docs/mockup/viewer_mockup.html`）に複数の UI 改善要望が出た。本セッション前半で次の 3 件は既に編集済み：
 
-| FR | 出力 | フォーマット | 呼称 |
+- 地理院（標準）/（淡色）併記化
+- メッシュコードラベルのフォントサイズ可変（ズーム連動）
+- メッシュコードラベルをビューポート ∩ メッシュ にクランプ（ズームイン時も常時表示）
+
+ここから扱うのは UI の残作業 4 件と、それに伴う SRS（`docs/02_SRS.md` FR-011/FR-012/FR-019/FR-020）の整合修正。エクスポート機能はユーザー再検討の結果、3 ボタン構成に刷新する。
+
+## モックアップ修正（`docs/mockup/viewer_mockup.html`）
+
+### M1: ヘッダー表示の拡張
+- 現状: `サミットリスト基準日: 2026-01-01　解析日時: 2026-05-13 09:00 JST`
+- 修正後: `サミットリスト基準日: 2026-01-01 (UTC)　地理院タイル更新日（提供元）: 2026-04-28　解析日時: 2026-05-13 09:00 JST`
+- ダミーデータ `GEOJSON_DATA.metadata` に `gsi_tile_latest_date` フィールド追加（モックアップ用サンプル値）
+
+### M2: レイヤー選択アイコンを `topright` へ移動（zoom の上）
+- 現状: `L.control.layers(..., { position: "topleft" })`（L449）
+- 修正後: `position: "topright"`、かつ `L.control.zoom()` より **先に** addTo（Leaflet は同一 position で追加順に上から並ぶ）
+- 並び（topright 上から）: レイヤー選択 → ズーム → エクスポート
+
+### M3: コントロール展開時挙動（アイコン残し・右隣縦展開）
+- 現状: 展開時 toggle アイコンが `display: none` に
+- 修正後 CSS 方針:
+  - `.export-control`（既存）と `.leaflet-control-layers`（デフォルト）の両方に `display: flex; flex-direction: row; align-items: flex-start;` 等を当てる
+  - 展開時もアイコン（`.leaflet-control-layers-toggle`）を表示維持
+  - リスト（`.leaflet-control-layers-list`）はアイコン右隣に縦展開
+- 対象: レイヤーコントロール／エクスポートコントロール 両方
+
+### M4: エクスポートメニューを 3 サブボタン化
+- 現状: 「申請書エクスポート」「公開用エクスポート」の 2 サブボタン
+- 修正後（3 サブボタン）:
+
+| # | ボタンラベル | 出力 | 説明 |
 |---|---|---|---|
-| FR-008 | `merged_peak.csv` | CSV | 内部 work CSV |
-| FR-009 | `merged.geojson` + `merged_summit.csv` | GeoJSON + CSV | 中心成果物 + サミット一覧 CSV |
-| FR-012 | `<TBD: フェーズ5 レビュー後確定>` | CSV | エビデンス CSV |
+| 1 | 申請書 | `<basename>.xlsx`（単独）| SOTA-Summit-list-revision-request 準拠の XLSX |
+| 2 | 申請エビデンス | `<basename>.zip`（同梱: `merged_summit_revised.xlsx` + `new.geojson` + `dominant.geojson` + `changed.geojson` + `unchanged.geojson`）| 申請内容の裏付け資料一式 |
+| 3 | 公開用 HTML | `<basename>.html`（単独）| 閲覧専用 HTML |
 
-これに対しユーザーから次の改善提案:
+- モックアップではボタン押下時の動作は `alert()` で出力概要を示す（実 XLSX/ZIP 生成は実装フェーズ）
 
-1. **xlsx 化**: `merged_summit.csv`（FR-009 出力）と FR-012 出力 CSV を **xlsx 化**したい。後続 FR の入力にならないため CSV 制約は不要、申請者が中身を確認するうえで xlsx の方が見やすい
-2. **呼称変更**: FR-012 の「エビデンス CSV」呼称は不適切。「サミット一覧（申請内容反映版）」へ変更
-3. **対比軸の明示**: FR-009 出力を「サミット一覧（突合後）」、FR-012 出力を「サミット一覧（申請内容反映版）」と呼ぶことで、フェーズ4 末（バッチ生成時点・ユーザー編集前）とフェーズ5 末（HTML ビューアでのユーザー編集反映後）の対比を明示する
+## SRS 修正（`docs/02_SRS.md`）
 
-「エビデンス」は何のエビデンスかが文脈依存で曖昧だったのに対し、「サミット一覧（〜後）」は中身と生成タイミングを直接表現するため文書理解性が向上する。SOTA 申請テンプレート `SOTA-Summit-list-revision-request.xlsx` の **revision** 文脈とも整合する。
-
-## Explore で確認済みの事実
-
-- `merged_summit.csv` は **後続 FR の入力にならない**（行 453 で「カラム構成は FR-012 と同じ」と参照されるのみ。ファイル依存なし）
-- FR-012 出力も最終成果物（後続入力なし）
-- 「エビデンス」表現は `02_SRS.md` の 9 箇所（44, 59, 108, 156, 453, 653, 717, 877, 881 行）に出現
-
-## 決定事項（命名・フォーマット）
-
-| FR | 旧 | 新 | 呼称 |
-|---|---|---|---|
-| FR-009 出力（補助 CSV） | `merged_summit.csv` | **`merged_summit.xlsx`** | **サミット一覧（突合後）** |
-| FR-012 出力（TBD） | `<TBD: フェーズ5 レビュー後確定>` | **`merged_summit_revised.xlsx`** | **サミット一覧（申請内容反映版）** |
-
-### ファイル名 `merged_summit_revised.xlsx` の根拠
-
-- SOTA 申請テンプレート `SOTA-Summit-list-revision-request.xlsx` の **revision**（改訂申請）と語感が整合
-- `_revised` で「申請内容反映後（改訂版）」の意味を簡潔に表現
-- 代替候補: `_applied`, `_final`（却下理由: revision との対応が弱い・「最終」は曖昧）
-
-### xlsx フォーマットの SRS 上の規定
-
-- **単一シート・データ表のみ**（複数シート・装飾は実装側で決定。SRS ではフォーマット詳細を規定しない）
-- ヘッダー行はカラム名（既存 CSV と同一の 27 列）
-- 出力ライブラリは `openpyxl`（既にインストール済み・メモリ記録あり）
-- 旧 § 6.4 に書かれていた **「エンコーディング: UTF-8」「区切り文字: カンマ」** 行は xlsx には不要のため削除
-
-## Scope
-
-**含む**: SRS（`docs/02_SRS.md`）の改訂と関連 ISSUE の起票・更新
-
-**含まない**:
-- 実装側修正（`scripts/merge.py` / `scripts/output_geojson.py` / FR-012 実装）→ 既存 ISSUE-059 を更新するか別 ISSUE を起票
-- HLD / LLD の更新（未着手）
-- フェーズ5 全体の構造詰め（FR-011/012/019/020 の責務再整理は別タスク。今回は FR-012 の出力ファイル名・呼称のみ確定）
-
-## SRS 改訂対象（`docs/02_SRS.md`）
-
-| 行 | 現状 | 改訂内容 |
+| # | 該当箇所 | 修正内容 |
 |---|---|---|
-| 7 | ヘッダーステータス | 変更なし（必要に応じて確認） |
-| **44** | 目次「FR-012: エビデンス CSV 生成」 | **「FR-012: サミット一覧（申請内容反映版）生成」** |
-| **59** | 目次「6.4 出力: エビデンス CSV」 | **「6.4 出力: サミット一覧（申請内容反映版）」** |
-| **108** | 外部成果物「エビデンス CSV」 | **「サミット一覧（申請内容反映版）」** |
-| **120** | コンポーネント表「merged_summit.csv（サミット一覧 CSV）」 | **「merged_summit.xlsx（サミット一覧（突合後））」** |
-| **150** | 俯瞰図 フェーズ4「`merged_summit.csv`（…・サミット一覧 CSV…）」 | **「`merged_summit.xlsx` …← サミット一覧（突合後）」** |
-| **156** | 俯瞰図 フェーズ5「エビデンス CSV `<TBD…>`」 | **「サミット一覧（申請内容反映版）`merged_summit_revised.xlsx`」** |
-| **441-459** | FR-009 概要・出力・詳細 | `merged_summit.csv` → `merged_summit.xlsx`、概要文の「確認用 CSV」→「確認用 XLSX」、行 459 の「`municipality` カラムを merged_summit.csv に付与」→「merged_summit.xlsx に付与」 |
-| **653** | FR-019 内「FR-011・FR-012・FR-020 経由」 | 文脈確認のみ（変更不要の見込み） |
-| **717** | FR-012 タイトル「エビデンス CSV 生成」 | **「サミット一覧（申請内容反映版）生成」** |
-| **720** | FR-012 概要「エビデンス CSV を生成」 | **「サミット一覧（申請内容反映版）を生成」** |
-| **722** | FR-012 出力「`<TBD: フェーズ5 レビュー後確定>`」 | **「`$DATA_DIR/results/merged_summit_revised.xlsx`」** |
-| **724** | FR-012 詳細「FR-009 出力の `merged_summit.csv`（…）とは異なり」 | **「`merged_summit.xlsx`（…）とは異なり」** |
-| **726** | 「エビデンス CSV は座標・標高・突合結果のみを記録する」 | **「サミット一覧（申請内容反映版）は…」** |
-| **727-756** | 出力カラム表 | カラム構成は変更なし（27 列維持） |
-| **872** | § 6.4 タイトル「6.4 出力: エビデンス CSV」 | **「6.4 出力: サミット一覧（申請内容反映版）」** |
-| **876** | § 6.4「ファイル: `<TBD…>`」 | **「`$DATA_DIR/results/merged_summit_revised.xlsx`」** |
-| **877** | § 6.4「生成元 … エビデンス CSV …」 | 「エビデンス CSV」→「サミット一覧（申請内容反映版）」、「派生生成」記述維持 |
-| **878-879** | § 6.4「エンコーディング: UTF-8」「区切り文字: カンマ」 | **削除**（xlsx には不要） |
-| **880** | § 6.4「含む情報 …」 | 「Point フィーチャの属性のみ（…`rationale` 列は含めない）」記述維持 |
-| **881** | § 6.4「カラム」 | 「[FR-012 参照]」記述維持 |
-| **889** | § 6.5 GeoJSON「同時に `merged_summit.csv` も生成」 | **「同時に `merged_summit.xlsx`（サミット一覧（突合後））も生成」** |
+| S1 | FR-019 L660 「背景タイル切り替え機能」 | タイル一覧に **地理院淡色地図** を追加（既にモックアップで実装済み・SRS が追従） |
+| S2 | FR-019 L665-667 「埋め込みデータの metadata から〜表示」 | ヘッダー表示項目に **地理院タイル更新日（提供元）** を追加。サミットリスト基準日に **(UTC)** 補記。`metadata` に新フィールド `gsi_tile_latest_date` を追加する旨を明記 |
+| S3 | FR-019 L683-689 「エクスポート」セクション | **3 ボタン構成に刷新**（申請書 / 申請エビデンス / 公開用 HTML）。各ボタンの責務・出力ファイル種別を明示 |
+| S4 | FR-011 概要・出力 | 既存通り「ブラウザ内 SheetJS で生成・単独ダウンロード」。zip 同梱はしない旨を明確化 |
+| S5 | FR-012 L720-727 概要・出力 | 出力先を `$DATA_DIR/results/...` から **「HTML ビューアからブラウザダウンロード（申請エビデンス zip 内）」** に変更。生成方法を「ブラウザ内で生成」と明示。merged_summit_revised.xlsx の zip 内パスを規定 |
+| S6 | FR-020 L760-769 公開用 HTML ビューア生成 | 出力を **公開用 HTML 単独** に変更（GeoJSON 言及は削除し S7 へ移動） |
+| S7 | 新規セクションまたは FR-019 末尾「申請エビデンス zip 仕様」 | zip 同梱 5 ファイルの内訳・4 GeoJSON のカテゴリ判定ロジックを定義 |
 
-### § 6 に「サミット一覧（突合後）」独立セクションを追加するか
+### S7: 4 GeoJSON のカテゴリ判定（提案）
 
-現状 `merged_summit.xlsx` は § 6.5 内の GeoJSON 表で「同時に生成」と1行記述するのみで、独立した節がない。フェーズ4 末の重要成果物として位置づけが弱い。
+| ファイル | 判定ロジック | 含むフィーチャ |
+|---|---|---|
+| `new.geojson` | peak の `match_status="new"` | 該当 peak とその関連 features（col / activation_zone / delete_zone / prominence_range） |
+| `dominant.geojson` | peak の `match_status="dominant"` | 該当 peak と関連 features ＋ 対応する `match_status="delete"` の summit feature |
+| `changed.geojson` | peak の `match_status="matched"` かつ `is_band_change_candidate=true` | 該当 peak と関連 features ＋ 対応する `match_status="matched"` の summit feature |
+| `unchanged.geojson` | peak の `match_status="matched"` かつ `is_band_change_candidate=false` | 該当 peak と関連 features ＋ 対応する summit feature |
 
-**提案**: § 6.4 と § 6.5 の間に **新規 § 6.5「6.5 出力: サミット一覧（突合後）」** を追加し、以降の節番号を +1 シフト。
+- `metadata`（summitslist_date / generated_at / gsi_tile_latest_date）は各 GeoJSON に複製
+- モックアップの「変更あり」フィルター（現状: localStorage に編集ありで判定）も `is_band_change_candidate` ベースに揃えるかは別タスク（本プラン外）
 
-| 旧 | 新 |
+## モックアップに反映しない（SRS 規定なし・UI 細部）
+
+- レイヤー選択アイコン配置（SRS は配置を規定していない）
+- アイコン展開挙動（CSS のみの問題）
+- メッシュラベルのフォントサイズ可変／ビューポート内クランプ（SRS は表示方式を規定していない）
+
+これらは本プランで mockup だけ更新し、SRS には反映しない。
+
+## 重要な後続課題（本プラン外）
+
+| ID | 内容 |
 |---|---|
-| 6.4 出力: エビデンス CSV | 6.4 出力: サミット一覧（申請内容反映版） |
-| （なし） | **6.5 出力: サミット一覧（突合後）** ← 新規 |
-| 6.5 出力: GeoJSON・作業用 HTML ビューア | 6.6 出力: GeoJSON・作業用 HTML ビューア |
-| 6.6 中間ファイル: メッシュ別ピーク候補 CSV | 6.7 中間ファイル: メッシュ別ピーク候補 CSV |
-| 6.7〜6.12 | 6.8〜6.13 |
-
-セクション番号シフトは目次・本文中の参照リンクも追従が必要。**節追加のメリットは「文書構造の一貫性」、デメリットは「番号シフトに伴う変更箇所増（grep で全網羅は可能）」**。
-
-採否は ExitPlanMode 時に承認をいただく（独立節を追加する／§ 6.5 内の 1 行更新のみで済ませる、の二択）。
-
-## 後続課題
-
-| ISSUE | 内容 | 状態 |
-|---|---|---|
-| **ISSUE-059**（既存） | 実装側ファイル名追従。スコープを **xlsx 対応も含めて拡張**: `scripts/merge.py` の出力を `merged_peak.csv` + `merged_summit.xlsx` へ変更、FR-012 実装（`merged_summit_revised.xlsx`）の新規開発を別 ISSUE として分離 | **タイトル・notes 更新** |
-| **新規 ISSUE-062**（仮番号） | FR-012 実装（merged_summit_revised.xlsx 生成スクリプト新規開発）。HTML ビューア側のエクスポート連携が必要なため、FR-013（HTML ビューア生成）の改修も伴う可能性あり | **新規起票** |
-| **ISSUE-060**（既存） | CLAUDE.md / README.md の `merged.csv` 言及箇所更新。**`merged_summit.xlsx` への言及追加もスコープに含める** | **notes 更新** |
+| 新規 ISSUE-A | パイプライン側で `gsi_tile_latest_date` を `merged.geojson.metadata` に格納する実装（タイルキャッシュの mtime を集計）。`scripts/prefetch_tiles.py` or `scripts/merge.py` のどちらで集計するかは別途設計 |
+| 既存 ISSUE-062（FR-012 実装）| スコープを「ブラウザ内で `merged_summit_revised.xlsx` 生成 → 申請エビデンス zip に同梱」へ更新 |
+| 新規 ISSUE-B | 4 GeoJSON 分割生成（ブラウザ内）の実装。ISSUE-062 と統合可 |
+| 新規 ISSUE-C | モックアップ「変更あり」フィルターを `is_band_change_candidate` ベースに合わせる |
+| 既存 ISSUE-059（実装側ファイル名追従）| 影響なし（既存スコープのまま） |
 
 ## 検証
 
-SRS 改訂後の確認手順:
+### モックアップ検証（ブラウザで `viewer_mockup.html` を開く）
+- [ ] ヘッダーに 3 項目が `(UTC)` 付き・タイル更新日付き で表示される
+- [ ] レイヤー選択アイコンが画面右上、ズームボタンの上にある
+- [ ] レイヤー選択／エクスポート両方で、アイコン上にマウスホバー → アイコンが残ったままリストが右隣に縦展開
+- [ ] エクスポートアイコンに 3 サブボタン（申請書 / 申請エビデンス / 公開用 HTML）がある
+- [ ] 各サブボタン押下で alert に出力概要が出る
 
+### SRS 検証
 ```bash
-# 旧名残存 0 件を期待
-grep -nE "(^|[^_a-z])merged_summit\.csv" docs/02_SRS.md
-grep -n "エビデンス" docs/02_SRS.md
-grep -n "<TBD: フェーズ5" docs/02_SRS.md
-
-# 新名出現箇所を確認
-grep -n "merged_summit\.xlsx" docs/02_SRS.md          # 期待: FR-009 出力 / 俯瞰図 / § 6.5 / コンポーネント表 / 行 459（municipality）
-grep -n "merged_summit_revised\.xlsx" docs/02_SRS.md  # 期待: FR-012 出力 / § 6.4 / 俯瞰図 / 目次（タイトル経由）
-grep -n "サミット一覧（突合後）" docs/02_SRS.md
-grep -n "サミット一覧（申請内容反映版）" docs/02_SRS.md
+grep -n "地理院淡色" docs/02_SRS.md           # 期待: FR-019 で出現
+grep -n "gsi_tile_latest_date" docs/02_SRS.md  # 期待: FR-019 メタデータ箇所
+grep -n "(UTC)" docs/02_SRS.md                 # 期待: サミットリスト基準日記述
+grep -n "申請エビデンス" docs/02_SRS.md        # 期待: FR-019/FR-012/FR-020/S7 で複数箇所
+grep -n "merged_summit_revised\.xlsx" docs/02_SRS.md  # 期待: FR-012 + S7（zip 内パス）
+grep -nE "公開用エクスポート|公開用 HTML" docs/02_SRS.md  # 期待: FR-019/FR-020 で残存・GeoJSON 同梱記述は消滅
 ```
+- FR-019 のエクスポート節が 3 ボタン構成で記述されている
+- FR-011 単独 DL／FR-012 zip 同梱／FR-020 単独 DL が明示されている
+- 既存 GeoJSON 公開用同梱の記述が削除されている
 
-俯瞰図整合性チェック:
-- フェーズ4 末に `merged.geojson` と `merged_summit.xlsx`（サミット一覧（突合後））が並ぶ
-- フェーズ5 末に「サミット一覧（申請内容反映版）`merged_summit_revised.xlsx`」が出る
-- FR-012 出力名の TBD マーカーが残っていない
+### コミット
+- 単一コミット: `docs(srs): viewer エクスポート 3 ボタン化と地理院タイル更新日メタデータ追加`
+- モックアップ修正と SRS 修正を同コミットに含める（CLAUDE.md「同一作業内のコード＋ドキュメントは同コミット可」）
+- ISSUE トラッカー更新（ISSUE-062 スコープ調整・新規 ISSUE 起票）は別コミットとして分離
 
 ## 関連ファイル
 
-- `docs/02_SRS.md`（改訂対象）
-- `mgmt/plan.md`（本プラン書き出し後に更新）
-- `mgmt/tracker/data/issues.json`（ISSUE-059/060 のタイトル・notes 更新、ISSUE-062 新規起票）
-- `mgmt/tracker/reports/issues_export.xlsx`（再生成）
+- `docs/mockup/viewer_mockup.html`（モックアップ。M1〜M4）
+- `docs/02_SRS.md`（SRS。S1〜S7）
+- `mgmt/tracker/data/issues.json`（ISSUE-062 update + 新規 ISSUE 起票）
+- `mgmt/plan.md`（本プランに更新）
 
 ## 留意点
 
-- **仕様優先原則**: SRS のみ改訂。実装変更は ISSUE-059/062 で別途扱う
-- **コミット粒度**: 「SRS FR-009/FR-012 出力の xlsx 化と呼称変更」の単一コミット。ISSUE トラッカー更新は同コミットに含めてよい
-- **xlsx フォーマット詳細**: SRS では「単一シート・データ表のみ」と最小限の規定にとどめ、装飾やシート構造は HLD/LLD で詰める
+- **仕様優先原則**: モックアップ（実装の一種）が先行している箇所（淡色追加・メッシュラベル可変・クランプ）は SRS に反映するが、SRS が UI 配置を規定しないものは SRS に書かない
+- **gsi_tile_latest_date のメタデータ追加**は SRS では「ヘッダー表示要件」として記述するに留め、生成元の Python パイプライン改修は新規 ISSUE で扱う
+- **「変更あり」カテゴリの定義**は SRS では `is_band_change_candidate=true` ベース（FR-012 と整合）で記述。モックアップフィルターは現状 localStorage ベースで定義が乖離しているが、本プランでは触れず別 ISSUE で扱う

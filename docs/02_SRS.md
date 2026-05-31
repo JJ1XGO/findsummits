@@ -43,6 +43,7 @@
      - [FR-011: 申請書 XLSX 生成](#fr-011-申請書-xlsx-生成)
      - [FR-012: サミット一覧（申請内容反映版）生成](#fr-012-サミット一覧申請内容反映版生成)
      - [FR-020: 公開用 HTML ビューア生成](#fr-020-公開用-html-ビューア生成)
+     - [FR-021: 申請エビデンス ZIP 生成](#fr-021-申請エビデンス-zip-生成)
 5. [非機能要件](#5-非機能要件)
    - [NFR-001: 精度（プロミネンス判定）](#nfr-001-精度プロミネンス判定)
    - [NFR-002: メモリ使用量](#nfr-002-メモリ使用量)
@@ -656,14 +657,15 @@ matched / dominant のみ。
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
   - フェーズ4（FR-013）で `merged.geojson` の GeoJSON データが JavaScript 変数として埋め込まれた `$DATA_DIR/results/merged_viewer.html` を生成する。本 FR はその HTML をブラウザで開いた際に提供される機能を定義する
   - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
-  - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）
-  - 背景タイル切り替え機能（国土地理院標準地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-006](decisions/ADR-006-viewer-background-tile-selection.md)）
+  - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）・JSZip（ZIP 生成）
+  - 背景タイル切り替え機能（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-006](decisions/ADR-006-viewer-background-tile-selection.md)）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
   - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
   - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
-    - SOTA サミットリスト基準日（`summitslist_date`）
+    - SOTA サミットリスト基準日（`summitslist_date`）（UTC）
+    - 地理院タイル更新日（提供元）（`gsi_tile_latest_date`）: パイプラインがキャッシュタイルの mtime 最大値として `merged.geojson` の `metadata` に格納する（生成実装は別 ISSUE 管理）
     - 解析実行日時（`generated_at`）
   - 地図帰属表示: Leaflet の attribution に `© 国土地理院`・`© OpenStreetMap contributors`・`© OpenTopoMap contributors` を必ず含める
   - **山岳名入力 UI**:
@@ -680,13 +682,12 @@ matched / dominant のみ。
     - 入力した山岳名・rationale 編集内容・名称修正はブラウザの localStorage に保存し、再訪時も維持する
     - キー: 埋め込みデータの `metadata.generated_at` を含む文字列
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
-  - **申請書エクスポート（[FR-011](#fr-011-申請書-xlsx-生成) 準拠）**:
-    - 「申請書エクスポート」ボタンで SheetJS を使い XLSX をブラウザダウンロードする
-    - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
-    - XLSX 列 I（根拠）: 各フィーチャの `rationale` プロパティ値（ビューア上で編集済みの場合は編集後の値、未編集の場合は自動生成値）を転記する（詳細は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
-  - **公開用エクスポート（[FR-020](#fr-020-公開用-html-ビューア生成) 準拠）**:
-    - 「公開用エクスポート」ボタンで、localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** をブラウザダウンロードする
-    - 詳細は [FR-020 参照](#fr-020-公開用-html-ビューア生成)
+  - **エクスポート機能**（エクスポートアイコン展開メニューに 3 ボタンを配置）:
+    - **「申請書」ボタン**（[FR-011](#fr-011-申請書-xlsx-生成) 準拠）: SheetJS を使い申請書 XLSX を**単独**ブラウザダウンロードする
+      - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
+      - XLSX 列 I（根拠）: 各フィーチャの `rationale` プロパティ値（編集済みの場合は編集後の値、未編集の場合は自動生成値）を転記する（詳細は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
+    - **「申請エビデンス」ボタン**（[FR-021](#fr-021-申請エビデンス-zip-生成) 準拠）: JSZip を使い申請エビデンス ZIP をブラウザダウンロードする。詳細は [FR-021 参照](#fr-021-申請エビデンス-zip-生成)
+    - **「公開用 HTML」ボタン**（[FR-020](#fr-020-公開用-html-ビューア生成) 準拠）: localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** を**単独**ブラウザダウンロードする。詳細は [FR-020 参照](#fr-020-公開用-html-ビューア生成)
 
 ---
 
@@ -718,9 +719,9 @@ matched / dominant のみ。
 #### FR-012: サミット一覧（申請内容反映版）生成
 
 - **対応 UR**: [UR-005](01_URD.md#ur-005)
-- **概要**: `merged.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心成果物）から、FR-019 でユーザーが編集した山岳名・rationale を反映したサミット一覧（申請内容反映版）を生成する（UR-005 対応）。
-- **入力**: `$DATA_DIR/results/merged.geojson`（FR-009 出力）+ HTML ビューアでのユーザー編集内容
-- **出力**: `$DATA_DIR/results/merged_summit_revised.xlsx`
+- **概要**: `merged.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心成果物）から、FR-019 でユーザーが編集した山岳名・rationale を反映したサミット一覧（申請内容反映版）を **HTML ビューア（FR-019）内でブラウザ生成**する。生成した XLSX は申請エビデンス ZIP（[FR-021](#fr-021-申請エビデンス-zip-生成)）に同梱してダウンロードする（UR-005 対応）。
+- **入力**: ローカル HTML ビューアに埋め込まれた GeoJSON データ + localStorage の編集内容（[FR-019](#fr-019-html-ビューア機能仕様) が管理）
+- **出力**: `merged_summit_revised.xlsx`（HTML ビューアからブラウザダウンロード。申請エビデンス ZIP 内に同梱）
 - **詳細**:
   - FR-009 出力の `merged_summit.xlsx`（サミット一覧（突合後）・バッチ生成時点）とは異なり、ユーザーが HTML ビューアで入力した山岳名・rationale 編集内容を反映する（フェーズ5 で生成）
   - **Point フィーチャのみが行に変換される**（Polygon / LineString フィーチャは含めない）
@@ -760,16 +761,39 @@ matched / dominant のみ。
 #### FR-020: 公開用 HTML ビューア生成
 
 - **対応 UR**: [UR-006](01_URD.md#ur-006)
-- **概要**: ローカル HTML ビューア（FR-013）上の「公開用エクスポート」ボタンで、外部公開用の閲覧専用 HTML を生成しブラウザダウンロードする。
+- **概要**: ローカル HTML ビューア（FR-013）上の「公開用 HTML」ボタンで、外部公開用の閲覧専用 HTML を生成し**単独で**ブラウザダウンロードする。
 - **入力**: ローカル HTML ビューアに埋め込まれた GeoJSON データ + localStorage の編集内容（[FR-019](#fr-019-html-ビューア機能仕様) が管理）
 - **出力**: 公開用 HTML ファイル（ブラウザダウンロード経由）
 - **詳細**:
   - 公開用は閲覧専用（編集 UI なし・XLSX エクスポートなし・localStorage 不使用）
   - localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージしたうえで、公開用テンプレートに GeoJSON データを埋め込み、自己完結型 HTML を生成する
   - ユーザーはダウンロードした HTML を GitHub Pages 等の静的ホスティングに配置することで外部公開できる
-  - 公開用 HTML には「GeoJSON ダウンロード」ボタンを設ける。埋め込みデータを JSON ファイルとしてブラウザダウンロードする（受領側が QGIS 等で独自に確認できるよう）
   - 公開用 HTML に使用する別テンプレート（閲覧専用）をソースコードに同梱する（詳細は HLD）
   - 詳細仕様は [6.13 出力: 公開用 HTML](#613-出力-公開用-html閲覧専用ブラウザダウンロード) を参照
+
+---
+
+#### FR-021: 申請エビデンス ZIP 生成
+
+- **対応 UR**: [UR-005](01_URD.md#ur-005)
+- **概要**: ローカル HTML ビューア（FR-013）上の「申請エビデンス」ボタンで、サミット一覧（申請内容反映版）XLSX と 4 カテゴリ GeoJSON を 1 つの ZIP にまとめてブラウザダウンロードする。
+- **入力**: ローカル HTML ビューアに埋め込まれた GeoJSON データ + localStorage の編集内容（[FR-019](#fr-019-html-ビューア機能仕様) が管理）
+- **出力**: 申請エビデンス ZIP（ブラウザダウンロード経由）
+- **詳細**:
+  - ZIP に同梱するファイル一覧:
+
+| ファイル名 | 内容 | 判定ロジック |
+|---|---|---|
+| `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
+| `new.geojson` | 新規ピーク候補 | peak の `match_status="new"` |
+| `dominant.geojson` | 削除候補ピークおよびその従属サミット | peak の `match_status="dominant"` ＋ 対応する `match_status="delete"` の summit フィーチャ |
+| `changed.geojson` | ポイントバンド変更候補 | peak の `match_status="matched"` かつ `is_band_change_candidate=true` ＋ 対応する summit フィーチャ |
+| `unchanged.geojson` | 変更なし既存サミット | peak の `match_status="matched"` かつ `is_band_change_candidate=false` ＋ 対応する summit フィーチャ |
+
+  - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at`）を複製する
+  - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
+  - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う
+  - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
 
 ---
 
@@ -874,8 +898,8 @@ matched / dominant のみ。
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `$DATA_DIR/results/merged_summit_revised.xlsx` |
-| 生成元 | `merged.geojson`（[FR-012](#fr-012-サミット一覧申請内容反映版生成) が merged.geojson の Point フィーチャから派生生成。FR-019 でのユーザー編集内容を反映） |
+| ファイル | `merged_summit_revised.xlsx`（申請エビデンス ZIP 内に同梱。ブラウザダウンロード） |
+| 生成元 | HTML ビューア（[FR-012](#fr-012-サミット一覧申請内容反映版生成) が merged.geojson の Point フィーチャからブラウザ内で生成。FR-019 でのユーザー編集内容を反映） |
 | フォーマット | XLSX（単一シート・データ表） |
 | 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
 | カラム | [FR-012 参照](#fr-012-サミット一覧申請内容反映版生成) |
@@ -911,10 +935,10 @@ matched / dominant のみ。
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `$DATA_DIR/results/merged_viewer.html` |
-| 用途 | 山岳名入力・目視確認・申請書エクスポート・公開用エクスポートを行うローカル作業用ビューア |
+| 用途 | 山岳名入力・目視確認・申請書 / 申請エビデンス / 公開用 HTML のエクスポートを行うローカル作業用ビューア |
 | HTML テンプレート | 作業用テンプレートファイル（詳細は HLD） |
-| 使用ライブラリ | Leaflet（地図・CDN 経由）・SheetJS/xlsx.js（XLSX エクスポート・CDN 経由） |
-| 背景タイル | 国土地理院標準地図・OSM・OpenTopoMap（切り替え可能） |
+| 使用ライブラリ | Leaflet（地図・CDN 経由）・SheetJS/xlsx.js（XLSX エクスポート・CDN 経由）・JSZip（ZIP 生成・CDN 経由） |
+| 背景タイル | 国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap（切り替え可能） |
 | GeoJSON 参照方式 | HTML 内に JavaScript 変数として埋め込み（外部ファイル参照なし） |
 | 動作環境 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
 
@@ -1018,12 +1042,11 @@ matched / dominant のみ。
 
 | 項目 | 仕様 |
 |---|---|
-| 生成方式 | 作業用 HTML ビューア（`merged_viewer.html`）の「公開用エクスポート」ボタンによるブラウザダウンロード（Python バッチは生成しない） |
+| 生成方式 | 作業用 HTML ビューア（`merged_viewer.html`）の「公開用 HTML」ボタンによるブラウザダウンロード（Python バッチは生成しない） |
 | 用途 | GitHub Pages 等の静的ホスティングによる外部公開（申請先への証跡共有等） |
 | HTML テンプレート | 閲覧専用テンプレートファイル（詳細は HLD） |
 | 使用ライブラリ | Leaflet（地図・CDN 経由） |
 | 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用） |
-| GeoJSON ダウンロード | 埋め込み GeoJSON をファイルとしてダウンロードするボタンあり（受領側が QGIS 等で独自確認できるよう） |
 
 ---
 

@@ -79,7 +79,7 @@
       border: 1px solid #aaa; border-radius: 2px; resize: vertical; box-sizing: border-box;
     }
 
-    /* エクスポートコントロール */
+    /* エクスポートコントロール: toggle アイコン（非展開時） */
     .export-control .leaflet-control-layers-toggle {
       background-image: none;
       display: flex;
@@ -89,12 +89,6 @@
       font-size: 18px;
       width: 26px;
       height: 26px;
-    }
-    .export-control.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
-      display: none;
-    }
-    .export-control .leaflet-control-layers-list {
-      min-width: 130px;
     }
     .export-ctrl-btn {
       display: block;
@@ -110,13 +104,42 @@
       white-space: nowrap;
     }
     .export-ctrl-btn:hover { background: #e0e0e0; }
+
+    /* 展開時共通: アイコン維持・右隣縦展開 */
+    .leaflet-control-layers.leaflet-control-layers-expanded,
+    .export-control.leaflet-control-layers-expanded {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .leaflet-control-layers.leaflet-control-layers-expanded .leaflet-control-layers-toggle,
+    .export-control.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+      display: flex !important;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+    }
+    .leaflet-control-layers.leaflet-control-layers-expanded .leaflet-control-layers-list,
+    .export-control.leaflet-control-layers-expanded .leaflet-control-layers-list {
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+      padding: 6px 10px;
+      margin-left: 4px;
+      min-width: 130px;
+    }
   </style>
 </head>
 <body>
 
 <div id="header">
   <h1>findsummits viewer</h1>
-  <span id="meta">サミットリスト基準日: 2026-01-01 　解析日時: 2026-05-13 09:00 JST</span>
+  <span id="meta">サミットリスト基準日: 2026-01-01 (UTC)　地理院タイル更新日（提供元）: 2026-04-28　解析日時: 2026-05-13 09:00 JST</span>
   <span class="spacer"></span>
   <div id="filters">
     <span>表示:</span>
@@ -137,6 +160,7 @@ const GEOJSON_DATA = {
   type: "FeatureCollection",
   metadata: {
     summitslist_date: "2026-01-01",
+    gsi_tile_latest_date: "2026-04-28",
     generated_at: "2026-05-13T09:00:00+09:00"
   },
   features: [
@@ -274,11 +298,14 @@ function sotaIcon(color) {
 // ---- 地図初期化 ----
 const map = L.map("map", { zoomControl: false }).setView([35.33, 138.72], 10);
 L.control.scale({ position: "bottomleft", imperial: false, maxWidth: 150 }).addTo(map);
-L.control.zoom({ position: "topright" }).addTo(map);
 
 const baseLayers = {
-  "国土地理院": L.tileLayer(
+  "地理院（標準）": L.tileLayer(
     "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
+    { attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">© 国土地理院</a>', maxZoom: 18 }
+  ),
+  "地理院（淡色）": L.tileLayer(
+    "https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",
     { attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">© 国土地理院</a>', maxZoom: 18 }
   ),
   "OSM": L.tileLayer(
@@ -290,7 +317,7 @@ const baseLayers = {
     { attribution: '<a href="https://opentopomap.org" target="_blank">© OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC-BY-SA</a>)', maxZoom: 17 }
   )
 };
-baseLayers["国土地理院"].addTo(map);
+baseLayers["地理院（標準）"].addTo(map);
 
 // ---- 1次メッシュグリッド（日本国土 176 メッシュのみ）----
 const JAPAN_MESHES = [
@@ -310,50 +337,82 @@ const JAPAN_MESHES = [
 ];
 
 function createMeshGrid() {
-  const lines  = L.layerGroup();
-  const labels = L.layerGroup();
+  const lines = L.layerGroup();
+  let labels  = L.layerGroup();
 
-  const LAT_STEP = 2 / 3;
-  const LON_STEP = 1;
+  const LAT_STEP  = 2 / 3;
+  const LON_STEP  = 1;
   const MESH_COLOR = "#7B2FBE";
+  const LABEL_ZOOM = 7;
+
+  function labelFontSize(zoom) {
+    if (zoom >= 12) return 18;
+    if (zoom >= 10) return 15;
+    if (zoom >=  8) return 12;
+    return 10;
+  }
 
   JAPAN_MESHES.forEach(code => {
     const p = Math.floor(code / 100);
     const u = code % 100;
     const latMin = p * LAT_STEP;
-    const latMax = latMin + LAT_STEP;
     const lonMin = u + 100;
-    const lonMax = lonMin + LON_STEP;
-
-    // 矩形枠線
-    L.rectangle([[latMin, lonMin], [latMax, lonMax]], {
+    L.rectangle([[latMin, lonMin], [latMin + LAT_STEP, lonMin + LON_STEP]], {
       color: MESH_COLOR, weight: 1.8, opacity: 0.7, fill: false, interactive: false
     }).addTo(lines);
-
-    // ラベル（左下から少し内側）
-    L.marker([latMin + LAT_STEP * 0.08, lonMin + LON_STEP * 0.04], {
-      icon: L.divIcon({
-        html: `<span style="font-size:13px;color:${MESH_COLOR};font-weight:bold;white-space:nowrap;text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,0 0 3px #fff;">${code}</span>`,
-        className: "", iconSize: [42, 16], iconAnchor: [0, 16]
-      }),
-      interactive: false
-    }).addTo(labels);
   });
 
-  // labels を group 内で管理することでオーバーレイ OFF 時に自動削除される
-  const LABEL_ZOOM = 7;
+  function buildLabels(zoom) {
+    const lg = L.layerGroup();
+    const fs = labelFontSize(zoom);
+    const b  = map.getBounds();
+    const vS = b.getSouth(), vN = b.getNorth();
+    const vW = b.getWest(),  vE = b.getEast();
+    const PAD = 0.005; // ビューポート端からの余白（度）
+
+    JAPAN_MESHES.forEach(code => {
+      const p = Math.floor(code / 100);
+      const u = code % 100;
+      const latMin = p * LAT_STEP;
+      const latMax = latMin + LAT_STEP;
+      const lonMin = u + 100;
+      const lonMax = lonMin + LON_STEP;
+
+      // ビューポートと交差しないメッシュはスキップ
+      if (latMax < vS || latMin > vN || lonMax < vW || lonMin > vE) return;
+
+      // ラベル位置を「メッシュ内 かつ ビューポート内」にクランプ
+      const rawLat = latMin + LAT_STEP * 0.08;
+      const rawLon = lonMin + LON_STEP * 0.04;
+      const clampedLat = Math.max(Math.max(latMin, vS) + PAD, Math.min(Math.min(latMax, vN) - PAD, rawLat));
+      const clampedLon = Math.max(Math.max(lonMin, vW) + PAD, Math.min(Math.min(lonMax, vE) - PAD, rawLon));
+
+      L.marker([clampedLat, clampedLon], {
+        icon: L.divIcon({
+          html: `<span style="font-size:${fs}px;color:${MESH_COLOR};font-weight:bold;white-space:nowrap;text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,0 0 3px #fff;">${code}</span>`,
+          className: "", iconSize: [42, fs + 2], iconAnchor: [0, fs + 2]
+        }),
+        interactive: false
+      }).addTo(lg);
+    });
+    return lg;
+  }
+
   const group = L.layerGroup([lines]);
 
   function syncLabels() {
     if (!map.hasLayer(group)) return;
-    if (map.getZoom() >= LABEL_ZOOM) {
-      if (!group.hasLayer(labels)) group.addLayer(labels);
+    const zoom = map.getZoom();
+    if (zoom >= LABEL_ZOOM) {
+      if (group.hasLayer(labels)) group.removeLayer(labels);
+      labels = buildLabels(zoom);
+      group.addLayer(labels);
     } else {
       if (group.hasLayer(labels)) group.removeLayer(labels);
     }
   }
 
-  map.on("zoomend", syncLabels);
+  map.on("zoomend moveend", syncLabels);
   map.on("overlayadd", e => { if (e.name === "1次メッシュ") syncLabels(); });
 
   return group;
@@ -445,8 +504,9 @@ function createCpLayer() {
 
 const cpLayer = createCpLayer();
 
-// ---- レイヤーコントロール ----
-L.control.layers(baseLayers, { "1次メッシュ": meshGrid, "基準点": cpLayer }, { position: "topleft" }).addTo(map);
+// ---- レイヤーコントロール（topright 最上部）----
+L.control.layers(baseLayers, { "1次メッシュ": meshGrid, "基準点": cpLayer }, { position: "topright" }).addTo(map);
+L.control.zoom({ position: "topright" }).addTo(map);
 
 // ---- localStorage ----
 const storageKey = "sota_viewer_" + GEOJSON_DATA.metadata.generated_at;
@@ -731,8 +791,9 @@ const ExportControl = L.Control.extend({
       btn.id = id;
       btn.textContent = label;
     };
-    mkBtn("申請書エクスポート", "btn-export");
-    mkBtn("公開用エクスポート", "btn-publish");
+    mkBtn("申請書", "btn-export");
+    mkBtn("申請エビデンス", "btn-evidence");
+    mkBtn("公開用 HTML", "btn-publish");
 
     L.DomEvent.on(container, "mouseenter", () => L.DomUtil.addClass(container, "leaflet-control-layers-expanded"));
     L.DomEvent.on(container, "mouseleave", () => L.DomUtil.removeClass(container, "leaflet-control-layers-expanded"));
@@ -745,10 +806,13 @@ new ExportControl().addTo(map);
 
 // ---- ボタン ----
 document.getElementById("btn-export").addEventListener("click", () => {
-  alert("（モックアップ）申請書 XLSX をエクスポートします\n実物では SheetJS で XLSX を生成してダウンロードします");
+  alert("（モックアップ）申請書 .xlsx を単独ダウンロードします\n実物では SheetJS で SOTA申請書フォーマットの XLSX を生成してダウンロードします");
+});
+document.getElementById("btn-evidence").addEventListener("click", () => {
+  alert("（モックアップ）申請エビデンス .zip をダウンロードします\n\n同梱内容:\n・merged_summit_revised.xlsx（サミット一覧（申請内容反映版））\n・new.geojson\n・dominant.geojson\n・changed.geojson\n・unchanged.geojson\n\n実物では JSZip で生成してダウンロードします");
 });
 document.getElementById("btn-publish").addEventListener("click", () => {
-  alert("（モックアップ）公開用 HTML をエクスポートします\n実物では入力内容を埋め込んだ閲覧専用 HTML をダウンロードします");
+  alert("（モックアップ）公開用 HTML を単独ダウンロードします\n実物では入力内容を埋め込んだ閲覧専用 HTML をダウンロードします");
 });
 </script>
 </body>
