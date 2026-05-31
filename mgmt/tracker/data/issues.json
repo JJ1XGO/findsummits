@@ -398,7 +398,7 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": null,
-      "resolution": "ADR-008 の dominant peak 特定アルゴリズムを全面改訂。タイブレーク: Haversine 最近接 → 最小プロミネンスに変更。フォールバック廃止（包含なし時はログ警告 + 処理中止）。SRS FR-009 の主ピーク特定ロジックも同様に更新。フラグ名 is_tile_top → key_col_unresolved にリネーム（SRS 全体・ADR-004・ADR-008・GLOSSARY の全箇所を更新）。実装コード（src/*.c 等）への追従は別タスク（本 ISSUE のスコープ外）。",
+      "resolution": "ADR-SRS-008 の dominant peak 特定アルゴリズムを全面改訂。タイブレーク: Haversine 最近接 → 最小プロミネンスに変更。フォールバック廃止（包含なし時はログ警告 + 処理中止）。SRS FR-009 の主ピーク特定ロジックも同様に更新。フラグ名 is_tile_top → key_col_unresolved にリネーム（SRS 全体・ADR-SRS-004・ADR-SRS-008・GLOSSARY の全箇所を更新）。実装コード（src/*.c 等）への追従は別タスク（本 ISSUE のスコープ外）。",
       "notes": "【設計変更 2026-05-19】タイブレーク「Haversine 最近接」を「最小プロミネンス」に変更。最小プロミネンスのピークが地形学的に delete 候補サミットと同一の局所的な隆起を表すため。フォールバック廃止: フェーズ3.5 広域再解析後に包含なしが残るのは陸地最高峰のみと想定され稀少なため、自動処理せず中止 + 個別対応とする。フラグ名 is_tile_top はタイル（256×256px）の最頂点と誤読されやすいため key_col_unresolved に改名。【追加変更 2026-05-19】さらに肯定形に統一するため key_col_unresolved → key_col_resolved、並列フラグ area_truncated → area_complete に再リネーム（共に true=正常 で真偽値方向を揃えた）。実装コード追従 ISSUE は今後起票予定。",
       "resolved_date": "2026-05-10",
       "verified_date": "2026-05-20",
@@ -537,7 +537,7 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": null,
-      "resolution": "案 B（peak.match_status は変更せず、summit.dominant_peak_code で紐付けのみ）を採用。peak は常に match_status=new のまま、delete サミットが従属する dominant peak を dominant_peak_code で参照する形で実装。SRS FR-009・ADR-008 L29 参照。",
+      "resolution": "案 B（peak.match_status は変更せず、summit.dominant_peak_code で紐付けのみ）を採用。peak は常に match_status=new のまま、delete サミットが従属する dominant peak を dominant_peak_code で参照する形で実装。SRS FR-009・ADR-SRS-008 L29 参照。",
       "notes": null,
       "resolved_date": "2026-05-16",
       "verified_date": "2026-05-17",
@@ -554,7 +554,7 @@
           "actor": "不明",
           "from": "対応完了",
           "to": "解決済",
-          "comment": "[解決確認] Opus による独立検証で resolution 5 項目（判定順序明示・summit.match_status 独立定義・dominant フォールバック Case B・GLOSSARY 削除追加・ADR 整合）すべての反映を確認。SRS L313-336 / ADR-007 / ADR-008 / GLOSSARY L72 / モックアップ で完全に統一されており、5 文書間の矛盾なし。"
+          "comment": "[解決確認] Opus による独立検証で resolution 5 項目（判定順序明示・summit.match_status 独立定義・dominant フォールバック Case B・GLOSSARY 削除追加・ADR 整合）すべての反映を確認。SRS L313-336 / ADR-URD-007 / ADR-SRS-008 / GLOSSARY L72 / モックアップ で完全に統一されており、5 文書間の矛盾なし。"
         }
       ]
     },
@@ -603,8 +603,8 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": null,
-      "resolution": "delete判定ゾーンポリゴン方式（max(col_elev, peak_elev - delete_zone_max_drop) 以上の Flood Fill）を採用し、コル等高線ポリゴンを廃止。実装可能な仕様レベルまで確定。\n\nPhase A 完了（SRS / ADR / GLOSSARY 改修）:\n- ADR-011 (delete判定ゾーンポリゴン採用) 新規作成\n- ADR-007 / ADR-008 を delete判定ゾーン仕様に更新\n- SRS FR-009 / FR-013 / FR-014 / FR-016 / 6.8 / 6.11 を delete判定ゾーン仕様に改修\n- GLOSSARY に delete判定ゾーン用語追加、コル等高線ポリゴン削除\n\nPhase B 完了（delete_zone_max_drop 実測確定）:\n- analysis/sota_dem_elevation_diff.py 新規作成（4,600 件の JA サミットで abs(SOTA-DEM) を実測）\n- 廃止サミット 86 件除外、有効 4,514 件の実測結果: 平均 2.09m / 最大 52.26m (JA/TK-014 大山)\n- delete_zone_max_drop = 250m に確定（= 150 + ceil(52.26/50)*50）\n- ADR-011 と SRS FR-016 を確定値で更新\n\nPhase C-E（実装）は別 ISSUE に切り出して進める:\n- ISSUE-040: C++/OpenCV で FR-016 実装（AZ + delete判定ゾーン、notes 更新済み）\n- ISSUE-043: merge.py 改修（AZ/delete-zone PIP, 不備フラグ, exit code, dominant 改名）\n- ISSUE-044: output_geojson.py 改修 + merged_viewer.html 実装\n- ISSUE-045: params/config.ini.example に delete_zone_max_drop = 250 追加",
-      "notes": "【議論結論 2026-05-21】\n- 旧3案（A/B/C）は破棄。delete判定ゾーンポリゴン方式を採用。\n- Flood Fill 閾値: max(col_elev, peak_elev - 250m) 以上（プロミネンス連動 + 250m キャップ）\n- 250m の根拠: 暫定（感覚値）。Phase B で SOTA 全サミットの abs(SOTA標高-DEM標高) 分布から確定予定。\n- 250m は config.ini パラメータ化（delete_zone_max_drop）。\n- 既存サミットの判定: matched (AZ内) / delete (delete判定ゾーン内+AZ外) / unmatched (どちらでもない=エラー停止)\n- unmatched 発生時は merge.py を non-zero exit、FR-013 (GeoJSON/HTML) 生成スキップ\n- merged.csv に不備種別ごとの bool 列追加（is_unmatched_summit / is_area_incomplete / is_key_col_unresolved / is_out_of_range_summit / is_dem_invalid_summit）\n- ADR-007 維持（peak.match_status は matched/dominant/new、ポリゴンだけ置換）\n- ADR-008 維持（主ピーク特定はプロミネンス最小）\n- FR-014 広域解析の役割をコル特定のみに縮小（delete判定ゾーンは 3×3 完結）\n\n【段取り】ハイブリッド方式\n1. Phase A: SRS 改修（250m は TBD で記述）→ ユーザーレビュー\n2. Phase B: 250m 実データ検証 → 値確定\n3. Phase A 微更新（TBD → 確定値）\n4. Phase C-E: 実装（C エンジン → merge.py → output_geojson.py）\n\n【影響範囲】\n- docs/02_SRS.md FR-009/013/014/016\n- docs/decisions/ADR-007/008（影響確認）\n- docs/decisions/ADR-NNN-delete-zone-polygon.md（新規）\n- docs/00_GLOSSARY.md\n- src/analyze.c, src/mesh_analyze.c\n- scripts/merge.py, scripts/output_geojson.py\n- params/config.ini.example\n\n【別 ISSUE 切り出し候補】\n- area_complete=false ピークの隣接メッシュ合体問題\n- area_complete スコープ明確化（AZ 用 / delete判定ゾーン用の分離）\n- HTML ビューア（merged_viewer.html）実装範囲",
+      "resolution": "delete判定ゾーンポリゴン方式（max(col_elev, peak_elev - delete_zone_max_drop) 以上の Flood Fill）を採用し、コル等高線ポリゴンを廃止。実装可能な仕様レベルまで確定。\n\nPhase A 完了（SRS / ADR / GLOSSARY 改修）:\n- ADR-SRS-011 (delete判定ゾーンポリゴン採用) 新規作成\n- ADR-URD-007 / ADR-SRS-008 を delete判定ゾーン仕様に更新\n- SRS FR-009 / FR-013 / FR-014 / FR-016 / 6.8 / 6.11 を delete判定ゾーン仕様に改修\n- GLOSSARY に delete判定ゾーン用語追加、コル等高線ポリゴン削除\n\nPhase B 完了（delete_zone_max_drop 実測確定）:\n- analysis/sota_dem_elevation_diff.py 新規作成（4,600 件の JA サミットで abs(SOTA-DEM) を実測）\n- 廃止サミット 86 件除外、有効 4,514 件の実測結果: 平均 2.09m / 最大 52.26m (JA/TK-014 大山)\n- delete_zone_max_drop = 250m に確定（= 150 + ceil(52.26/50)*50）\n- ADR-SRS-011 と SRS FR-016 を確定値で更新\n\nPhase C-E（実装）は別 ISSUE に切り出して進める:\n- ISSUE-040: C++/OpenCV で FR-016 実装（AZ + delete判定ゾーン、notes 更新済み）\n- ISSUE-043: merge.py 改修（AZ/delete-zone PIP, 不備フラグ, exit code, dominant 改名）\n- ISSUE-044: output_geojson.py 改修 + merged_viewer.html 実装\n- ISSUE-045: params/config.ini.example に delete_zone_max_drop = 250 追加",
+      "notes": "【議論結論 2026-05-21】\n- 旧3案（A/B/C）は破棄。delete判定ゾーンポリゴン方式を採用。\n- Flood Fill 閾値: max(col_elev, peak_elev - 250m) 以上（プロミネンス連動 + 250m キャップ）\n- 250m の根拠: 暫定（感覚値）。Phase B で SOTA 全サミットの abs(SOTA標高-DEM標高) 分布から確定予定。\n- 250m は config.ini パラメータ化（delete_zone_max_drop）。\n- 既存サミットの判定: matched (AZ内) / delete (delete判定ゾーン内+AZ外) / unmatched (どちらでもない=エラー停止)\n- unmatched 発生時は merge.py を non-zero exit、FR-013 (GeoJSON/HTML) 生成スキップ\n- merged.csv に不備種別ごとの bool 列追加（is_unmatched_summit / is_area_incomplete / is_key_col_unresolved / is_out_of_range_summit / is_dem_invalid_summit）\n- ADR-URD-007 維持（peak.match_status は matched/dominant/new、ポリゴンだけ置換）\n- ADR-SRS-008 維持（主ピーク特定はプロミネンス最小）\n- FR-014 広域解析の役割をコル特定のみに縮小（delete判定ゾーンは 3×3 完結）\n\n【段取り】ハイブリッド方式\n1. Phase A: SRS 改修（250m は TBD で記述）→ ユーザーレビュー\n2. Phase B: 250m 実データ検証 → 値確定\n3. Phase A 微更新（TBD → 確定値）\n4. Phase C-E: 実装（C エンジン → merge.py → output_geojson.py）\n\n【影響範囲】\n- docs/02_SRS.md FR-009/013/014/016\n- docs/decisions/ADR-URD-007/008（影響確認）\n- docs/decisions/ADR-NNN-delete-zone-polygon.md（新規）\n- docs/00_GLOSSARY.md\n- src/analyze.c, src/mesh_analyze.c\n- scripts/merge.py, scripts/output_geojson.py\n- params/config.ini.example\n\n【別 ISSUE 切り出し候補】\n- area_complete=false ピークの隣接メッシュ合体問題\n- area_complete スコープ明確化（AZ 用 / delete判定ゾーン用の分離）\n- HTML ビューア（merged_viewer.html）実装範囲",
       "resolved_date": "2026-05-21",
       "verified_date": "2026-05-22",
       "history": [
@@ -644,7 +644,7 @@
       "status": "解決済",
       "assignee": null,
       "resolution": "FR-014 出力節に以下のいずれかを明示:\n案A: 'per-mesh ファイルは更新せず、merged.csv / merged_activation.geojson のみ更新'\n案B: '中間ファイルも更新する'（再現性向上のため）",
-      "notes": "【最終決定】FR-014 は縮小版パイプライン構造を採用:\n- 広域 per-mesh CSV/GeoJSON を新規出力するのみ\n- 通常 per-mesh ファイル（<meshcode>.csv / <meshcode>_activation.geojson）は更新しない\n- merged.csv / merged_activation.geojson への差分上書きも行わない\n- merged 更新は FR-008/FR-018 の再実行（重複排除ロジックで広域結果が代表に選ばれる）で自動的に実施\n反映先: SRS FR-014 / FR-008 / FR-018、ADR-004 Decision「出力スコープ」",
+      "notes": "【最終決定】FR-014 は縮小版パイプライン構造を採用:\n- 広域 per-mesh CSV/GeoJSON を新規出力するのみ\n- 通常 per-mesh ファイル（<meshcode>.csv / <meshcode>_activation.geojson）は更新しない\n- merged.csv / merged_activation.geojson への差分上書きも行わない\n- merged 更新は FR-008/FR-018 の再実行（重複排除ロジックで広域結果が代表に選ばれる）で自動的に実施\n反映先: SRS FR-014 / FR-008 / FR-018、ADR-SRS-004 Decision「出力スコープ」",
       "resolved_date": "2026-05-18",
       "verified_date": "2026-05-20",
       "history": [
@@ -667,7 +667,7 @@
           "actor": "不明",
           "from": "未対応",
           "to": "対応完了",
-          "comment": "FR-014 を縮小版パイプライン構造に変更したことで、上書きスコープが明確になった: 広域モードでは『広域 per-mesh CSV/GeoJSON を新規出力するのみ』で、merged 系ファイルへの差分書き換えも、通常 per-mesh ファイルの更新も行わない。merged 更新は FR-008/FR-018 の再実行（重複排除ロジックで広域結果が代表に選ばれる）で自動的に行われる。SRS FR-014 / FR-008 / FR-018 と ADR-004 Decision「出力スコープ」に明示。"
+          "comment": "FR-014 を縮小版パイプライン構造に変更したことで、上書きスコープが明確になった: 広域モードでは『広域 per-mesh CSV/GeoJSON を新規出力するのみ』で、merged 系ファイルへの差分書き換えも、通常 per-mesh ファイルの更新も行わない。merged 更新は FR-008/FR-018 の再実行（重複排除ロジックで広域結果が代表に選ばれる）で自動的に行われる。SRS FR-014 / FR-008 / FR-018 と ADR-SRS-004 Decision「出力スコープ」に明示。"
         },
         {
           "date": "2026-05-20T10:11:21",
@@ -681,7 +681,7 @@
     {
       "id": "ISSUE-022",
       "title": "FR-017: 北方領土タイル判定基準（タイル中心点）の明示",
-      "description": "URD/SRS レビュー指摘 M-2。FR-017 L125 で 'excluded_tiles.txt = ポリゴン内のタイル座標リスト' とあるが、'ポリゴン内' の判定基準（タイル中心点 / タイルの任意点 / タイルとポリゴンの交差）が SRS 本文で未規定。ADR-005 L47 では 'ポリゴン内に中心点が含まれる全タイル' と書かれているが SRS / GLOSSARY に反映されていない。",
+      "description": "URD/SRS レビュー指摘 M-2。FR-017 L125 で 'excluded_tiles.txt = ポリゴン内のタイル座標リスト' とあるが、'ポリゴン内' の判定基準（タイル中心点 / タイルの任意点 / タイルとポリゴンの交差）が SRS 本文で未規定。ADR-URD-005 L47 では 'ポリゴン内に中心点が含まれる全タイル' と書かれているが SRS / GLOSSARY に反映されていない。",
       "type": "改善",
       "priority": "中",
       "category": "その他",
@@ -690,7 +690,7 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": "Claude",
-      "resolution": "FR-017 に 'タイル中心点が北方領土6村ポリゴンに含まれるタイルを列挙' と明示し、ADR-005 と同じ規定を SRS に転記する。",
+      "resolution": "FR-017 に 'タイル中心点が北方領土6村ポリゴンに含まれるタイルを列挙' と明示し、ADR-URD-005 と同じ規定を SRS に転記する。",
       "notes": null,
       "resolved_date": "2026-05-23",
       "verified_date": "2026-05-23",
@@ -707,7 +707,7 @@
           "actor": "Claude",
           "from": "対応中",
           "to": "対応完了",
-          "comment": "SRS FR-017 出力③の説明に「タイルの中心点が対象ポリゴン内に含まれるタイルを列挙する」と明示。ADR-005 L47 と整合。"
+          "comment": "SRS FR-017 出力③の説明に「タイルの中心点が対象ポリゴン内に含まれるタイルを列挙する」と明示。ADR-URD-005 L47 と整合。"
         },
         {
           "date": "2026-05-23T16:28:36",
@@ -1070,7 +1070,7 @@
       "status": "解決済",
       "assignee": null,
       "resolution": "(1) L291 の括弧書き「（いずれも FR-014 で後処理される）」を削除またはフェーズ2 完了済み前提の表現に修正\n(2) L294 を削除または FR-009 入力として使う旨に修正\n(3) L304 FR-009 入力記述で FR-014 の per-mesh 完了タイミング明示を再確認\n(4) フェーズ2 内の FR-016 → FR-014 → FR-007 の処理順序が SRS から読み取れるかも合わせて確認",
-      "notes": "当初方針（フェーズ2 配置前提の参照記述整合化）から大幅に範囲拡大。\nFR-014 をフェーズ3.5（新設）に移し、縮小版パイプラインのループ構造\n（N=4→5→6 エスカレーション、per-mesh エンジンを広域モードで再呼び出し\n→ FR-008/FR-018 再実行で merged 再生成）として全面書き直し。\n関連 FR（FR-004/006/008/009/016/018）も整合化。ISSUE-021 同時解消。\n詳細は ADR-004（決定日 2026-05-18 追記）を参照。\n関連 commit: 8f273a8（暫定・却下）→ 282f427（確定）",
+      "notes": "当初方針（フェーズ2 配置前提の参照記述整合化）から大幅に範囲拡大。\nFR-014 をフェーズ3.5（新設）に移し、縮小版パイプラインのループ構造\n（N=4→5→6 エスカレーション、per-mesh エンジンを広域モードで再呼び出し\n→ FR-008/FR-018 再実行で merged 再生成）として全面書き直し。\n関連 FR（FR-004/006/008/009/016/018）も整合化。ISSUE-021 同時解消。\n詳細は ADR-SRS-004（決定日 2026-05-18 追記）を参照。\n関連 commit: 8f273a8（暫定・却下）→ 282f427（確定）",
       "resolved_date": "2026-05-18",
       "verified_date": "2026-05-19",
       "history": [
@@ -1079,7 +1079,7 @@
           "actor": "不明",
           "from": "未対応",
           "to": "対応完了",
-          "comment": "SRS FR-014 をフェーズ3 末尾配置に移動・FR-018 / FR-009 / FR-016 / FR-008 の参照記述を整合化。ADR-004 も更新。ISSUE-021 を同時解消（per-mesh ファイルは更新せず merged のみが正と明示）。"
+          "comment": "SRS FR-014 をフェーズ3 末尾配置に移動・FR-018 / FR-009 / FR-016 / FR-008 の参照記述を整合化。ADR-SRS-004 も更新。ISSUE-021 を同時解消（per-mesh ファイルは更新せず merged のみが正と明示）。"
         },
         {
           "date": "2026-05-18T17:28:08",
@@ -1093,7 +1093,7 @@
           "actor": "不明",
           "from": "未対応",
           "to": "対応完了",
-          "comment": "FR-014 をフェーズ3.5（独立峰対応・広域再解析）として独立配置。FR-004 に処理モードパラメータを追加し N×N + L14 で per-mesh エンジンを再呼び出し、FR-008/FR-018 を再実行することで merged を更新する縮小版パイプラインのループ構造に確定。SRS FR-018 / FR-009 / FR-016 / FR-008 の参照記述も新構造に整合化。ADR-004 を新方針で更新（決定日 2026-05-18 追記、Alternatives に旧暫定の却下経緯記録、C エンジン→C++ エンジン表記統一）。ISSUE-021 も同時解消。"
+          "comment": "FR-014 をフェーズ3.5（独立峰対応・広域再解析）として独立配置。FR-004 に処理モードパラメータを追加し N×N + L14 で per-mesh エンジンを再呼び出し、FR-008/FR-018 を再実行することで merged を更新する縮小版パイプラインのループ構造に確定。SRS FR-018 / FR-009 / FR-016 / FR-008 の参照記述も新構造に整合化。ADR-SRS-004 を新方針で更新（決定日 2026-05-18 追記、Alternatives に旧暫定の却下経緯記録、C エンジン→C++ エンジン表記統一）。ISSUE-021 も同時解消。"
         },
         {
           "date": "2026-05-19T15:55:58",
@@ -1107,7 +1107,7 @@
     {
       "id": "ISSUE-034",
       "title": "tracker: ISSUE-018 の resolution 文を実装実態（案 B 採用）に合わせて更新",
-      "description": "ISSUE-018 の resolution 文に「案A（peak も dominant に昇格）または案B…から選定」と書かれているが、実装方針は案 B（peak 昇格なし）で確定済み（SRS L336 / ADR-008 L29）。後から履歴を辿る際の誤読防止のため、resolution 文を案 B 採用前提の記述に更新する。",
+      "description": "ISSUE-018 の resolution 文に「案A（peak も dominant に昇格）または案B…から選定」と書かれているが、実装方針は案 B（peak 昇格なし）で確定済み（SRS L336 / ADR-SRS-008 L29）。後から履歴を辿る際の誤読防止のため、resolution 文を案 B 採用前提の記述に更新する。",
       "type": "改善",
       "priority": "低",
       "category": "その他",
@@ -1146,8 +1146,8 @@
     },
     {
       "id": "ISSUE-035",
-      "title": "SRS: 竹島除外方針の記述追加・ADR-009 リンク",
-      "description": "URD UR-001・ADR-009 に竹島除外方針を追加済み。SRS の前提・制約・スコープ外・FR-003 関連箇所に竹島の記述を追加し、ADR-009 へのリンクを貼る。北方領土の記述（ADR-005 参照）に準じた形で記載すること。",
+      "title": "SRS: 竹島除外方針の記述追加・ADR-URD-009 リンク",
+      "description": "URD UR-001・ADR-URD-009 に竹島除外方針を追加済み。SRS の前提・制約・スコープ外・FR-003 関連箇所に竹島の記述を追加し、ADR-URD-009 へのリンクを貼る。北方領土の記述（ADR-URD-005 参照）に準じた形で記載すること。",
       "type": null,
       "priority": "中",
       "category": null,
@@ -1156,7 +1156,7 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": "Claude",
-      "resolution": "北方領土の記述（ADR-005 参照）に準じて以下3箇所に竹島の記述を追加する:\n(1) 8.前提・制約（877行目）: 北方領土の記述の直後に「竹島（島根県）が含まれるメッシュ 5531 は mesh_list_japan.txt から除外済み（ADR-009 参照）」を追加\n(2) 9.スコープ外（892行目）: 北方領土の行の直後に「竹島に所在するピーク（韓国 SOTA サミット HL/GB-430 として登録済み。SOTA 日本支部の管轄外のため。除外方法は ADR-009 で規定）」を追加\n(3) FR-003（202行目付近）: 北方領土タイル除外の記述の後に「竹島はメッシュ除外（ADR-009）で対応するため FR-003 での追加処理はない」旨を注記",
+      "resolution": "北方領土の記述（ADR-URD-005 参照）に準じて以下3箇所に竹島の記述を追加する:\n(1) 8.前提・制約（877行目）: 北方領土の記述の直後に「竹島（島根県）が含まれるメッシュ 5531 は mesh_list_japan.txt から除外済み（ADR-URD-009 参照）」を追加\n(2) 9.スコープ外（892行目）: 北方領土の行の直後に「竹島に所在するピーク（韓国 SOTA サミット HL/GB-430 として登録済み。SOTA 日本支部の管轄外のため。除外方法は ADR-URD-009 で規定）」を追加\n(3) FR-003（202行目付近）: 北方領土タイル除外の記述の後に「竹島はメッシュ除外（ADR-URD-009）で対応するため FR-003 での追加処理はない」旨を注記",
       "notes": null,
       "resolved_date": "2026-05-23",
       "verified_date": "2026-05-23",
@@ -1187,7 +1187,7 @@
     {
       "id": "ISSUE-036",
       "title": "COD: mesh_list_japan.txt からメッシュ 5531（竹島）を削除",
-      "description": "ADR-009 の決定に基づく実装。params/mesh_list_japan.txt から 5531 を1行削除する。竹島（HL/GB-430）は韓国 SOTA サミットであり SOTA 日本支部の管轄外。除外根拠: docs/decisions/ADR-009-takeshima-exclusion.md",
+      "description": "ADR-URD-009 の決定に基づく実装。params/mesh_list_japan.txt から 5531 を1行削除する。竹島（HL/GB-430）は韓国 SOTA サミットであり SOTA 日本支部の管轄外。除外根拠: docs/decisions/ADR-URD-009-takeshima-exclusion.md",
       "type": null,
       "priority": "中",
       "category": null,
@@ -1196,7 +1196,7 @@
       "stage": "SRS",
       "status": "解決済",
       "assignee": "Sonnet",
-      "resolution": "5531 を削除ではなくコメントアウト形式（# 5531 竹島のみのため除外（ADR-009））で除外。理由と根拠が履歴として残る。main.c は # 始まり行をスキップ済みのため動作上の変更なし。",
+      "resolution": "5531 を削除ではなくコメントアウト形式（# 5531 竹島のみのため除外（ADR-URD-009））で除外。理由と根拠が履歴として残る。main.c は # 始まり行をスキップ済みのため動作上の変更なし。",
       "notes": null,
       "resolved_date": "2026-05-23",
       "verified_date": "2026-05-23",
@@ -1226,8 +1226,8 @@
     },
     {
       "id": "ISSUE-037",
-      "title": "ADR-010 Phase 1: ビルド基盤 + elevation.c の C++/OpenCV 化（標高値同値性検証含む）",
-      "description": "ADR-010（C++/OpenCV 全面移行）の Phase 1 として、ビルド基盤の C++ 化と elevation.c の C++ + cv::imread 化を行う。\n\n【作業範囲】\n- Makefile を g++ + pkg-config（opencv4）対応に変更\n- src/elevation.c を C++ に翻訳し、PNG デコードを libpng → cv::imread に置換\n- RGB→標高変換ロジックは cv::Mat ベースで再実装\n- Dockerfile / コンテナ環境に libopencv-dev インストール手順を追加\n- docs/environment.md・CLAUDE.md の依存ライブラリ記述を更新\n\n【検証ポイント】\n- 既知タイル（例: tiles/15/29097/12863.png）を libpng と cv::imread でデコードした結果が完全一致すること（全 256×256 ピクセルの RGB 値）\n- ランダムサンプル 100 枚で全ピクセル一致を確認\n- test_mesh_analyze 4929 の結果が現行と同一であること\n- 9 メッシュ実行でメモリ消費が ±10% 以内\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- 検討資料 docs/decisions/research/cpp-opencv-migration-research.md（§3 同値性検証手順、§6 ビルド基盤変更）",
+      "title": "ADR-SRS-010 Phase 1: ビルド基盤 + elevation.c の C++/OpenCV 化（標高値同値性検証含む）",
+      "description": "ADR-SRS-010（C++/OpenCV 全面移行）の Phase 1 として、ビルド基盤の C++ 化と elevation.c の C++ + cv::imread 化を行う。\n\n【作業範囲】\n- Makefile を g++ + pkg-config（opencv4）対応に変更\n- src/elevation.c を C++ に翻訳し、PNG デコードを libpng → cv::imread に置換\n- RGB→標高変換ロジックは cv::Mat ベースで再実装\n- Dockerfile / コンテナ環境に libopencv-dev インストール手順を追加\n- docs/environment.md・CLAUDE.md の依存ライブラリ記述を更新\n\n【検証ポイント】\n- 既知タイル（例: tiles/15/29097/12863.png）を libpng と cv::imread でデコードした結果が完全一致すること（全 256×256 ピクセルの RGB 値）\n- ランダムサンプル 100 枚で全ピクセル一致を確認\n- test_mesh_analyze 4929 の結果が現行と同一であること\n- 9 メッシュ実行でメモリ消費が ±10% 以内\n\n【参照】\n- ADR-SRS-010 docs/decisions/ADR-SRS-010-cpp-opencv-migration.md\n- 検討資料 docs/decisions/research/cpp-opencv-migration-research.md（§3 同値性検証手順、§6 ビルド基盤変更）",
       "type": "改善",
       "priority": "高",
       "category": "解析エンジン",
@@ -1245,8 +1245,8 @@
     },
     {
       "id": "ISSUE-038",
-      "title": "ADR-010 Phase 2: 残り src/ の C++ 翻訳（mesh / unionfind / analyze / mesh_analyze / main / tests）",
-      "description": "ADR-010 Phase 2: Phase 1 で C++ 化したビルド基盤の上に、残りの src/ を C++ に翻訳する。\n\n【作業範囲】\n- src/mesh.c → mesh.cpp\n- src/unionfind.c → unionfind.cpp\n- src/analyze.c → analyze.cpp\n- src/mesh_analyze.c → mesh_analyze.cpp\n- src/main.c → main.cpp\n- tests/*.c → *.cpp\n- malloc/realloc → std::vector への機械的置換主体\n- 構造体は class 化せず原則そのまま維持\n\n【方針】\n- 過剰な C++ 機能（テンプレートメタプログラミング・複雑な継承等）は採用しない\n- 採用するのは RAII / std::vector / std::string / 参照 / const 厳格化 / cv::Mat / auto（限定的）\n- 既存の C コード構造を保持したまま安全性を底上げする翻訳に留める\n\n【検証ポイント】\n- 既存テスト（test_mesh_analyze / test_analyze）が全通過\n- 既知メッシュ（4929 / 5339）の per-mesh CSV がバイト単位で現行実装と一致\n- 標高地形図 PNG が現行実装と一致（Phase 3 まで cv::imread/imwrite で再生成しない場合）\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- 検討資料 §4 C++ 利用方針と踏まない罠",
+      "title": "ADR-SRS-010 Phase 2: 残り src/ の C++ 翻訳（mesh / unionfind / analyze / mesh_analyze / main / tests）",
+      "description": "ADR-SRS-010 Phase 2: Phase 1 で C++ 化したビルド基盤の上に、残りの src/ を C++ に翻訳する。\n\n【作業範囲】\n- src/mesh.c → mesh.cpp\n- src/unionfind.c → unionfind.cpp\n- src/analyze.c → analyze.cpp\n- src/mesh_analyze.c → mesh_analyze.cpp\n- src/main.c → main.cpp\n- tests/*.c → *.cpp\n- malloc/realloc → std::vector への機械的置換主体\n- 構造体は class 化せず原則そのまま維持\n\n【方針】\n- 過剰な C++ 機能（テンプレートメタプログラミング・複雑な継承等）は採用しない\n- 採用するのは RAII / std::vector / std::string / 参照 / const 厳格化 / cv::Mat / auto（限定的）\n- 既存の C コード構造を保持したまま安全性を底上げする翻訳に留める\n\n【検証ポイント】\n- 既存テスト（test_mesh_analyze / test_analyze）が全通過\n- 既知メッシュ（4929 / 5339）の per-mesh CSV がバイト単位で現行実装と一致\n- 標高地形図 PNG が現行実装と一致（Phase 3 まで cv::imread/imwrite で再生成しない場合）\n\n【参照】\n- ADR-SRS-010 docs/decisions/ADR-SRS-010-cpp-opencv-migration.md\n- 検討資料 §4 C++ 利用方針と踏まない罠",
       "type": "改善",
       "priority": "高",
       "category": "解析エンジン",
@@ -1264,8 +1264,8 @@
     },
     {
       "id": "ISSUE-039",
-      "title": "ADR-010 Phase 3: FR-015 標高地形図出力の OpenCV 化",
-      "description": "ADR-010 Phase 3: FR-015（標高地形図 PNG 出力）の実装を OpenCV ベースに書き直す。\n\n【作業範囲】\n- 標高値から RGB 色への変換を cv::applyColorMap or cv::LUT で実装\n- 長辺 6000px への縮小を cv::resize に置換\n- PNG 出力を cv::imwrite に置換\n- 配色は現行のカラーマップを LUT 形式で再現（または同等の可読性を持つ標準カラーマップを採用）\n\n【検証ポイント】\n- 標高地形図 PNG が新カラーマップ実装で正常に生成される\n- 視覚的な可読性が現行と同等以上であることを目視確認\n- 長辺 6000px の縮小が正しく動作\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- SRS 6.7 標高地形図（Terrain-RGB PNG）",
+      "title": "ADR-SRS-010 Phase 3: FR-015 標高地形図出力の OpenCV 化",
+      "description": "ADR-SRS-010 Phase 3: FR-015（標高地形図 PNG 出力）の実装を OpenCV ベースに書き直す。\n\n【作業範囲】\n- 標高値から RGB 色への変換を cv::applyColorMap or cv::LUT で実装\n- 長辺 6000px への縮小を cv::resize に置換\n- PNG 出力を cv::imwrite に置換\n- 配色は現行のカラーマップを LUT 形式で再現（または同等の可読性を持つ標準カラーマップを採用）\n\n【検証ポイント】\n- 標高地形図 PNG が新カラーマップ実装で正常に生成される\n- 視覚的な可読性が現行と同等以上であることを目視確認\n- 長辺 6000px の縮小が正しく動作\n\n【参照】\n- ADR-SRS-010 docs/decisions/ADR-SRS-010-cpp-opencv-migration.md\n- SRS 6.7 標高地形図（Terrain-RGB PNG）",
       "type": "改善",
       "priority": "中",
       "category": "解析エンジン",
@@ -1283,8 +1283,8 @@
     },
     {
       "id": "ISSUE-040",
-      "title": "ADR-010 Phase 4: FR-016 アクティベーションゾーン計算（C++/OpenCV 新規実装）",
-      "description": "ADR-010 Phase 4: FR-016（ピーク域ポリゴン計算）を C++ + OpenCV で新規実装する。AZ ポリゴンと delete判定ゾーンポリゴン（ADR-011）の 2 種類を per-mesh GeoJSON に出力する。詳細は notes 欄参照。",
+      "title": "ADR-SRS-010 Phase 4: FR-016 アクティベーションゾーン計算（C++/OpenCV 新規実装）",
+      "description": "ADR-SRS-010 Phase 4: FR-016（ピーク域ポリゴン計算）を C++ + OpenCV で新規実装する。AZ ポリゴンと delete判定ゾーンポリゴン（ADR-SRS-011）の 2 種類を per-mesh GeoJSON に出力する。詳細は notes 欄参照。",
       "type": "機能追加",
       "priority": "高",
       "category": "解析エンジン",
@@ -1294,7 +1294,7 @@
       "status": "未対応",
       "assignee": "Sonnet",
       "resolution": null,
-      "notes": "【ADR-011 適用 2026-05-21】仕様を delete判定ゾーン方式に更新。\n\n【作業範囲】\n- ピーク位置を起点とした cv::floodFill で標高差 25m 以内の連続領域（AZ）を抽出\n  - 4 連結 + FLOODFILL_FIXED_RANGE + FLOODFILL_MASK_ONLY を使用\n- cv::findContours で外周輪郭を取得（CHAIN_APPROX_SIMPLE モードで lossless 出力）\n- 形状を変える簡略化（Douglas-Peucker / approxPolyDP / 等間隔抽出）は使用しない\n- ピクセル座標 → 緯度経度変換は既存の pixel_to_latlon() を再利用\n- Flood Fill が解析対象メッシュ地理的範囲内で完結→ area_complete=true、範囲外で途切れ→ false\n- 同じ Flood Fill を max(col_elev, peak_elev - delete_zone_max_drop) 閾値で再実行して delete判定ゾーンポリゴンを生成\n  - key_col_resolved=false（col_elev 未確定）でも peak_elev - delete_zone_max_drop を閾値として生成可能\n- per-mesh GeoJSON ファイル <meshcode>_activation.geojson を出力\n  - feature_type: 'activation_zone' または 'delete_zone'\n  - delete_zone_max_drop は params/config.ini から読み込み（値 250m、ADR-011 で実測確定）\n\n【新規モジュール】\n- src/activation.cpp / activation.h（Flood Fill 呼び出し + 輪郭抽出 + GeoJSON シリアライズ）\n- mesh_analyze.cpp の CSV 出力ループ内から呼び出し\n\n【検証ポイント】\n- per-mesh <meshcode>_activation.geojson が生成される（AZ + delete判定ゾーンの2種類）\n- 地理院地図上に重ねて目視確認（AZ は 25m 連続、delete判定ゾーンはプロミネンス連動 + 250m キャップ）\n- area_complete フラグが解析範囲端のケースで正しく付与される\n- 独立峰（プロミネンス >> 250m）でも delete判定ゾーンが 3×3 メッシュで完結する\n- key_col_resolved=false のピークでも delete判定ゾーンが生成される\n\n【参照】\n- ADR-010 docs/decisions/ADR-010-cpp-opencv-migration.md\n- ADR-011 docs/decisions/ADR-011-delete-zone-polygon.md（新仕様）\n- SRS FR-016 docs/02_SRS.md\n- SRS 6.8 中間ファイル: メッシュ別ピーク域 GeoJSON\n\n【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_complete 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件 × 2 種類ポリゴン（AZ + delete判定ゾーン）の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
+      "notes": "【ADR-SRS-011 適用 2026-05-21】仕様を delete判定ゾーン方式に更新。\n\n【作業範囲】\n- ピーク位置を起点とした cv::floodFill で標高差 25m 以内の連続領域（AZ）を抽出\n  - 4 連結 + FLOODFILL_FIXED_RANGE + FLOODFILL_MASK_ONLY を使用\n- cv::findContours で外周輪郭を取得（CHAIN_APPROX_SIMPLE モードで lossless 出力）\n- 形状を変える簡略化（Douglas-Peucker / approxPolyDP / 等間隔抽出）は使用しない\n- ピクセル座標 → 緯度経度変換は既存の pixel_to_latlon() を再利用\n- Flood Fill が解析対象メッシュ地理的範囲内で完結→ area_complete=true、範囲外で途切れ→ false\n- 同じ Flood Fill を max(col_elev, peak_elev - delete_zone_max_drop) 閾値で再実行して delete判定ゾーンポリゴンを生成\n  - key_col_resolved=false（col_elev 未確定）でも peak_elev - delete_zone_max_drop を閾値として生成可能\n- per-mesh GeoJSON ファイル <meshcode>_activation.geojson を出力\n  - feature_type: 'activation_zone' または 'delete_zone'\n  - delete_zone_max_drop は params/config.ini から読み込み（値 250m、ADR-SRS-011 で実測確定）\n\n【新規モジュール】\n- src/activation.cpp / activation.h（Flood Fill 呼び出し + 輪郭抽出 + GeoJSON シリアライズ）\n- mesh_analyze.cpp の CSV 出力ループ内から呼び出し\n\n【検証ポイント】\n- per-mesh <meshcode>_activation.geojson が生成される（AZ + delete判定ゾーンの2種類）\n- 地理院地図上に重ねて目視確認（AZ は 25m 連続、delete判定ゾーンはプロミネンス連動 + 250m キャップ）\n- area_complete フラグが解析範囲端のケースで正しく付与される\n- 独立峰（プロミネンス >> 250m）でも delete判定ゾーンが 3×3 メッシュで完結する\n- key_col_resolved=false のピークでも delete判定ゾーンが生成される\n\n【参照】\n- ADR-SRS-010 docs/decisions/ADR-SRS-010-cpp-opencv-migration.md\n- ADR-SRS-011 docs/decisions/ADR-SRS-011-delete-zone-polygon.md（新仕様）\n- SRS FR-016 docs/02_SRS.md\n- SRS 6.8 中間ファイル: メッシュ別ピーク域 GeoJSON\n\n【Opus相談推奨】OpenCV実装の細部設計・メモリ最適化・エッジケース整理に深い設計判断が必要。\n\n相談ポイント:\n(1) cv::floodFill のメモリ戦略: 全画像サイズのmask（H+2 × W+2、4GB）を全ピーク間で再利用 vs ピークごとにbbox限定でmaskを確保。9メッシュ56.9GB環境での最適解\n(2) cv::Mat の参照カウント・shared_ptr 的挙動の正確な理解と、メモリリーク回避策\n(3) area_complete 判定の正確な定義（'メッシュ地理範囲外' = フリンジ含むか含まないか、1px海面ボーダーの扱い）\n(4) ピーク座標がメッシュ境界に近い場合の Flood Fill 挙動（隣接メッシュの標高データを参照すべきか）\n(5) ピーク数百件 × 2 種類ポリゴン（AZ + delete判定ゾーン）の per-mesh GeoJSON 出力性能・ファイルサイズ実測値の事前見積\n(6) cv::findContours の RETR_EXTERNAL モードと、複数 contour が返るケース（ピークが薄い橋でつながっている場合等）の扱い\n(7) GeoJSON シリアライズ時の座標精度（小数点何桁）と、形状再現性への影響",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1303,7 +1303,7 @@
     {
       "id": "ISSUE-041",
       "title": "実装側のフラグ命名追従（is_tile_top → key_col_resolved + 真偽値反転）",
-      "description": "ISSUE-014 関連の仕様変更（commit 633e54b / ea6bbbe）で、SRS/ADR/GLOSSARY のフラグ名と真偽値方向を以下に統一した。実装側はまだ旧名のままなので、仕様と整合させる追従が必要。\n\n【リネーム + 真偽値反転】\n- is_tile_top (int 0/1) → key_col_resolved (bool true/false)\n  - 旧 is_tile_top=1 → 新 key_col_resolved=false\n  - 旧 is_tile_top=0 → 新 key_col_resolved=true\n- FR-016 が未実装のため area_truncated は実装に未出現。新規実装時に area_complete で対応 → ISSUE-040 の責務\n\n【追従対象】\nA. C 実装（解析エンジン）\n  - src/analyze.h: AnalyzeResult.is_tile_top フィールド改名 + 真偽値反転\n  - src/analyze.c: フラグセット箇所\n  - src/mesh_analyze.c: CSV ヘッダー文字列・出力フォーマット・条件分岐\n  - tests/test_analyze.c: テストアサーション\n\nB. Python 実装\n  - scripts/merge.py: CSV 読み込みカラム名・stability 判定ロジック反転・重複排除ロジック・出力カラム\n  - scripts/output_geojson.py: プロパティ名追従\n\n【連携・順序】\n- ADR-010 Phase 1/2 (ISSUE-037/038) で C → C++/OpenCV 移行が予定されている。C 側の改修は C++ 移行と同時に実施するのが効率的。Python 側は先行追従可能。\n- ただし CSV カラム名は C 側と Python 側で揃える必要があるため、片方だけ変更すると一時的にパイプラインが壊れる。タイミング調整が必要。\n- area_complete の実装は ISSUE-040 (FR-016 C++ 新規実装) のスコープ。新規実装時に最新 SRS に従えば良い。\n\n【検証】\n- findsummits 実行 → per-mesh CSV のヘッダーが key_col_resolved になっていること\n- merge.py 実行 → merged.csv の stability が正しく付与されること（confirmed/unstable の判定方向が反転している）\n- output_geojson.py 実行 → GeoJSON プロパティが新名で出力されること",
+      "description": "ISSUE-014 関連の仕様変更（commit 633e54b / ea6bbbe）で、SRS/ADR/GLOSSARY のフラグ名と真偽値方向を以下に統一した。実装側はまだ旧名のままなので、仕様と整合させる追従が必要。\n\n【リネーム + 真偽値反転】\n- is_tile_top (int 0/1) → key_col_resolved (bool true/false)\n  - 旧 is_tile_top=1 → 新 key_col_resolved=false\n  - 旧 is_tile_top=0 → 新 key_col_resolved=true\n- FR-016 が未実装のため area_truncated は実装に未出現。新規実装時に area_complete で対応 → ISSUE-040 の責務\n\n【追従対象】\nA. C 実装（解析エンジン）\n  - src/analyze.h: AnalyzeResult.is_tile_top フィールド改名 + 真偽値反転\n  - src/analyze.c: フラグセット箇所\n  - src/mesh_analyze.c: CSV ヘッダー文字列・出力フォーマット・条件分岐\n  - tests/test_analyze.c: テストアサーション\n\nB. Python 実装\n  - scripts/merge.py: CSV 読み込みカラム名・stability 判定ロジック反転・重複排除ロジック・出力カラム\n  - scripts/output_geojson.py: プロパティ名追従\n\n【連携・順序】\n- ADR-SRS-010 Phase 1/2 (ISSUE-037/038) で C → C++/OpenCV 移行が予定されている。C 側の改修は C++ 移行と同時に実施するのが効率的。Python 側は先行追従可能。\n- ただし CSV カラム名は C 側と Python 側で揃える必要があるため、片方だけ変更すると一時的にパイプラインが壊れる。タイミング調整が必要。\n- area_complete の実装は ISSUE-040 (FR-016 C++ 新規実装) のスコープ。新規実装時に最新 SRS に従えば良い。\n\n【検証】\n- findsummits 実行 → per-mesh CSV のヘッダーが key_col_resolved になっていること\n- merge.py 実行 → merged.csv の stability が正しく付与されること（confirmed/unstable の判定方向が反転している）\n- output_geojson.py 実行 → GeoJSON プロパティが新名で出力されること",
       "type": "改善",
       "priority": "中",
       "category": "その他",
@@ -1313,7 +1313,7 @@
       "status": "未対応",
       "assignee": "Sonnet",
       "resolution": null,
-      "notes": "【背景】commit 633e54b (is_tile_top → key_col_unresolved) + commit ea6bbbe (key_col_unresolved → key_col_resolved + area_truncated → area_complete) で仕様側を更新済み。実装側はまだ旧名のまま。仕様優先原則のため仕様変更が先行している。\n\n【関連 ISSUE】\n- ISSUE-014: 仕様変更の母 ISSUE（対応中）\n- ISSUE-037 (ADR-010 Phase 1): elevation.c の C++/OpenCV 化\n- ISSUE-038 (ADR-010 Phase 2): 残り src/ の C++ 翻訳\n- ISSUE-040 (ADR-010 Phase 4): FR-016 (area_complete を含む) C++ 新規実装",
+      "notes": "【背景】commit 633e54b (is_tile_top → key_col_unresolved) + commit ea6bbbe (key_col_unresolved → key_col_resolved + area_truncated → area_complete) で仕様側を更新済み。実装側はまだ旧名のまま。仕様優先原則のため仕様変更が先行している。\n\n【関連 ISSUE】\n- ISSUE-014: 仕様変更の母 ISSUE（対応中）\n- ISSUE-037 (ADR-SRS-010 Phase 1): elevation.c の C++/OpenCV 化\n- ISSUE-038 (ADR-SRS-010 Phase 2): 残り src/ の C++ 翻訳\n- ISSUE-040 (ADR-SRS-010 Phase 4): FR-016 (area_complete を含む) C++ 新規実装",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1341,7 +1341,7 @@
     {
       "id": "ISSUE-043",
       "title": "merge.py: delete判定ゾーン対応（AZ/delete-zone PIP、不備フラグ列、exit code、dominant 改名）",
-      "description": "ADR-011（delete判定ゾーンポリゴン）採用に伴う merge.py の改修。SRS FR-009 / ADR-007 / ADR-008 / ADR-011 の仕様を実装に反映する。",
+      "description": "ADR-SRS-011（delete判定ゾーンポリゴン）採用に伴う merge.py の改修。SRS FR-009 / ADR-URD-007 / ADR-SRS-008 / ADR-SRS-011 の仕様を実装に反映する。",
       "type": "改善",
       "priority": "高",
       "category": "merge.py",
@@ -1351,7 +1351,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【ADR-013 採用後のスコープ再評価が必要】merged.geojson が中心成果物となったため、merge.py が GeoJSON を直接出力するか・output_geojson.py との責務分担を本 SRS 改訂後に決定する。",
+      "notes": "【ADR-SRS-013 採用後のスコープ再評価が必要】merged.geojson が中心成果物となったため、merge.py が GeoJSON を直接出力するか・output_geojson.py との責務分担を本 SRS 改訂後に決定する。",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1360,7 +1360,7 @@
     {
       "id": "ISSUE-044",
       "title": "output_geojson.py: delete判定ゾーン対応 + merged_viewer.html 実装",
-      "description": "ADR-011 採用に伴う output_geojson.py の改修と、SRS FR-013 で要求済みだが未実装の merged_viewer.html 出力を追加する。",
+      "description": "ADR-SRS-011 採用に伴う output_geojson.py の改修と、SRS FR-013 で要求済みだが未実装の merged_viewer.html 出力を追加する。",
       "type": "機能追加",
       "priority": "高",
       "category": "GeoJSON出力",
@@ -1370,7 +1370,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【ADR-013 採用後のスコープ再評価が必要】merged.geojson が中心成果物となったため、output_geojson.py の責務（merged.csv + merged_activation.geojson → merged.geojson 統合）が変わる可能性あり。merge.py との責務分担を SRS 改訂後に決定する。",
+      "notes": "【ADR-SRS-013 採用後のスコープ再評価が必要】merged.geojson が中心成果物となったため、output_geojson.py の責務（merged.csv + merged_activation.geojson → merged.geojson 統合）が変わる可能性あり。merge.py との責務分担を SRS 改訂後に決定する。",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1379,7 +1379,7 @@
     {
       "id": "ISSUE-045",
       "title": "params/config.ini.example: delete_zone_max_drop = 250 パラメータ追加",
-      "description": "ADR-011 で確定した delete_zone_max_drop（実測値 250m）を config.ini.example に記載し、ユーザー環境への展開を可能にする。",
+      "description": "ADR-SRS-011 で確定した delete_zone_max_drop（実測値 250m）を config.ini.example に記載し、ユーザー環境への展開を可能にする。",
       "type": "改善",
       "priority": "中",
       "category": "設定",
@@ -1389,7 +1389,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "【作業範囲】\n- params/config.ini.example の [analysis] セクション（または相当箇所）に delete_zone_max_drop = 250 を追加\n- 値の根拠コメントとして ADR-011 を参照\n- 既存のローカル params/config.ini（gitignore）は手動で同期する旨をユーザーに通知\n\n【参照】\n- ADR docs/decisions/ADR-011-delete-zone-polygon.md\n- SRS FR-016\n\n【元 ISSUE】ISSUE-020 から分離",
+      "notes": "【作業範囲】\n- params/config.ini.example の [analysis] セクション（または相当箇所）に delete_zone_max_drop = 250 を追加\n- 値の根拠コメントとして ADR-SRS-011 を参照\n- 既存のローカル params/config.ini（gitignore）は手動で同期する旨をユーザーに通知\n\n【参照】\n- ADR docs/decisions/ADR-SRS-011-delete-zone-polygon.md\n- SRS FR-016\n\n【元 ISSUE】ISSUE-020 から分離",
       "resolved_date": null,
       "verified_date": null,
       "history": [],
@@ -1634,7 +1634,7 @@
     {
       "id": "ISSUE-054",
       "title": "モックアップ: 陸地最高峰ピークの専用表示追加",
-      "description": "viewer_mockup.html の対象ピーク表示において、key_col_resolved=false（広域再解析でも親ピークが見つからないピーク）に対して「陸地最高峰」（島嶼部の場合は「島嶼部最高峰」）であることが視認できる表示を追加する。\n\n## 背景\n- ADR-008 / ADR-011 で「陸地最高峰」「島嶼部最高峰」が key_col_resolved=false のケースとして定義済み\n- このようなピークはプロミネンス = 標高となり、Key コルが定義されない特殊ケース\n- 申請レビュー時に「なぜ Key コルが空なのか」が一目でわかる必要がある\n\n## 想定する表示案（実装時に再検討）\n- 対象ピークのポップアップ内に「陸地最高峰」バッジを表示\n- Key コル情報欄を「— 陸地最高峰のため未定義」のような注記に置き換える\n\n## 注意\n- 用語「陸地最高峰」「島嶼部最高峰」は現状 ADR にのみ登場。GLOSSARY や URD/SRS への正式取り込みが先に必要かは別途判断\n- モックアップ改修タイミングでまとめて対応するのが望ましい",
+      "description": "viewer_mockup.html の対象ピーク表示において、key_col_resolved=false（広域再解析でも親ピークが見つからないピーク）に対して「陸地最高峰」（島嶼部の場合は「島嶼部最高峰」）であることが視認できる表示を追加する。\n\n## 背景\n- ADR-SRS-008 / ADR-SRS-011 で「陸地最高峰」「島嶼部最高峰」が key_col_resolved=false のケースとして定義済み\n- このようなピークはプロミネンス = 標高となり、Key コルが定義されない特殊ケース\n- 申請レビュー時に「なぜ Key コルが空なのか」が一目でわかる必要がある\n\n## 想定する表示案（実装時に再検討）\n- 対象ピークのポップアップ内に「陸地最高峰」バッジを表示\n- Key コル情報欄を「— 陸地最高峰のため未定義」のような注記に置き換える\n\n## 注意\n- 用語「陸地最高峰」「島嶼部最高峰」は現状 ADR にのみ登場。GLOSSARY や URD/SRS への正式取り込みが先に必要かは別途判断\n- モックアップ改修タイミングでまとめて対応するのが望ましい",
       "type": "改善",
       "priority": "低",
       "category": null,
@@ -1688,7 +1688,7 @@
           "actor": "不明",
           "from": "未対応",
           "to": "対応完了",
-          "comment": "SRS 改訂（ADR-013 採用: merged.geojson 中心成果物モデル）に統合。FR-013・FR-009 に rationale 編集 UI 要件・初期値テンプレート（※2/※4/※5）・XLSX 反映要件・ポップアップ表示項目・編集可否を記載。"
+          "comment": "SRS 改訂（ADR-SRS-013 採用: merged.geojson 中心成果物モデル）に統合。FR-013・FR-009 に rationale 編集 UI 要件・初期値テンプレート（※2/※4/※5）・XLSX 反映要件・ポップアップ表示項目・編集可否を記載。"
         }
       ]
     },
@@ -1953,7 +1953,7 @@
       "status": "対応完了",
       "assignee": null,
       "resolution": null,
-      "notes": "UR-011 新設（URD）、FR-013/FR-012/FR-021 出典要件追加（SRS）、ADR-014 作成済み。実装対象: README / output_geojson.py / merge.py / viewer_mockup.html XLSX出力。ADR-014 参照: docs/decisions/ADR-014-gsi-tile-attribution-policy.md",
+      "notes": "UR-011 新設（URD）、FR-013/FR-012/FR-021 出典要件追加（SRS）、ADR-URD-014 作成済み。実装対象: README / output_geojson.py / merge.py / viewer_mockup.html XLSX出力。ADR-URD-014 参照: docs/decisions/ADR-URD-014-gsi-tile-attribution-policy.md",
       "resolved_date": "2026-05-31",
       "verified_date": null,
       "history": [

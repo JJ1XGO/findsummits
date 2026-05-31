@@ -1,4 +1,4 @@
-# ADR-011: delete判定ゾーンポリゴンの導入
+# ADR-SRS-011: delete判定ゾーンポリゴンの導入
 
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-05-21 |
@@ -97,8 +97,8 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 
 ### 影響を受ける文書・実装
 
-- **ADR-007** (peak-match-status-terminology): 「コル等高線内」表記を「delete判定ゾーン内」に更新
-- **ADR-008** (dominant-peak-identification): 「コル等高線ポリゴン」「feature_type=key_col_boundary」表記を delete判定ゾーン関連に更新（アルゴリズム本体は維持）
+- **ADR-URD-007** (peak-match-status-terminology): 「コル等高線内」表記を「delete判定ゾーン内」に更新
+- **ADR-SRS-008** (dominant-peak-identification): 「コル等高線ポリゴン」「feature_type=key_col_boundary」表記を delete判定ゾーン関連に更新（アルゴリズム本体は維持）
 - **FR-016**: コル等高線ポリゴン仕様を削除し、delete判定ゾーンポリゴン仕様を追加
 - **FR-009**: `summit.match_status` に `unmatched` 追加、エラー停止仕様追加
 - **FR-013**: dominant/new フィーチャ構成のポリゴン種別を変更
@@ -109,7 +109,7 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 - **output_geojson.py**: dominant フィーチャ構成変更
 - **params/config.ini.example**: `delete_zone_max_drop` パラメータ追加
 
-> **補足（ADR-013 採用後）**: 不備フラグは `merged.csv` の列ではなく `merged.geojson` のメタデータプロパティに格納する（詳細は [ADR-013](ADR-013-merged-geojson-as-central-data.md)）。`merged.csv` は `merged.geojson` から派生するエビデンス CSV であり不備フラグは含めない。
+> **補足（ADR-SRS-013 採用後）**: 不備フラグは `merged.csv` の列ではなく `merged.geojson` のメタデータプロパティに格納する（詳細は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)）。`merged.csv` は `merged.geojson` から派生するエビデンス CSV であり不備フラグは含めない。
 
 ### 未確定事項
 

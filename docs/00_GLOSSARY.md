@@ -126,8 +126,8 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 |---|---|---|
 | サミット候補 | — | 既存 SOTA サミットリストにない新規ピーク（match_status="new"）。SOTA 日本支部への追加申請対象。 |
 | 削除候補サミット | — | match_status=delete が確定した既存 SOTA サミット。サミット座標が dominant peak の delete判定ゾーン内に存在するがアクティベーションゾーン外であると判定されたもの。SOTA 日本支部への削除申請対象となる。 |
-| 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークの delete判定ゾーン内に含まれることで判定される（詳細は SRS FR-009・[ADR-008](decisions/ADR-008-dominant-peak-identification.md)・[ADR-011](decisions/ADR-011-delete-zone-polygon.md) 参照）。 |
-| delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop` は `params/config.ini` で管理（初期値 250m）。詳細は SRS FR-016・[ADR-011](decisions/ADR-011-delete-zone-polygon.md) 参照。 |
+| 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークの delete判定ゾーン内に含まれることで判定される（詳細は SRS FR-009・[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）。 |
+| delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop` は `params/config.ini` で管理（初期値 250m）。詳細は SRS FR-016・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照。 |
 | 削除（delete） | — | `summit.match_status` の値。既存 SOTA サミット座標が検出ピークの delete判定ゾーン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |
 
 ### データ構造（列名・フラグ・識別子）
@@ -139,3 +139,39 @@ per-mesh CSV / GeoJSON の列名・フラグ・コード体系。
 | key_col_resolved | per-mesh CSV のフラグ列。コルが解析範囲内で確定済みの場合 `true`、3×3 メッシュ解析範囲外でコルが未発見の場合 `false`。命名遍歴: 当初 `is_tile_top`（タイル最頂点と誤読されやすかった）→ `key_col_unresolved`（並列フラグ `area_truncated` と同方向の否定形だった）→ 真偽値方向を「`true=正常`」に統一するため現名称に再リネーム。 |
 | area_complete | per-mesh GeoJSON のアクティベーションゾーンプロパティ。ポリゴンが解析範囲内で完結している場合 `true`、解析範囲外で途切れた場合 `false`。旧称 `area_truncated`。`key_col_resolved` と並列し、両者とも「`true=正常`」で揃えている。 |
 | 仮サミットコード | 申請前の new ピークに暫定付与する識別コード。正式なサミットコードはSOTA審査後に確定する。`summit_code` プロパティに格納（`match_status="new"` の場合）。 |
+
+---
+
+## 開発プロセス用語
+
+本プロジェクトの開発ドキュメント・課題管理で使用する略語・識別子の定義。
+
+### 開発ステージ（ウォーターフォール）
+
+| 略語 | 正式名称 | 説明 |
+|---|---|---|
+| URD | User Requirements Document | ユーザー要件定義書。利用者視点での「何ができるべきか」を記述（`docs/01_URD.md`）。要件識別子: `UR-XXX` |
+| SRS | Software Requirements Specification | ソフトウェア要件仕様書。システム視点での機能・非機能要件を記述（`docs/02_SRS.md`）。識別子: 機能要件 `FR-XXX` / 非機能要件 `NFR-XXX` |
+| HLD | High-Level Design | 概要設計。アーキテクチャ・主要モジュール構成を記述（`docs/03_HLD.md`、未作成） |
+| LLD | Low-Level Design | 詳細設計。モジュール内部のアルゴリズム・データ構造を記述（`docs/04_LLD.md`、未作成） |
+| COD | Coding | 実装フェーズ。成果物: `src/*.c`・`scripts/*.py` |
+| UT | Unit Test | 単体テスト（`docs/05_UT.md`、未作成） |
+| IT | Integration Test | 結合テスト（`docs/06_IT.md`、未作成） |
+| ST | System Test | システムテスト（`docs/07_ST.md`、未作成） |
+| OPS | Operations | 運用フェーズ（`docs/08_OPS.md`、未作成） |
+
+### 設計判断記録
+
+| 略語 | 正式名称 | 説明 |
+|---|---|---|
+| ADR | Architecture Decision Record | アーキテクチャ決定記録。アーキテクチャ上の重要な判断（実装方針・技術選択・スコープ決定）の Context / Decision / Alternatives / Consequences を記録する文書。`docs/decisions/` 配下に格納。 |
+
+#### ADR 命名規約
+
+`ADR-{STAGE}-NNN-kebab-case-description.md`
+
+- `{STAGE}`: 判断が発生したステージ。**URD / SRS の2種類のみ**（HLD/LLD 文書が未作成のため、それらに相当する判断も SRS に分類する）
+- `NNN`: 3桁連番。ステージ種別を跨いだ全体通し番号（ステージごとには分けない）
+- ステージ判定ルール: 上流ステージから見て最初に該当するステージを選ぶ
+
+例: `ADR-URD-005-northern-territories-exclusion.md`（スコープ判断）、`ADR-SRS-001-hybrid-c-python-architecture.md`（アーキテクチャ判断）

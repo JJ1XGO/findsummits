@@ -1,4 +1,4 @@
-# ADR-007: match_status 用語整理（peak / summit 独立定義）
+# ADR-URD-007: match_status 用語整理（peak / summit 独立定義）
 
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-05-14 |
@@ -25,7 +25,7 @@
 
 `dominant` の定義: 検出ピークの delete判定ゾーン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外（= そのサミットが削除候補となり、このピークがその dominant peak になる）。
 
-（注: 2026-05-21 [ADR-011](ADR-011-delete-zone-polygon.md) 適用により、`dominant` 判定の根拠ポリゴンは「コル等高線ポリゴン」から「delete判定ゾーンポリゴン」に変更された。判定構造（matched / new / dominant）は維持。）
+（注: 2026-05-21 [ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md) 適用により、`dominant` 判定の根拠ポリゴンは「コル等高線ポリゴン」から「delete判定ゾーンポリゴン」に変更された。判定構造（matched / new / dominant）は維持。）
 
 **(2) summit feature のリネームと summit.match_status の整理（2026-05-16 追加決定）**
 
@@ -44,7 +44,7 @@
 | new | AZ・delete判定ゾーン内に既存サミットなし（新規候補）| — |
 | dominant | delete判定ゾーン内かつ AZ 外に既存サミット座標あり | — |
 | delete | — | delete判定ゾーン内かつ AZ 外に存在（削除候補） |
-| unmatched | — | AZ にも delete判定ゾーンにも該当しない（エラー、処理中止。[ADR-011](ADR-011-delete-zone-polygon.md) 参照） |
+| unmatched | — | AZ にも delete判定ゾーンにも該当しない（エラー、処理中止。[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md) 参照） |
 
 **申請書生成への影響**:
 - `追加` 行: peak.match_status ∈ {new, dominant} のピーク（仮サミットコードを使用）

@@ -16,9 +16,9 @@
 
 ### 0. ADR を 2 件追加
 
-**ADR-007: peak match_status の用語整理**（新規作成）
+**ADR-URD-007: peak match_status の用語整理**（新規作成）
 
-- ファイル: `docs/decisions/ADR-007-peak-match-status-terminology.md`
+- ファイル: `docs/decisions/ADR-URD-007-peak-match-status-terminology.md`
 - 状態: 採用・未実装
 - 決定日: 2026-05-14
 - Context: match_status の3値が主語不整合（matched/new は状態記述、deleted はアクション記述）。GeoJSON peak feature で "deleted" が「ピーク自身の削除」と誤読される問題
@@ -26,9 +26,9 @@
 - Alternatives: 現状維持（注釈で説明）／完全分離（peak_status と summit_status に分離）の検討内容を残す
 - Consequences: 用語整合性向上、申請書 XLSX 生成時は dominant → 削除アクションにマッピング
 
-**ADR-008: dominant peak 特定アルゴリズム**（新規作成）
+**ADR-SRS-008: dominant peak 特定アルゴリズム**（新規作成）
 
-- ファイル: `docs/decisions/ADR-008-dominant-peak-identification.md`
+- ファイル: `docs/decisions/ADR-SRS-008-dominant-peak-identification.md`
 - 状態: 採用・未実装
 - 決定日: 2026-05-14
 - Context: 削除候補 SOTA サミットに対し dominant peak（従属先）を特定する必要がある。コル等高線ポリゴンによる包含判定が基本だが、複数包含・包含なしのエッジケースが存在しうる
@@ -44,9 +44,9 @@
 - Consequences: 縦走路上のサミットや古い座標データでも安定して dominant peak が特定できる
 
 **SRS からのリンク**:
-- FR-013 Point: 検出ピーク `match_status` の説明に ADR-007 へのリンク
-- FR-009 「dominant peak 特定」セクションに ADR-008 へのリンク
-- 参照形式は ADR-006 と同じ: `[ADR-007](decisions/ADR-007-peak-match-status-terminology.md)`
+- FR-013 Point: 検出ピーク `match_status` の説明に ADR-URD-007 へのリンク
+- FR-009 「dominant peak 特定」セクションに ADR-SRS-008 へのリンク
+- 参照形式は ADR-SRS-006 と同じ: `[ADR-URD-007](decisions/ADR-URD-007-peak-match-status-terminology.md)`
 
 ### 1. peak の match_status 値を "deleted" → "dominant" にリネーム
 
@@ -115,8 +115,8 @@
 - `docs/02_SRS.md` （FR-008, FR-009, FR-011, FR-012, FR-013）
 - `docs/00_GLOSSARY.md`
 - `docs/mockup/viewer_mockup.html`
-- `docs/decisions/ADR-007-peak-match-status-terminology.md`（新規）
-- `docs/decisions/ADR-008-dominant-peak-identification.md`（新規）
+- `docs/decisions/ADR-URD-007-peak-match-status-terminology.md`（新規）
+- `docs/decisions/ADR-SRS-008-dominant-peak-identification.md`（新規）
 
 ## 懸念事項（実装時の注意）
 

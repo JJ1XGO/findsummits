@@ -1,4 +1,4 @@
-# ADR-013: merged.geojson を中心成果物とするデータモデルへの移行
+# ADR-SRS-013: merged.geojson を中心成果物とするデータモデルへの移行
 
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-05-28 |
@@ -20,7 +20,7 @@
 
 2. **中心データのイメージ乖離**: ユーザーの本来のイメージは「バッチ処理完了時に全結果が集約した 1 つの中心データが出来ていて、HTML ビューアはそれを表示するだけ」というものだったが、現設計では 2 ファイルを FR-013 で統合するまで中心データが存在しなかった
 
-3. **不備フラグの格納場所**: ADR-011 では不備フラグを merged.csv 列に追加するとしていたが、merged.geojson を中心とするなら metadata プロパティに持つ方が自然
+3. **不備フラグの格納場所**: ADR-SRS-011 では不備フラグを merged.csv 列に追加するとしていたが、merged.geojson を中心とするなら metadata プロパティに持つ方が自然
 
 4. **dominant ケースの 2 行問題**: dominant ピーク 1 エントリは申請書 XLSX で「追加（dominant）」と「削除（既存サミット）」の 2 行に展開され、それぞれ異なる根拠（※2 と ※4）が必要。Point フィーチャが独立していれば各フィーチャに rationale を持たせることで自然に解決できる
 
@@ -100,8 +100,8 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 
 ### 既存 ADR への波及
 
-- **ADR-011**（delete-zone-polygon）: Consequences の「不備フラグ列は merged.csv に追加」記述を「不備フラグは merged.geojson のフィーチャプロパティ（metadata）に格納し、merged.csv（派生エビデンス）には含めない」に補足追記
-- **ADR-004 / ADR-010**: 影響なし（per-mesh 段階の出力フォーマットは変更不要）
+- **ADR-SRS-011**（delete-zone-polygon）: Consequences の「不備フラグ列は merged.csv に追加」記述を「不備フラグは merged.geojson のフィーチャプロパティ（metadata）に格納し、merged.csv（派生エビデンス）には含めない」に補足追記
+- **ADR-SRS-004 / ADR-SRS-010**: 影響なし（per-mesh 段階の出力フォーマットは変更不要）
 
 ### 関連 ISSUE への影響
 

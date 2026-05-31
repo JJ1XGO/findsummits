@@ -10,7 +10,7 @@ SRS（ドラフト・フェーズ再構成済み）を Opus でレビューす�
 
 レビューは **仕様優先原則**（CLAUDE.md）に従い、コードを参照せず仕様書の内容だけを根拠に行った。
 読み込んだ文書: `docs/01_URD.md` / `docs/02_SRS.md` / `docs/00_GLOSSARY.md` /
-ADR-004 / ADR-005 / ADR-007 / ADR-008 / 直近 3 件の handover。
+ADR-SRS-004 / ADR-URD-005 / ADR-URD-007 / ADR-SRS-008 / 直近 3 件の handover。
 
 ---
 
@@ -72,9 +72,9 @@ GLOSSARY にも「削除候補（deleted）」の項目を追加する。
 
 ### H-3. dominant peak フォールバック時の match_status 不整合
 
-**場所**: SRS L326-331（dominant peak 特定）＋ ADR-008
+**場所**: SRS L326-331（dominant peak 特定）＋ ADR-SRS-008
 
-**問題**: ADR-008 の 3 段階目（フォールバック）では、コル等高線にサミットが含まれない
+**問題**: ADR-SRS-008 の 3 段階目（フォールバック）では、コル等高線にサミットが含まれない
 場合に最近接ピークを dominant peak とする。このとき:
 
 - sota_summit の `match_status` は `deleted`（AZ 外なので確定）
@@ -155,14 +155,14 @@ FR-014 で明示されていないため、併せて整理する。
 
 ### M-2. 北方領土タイル除外の判定基準
 
-**場所**: FR-017 L125（excluded_tiles.txt 生成）＋ ADR-005 L47
+**場所**: FR-017 L125（excluded_tiles.txt 生成）＋ ADR-URD-005 L47
 
 **問題**: 「該当ポリゴン内のタイル」の判定基準（タイル中心点／タイルの任意点／タイルとポリゴンの
-交差）が SRS 本文に未規定。ADR-005 では「対象ポリゴン内に中心点が含まれる全タイル」と
+交差）が SRS 本文に未規定。ADR-URD-005 では「対象ポリゴン内に中心点が含まれる全タイル」と
 書かれているが、SRS と GLOSSARY には反映されていない。
 
 **修正案**: FR-017 に「タイル中心点が北方領土 6 村ポリゴンに含まれるタイルを列挙」と明示。
-ADR-005 と同じ規定を SRS に転記する。
+ADR-URD-005 と同じ規定を SRS に転記する。
 
 ---
 
@@ -341,11 +341,11 @@ issue ごとに対応完了する際、以下を確認する:
 
 | Issue ID | 推奨モデル | 判断理由 |
 |---|---|---|
-| ISSUE-018 | **Opus** | match_status の論理整合（FR-009 / FR-013 / ADR-007 / ADR-008 / GLOSSARY に波及）。フォールバック処理の案A/B の選択は設計判断 |
+| ISSUE-018 | **Opus** | match_status の論理整合（FR-009 / FR-013 / ADR-URD-007 / ADR-SRS-008 / GLOSSARY に波及）。フォールバック処理の案A/B の選択は設計判断 |
 | ISSUE-019 | **Opus** | 採番順序＋安定性ポリシーは決定論性・部分再実行・localStorage 整合へ波及。複数の制約を同時に満たす設計判断 |
 | ISSUE-020 | **Opus** | 案A/B/C の選択が FR-013 全体のフィーチャ構成・GLOSSARY・申請書 XLSX マッピングに波及 |
 | ISSUE-021 | Sonnet | 案A/B のいずれかを選んで 1 行追記する局所改訂 |
-| ISSUE-022 | Sonnet | ADR-005 の既存規定を SRS に転記するだけ |
+| ISSUE-022 | Sonnet | ADR-URD-005 の既存規定を SRS に転記するだけ |
 | ISSUE-023 | Sonnet | NFR-003 に除外文言を追記するだけ |
 | ISSUE-024 | Sonnet | 推奨案（max pooling・NODATA 除外）を採用するなら機械的追記 |
 | ISSUE-025 | **Opus**（前段の調査含む） | SOTA 日本支部の標高バンド表（緯度区分の有無含む）を ref/SOURCES.md と照らして決定する判断が必要 |

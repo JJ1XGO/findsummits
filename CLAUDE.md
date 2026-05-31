@@ -227,7 +227,12 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 **いつ作るか**: アーキテクチャ上の重要な判断（実装方針・技術選択・スコープ決定）をしたとき。
 
-**命名規則**: `docs/decisions/ADR-NNN-kebab-case-description.md`（NNN は3桁連番）
+**命名規則**: `docs/decisions/ADR-{STAGE}-NNN-kebab-case-description.md`
+
+- `{STAGE}` は `URD` または `SRS`（HLD/LLD 文書未作成のため当面この2種類）
+- ステージ判定: 「上流ステージから見て最初に該当するステージ」を採用
+- `NNN` は3桁連番。ステージ種別を跨いだ全体通し番号（ステージ別には分けない）
+- 詳細は `docs/00_GLOSSARY.md` の「ADR 命名規約」を参照
 
 **フォーマット**:
 

@@ -1,159 +1,156 @@
-# 国土地理院タイル出典表示の整備
+# 計画: 開発ステージ・ADR の用語集登録と ADR 命名体系の見直し
 
 ## Context
 
-国土地理院標高タイル（DEM5a/5b/5c, DEM10b）は[地理院タイル一覧](https://maps.gsi.go.jp/development/ichiran.html)で「2. 基本測量成果以外で出典記載のみで利用可能」（区分2）に分類されており、利用には**測量法に基づく申請は不要**である。ただし[国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)に基づき:
+開発ドキュメント（CLAUDE.md・URD・SRS・ADR）で `URD`・`SRS`・`HLD`・`LLD`・`ADR` など開発プロセス用語が多用されているが、用語集（`docs/00_GLOSSARY.md`）には未登録のため、ドキュメントを読み始めた人がこれらの略語を解読できない。
 
-- **出典の明示**が必要（記載例:「国土地理院」または「地理院タイル」＋一覧ページへのリンク）
-- 編集・加工した二次データを公開する場合は「**加工して作成**」の明示が必要（例:「地理院タイル（標高タイル）を加工して作成」）
+また、既存の `UR-XXX`（URD）・`FR-XXX`（SRS）・`NFR-XXX`（SRS）はステージコード化されているのに対し、`ADR-NNN` だけは無印で、参照されても「どのステージで決まった判断か」が番号だけでは想起できない。ADR 番号にステージ識別子を追加することで、参照時に位置づけが瞬時に分かるようにする。
 
-現状は HTML ビューア（`docs/mockup/viewer_mockup.html:384-400`）の Leaflet attribution にのみ `© 国土地理院` リンクがあり、それ以外の成果物（README、merged.geojson、merged.csv、申請書XLSX以外のXLSX、配布版 GeoJSON）には出典情報が一切埋め込まれていない。SRS にも出典表示要件は明文化されていない（FR-006 等で attribution 表示の言及はあるが、ビューア背景タイルに限定）。
+ステージ識別子は **URD / SRS の2種類のみ** とする。理由: HLD/LLD/COD 等の下流ステージ文書が本プロジェクトではまだ作成されておらず、現時点の ADR はすべて URD（スコープ・要件）または SRS（機能・出力仕様）レベルの判断に分類できるため。HLD/LLD 文書を作成する段階で必要なら拡張する。
 
-本タスクは規約遵守と再配布時の追跡性を確保するため、**URD に出典表示の要件を新設し、SRS で各成果物の出典埋め込み方法を規定したうえで、README と主要な成果物に出典表示を実装する**。
+連番は既存の `ADR-SRS-001`〜`ADR-URD-014` をそのまま維持し、間に `URD` または `SRS` を挿入するだけ（例: `ADR-SRS-001` → `ADR-SRS-001`、`ADR-URD-005` → `ADR-URD-005`）。新規 ADR は次の連番（`ADR-015`）から、ステージ判定に従って `ADR-URD-015` または `ADR-SRS-015` を割り振る。
 
-## 対応範囲（ユーザー確認済み）
+---
 
-- URD: UR-011 を新設
-- SRS: 出典表示要件を明文化（実装の前提）
-- 実装: 中央データ＋公開資材に徹底
-  - README（プロジェクト全体の出典宣言）
-  - `merged.geojson` の `metadata` フィールド（ADR-013 で中央データと規定済み）
-  - 配布版 GeoJSON（HTML ビューアとともに公開）
-  - `merged.csv` のヘッダコメント
-  - HTML ビューアからエクスポートされる XLSX（申請書テンプレ XLSX は SOTA 側書式のため対象外）
-- HTML ビューアの Leaflet attribution は既実装のため変更不要
+## 変更内容
 
-## 修正対象ファイルと変更内容
+### 1. 用語集に「開発プロセス用語」セクション追加
 
-### 0. ADR: `docs/decisions/ADR-014-gsi-tile-attribution-policy.md`（新設）
+ファイル: `docs/00_GLOSSARY.md`（末尾に追加）
 
-UR-011 新設および出典埋め込み方針の根拠を ADR として記録する。
+**登録する用語**:
 
-**フォーマット**（CLAUDE.md「ADR 管理ルール」に準拠）:
+開発ステージ（ウォーターフォール各段階）:
 
-```markdown
-| 状態 | 採用・未実装 |
-| 決定日 | 2026-05-31 |
+| 用語 | 正式名称 | 説明 |
+|---|---|---|
+| URD | User Requirements Document | ユーザー要件定義書。利用者視点での「何ができるべきか」を記述（`docs/01_URD.md`）。識別子: `UR-XXX` |
+| SRS | Software Requirements Specification | ソフトウェア要件仕様書。システム視点での機能・非機能要件を記述（`docs/02_SRS.md`）。識別子: 機能要件 `FR-XXX` / 非機能要件 `NFR-XXX` |
+| HLD | High-Level Design | 概要設計。アーキテクチャ・主要モジュール構成（`docs/03_HLD.md`、未作成） |
+| LLD | Low-Level Design | 詳細設計。モジュール内部のアルゴリズム・データ構造（`docs/04_LLD.md`、未作成） |
+| COD | Coding | 実装。`src/*.c`・`scripts/*.py` |
+| UT | Unit Test | 単体テスト（`docs/05_UT.md`、未作成） |
+| IT | Integration Test | 結合テスト（`docs/06_IT.md`、未作成） |
+| ST | System Test | システムテスト（`docs/07_ST.md`、未作成） |
+| OPS | Operations | 運用（`docs/08_OPS.md`、未作成） |
 
-## Context
-- 国土地理院標高タイルは「区分2: 基本測量成果以外で出典記載のみで利用可能」（参照: ref/SOURCES.md）
-- 規約上、編集・加工した二次データを公開する場合「加工して作成」の明示と出典記載が必要
-- 現状は HTML ビューアの Leaflet attribution のみで、その他成果物には出典情報がない
+設計判断記録:
 
-## Decision
-1. URD に UR-011 を新設し、生成・公開する成果物への出典・加工明示義務をユーザー要件として位置付ける
-2. 埋め込み範囲は「中央データ＋公開資材に徹底」:
-   - README（プロジェクト全体宣言）
-   - merged.geojson の metadata
-   - 配布版 GeoJSON
-   - merged.csv のヘッダコメント
-   - HTML ビューア出力 XLSX
-3. 標準文面を定義:
-   - 短形式: `地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)`
-   - GeoJSON metadata: `{"attribution": ..., "source_url": ..., "license": ...}`
+| 用語 | 正式名称 | 説明 |
+|---|---|---|
+| ADR | Architecture Decision Record | アーキテクチャ決定記録。アーキテクチャ上の重要な判断（実装方針・技術選択・スコープ決定）の Context / Decision / Alternatives / Consequences を記録する文書。`docs/decisions/` 配下に格納 |
 
-## Alternatives
-- **A. UR-010 を拡張して一本化**: 「規約遵守」を取得時から成果物公開時まで包含。却下理由 = 取得時の責務と公開時の責務はスコープが異なり、トレーサビリティが不明瞭になる
-- **B. README のみで対応**: 派生データ単体配布時に出典が失われ規約違反のリスク。却下
-- **C. ADR 不要として暗黙対応**: 文面・配置の判断履歴が残らず、将来の見直し時に再検討コストが発生。却下
-
-## Consequences
-- 各成果物のフォーマットに出典フィールドが追加される（GeoJSON は RFC 7946 foreign members として許容）
-- merge.py / output_geojson.py / viewer_mockup.html の出力ロジックに小変更が必要
-- merged.csv に `#` コメント行が入るため、後段で読む output_geojson.py はスキップ処理が必要
-- 申請書 XLSX（SOTA 側書式）は対象外。SOTA 申請のエビデンスは GeoJSON / CSV 側でカバー
-```
-
-### 1. URD: `docs/01_URD.md`
-
-UR-011 を新設（UR-010 の直下に追記）:
-
-```
-| UR-011 | 本ツールが生成・公開する成果物（README、GeoJSON、CSV、HTML ビューア、ビューアからエクスポートする XLSX 等）には、国土地理院コンテンツ利用規約に従い、出典（「国土地理院」または「地理院タイル」と一覧ページへのリンク）および「加工して作成」の旨を明示すること |
-```
-
-理由・スコープに必要な補記をスコープ外との重複を避けつつ追加。
-
-### 2. SRS: `docs/02_SRS.md`
-
-出典表示を機能要件として明文化（FR-013 周辺、出力ファイル仕様の文脈で追加）:
-
-- 各出力（merged.geojson / merged.csv / 配布GeoJSON / ビューア出力XLSX）について、出典文字列の埋め込み位置と文面を明記
-- 標準文面:
-  - 短形式: `地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)`
-  - GeoJSON 用: `{"attribution": "地理院タイル（標高タイル）を加工して作成。出典: 国土地理院", "source_url": "https://maps.gsi.go.jp/development/ichiran.html"}`
-- HTML ビューアの Leaflet attribution は SRS 661-677 行で既に規定済みのため、対応文面の整合だけ確認
-
-本要件の根拠 ADR は `docs/decisions/ADR-014-gsi-tile-attribution-policy.md`（新設）に記録する。
-
-### 3. README: `README.md`
-
-末尾に「データソース・出典」セクションを追加:
+ADR 命名規約サブセクション（用語表の直後に追記）:
 
 ```markdown
-## データソース・出典
+#### ADR 命名規約
 
-本ツールは [国土地理院](https://www.gsi.go.jp/) が提供する [地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)（標高タイル DEM5a / DEM5b / DEM5c / DEM10b）を加工して作成しています。
+`ADR-{STAGE}-NNN-kebab-case-description.md`
 
-- 出典: 国土地理院ウェブサイト (https://maps.gsi.go.jp/development/ichiran.html)
-- 利用規約: [国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)
+- `{STAGE}`: 判断が発生したステージ。**URD / SRS の2種類のみ**
+  - 「上流ステージから見て最初に該当するステージ」を採用するルール
+  - 現時点では HLD/LLD 文書が未作成のため、それらに相当する判断も SRS に分類する
+- `NNN`: 3桁連番。ステージ種別を跨いだ全体通し番号（ステージごとには分けない）
 
-本ツールが生成する GeoJSON / CSV / XLSX には地理院タイルの標高値から解析した派生データが含まれます。再配布時も上記出典の明示をお願いします。
+例: `ADR-URD-005-northern-territories-exclusion.md`, `ADR-SRS-001-hybrid-c-python-architecture.md`
 ```
 
-「ライセンス」セクションは既存（GPL-3.0）を維持。
+### 2. 既存 14 個の ADR をリネーム
 
-### 4. GeoJSON 出力: `scripts/output_geojson.py`
+`git mv` で履歴を保持してリネーム（連番は維持、間に URD または SRS を挿入）:
 
-154 行目の `FeatureCollection` 構築箇所を修正:
+| 旧ファイル名 | 新ファイル名 | 判断種別 |
+|---|---|---|
+| ADR-SRS-001-hybrid-c-python-architecture.md | ADR-SRS-001-hybrid-c-python-architecture.md | アーキテクチャ構成 |
+| ADR-SRS-002-dem-hierarchy-fallback.md | ADR-SRS-002-dem-hierarchy-fallback.md | データ取得設計 |
+| ADR-SRS-003-3x3-mesh-analysis.md | ADR-SRS-003-3x3-mesh-analysis.md | 解析範囲設計 |
+| ADR-SRS-004-level14-max-pooling-isolated-peaks.md | ADR-SRS-004-level14-max-pooling-isolated-peaks.md | アルゴリズム |
+| ADR-URD-005-northern-territories-exclusion.md | ADR-URD-005-northern-territories-exclusion.md | スコープ判断 |
+| ADR-SRS-006-viewer-background-tile-selection.md | ADR-SRS-006-viewer-background-tile-selection.md | 機能仕様 |
+| ADR-URD-007-peak-match-status-terminology.md | ADR-URD-007-peak-match-status-terminology.md | 用語定義 |
+| ADR-SRS-008-dominant-peak-identification.md | ADR-SRS-008-dominant-peak-identification.md | FR-009 仕様 |
+| ADR-URD-009-takeshima-exclusion.md | ADR-URD-009-takeshima-exclusion.md | スコープ判断 |
+| ADR-SRS-010-cpp-opencv-migration.md | ADR-SRS-010-cpp-opencv-migration.md | 実装言語選択 |
+| ADR-SRS-011-delete-zone-polygon.md | ADR-SRS-011-delete-zone-polygon.md | FR-016 仕様 |
+| ADR-SRS-012-terrain-image-downscaling-method.md | ADR-SRS-012-terrain-image-downscaling-method.md | 出力処理 |
+| ADR-SRS-013-merged-geojson-as-central-data.md | ADR-SRS-013-merged-geojson-as-central-data.md | 出力仕様 |
+| ADR-URD-014-gsi-tile-attribution-policy.md | ADR-URD-014-gsi-tile-attribution-policy.md | UR-011 新設 |
 
-```python
-geojson = {
-    "type": "FeatureCollection",
-    "metadata": {
-        "attribution": "地理院タイル（標高タイル）を加工して作成。出典: 国土地理院",
-        "source_url": "https://maps.gsi.go.jp/development/ichiran.html",
-        "license": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
-    },
-    "features": features,
-}
+URD 分類: 005, 007, 009, 014（スコープ・要件・用語）
+SRS 分類: 001, 002, 003, 004, 006, 008, 010, 011, 012, 013（機能・出力・実装方針）
+
+### 3. 全参照の更新
+
+ADR を参照しているすべてのファイルで `ADR-NNN` → `ADR-{URD|SRS}-NNN` に置換。
+
+更新対象（事前 grep で網羅検索）:
+
+- `CLAUDE.md`（ADR 命名規則セクションを含む）
+- `docs/00_GLOSSARY.md`（既存の ADR-SRS-008・ADR-SRS-011 参照リンク）
+- `docs/01_URD.md`
+- `docs/02_SRS.md`
+- `docs/decisions/*.md`（ADR 相互参照）
+- `docs/decisions/research/*.md`
+- `mgmt/plan.md`・`mgmt/lessons.md`
+- `mgmt/tracker/data/*.json`（issue/bug の本文中の ADR 参照）
+- `mgmt/tracker/CLAUDE.md`
+
+検索コマンド: `grep -rEn "ADR-0[0-9]{2}" --include="*.md" --include="*.json"`（リネーム前に実行して網羅性を確認）
+
+### 4. CLAUDE.md の ADR 管理ルール更新
+
+`/workspace/CLAUDE.md` の「ADR 管理ルール」セクション:
+
+**変更前**:
+```
+**命名規則**: `docs/decisions/ADR-NNN-kebab-case-description.md`（NNN は3桁連番）
 ```
 
-`metadata` プロパティは GeoJSON 仕様（RFC 7946）の foreign members として許容される（パースに支障なし）。
-
-### 5. CSV 出力: `scripts/merge.py`
-
-`merged.csv` の先頭にコメント行（`#` 始まり）を3行追加:
-
+**変更後**:
 ```
-# Source: 国土地理院 地理院タイル（DEM5a/5b/5c/DEM10b）
-# Attribution: 地理院タイル（標高タイル）を加工して作成
-# License: https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html
+**命名規則**: `docs/decisions/ADR-{STAGE}-NNN-kebab-case-description.md`
+
+- `{STAGE}` は URD または SRS（HLD/LLD 文書未作成のため当面この2種類）
+- 「上流ステージから見て最初に該当するステージ」を採用
+- `NNN` は3桁連番。ステージ種別を跨いだ全体通し番号
+- 詳細は `docs/00_GLOSSARY.md` の「ADR 命名規約」を参照
 ```
 
-`csv.DictWriter` 利用箇所を確認し、ヘッダ行の直前にコメントを書き込む。後段の `output_geojson.py` で読む際に `#` 行をスキップ処理する分岐を追加（数行）。
+---
 
-### 6. HTML ビューア出力 XLSX
+## 実行順序
 
-`viewer_mockup.html` の XLSX エクスポート処理に、別シート「出典」または1行目のヘッダ上に出典文字列を埋め込む。具体的な実装箇所は XLSX エクスポートのロジック確認後に決定。
+1. **事前 grep**: `grep -rEn "ADR-0[0-9]{2}" /workspace --include="*.md" --include="*.json"` で全参照箇所をリストアップし、置換漏れがないことを確認できる状態にする
+2. **用語集に開発プロセス用語セクションを追加**（`docs/00_GLOSSARY.md`）
+3. **CLAUDE.md の ADR 命名規則を更新**
+4. **既存 14 ADR を `git mv` でリネーム**（履歴保持）
+5. **全参照を一括置換**（Edit ツールで個別ファイルごとに実施。`sed -i` は使わない）
+6. **再 grep で残存参照をゼロ確認**
+7. **コミット**: 1コミットで一括（用語集追加 + リネーム + 参照更新）
+   - メッセージ案: `refactor(docs): ADR命名にステージ識別子追加・用語集に開発プロセス用語登録`
 
-## 検証手順
+---
 
-1. **URD/SRS 整合確認**: `docs/01_URD.md` と `docs/02_SRS.md` を読み、UR-011 → SRS 要件 → 各成果物の対応がトレース可能であること
-2. **README 表示確認**: GitHub 上で README が想定通り表示されること（編集後即時 commit）
-3. **GeoJSON**: `venv/bin/python3 scripts/output_geojson.py ...` 実行 → 出力 JSON を `jq '.metadata'` で確認
-4. **CSV**: merge.py 実行 → merged.csv 先頭3行が `#` コメントになっていること
-5. **CSV → GeoJSON 連携**: output_geojson.py が `#` コメント行を正しくスキップして既存と同じレコード数を生成すること
-6. **HTML ビューア XLSX**: ビューアでデータを読み込み XLSX エクスポート → 出力ファイルに出典シート/行が含まれること
+## 検証
 
-## 作業順序
+1. `grep -rEn "ADR-0[0-9]{2}-" /workspace --include="*.md" --include="*.json"`
+   → リネーム後のファイル名（`ADR-{URD|SRS}-NNN-...`）以外にマッチがないこと
+2. `ls /workspace/docs/decisions/ADR-*.md`
+   → すべて `ADR-URD-` または `ADR-SRS-` プレフィックスで始まること（14個）
+3. `git log --follow docs/decisions/ADR-SRS-001-hybrid-c-python-architecture.md`
+   → 旧 `ADR-SRS-001-...` 時代の履歴が追跡できること
+4. 用語集を Read で開き、開発プロセス用語セクションがフォーマット崩れなく追加されていること
+5. ADR 内の相互参照リンクが新ファイル名を指していること（手動で 2〜3 個サンプリング）
 
-1. ADR-014 を先に作成（判断根拠の確定）
-2. ドキュメント（URD → SRS）を確定し ADR を相互参照
-3. 確定後、ユーザーに `/model` で Sonnet 切り替えを促す（記憶: `feedback_model_switching.md`）
-4. README → output_geojson.py → merge.py → viewer_mockup.html の順で実装
-5. 一連の作業完了後にまとめて commit（記憶: `feedback_commit_at_end.md`）
+---
 
-## 関連 ISSUE 登録
+## 影響範囲（参考）
 
-実装と並行して `mgmt/tracker/track.py issue add` で本作業を登録する（カテゴリ: 規約遵守 / ステージ: SRS）。
+- 既存14個のADRファイル名（破壊的、ただし `git mv` で履歴保持）
+- ADRを参照している全文書（CLAUDE.md / URD / SRS / GLOSSARY / 他ADR / mgmt配下）
+- 外部リンク: GitHub上のADR直リンクを共有している場合は失効する（共有先があれば手動更新）
+
+## 残課題（本計画スコープ外）
+
+- HLD/LLD 文書を作成するタイミングで、ADR の `{STAGE}` を `HLD` / `LLD` まで拡張するかを再検討
+- 既存 ADR の SRS 分類のうち、HLD/LLD 寄りのもの（例: ADR-SRS-001 ハイブリッドC+Python、ADR-SRS-003 3×3メッシュ）を HLD/LLD 文書作成時に再分類するかを判断

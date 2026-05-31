@@ -1,4 +1,4 @@
-# ADR-008: dominant peak 特定アルゴリズム
+# ADR-SRS-008: dominant peak 特定アルゴリズム
 
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-05-14 |
@@ -11,9 +11,9 @@
 dominant peak の特定には次のエッジケースへの対処が必要:
 
 1. **複数包含**: 複数の検出ピークの delete判定ゾーンに SOTA サミット座標が含まれる（縦走路上など）
-2. **包含なし**: いずれの検出ピークの delete判定ゾーンにも含まれない（[ADR-011](ADR-011-delete-zone-polygon.md) で `summit.match_status="unmatched"` として merge.py を非ゼロ終了させる仕様。本 ADR の判定対象には含まれない）
+2. **包含なし**: いずれの検出ピークの delete判定ゾーンにも含まれない（[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md) で `summit.match_status="unmatched"` として merge.py を非ゼロ終了させる仕様。本 ADR の判定対象には含まれない）
 
-（注: 2026-05-21 [ADR-011](ADR-011-delete-zone-polygon.md) 適用により、判定の根拠ポリゴンは「コル等高線ポリゴン」から「delete判定ゾーンポリゴン」（`feature_type="delete_zone"`）に変更された。判定アルゴリズム本体（最小プロミネンスのタイブレーク）は維持。）
+（注: 2026-05-21 [ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md) 適用により、判定の根拠ポリゴンは「コル等高線ポリゴン」から「delete判定ゾーンポリゴン」（`feature_type="delete_zone"`）に変更された。判定アルゴリズム本体（最小プロミネンスのタイブレーク）は維持。）
 
 ## Decision
 
@@ -22,7 +22,7 @@ dominant peak の特定には次のエッジケースへの対処が必要:
 1. **delete判定ゾーン包含判定**: SOTA サミット座標が含まれる `feature_type="delete_zone"` ポリゴンを持つ検出ピークを候補とする（point-in-polygon 判定）
 2. **複数包含時のタイブレーク**: 候補が複数の場合は、**プロミネンスが最小のピーク**を dominant peak とする。プロミネンスが最小のピークは「親ピークへ最も早く合流する局所的な隆起」であり、地形学的に delete 候補サミットと同一の山塊に属していると見なせる
 
-フォールバック（包含なし）は廃止する。いずれの delete判定ゾーンにも含まれない場合は**ログ警告を出力して処理を中止**し、人手判断に委ねる（`summit.match_status="unmatched"`、[ADR-011](ADR-011-delete-zone-polygon.md)）。
+フォールバック（包含なし）は廃止する。いずれの delete判定ゾーンにも含まれない場合は**ログ警告を出力して処理を中止**し、人手判断に委ねる（`summit.match_status="unmatched"`、[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)）。
 
 dominant peak が確定したら以下のカラムを delete サミットの行に付与する:
 
@@ -53,4 +53,4 @@ N03 行政区域データを拡張して陸地ポリゴンを整備し、陸地�
 
 - 縦走路上のサミットでも地形学的に適切な dominant peak を特定できる
 - `dominant_peak_dist_m` は人手確認の参考値として常に出力する（フォールバック指標としての役割は廃止）
-- いずれの delete判定ゾーンにも含まれないサミット（`summit.match_status="unmatched"`）が発生した場合は ISSUE 起票して個別対応する（merge.py を非ゼロ終了させる仕様。フォールバックは廃止。[ADR-011](ADR-011-delete-zone-polygon.md)）
+- いずれの delete判定ゾーンにも含まれないサミット（`summit.match_status="unmatched"`）が発生した場合は ISSUE 起票して個別対応する（merge.py を非ゼロ終了させる仕様。フォールバックは廃止。[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)）

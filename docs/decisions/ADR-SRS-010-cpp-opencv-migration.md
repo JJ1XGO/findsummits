@@ -1,4 +1,4 @@
-# ADR-010: C++/OpenCV への全面移行
+# ADR-SRS-010: C++/OpenCV への全面移行
 
 | 項目 | 内容 |
 |---|---|
@@ -14,7 +14,7 @@ FR-016（アクティベーションゾーン計算）の実装方法を検討�
 
 ### FR-016 が要求する処理
 
-FR-016 はピーク位置を起点とした Flood Fill によりアクティベーションゾーン（標高差 25m 以内の連続エリア）を抽出し、その外周輪郭を GeoJSON Polygon として出力する。同じ Flood Fill を `max(col_elev, peak_elev - delete_zone_max_drop)` 閾値で実行して delete判定ゾーンポリゴンも生成する（[ADR-011](ADR-011-delete-zone-polygon.md)）。これらはいずれも**画像処理の典型タスク**（領域塗りつぶし・輪郭抽出）であり、自前実装すると以下のコストが発生する:
+FR-016 はピーク位置を起点とした Flood Fill によりアクティベーションゾーン（標高差 25m 以内の連続エリア）を抽出し、その外周輪郭を GeoJSON Polygon として出力する。同じ Flood Fill を `max(col_elev, peak_elev - delete_zone_max_drop)` 閾値で実行して delete判定ゾーンポリゴンも生成する（[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)）。これらはいずれも**画像処理の典型タスク**（領域塗りつぶし・輪郭抽出）であり、自前実装すると以下のコストが発生する:
 
 - BFS による Flood Fill（4 連結／8 連結の選択、訪問配列管理）
 - 境界追跡アルゴリズム（Moore-neighbor / Suzuki-Abe 等）の実装とエッジケース対応
@@ -49,9 +49,9 @@ C++ の RAII（コンストラクタ／デストラクタによる自動メモ�
 
 ### 現行 ADR との関係
 
-ADR-001（C + Python ハイブリッドアーキテクチャ）は「C エンジン + Python スクリプト」という分業を定めている。本 ADR は **C エンジン部分を C++ に置き換える**ものであり、ハイブリッド原則（性能要求は C/C++、出力フォーマットは Python）は維持される。ADR-001 の状態を「ADR-010 により部分置換予定」に更新する。
+ADR-SRS-001（C + Python ハイブリッドアーキテクチャ）は「C エンジン + Python スクリプト」という分業を定めている。本 ADR は **C エンジン部分を C++ に置き換える**ものであり、ハイブリッド原則（性能要求は C/C++、出力フォーマットは Python）は維持される。ADR-SRS-001 の状態を「ADR-SRS-010 により部分置換予定」に更新する。
 
-ADR-002（DEM 階層フォールバック）・ADR-004（L14 max pooling 広域再解析）等の他の ADR は、いずれも C エンジン内部の実装方針を定めるもので、本 ADR とは独立。C++ 移行後も同じ方針を継承する。
+ADR-SRS-002（DEM 階層フォールバック）・ADR-SRS-004（L14 max pooling 広域再解析）等の他の ADR は、いずれも C エンジン内部の実装方針を定めるもので、本 ADR とは独立。C++ 移行後も同じ方針を継承する。
 
 ## Decision
 
@@ -62,7 +62,7 @@ ADR-002（DEM 階層フォールバック）・ADR-004（L14 max pooling 広域�
    - リサイズ（`cv::resize`）
    - Flood Fill（`cv::floodFill`）
    - 輪郭抽出（`cv::findContours`、lossless 出力のため `CHAIN_APPROX_SIMPLE` モードを使用。形状を変える簡略化は採用しない）
-3. **ADR-001 のハイブリッド原則を維持**: 性能要求のある処理は C++、出力フォーマット要求は Python の境界は変えない。per-mesh CSV と per-mesh GeoJSON が境界ファイルとなる
+3. **ADR-SRS-001 のハイブリッド原則を維持**: 性能要求のある処理は C++、出力フォーマット要求は Python の境界は変えない。per-mesh CSV と per-mesh GeoJSON が境界ファイルとなる
 4. **段階的移行を採用**: 各 Phase 完了時点で既存テスト全通過＋実メッシュでの動作同値性を検証してから次へ進む
 
 ### 段階実行プラン
@@ -90,7 +90,7 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 |---|---|
 | C のまま自前実装で FR-016 を完成させる | 境界追跡・輪郭抽出のエッジケース実装コストが高く、バグリスクも大。FR-014 や将来の画像処理拡張のたびに同様の自作が必要になる |
 | FR-016 のみを C++ モジュール化（折衷案） | C から呼ぶための `extern "C"` ラッパーが煩雑。OpenCV の戻り値型（`std::vector<std::vector<cv::Point>>` 等）を C 側で扱うのが現実的でない。結局フル C++ 化したくなる |
-| Python 単体実装に回帰（findsummits4sotaja 方式） | 大規模メッシュでのメモリ・速度要件を満たせない懸念から ADR-001 で却下済み。本判断でもその前提は維持 |
+| Python 単体実装に回帰（findsummits4sotaja 方式） | 大規模メッシュでのメモリ・速度要件を満たせない懸念から ADR-SRS-001 で却下済み。本判断でもその前提は維持 |
 | OpenCV を採用せず別の C++ 画像処理ライブラリ（CImg, GIL 等）を採用 | 採用例・コミュニティ規模・ドキュメント量で OpenCV が圧倒的。Terrain-RGB の用途で他ライブラリを選ぶ理由がない |
 
 ## Consequences
@@ -117,7 +117,7 @@ Phase 1〜4 の詳細手順・検証手順は採用後に各 ISSUE として登�
 
 ### 既存ドキュメントへの波及
 
-- **ADR-001**: 状態を「採用・実装済み（ADR-010 により C 部分が C++ に置換予定）」に更新
+- **ADR-SRS-001**: 状態を「採用・実装済み（ADR-SRS-010 により C 部分が C++ に置換予定）」に更新
 - **SRS（02_SRS.md）のアーキテクチャ概要（3.2/3.3）**: 論理コンポーネント名で記述するため、本 ADR の言語変更による影響を受けない。実装言語・ファイル名の決定は本 ADR で完結し、HLD/LLD で具体的なビルド構成を扱う。
 - **CLAUDE.md**: 「依存: libpng, libm, pthread（GCC / C99）」を「依存: OpenCV, libm, pthread（g++ / C++17）」に更新（Phase 1 着手時に実施）
 
@@ -128,7 +128,7 @@ Phase 1〜4 の詳細手順・検証手順は採用後に各 ISSUE として登�
 
 ## 関連ドキュメント
 
-- [ADR-001: C + Python ハイブリッドアーキテクチャ](ADR-001-hybrid-c-python-architecture.md)（部分置換）
+- [ADR-SRS-001: C + Python ハイブリッドアーキテクチャ](ADR-SRS-001-hybrid-c-python-architecture.md)（部分置換）
 - [SRS FR-015: 標高地形図出力](../02_SRS.md#fr-015-標高地形図出力)
 - [SRS FR-016: アクティベーションゾーン計算](../02_SRS.md#fr-016-アクティベーションゾーン計算)
 - [調査資料: cpp-opencv-migration-research.md](research/cpp-opencv-migration-research.md)
