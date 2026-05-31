@@ -20,7 +20,15 @@
       flex-shrink: 0;
     }
     #header h1 { font-size: 14px; font-weight: bold; white-space: nowrap; }
-    #meta { color: #666; font-size: 12px; white-space: nowrap; }
+    #meta {
+      color: #666;
+      font-size: 12px;
+      display: grid;
+      grid-template-columns: max-content auto;
+      row-gap: 2px;
+      column-gap: 6px;
+      align-items: baseline;
+    }
     #header .spacer { flex: 1; }
     #header button {
       padding: 4px 12px;
@@ -32,8 +40,21 @@
     }
     #header button:hover { background: #e0e0e0; }
 
-    #filters { display: flex; align-items: center; gap: 10px; }
-    #filters > span { font-size: 12px; color: #555; white-space: nowrap; }
+    #filters {
+      display: grid;
+      grid-template-columns: auto auto auto;
+      column-gap: 10px;
+      row-gap: 4px;
+      align-items: center;
+    }
+    #filters > span {
+      font-size: 12px;
+      color: #555;
+      white-space: nowrap;
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      align-self: center;
+    }
     #filters label { display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; white-space: nowrap; }
     #filters input[type="checkbox"] { cursor: pointer; width: 13px; height: 13px; accent-color: currentColor; }
     #filters label[data-cat="new"]       { color: #4D7A20; }
@@ -79,6 +100,18 @@
       border: 1px solid #aaa; border-radius: 2px; resize: vertical; box-sizing: border-box;
     }
 
+    /* Leaflet コントロールアイコン幅統一（30×30px）*/
+    .leaflet-bar a {
+      width: 30px !important;
+      height: 30px !important;
+      line-height: 30px !important;
+    }
+    .leaflet-control-layers-toggle {
+      width: 30px !important;
+      height: 30px !important;
+      background-size: 30px 30px !important;
+    }
+
     /* エクスポートコントロール: toggle アイコン（非展開時） */
     .export-control .leaflet-control-layers-toggle {
       background-image: none;
@@ -87,9 +120,47 @@
       justify-content: center;
       color: #555;
       font-size: 18px;
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
     }
+
+    /* 検索ボックス */
+    #search-wrapper { position: relative; }
+    #search {
+      width: 280px;
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      outline: none;
+    }
+    #search:focus { border-color: #4D7A20; box-shadow: 0 0 0 2px rgba(77,122,32,0.15); }
+    #suggest {
+      display: none;
+      position: absolute;
+      top: calc(100% + 3px);
+      left: 0;
+      width: 360px;
+      max-height: 240px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 2000;
+    }
+    .suggest-item {
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+    .suggest-item:hover, .suggest-item.active { background: #f0f7e6; }
+    .suggest-code { font-weight: bold; color: #333; white-space: nowrap; }
+    .suggest-name { color: #555; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .suggest-elev { color: #888; font-size: 11px; white-space: nowrap; }
     .export-ctrl-btn {
       display: block;
       width: 100%;
@@ -139,13 +210,23 @@
 
 <div id="header">
   <h1>findsummits viewer</h1>
-  <span id="meta">サミットリスト基準日: 2026-01-01 (UTC)　地理院タイル更新日（提供元）: 2026-04-28　解析日時: 2026-05-13 09:00 JST</span>
+  <div id="meta">
+    <span>サミットリスト基準日:</span>
+    <span>2026-01-01 (UTC)　<span style="color:#999">解析日時: 2026-05-13 09:00 JST</span></span>
+    <span>地理院タイル更新日（提供元）:</span>
+    <span>2026-04-28 (UTC)</span>
+  </div>
+  <span class="spacer"></span>
+  <div id="search-wrapper">
+    <input id="search" type="search" placeholder="コード / 山岳名 / 緯度,経度" autocomplete="off">
+    <div id="suggest"></div>
+  </div>
   <span class="spacer"></span>
   <div id="filters">
     <span>表示:</span>
     <label data-cat="new">       <input type="checkbox" data-cat="new"       checked> 新規</label>
-    <label data-cat="dominant">  <input type="checkbox" data-cat="dominant"  checked> 削除</label>
     <label data-cat="changed">   <input type="checkbox" data-cat="changed"   checked> 変更あり</label>
+    <label data-cat="dominant">  <input type="checkbox" data-cat="dominant"  checked> 削除</label>
     <label data-cat="unchanged"> <input type="checkbox" data-cat="unchanged" checked> 変更なし</label>
   </div>
 </div>
@@ -803,6 +884,135 @@ const ExportControl = L.Control.extend({
   }
 });
 new ExportControl().addTo(map);
+
+// ---- 検索機能 ----
+(function() {
+  const searchInput = document.getElementById("search");
+  const suggest    = document.getElementById("suggest");
+
+  const peaks = GEOJSON_DATA.features.filter(f => f.properties.feature_type === "peak");
+  const LAT_LON_RE = /^\s*([+-]?\d+\.?\d*)\s*[,\s]\s*([+-]?\d+\.?\d*)\s*$/;
+  let activeIdx = -1;
+
+  function getItems() { return suggest.querySelectorAll(".suggest-item"); }
+
+  function setActive(idx) {
+    getItems().forEach((el, i) => el.classList.toggle("active", i === idx));
+    activeIdx = idx;
+  }
+
+  function clearSuggest() {
+    suggest.style.display = "none";
+    suggest.innerHTML = "";
+    activeIdx = -1;
+  }
+
+  function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+  function highlight(text, q) {
+    if (!text || !q) return text || "";
+    return text.replace(new RegExp(`(${esc(q)})`, "gi"), "<b>$1</b>");
+  }
+
+  function openSuggest(items) {
+    suggest.innerHTML = "";
+    items.forEach(({ feature, hlCode, hlName }) => {
+      const p = feature.properties;
+      const div = document.createElement("div");
+      div.className = "suggest-item";
+      div.innerHTML = `<span class="suggest-code">${hlCode}</span>`
+                    + `<span class="suggest-name">${hlName}</span>`
+                    + `<span class="suggest-elev">${p.peak_elev}m</span>`;
+      div.addEventListener("mousedown", e => { e.preventDefault(); selectFeature(feature); });
+      suggest.appendChild(div);
+    });
+    suggest.style.display = items.length ? "block" : "none";
+    activeIdx = -1;
+  }
+
+  function doSearch(q) {
+    const trimmed = q.trim();
+    if (!trimmed) { clearSuggest(); return; }
+
+    // 緯度経度判定（日本国内範囲: 20-46N, 122-154E）
+    const m = trimmed.match(LAT_LON_RE);
+    if (m) {
+      const lat = parseFloat(m[1]);
+      const lon = parseFloat(m[2]);
+      if (lat >= 20 && lat <= 46 && lon >= 122 && lon <= 154) {
+        map.flyTo([lat, lon], 14);
+        clearSuggest();
+        return;
+      }
+    }
+
+    // 文字列部分一致（大文字小文字無視）
+    const lower = trimmed.toLowerCase();
+    const exact = [], rest = [];
+    peaks.forEach(f => {
+      const p = f.properties;
+      const code   = (p.summit_code      || "").toLowerCase();
+      const nameJp = (p.summit_name_jp   || "").toLowerCase();
+      const nameEn = (p.summit_name      || "").toLowerCase();
+      if (!code.includes(lower) && !nameJp.includes(lower) && !nameEn.includes(lower)) return;
+
+      const hlCode = highlight(p.summit_code || "", trimmed);
+      const names  = [p.summit_name_jp, p.summit_name].filter(Boolean);
+      const hlName = names.map(n => highlight(n, trimmed)).join(" / ");
+
+      const isFirst = code.startsWith(lower) || nameJp.startsWith(lower) || nameEn.startsWith(lower);
+      (isFirst ? exact : rest).push({ feature: f, hlCode, hlName });
+    });
+
+    openSuggest([...exact, ...rest].slice(0, 10));
+  }
+
+  function selectFeature(feature) {
+    const p = feature.properties;
+    const [lon, lat] = feature.geometry.coordinates;
+    clearSuggest();
+    searchInput.value = p.summit_name_jp || p.summit_name || p.summit_code || "";
+
+    // フィルターで非表示なら ON にする
+    const cat = peakCategory[p.summit_code];
+    if (cat && !map.hasLayer(filterGroups[cat])) {
+      filterGroups[cat].addTo(map);
+      const cb = document.querySelector(`#filters input[data-cat="${cat}"]`);
+      if (cb) cb.checked = true;
+    }
+
+    map.flyTo([lat, lon], 14, { animate: true, duration: 0.8 });
+
+    // flyTo 完了後にポップアップを開く
+    map.once("moveend", () => {
+      filterGroups[cat]?.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+          const ll = layer.getLatLng();
+          if (Math.abs(ll.lat - lat) < 0.0001 && Math.abs(ll.lng - lon) < 0.0001) {
+            layer.openPopup();
+          }
+        }
+      });
+    });
+  }
+
+  searchInput.addEventListener("input", () => doSearch(searchInput.value));
+  searchInput.addEventListener("keydown", e => {
+    const items = getItems();
+    if      (e.key === "ArrowDown")  { e.preventDefault(); setActive(Math.min(activeIdx + 1, items.length - 1)); }
+    else if (e.key === "ArrowUp")    { e.preventDefault(); setActive(Math.max(activeIdx - 1, 0)); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIdx >= 0 && items[activeIdx]) items[activeIdx].dispatchEvent(new MouseEvent("mousedown"));
+      else doSearch(searchInput.value);
+    }
+    else if (e.key === "Escape")     { clearSuggest(); }
+  });
+
+  document.addEventListener("click", e => {
+    if (!e.target.closest("#search-wrapper")) clearSuggest();
+  });
+})();
 
 // ---- ボタン ----
 document.getElementById("btn-export").addEventListener("click", () => {

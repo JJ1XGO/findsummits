@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-31",
-    "counter": 65
+    "counter": 66
   },
   "issues": [
     {
@@ -1896,7 +1896,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": "scripts/merge.py または scripts/prefetch_tiles.py でキャッシュタイルの mtime 最大値を集計し、gsi_tile_latest_date として merged.geojson の metadata に格納する。タイルの mtime は地理院サーバの Last-Modified ヘッダと一致（prefetch_tiles.py で os.utime() により設定済み）。SRS FR-019 に仕様記載済み。",
-      "notes": null,
+      "notes": "フォーマット規定: YYYY-MM-DD 形式（UTC）。ビューア表示時は末尾に (UTC) を付記すること。SRS FR-019 に明記済み（2026-05-31 更新）",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -1916,6 +1916,25 @@
       "assignee": null,
       "resolution": "viewer_mockup.html の「変更あり」フィルター判定を localStorage 保存ありから is_band_change_candidate=true ベースに変更する。SRS 定義（FR-012 / FR-021）との整合を取る。",
       "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-066",
+      "title": "FR-019 検索機能実装: 実 GeoJSON データでの動作確認と本実装",
+      "description": "モックアップで実装した検索機能（サミットコード/山岳名(和英)/緯度経度の部分一致検索・サジェスト・flyTo+ポップアップ）を、本実装フェーズで実 GeoJSON データに対して再現・検証する",
+      "type": "機能追加",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-05-31",
+      "stage": null,
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "SRS FR-019 に検索機能要件を記載済み（2026-05-31）。検索対象プロパティ: summit_code / summit_name_jp / summit_name。モックアップ実装はdocs/mockup/viewer_mockup.html を参照",
       "resolved_date": null,
       "verified_date": null,
       "history": []
