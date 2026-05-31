@@ -90,6 +90,8 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 | 標高タイル | 地理院タイルのうち標高データを提供するもの。RGB 値に標高をエンコードした 256×256px PNG。 |
 | OSM（OpenStreetMap） | ボランティアが構築するオープンな地理情報データベース。本プロジェクトでは HTML ビューアの背景地図として使用する。 |
 | OpenTopoMap | OSM データと SRTM 標高データを組み合わせた等高線入り地形図タイル。山名・等高線が表示され、山岳確認に有用。本プロジェクトでは HTML ビューアの背景地図として使用する。 |
+| N03 行政区域データ | 国土交通省 国土数値情報が提供する行政区域ポリゴンデータ（N03 データセット）。都道府県・振興局・市区町村単位の境界 GeoJSON として配布される。本プロジェクトでは SOTA エリアコード自動付与・所在地取得・北方領土除外に使用する（FR-017）。年版ごとにファイルが異なり、設定可能項目「N03 行政区域データ年版」で使用バージョンを指定する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
+| SOTA 既存サミット GeoJSON（geojson_v{N}） | 突合処理（FR-009）で使用する既存 SOTA サミットデータの GeoJSON 形式スナップショット。`ref/geojson_v{N}/ja0.geojson`〜`ja9.geojson`（N は設定可能項目「SOTA 既存サミット GeoJSON バージョン」で指定）に格納する。サミットごとの日本語山岳名取得に使用する。SOTA サミットリスト CSV（`ref/summitslist.csv`）と並行して参照される。 |
 
 ---
 
@@ -127,7 +129,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 | サミット候補 | — | 既存 SOTA サミットリストにない新規ピーク（match_status="new"）。SOTA 日本支部への追加申請対象。 |
 | 削除候補サミット | — | match_status=delete が確定した既存 SOTA サミット。サミット座標が dominant peak の delete判定ゾーン内に存在するがアクティベーションゾーン外であると判定されたもの。SOTA 日本支部への削除申請対象となる。 |
 | 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークの delete判定ゾーン内に含まれることで判定される（詳細は SRS FR-009・[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）。 |
-| delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop` は `params/config.ini` で管理（初期値 250m）。詳細は SRS FR-016・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照。 |
+| delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop`（デフォルト 250m）はデータ辞書「delete_zone 比高上限」として定義（SRS 3.4.1 参照）。詳細は SRS FR-016・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照。 |
 | 削除（delete） | — | `summit.match_status` の値。既存 SOTA サミット座標が検出ピークの delete判定ゾーン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |
 
 ### データ構造（列名・フラグ・識別子）
