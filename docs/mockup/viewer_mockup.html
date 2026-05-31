@@ -1019,7 +1019,7 @@ document.getElementById("btn-export").addEventListener("click", () => {
   alert("（モックアップ）申請書 .xlsx を単独ダウンロードします\n実物では SheetJS で SOTA申請書フォーマットの XLSX を生成してダウンロードします");
 });
 document.getElementById("btn-evidence").addEventListener("click", () => {
-  alert("（モックアップ）申請エビデンス .zip をダウンロードします\n\n同梱内容:\n・merged_summit_revised.xlsx（サミット一覧（申請内容反映版））\n・new.geojson\n・dominant.geojson\n・changed.geojson\n・unchanged.geojson\n\n実物では JSZip で生成してダウンロードします");
+  alert("（モックアップ）申請エビデンス .zip をダウンロードします\n\n同梱内容:\n・merged_summit_revised.xlsx（サミット一覧（申請内容反映版））\n  ※ 最後に「出典」シートを付与（UR-011・ADR-014 準拠）\n・new.geojson\n・dominant.geojson\n・changed.geojson\n・unchanged.geojson\n  ※ 各 GeoJSON には metadata.attribution を含む\n\n実物では JSZip で生成してダウンロードします");
 });
 document.getElementById("btn-publish").addEventListener("click", () => {
   alert("（モックアップ）公開用 HTML を単独ダウンロードします\n実物では入力内容を埋め込んだ閲覧専用 HTML をダウンロードします");

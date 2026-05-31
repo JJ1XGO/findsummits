@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-05-31",
-    "counter": 66
+    "counter": 67
   },
   "issues": [
     {
@@ -1938,6 +1938,33 @@
       "resolved_date": null,
       "verified_date": null,
       "history": []
+    },
+    {
+      "id": "ISSUE-067",
+      "title": "国土地理院タイル出典表示の整備",
+      "description": null,
+      "type": null,
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-05-31",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": null,
+      "notes": "UR-011 新設（URD）、FR-013/FR-012/FR-021 出典要件追加（SRS）、ADR-014 作成済み。実装対象: README / output_geojson.py / merge.py / viewer_mockup.html XLSX出力。ADR-014 参照: docs/decisions/ADR-014-gsi-tile-attribution-policy.md",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-05-31T13:01:49",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        }
+      ]
     }
   ]
 }

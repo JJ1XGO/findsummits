@@ -58,5 +58,14 @@ venv/bin/python3 scripts/merge.py ...
 
 `params/config.ini`（`params/config.ini.example` をコピーして作成）に `DATA_DIR` を記入する。
 
+## データソース・出典
+
+本ツールは [国土地理院](https://www.gsi.go.jp/) が提供する [地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)（標高タイル DEM5a / DEM5b / DEM5c / DEM10b）を加工して作成しています。
+
+- 出典: 国土地理院ウェブサイト (https://maps.gsi.go.jp/development/ichiran.html)
+- 利用規約: [国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)
+
+本ツールが生成する GeoJSON / CSV / XLSX には地理院タイルの標高値から解析した派生データが含まれます。再配布時も上記出典の明示をお願いします。
+
 ## ライセンス
 GPL-3.0

@@ -145,13 +145,22 @@ def main():
     counts = {"matched": 0, "new": 0, "deleted": 0}
 
     with open(args.input) as f:
-        for row in csv.DictReader(f):
+        rows = (line for line in f if not line.startswith("#"))
+        for row in csv.DictReader(rows):
             ms = row.get("match_status", "")
             if ms in counts:
                 counts[ms] += 1
             features.extend(row_to_features(row))
 
-    geojson = {"type": "FeatureCollection", "features": features}
+    geojson = {
+        "type": "FeatureCollection",
+        "metadata": {
+            "attribution": "地理院タイル（標高タイル）を加工して作成。出典: 国土地理院",
+            "source_url": "https://maps.gsi.go.jp/development/ichiran.html",
+            "license_url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+        },
+        "features": features,
+    }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as f:

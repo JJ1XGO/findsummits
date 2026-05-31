@@ -431,6 +431,9 @@ def main():
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w", newline="") as f:
+        f.write("# Source: 国土地理院 地理院タイル（DEM5a/5b/5c/DEM10b）\n")
+        f.write("# Attribution: 地理院タイル（標高タイル）を加工して作成\n")
+        f.write("# License: https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html\n")
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
         writer.writeheader()
         writer.writerows(rows)

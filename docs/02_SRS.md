@@ -3,8 +3,8 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-29 |
-| ステータス | ドラフト（FR-009/FR-012 出力 xlsx 化・merged_summit.xlsx / merged_summit_revised.xlsx 確定・FR-012 呼称変更） |
+| 最終更新日 | 2026-05-31 |
+| ステータス | ドラフト（FR-009/FR-012 出力 xlsx 化・merged_summit.xlsx / merged_summit_revised.xlsx 確定・FR-012 呼称変更・UR-011 対応として FR-013/FR-012/FR-021 に出典表示要件追加） |
 | 参照 URD | [`01_URD.md`](01_URD.md) |
 
 ---
@@ -553,6 +553,9 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
   - **GeoJSON メタデータ**: `merged.geojson` のトップレベルの `metadata` オブジェクト（FR-009 が生成）:
     - `summitslist_date`: `ref/summitslist.csv` 1行目（`SOTA Summits List (Date=DD/MM/YYYY)` 形式）からパースした日付文字列
     - `generated_at`: FR-009 実行時の ISO 8601 形式の日時文字列（パイプライン最終実行日時）
+    - `attribution`: `"地理院タイル（標高タイル）を加工して作成。出典: 国土地理院"` （固定文字列。[UR-011](01_URD.md#ur-011)・[ADR-014](decisions/ADR-014-gsi-tile-attribution-policy.md) 準拠）
+    - `source_url`: `"https://maps.gsi.go.jp/development/ichiran.html"` （固定文字列）
+    - `license_url`: `"https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html"` （固定文字列）
     - 不備フラグ群（`is_unmatched_summit` 等。詳細は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)）
   - **フィーチャ構成**（match_status 別）:
 
@@ -725,7 +728,7 @@ matched / dominant のみ。
 
 #### FR-012: サミット一覧（申請内容反映版）生成
 
-- **対応 UR**: [UR-005](01_URD.md#ur-005)
+- **対応 UR**: [UR-005](01_URD.md#ur-005), [UR-011](01_URD.md#ur-011)
 - **概要**: `merged.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心成果物）から、FR-019 でユーザーが編集した山岳名・rationale を反映したサミット一覧（申請内容反映版）を **HTML ビューア（FR-019）内でブラウザ生成**する。生成した XLSX は申請エビデンス ZIP（[FR-021](#fr-021-申請エビデンス-zip-生成)）に同梱してダウンロードする（UR-005 対応）。
 - **入力**: ローカル HTML ビューアに埋め込まれた GeoJSON データ + localStorage の編集内容（[FR-019](#fr-019-html-ビューア機能仕様) が管理）
 - **出力**: `merged_summit_revised.xlsx`（HTML ビューアからブラウザダウンロード。申請エビデンス ZIP 内に同梱）
@@ -733,6 +736,7 @@ matched / dominant のみ。
   - FR-009 出力の `merged_summit.xlsx`（サミット一覧（突合後）・バッチ生成時点）とは異なり、ユーザーが HTML ビューアで入力した山岳名・rationale 編集内容を反映する（フェーズ5 で生成）
   - **Point フィーチャのみが行に変換される**（Polygon / LineString フィーチャは含めない）
   - `rationale` プロパティは含めない（申請書根拠テキストは HTML ビューアで確認・編集し XLSX に直接反映する。サミット一覧（申請内容反映版）は座標・標高・突合結果のみを記録する）
+  - **出典シート**: XLSX の最後に「出典」シートを設け、「地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)」を記載する（[UR-011](01_URD.md#ur-011)・[ADR-014](decisions/ADR-014-gsi-tile-attribution-policy.md) 準拠）
   - **出力カラム**:
 
 | カラム | 説明 |
@@ -797,7 +801,7 @@ matched / dominant のみ。
 | `changed.geojson` | ポイントバンド変更候補 | peak の `match_status="matched"` かつ `is_band_change_candidate=true` ＋ 対応する summit フィーチャ |
 | `unchanged.geojson` | 変更なし既存サミット | peak の `match_status="matched"` かつ `is_band_change_candidate=false` ＋ 対応する summit フィーチャ |
 
-  - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at`）を複製する
+  - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](01_URD.md#ur-011) 準拠の固定値。詳細は [FR-013 メタデータ定義](#fr-013-html-ビューア生成) を参照）
   - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
   - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する

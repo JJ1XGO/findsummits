@@ -1,175 +1,159 @@
-# viewer モックアップ UI 改善（ヘッダー2行化・フィルター2行化・検索機能追加・アイコン幅統一）
+# 国土地理院タイル出典表示の整備
 
 ## Context
 
-前回コミット `9264a93`（viewer モックアップ機能追加・SRS エクスポート 3 ボタン化・FR-021 新設）後の追加 UI 要望をまとめる。要望はモックアップ（`docs/mockup/viewer_mockup.html`）への 5 項目と、それに伴う SRS（`docs/02_SRS.md` FR-019）・ISSUE 起票。
+国土地理院標高タイル（DEM5a/5b/5c, DEM10b）は[地理院タイル一覧](https://maps.gsi.go.jp/development/ichiran.html)で「2. 基本測量成果以外で出典記載のみで利用可能」（区分2）に分類されており、利用には**測量法に基づく申請は不要**である。ただし[国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)に基づき:
 
-要望出元: 2026-05-31 セッションの対話で確定。
+- **出典の明示**が必要（記載例:「国土地理院」または「地理院タイル」＋一覧ページへのリンク）
+- 編集・加工した二次データを公開する場合は「**加工して作成**」の明示が必要（例:「地理院タイル（標高タイル）を加工して作成」）
 
----
+現状は HTML ビューア（`docs/mockup/viewer_mockup.html:384-400`）の Leaflet attribution にのみ `© 国土地理院` リンクがあり、それ以外の成果物（README、merged.geojson、merged.csv、申請書XLSX以外のXLSX、配布版 GeoJSON）には出典情報が一切埋め込まれていない。SRS にも出典表示要件は明文化されていない（FR-006 等で attribution 表示の言及はあるが、ビューア背景タイルに限定）。
 
-## モックアップ修正（`docs/mockup/viewer_mockup.html`）
+本タスクは規約遵守と再配布時の追跡性を確保するため、**URD に出典表示の要件を新設し、SRS で各成果物の出典埋め込み方法を規定したうえで、README と主要な成果物に出典表示を実装する**。
 
-### M1: ヘッダーを 2 行化、地理院タイル更新日に `(UTC)` 追記
+## 対応範囲（ユーザー確認済み）
 
-**現状（L142）:**
-```html
-<span id="meta">サミットリスト基準日: 2026-01-01 (UTC)　地理院タイル更新日（提供元）: 2026-04-28　解析日時: 2026-05-13 09:00 JST</span>
+- URD: UR-011 を新設
+- SRS: 出典表示要件を明文化（実装の前提）
+- 実装: 中央データ＋公開資材に徹底
+  - README（プロジェクト全体の出典宣言）
+  - `merged.geojson` の `metadata` フィールド（ADR-013 で中央データと規定済み）
+  - 配布版 GeoJSON（HTML ビューアとともに公開）
+  - `merged.csv` のヘッダコメント
+  - HTML ビューアからエクスポートされる XLSX（申請書テンプレ XLSX は SOTA 側書式のため対象外）
+- HTML ビューアの Leaflet attribution は既実装のため変更不要
+
+## 修正対象ファイルと変更内容
+
+### 0. ADR: `docs/decisions/ADR-014-gsi-tile-attribution-policy.md`（新設）
+
+UR-011 新設および出典埋め込み方針の根拠を ADR として記録する。
+
+**フォーマット**（CLAUDE.md「ADR 管理ルール」に準拠）:
+
+```markdown
+| 状態 | 採用・未実装 |
+| 決定日 | 2026-05-31 |
+
+## Context
+- 国土地理院標高タイルは「区分2: 基本測量成果以外で出典記載のみで利用可能」（参照: ref/SOURCES.md）
+- 規約上、編集・加工した二次データを公開する場合「加工して作成」の明示と出典記載が必要
+- 現状は HTML ビューアの Leaflet attribution のみで、その他成果物には出典情報がない
+
+## Decision
+1. URD に UR-011 を新設し、生成・公開する成果物への出典・加工明示義務をユーザー要件として位置付ける
+2. 埋め込み範囲は「中央データ＋公開資材に徹底」:
+   - README（プロジェクト全体宣言）
+   - merged.geojson の metadata
+   - 配布版 GeoJSON
+   - merged.csv のヘッダコメント
+   - HTML ビューア出力 XLSX
+3. 標準文面を定義:
+   - 短形式: `地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)`
+   - GeoJSON metadata: `{"attribution": ..., "source_url": ..., "license": ...}`
+
+## Alternatives
+- **A. UR-010 を拡張して一本化**: 「規約遵守」を取得時から成果物公開時まで包含。却下理由 = 取得時の責務と公開時の責務はスコープが異なり、トレーサビリティが不明瞭になる
+- **B. README のみで対応**: 派生データ単体配布時に出典が失われ規約違反のリスク。却下
+- **C. ADR 不要として暗黙対応**: 文面・配置の判断履歴が残らず、将来の見直し時に再検討コストが発生。却下
+
+## Consequences
+- 各成果物のフォーマットに出典フィールドが追加される（GeoJSON は RFC 7946 foreign members として許容）
+- merge.py / output_geojson.py / viewer_mockup.html の出力ロジックに小変更が必要
+- merged.csv に `#` コメント行が入るため、後段で読む output_geojson.py はスキップ処理が必要
+- 申請書 XLSX（SOTA 側書式）は対象外。SOTA 申請のエビデンスは GeoJSON / CSV 側でカバー
 ```
 
-**修正後（イメージ）:**
+### 1. URD: `docs/01_URD.md`
+
+UR-011 を新設（UR-010 の直下に追記）:
+
 ```
-サミットリスト基準日:　　　　　2026-01-01 (UTC)　　解析日時: 2026-05-13 09:00 JST
-地理院タイル更新日（提供元）:　2026-04-28 (UTC)
+| UR-011 | 本ツールが生成・公開する成果物（README、GeoJSON、CSV、HTML ビューア、ビューアからエクスポートする XLSX 等）には、国土地理院コンテンツ利用規約に従い、出典（「国土地理院」または「地理院タイル」と一覧ページへのリンク）および「加工して作成」の旨を明示すること |
 ```
 
-**実装方針:**
-- `#meta` を `<span>` から `<div>` 化（または内部に 2 つの行ブロックを置く構造）
-- 内部レイアウトは **CSS grid 2 列 × 2 行**（ラベル列 + 値列）で日付の縦揃えを実現
-  - `grid-template-columns: max-content max-content;`
-  - 1 行目右の「解析日時: ...」は値セル内に通常テキストとして併記（追加カラム化はしない）
-- `#header` 全体は `align-items: center` のまま（2 行になった `#meta` 全体が縦中央寄せされる）
-- L142 のサンプル文字列に `2026-04-28 (UTC)` を反映
+理由・スコープに必要な補記をスコープ外との重複を避けつつ追加。
 
-### M2: フィルター（表示項目）を 2 行化、順序変更
+### 2. SRS: `docs/02_SRS.md`
 
-**現状（L144-150）:** 1 行・順序 `新規 / 削除 / 変更あり / 変更なし`
+出典表示を機能要件として明文化（FR-013 周辺、出力ファイル仕様の文脈で追加）:
 
-**修正後:**
-- HTML 順序を `新規 → 変更あり → 削除 → 変更なし` に並び替え
-- `#filters` を `display: grid; grid-template-columns: auto auto; row-gap: 4px; column-gap: 10px;` に変更
-- 自動で:
-  - 1 行目: 新規・変更あり
-  - 2 行目: 削除・変更なし
-- 「表示:」ラベルは `grid-row: 1 / span 2;` で 2 行ぶち抜き縦中央配置
-- 既存の checkbox / data-cat / イベントハンドラは無変更
+- 各出力（merged.geojson / merged.csv / 配布GeoJSON / ビューア出力XLSX）について、出典文字列の埋め込み位置と文面を明記
+- 標準文面:
+  - 短形式: `地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)`
+  - GeoJSON 用: `{"attribution": "地理院タイル（標高タイル）を加工して作成。出典: 国土地理院", "source_url": "https://maps.gsi.go.jp/development/ichiran.html"}`
+- HTML ビューアの Leaflet attribution は SRS 661-677 行で既に規定済みのため、対応文面の整合だけ確認
 
-### M3: 検索ボックスを追加（`#meta` と `#filters` の間）
+本要件の根拠 ADR は `docs/decisions/ADR-014-gsi-tile-attribution-policy.md`（新設）に記録する。
 
-**配置:**
-```html
-<div id="header">
-  <h1>...</h1>
-  <div id="meta">...（2行）</div>
-  <span class="spacer"></span>
-  <div id="search">...</div>          ← 新規
-  <span class="spacer"></span>
-  <div id="filters">...（2行）</div>
-</div>
+### 3. README: `README.md`
+
+末尾に「データソース・出典」セクションを追加:
+
+```markdown
+## データソース・出典
+
+本ツールは [国土地理院](https://www.gsi.go.jp/) が提供する [地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)（標高タイル DEM5a / DEM5b / DEM5c / DEM10b）を加工して作成しています。
+
+- 出典: 国土地理院ウェブサイト (https://maps.gsi.go.jp/development/ichiran.html)
+- 利用規約: [国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)
+
+本ツールが生成する GeoJSON / CSV / XLSX には地理院タイルの標高値から解析した派生データが含まれます。再配布時も上記出典の明示をお願いします。
 ```
-- `.spacer` を 2 つに分け、検索ボックスを左右の余白でセンタリング
-- 検索ボックス本体: 幅 280px 固定（CSS で `width: 280px`）
 
-**検索仕様:**
-| 入力種別 | 判定 | 動作 |
-|---|---|---|
-| 数値 + カンマ/空白 + 数値（例: `35.68, 139.76` / `35.68 139.76`）| 正規表現 `^\s*[-+]?\d+\.?\d*\s*[,\s]\s*[-+]?\d+\.?\d*\s*$` で緯度経度判定 | `map.flyTo([lat, lon], 14)` |
-| それ以外（文字列）| `GEOJSON_DATA.features` を走査して **部分一致**（大文字小文字無視）| サジェスト・ドロップダウン候補表示 |
+「ライセンス」セクションは既存（GPL-3.0）を維持。
 
-**検索対象フィールド（部分一致）:**
-- `summit_code`（仮コード含む）
-- `name_ja`（山岳名 日本語）
-- `name_en`（山岳名 アルファベット）
-※ 該当プロパティ名がモックアップのダミーデータと異なる可能性あり → 実装時に GEOJSON_DATA を確認して合わせる
+### 4. GeoJSON 出力: `scripts/output_geojson.py`
 
-**サジェスト UI:**
-- 入力欄下に絶対配置ドロップダウン（`position: absolute`、`z-index: 1000` 以上で地図より前面）
-- 各候補に **コード ／ 名前(JA) ／ 名前(EN) ／ 標高** を1行表示
-- 候補上限 10 件（先頭一致を優先、それ以外を末尾）
-- 候補クリック / ↑↓ + Enter で確定
-- 確定時の動作: 該当 feature の座標に `flyTo` + マーカーポップアップ `openPopup()`
-  - 該当 feature が現在のフィルターで非表示の場合は警告表示（または対象カテゴリのフィルターを自動 ON にする → 仕様確認は実装フェーズで）
+154 行目の `FeatureCollection` 構築箇所を修正:
 
-**実装規模:** HTML 約 10 行・CSS 約 30 行・JS 約 80 行
-
-### M4: Leaflet コントロールのアイコン幅を 30×30px に統一
-
-**現状:**
-- `.export-control .leaflet-control-layers-toggle`: **26×26px**（L82-92 で明示）
-- `.leaflet-bar a`（zoom）: Leaflet デフォルト **26×26px**
-- `.leaflet-control-layers-toggle`（レイヤー選択）: Leaflet デフォルト **36×36px** （hamburger アイコン）
-
-**修正後（CSS 追加）:**
-```css
-/* 3 コントロールのアイコン幅統一 */
-.leaflet-bar a,
-.leaflet-control-layers-toggle {
-  width: 30px !important;
-  height: 30px !important;
-  line-height: 30px !important;
+```python
+geojson = {
+    "type": "FeatureCollection",
+    "metadata": {
+        "attribution": "地理院タイル（標高タイル）を加工して作成。出典: 国土地理院",
+        "source_url": "https://maps.gsi.go.jp/development/ichiran.html",
+        "license": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+    },
+    "features": features,
 }
-.export-control .leaflet-control-layers-toggle {
-  width: 30px;
-  height: 30px;
-  font-size: 18px;  /* 既存 */
-}
-```
-- レイヤー選択 toggle の hamburger 画像（`background-image`）は Leaflet 標準のままで、`background-size: 30px 30px;` を追加してフィット
-- border-radius は Leaflet 標準（4px）のまま
-
----
-
-## SRS 修正（`docs/02_SRS.md` FR-019）
-
-| # | 該当箇所 | 修正内容 |
-|---|---|---|
-| S1 | FR-019 メタデータ表示記述 | `gsi_tile_latest_date` 表示時に `(UTC)` 補記を必須とする旨を追記 |
-| S2 | FR-019 UI 要件 | **検索機能の要件を新規追記**: 検索対象（サミットコード / 山岳名 和・英 / 緯度経度）、部分一致、サジェスト機能、ヒット時の動作（flyTo + ポップアップ） |
-| S3 | FR-019 UI 要件（任意） | ヘッダー表示の **2 行化** とフィルターの **2 行化** は SRS で配置を規定していないため記述しない（モックアップのみ）|
-
-S3 はモックアップ実装のみで SRS には反映しない（仕様優先原則の運用ルールに従う）。
-
----
-
-## トラッカー更新（`mgmt/tracker/data/issues.json`）
-
-| 操作 | ID | 内容 |
-|---|---|---|
-| update | ISSUE-064 | パイプラインで `gsi_tile_latest_date` を生成する際の **フォーマット規定**（`YYYY-MM-DD` ＋ ヘッダー表示時に `(UTC)` 付記）を notes に追加 |
-| 新規起票 | ISSUE-NEW1 | FR-019 検索機能実装: 実 GeoJSON データでの動作確認（モックアップで合わせた検索仕様を本実装で再現） |
-
----
-
-## 検証
-
-### モックアップ検証（ブラウザで `viewer_mockup.html` を開く）
-
-- [ ] ヘッダー 1 行目に `サミットリスト基準日: 2026-01-01 (UTC)　解析日時: 2026-05-13 09:00 JST`
-- [ ] ヘッダー 2 行目に `地理院タイル更新日（提供元）: 2026-04-28 (UTC)`
-- [ ] 「サミットリスト基準日」と「地理院タイル更新日（提供元）」の日付開始位置が縦に揃う
-- [ ] フィルター 1 行目に `新規`・`変更あり`、2 行目に `削除`・`変更なし`、「表示:」ラベルは縦中央
-- [ ] ヘッダー中央に検索ボックス（幅 280px）が配置される
-- [ ] 検索ボックスに `富士` と入力 → サジェスト候補に該当サミットが出る
-- [ ] 候補クリック → 地図がそのサミットに flyTo・ポップアップが開く
-- [ ] 検索ボックスに `35.68, 139.76` と入力 → Enter で当該座標に flyTo
-- [ ] 右上 3 コントロール（レイヤー選択・ズーム・エクスポート）のアイコン幅が同じ（30×30px）
-- [ ] レイヤー選択の hamburger アイコンが 30×30 にフィットして崩れない
-
-### SRS 検証
-```bash
-grep -nE "gsi_tile_latest_date.*UTC|UTC.*gsi_tile_latest_date" docs/02_SRS.md  # 期待: FR-019 で出現
-grep -nE "検索|search" docs/02_SRS.md                                          # 期待: FR-019 で新規追記が出現
 ```
 
-### コミット方針
-- 単一コミット: `feat(viewer): モックアップ UI 改善（2行ヘッダー・フィルター2行・検索機能・アイコン統一）`
-- モックアップ修正と SRS 修正・トラッカー更新を同コミット（CLAUDE.md「同一作業内のコード＋ドキュメントは同コミット可」）
+`metadata` プロパティは GeoJSON 仕様（RFC 7946）の foreign members として許容される（パースに支障なし）。
 
----
+### 5. CSV 出力: `scripts/merge.py`
 
-## 関連ファイル
+`merged.csv` の先頭にコメント行（`#` 始まり）を3行追加:
 
-- `docs/mockup/viewer_mockup.html`（M1〜M4 / 約 200 行追加・変更）
-- `docs/02_SRS.md`（FR-019: S1・S2 追記）
-- `mgmt/tracker/data/issues.json`（ISSUE-064 update + 新規 ISSUE 起票）
-- `mgmt/plan.md`（本プランに更新 ※ ExitPlanMode 後、`.claude/plans/` から `mgmt/plan.md` へ移動）
+```
+# Source: 国土地理院 地理院タイル（DEM5a/5b/5c/DEM10b）
+# Attribution: 地理院タイル（標高タイル）を加工して作成
+# License: https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html
+```
 
----
+`csv.DictWriter` 利用箇所を確認し、ヘッダ行の直前にコメントを書き込む。後段の `output_geojson.py` で読む際に `#` 行をスキップ処理する分岐を追加（数行）。
 
-## 留意点
+### 6. HTML ビューア出力 XLSX
 
-- **仕様優先原則**: UI 配置・フィルター順は SRS で規定しないため、モックアップのみで先行実装する（SRS には書かない）。検索機能は機能要件なので SRS に記述する
-- **検索プロパティ名のマッピング**: モックアップのダミーデータが `name_ja` / `name_en` / `summit_code` のキー名で揃っているかは実装時に確認（揃っていなければマッピング層を 1 つ挟む）
-- **検索ヒット時のフィルター扱い**: 「該当 feature が現在のフィルターで非表示の場合どうするか」は実装時に最終確認（候補に「(非表示中)」と表示するだけ・自動 ON にする、の 2 案）
-- **アイコン幅 30px の根拠**: 26px だと現状の zoom/export と揃うがレイヤー選択 hamburger アイコンが小さく見える可能性。30px なら 3 つとも違和感なし。実装後に微調整可
-- **モデル切り替え**: 実装フェーズで Sonnet 4.6 に `/model` 切り替えを促す（feedback_model_switching.md に基づく）
+`viewer_mockup.html` の XLSX エクスポート処理に、別シート「出典」または1行目のヘッダ上に出典文字列を埋め込む。具体的な実装箇所は XLSX エクスポートのロジック確認後に決定。
+
+## 検証手順
+
+1. **URD/SRS 整合確認**: `docs/01_URD.md` と `docs/02_SRS.md` を読み、UR-011 → SRS 要件 → 各成果物の対応がトレース可能であること
+2. **README 表示確認**: GitHub 上で README が想定通り表示されること（編集後即時 commit）
+3. **GeoJSON**: `venv/bin/python3 scripts/output_geojson.py ...` 実行 → 出力 JSON を `jq '.metadata'` で確認
+4. **CSV**: merge.py 実行 → merged.csv 先頭3行が `#` コメントになっていること
+5. **CSV → GeoJSON 連携**: output_geojson.py が `#` コメント行を正しくスキップして既存と同じレコード数を生成すること
+6. **HTML ビューア XLSX**: ビューアでデータを読み込み XLSX エクスポート → 出力ファイルに出典シート/行が含まれること
+
+## 作業順序
+
+1. ADR-014 を先に作成（判断根拠の確定）
+2. ドキュメント（URD → SRS）を確定し ADR を相互参照
+3. 確定後、ユーザーに `/model` で Sonnet 切り替えを促す（記憶: `feedback_model_switching.md`）
+4. README → output_geojson.py → merge.py → viewer_mockup.html の順で実装
+5. 一連の作業完了後にまとめて commit（記憶: `feedback_commit_at_end.md`）
+
+## 関連 ISSUE 登録
+
+実装と並行して `mgmt/tracker/track.py issue add` で本作業を登録する（カテゴリ: 規約遵守 / ステージ: SRS）。
