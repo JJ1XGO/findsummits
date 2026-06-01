@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-31",
-    "counter": 68
+    "last_updated": "2026-06-01",
+    "counter": 69
   },
   "issues": [
     {
@@ -1996,6 +1996,33 @@
           "actor": "不明",
           "from": "未対応",
           "to": "対応完了",
+          "comment": ""
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-069",
+      "title": "SRS データ辞書の網羅性向上・FR 名称統一・ADR-SRS-014 規約 5 追加",
+      "description": null,
+      "type": "改善",
+      "priority": "高",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-01",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": null,
+      "notes": "データ辞書(3.4→2.2)移動、中間データ登録、全21FR入出力テーブル辞書名統一、ADR-SRS-014規約5追加",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-01T16:57:06",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
           "comment": ""
         }
       ]
