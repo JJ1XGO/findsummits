@@ -611,6 +611,11 @@ const ContourLayer = L.GridLayer.extend({
     attribution: ''   // 固定 attribution で処理済み
   },
 
+  initialize(options) {
+    L.GridLayer.prototype.initialize.call(this, options);
+    this._cache = new Map(); // url → Promise<Float32Array|null>
+  },
+
   createTile(coords, done) {
     const canvas = document.createElement('canvas');
     canvas.width  = 256;
@@ -620,15 +625,31 @@ const ContourLayer = L.GridLayer.extend({
   },
 
   async _render(canvas, coords) {
-    const elev = await this._loadElev(coords.z, coords.x, coords.y);
+    const elev = await this._loadExtended(coords.z, coords.x, coords.y);
     if (elev) this._draw(canvas, elev, map.getZoom());
   },
 
-  async _loadElev(z, x, y) {
-    const srcZ = Math.min(z, 15);
+  // 主タイル・右隣・下隣を並列取得して 257×257 の拡張グリッドを構築
+  // → タイル境界での等高線の途切れを解消する
+  async _loadExtended(z, x, y) {
+    const [main, right, bottom] = await Promise.all([
+      this._loadSingleElev(z, x,     y    ),
+      this._loadSingleElev(z, x + 1, y    ),
+      this._loadSingleElev(z, x,     y + 1),
+    ]);
+    if (!main) return null;
 
-    // z=15: dem5a → dem5b → dem5c の順で試行
-    // z≤14: dem_png を直接使用
+    const ext = new Float32Array(257 * 257).fill(-9999);
+    for (let py = 0; py < 256; py++) {
+      ext.set(main.subarray(py * 256, py * 256 + 256), py * 257);
+    }
+    if (right)  for (let py = 0; py < 256; py++) ext[py * 257 + 256] = right[py * 256];
+    if (bottom) for (let px = 0; px < 256; px++) ext[256 * 257 + px] = bottom[px];
+    return ext;
+  },
+
+  async _loadSingleElev(z, x, y) {
+    const srcZ = Math.min(z, 15);
     const candidates = srcZ === 15 ? [
       `https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/${srcZ}/${x}/${y}.png`,
       `https://cyberjapandata.gsi.go.jp/xyz/dem5b_png/${srcZ}/${x}/${y}.png`,
@@ -638,13 +659,12 @@ const ContourLayer = L.GridLayer.extend({
     ];
 
     for (const url of candidates) {
-      const elev = await this._fetchElev(url);
+      const elev = await this._fetchCached(url);
       if (elev) return elev;
     }
-
     // z=15 で全 dem5 が 404 → dem_png z=14 から象限を切り出して拡大
     if (srcZ === 15) {
-      const elev14 = await this._fetchElev(
+      const elev14 = await this._fetchCached(
         `https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/${x >> 1}/${y >> 1}.png`
       );
       if (elev14) return this._scaleQuadrant(elev14, x & 1, y & 1);
@@ -652,20 +672,25 @@ const ContourLayer = L.GridLayer.extend({
     return null;
   },
 
-  // dem_png z=14 の 128×128 象限を 256×256 に nearest-neighbor 拡大
+  // 同一 URL は一度だけ fetch してキャッシュ（隣接タイルの重複取得を防ぐ）
+  _fetchCached(url) {
+    if (!this._cache.has(url)) {
+      if (this._cache.size >= 300) this._cache.delete(this._cache.keys().next().value);
+      this._cache.set(url, this._fetchElev(url));
+    }
+    return this._cache.get(url);
+  },
+
   _scaleQuadrant(elev256, qx, qy) {
     const out = new Float32Array(256 * 256);
     for (let py = 0; py < 256; py++) {
       for (let px = 0; px < 256; px++) {
-        const sx = (px >> 1) + qx * 128;
-        const sy = (py >> 1) + qy * 128;
-        out[py * 256 + px] = elev256[sy * 256 + sx];
+        out[py * 256 + px] = elev256[((py >> 1) + qy * 128) * 256 + (px >> 1) + qx * 128];
       }
     }
     return out;
   },
 
-  // fetch → blob URL 経由で canvas に描画（CORS canvas taint を回避）
   async _fetchElev(url) {
     try {
       const res = await fetch(url);
@@ -687,34 +712,35 @@ const ContourLayer = L.GridLayer.extend({
     } catch(e) { return null; }
   },
 
-  // RGB → 標高（C エンジンと同じデコード式）
   _decode(imageData) {
     const { data } = imageData;
     const elev = new Float32Array(256 * 256);
     for (let i = 0; i < 256 * 256; i++) {
       const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
       let v = r * 65536 + g * 256 + b;
-      if (v === 8388608) { elev[i] = -9999; continue; } // NODATA (R=128,G=0,B=0)
-      if (v > 8388608) v -= 16777216;                    // 負の標高
+      if (v === 8388608) { elev[i] = -9999; continue; }
+      if (v > 8388608) v -= 16777216;
       elev[i] = v / 100;
     }
     return elev;
   },
 
   _draw(canvas, elev, mapZ) {
+    // elev は 257×257（右・下に 1px バッファ）
+    const W = 257;
     const { major, minor } = getContourIntervals(mapZ);
     const ctx = canvas.getContext('2d');
     const imd = ctx.createImageData(256, 256);
     const d   = imd.data;
 
-    for (let py = 0; py < 255; py++) {
-      for (let px = 0; px < 255; px++) {
-        const i = py * 256 + px;
+    for (let py = 0; py < 256; py++) {
+      for (let px = 0; px < 256; px++) {
+        const i = py * W + px;
         const e = elev[i];
         if (e === -9999) continue;
 
-        const er = elev[i + 1];
-        const eb = elev[i + 256];
+        const er = elev[i + 1];  // 右隣（タイル境界を越えても繋がる）
+        const eb = elev[i + W];  // 下隣（同上）
         let isMajor = false, isMinor = false;
 
         for (const n of [er, eb]) {
@@ -724,11 +750,11 @@ const ContourLayer = L.GridLayer.extend({
           if (Math.floor(hi / minor) !== Math.floor(lo / minor))   isMinor = true;
         }
 
-        const j = i * 4;
+        const j = (py * 256 + px) * 4;
         if (isMajor) {
-          d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=220; // #a04020 計曲線
+          d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=160; // #a04020 計曲線
         } else if (isMinor) {
-          d[j]=200; d[j+1]=120; d[j+2]=80;  d[j+3]=180; // #c87850 主曲線
+          d[j]=200; d[j+1]=120; d[j+2]=80;  d[j+3]=100; // #c87850 主曲線
         }
       }
     }
