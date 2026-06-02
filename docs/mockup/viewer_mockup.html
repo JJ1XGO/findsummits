@@ -752,9 +752,9 @@ const ContourLayer = L.GridLayer.extend({
 
         const j = (py * 256 + px) * 4;
         if (isMajor) {
-          d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=160; // #a04020 計曲線
+          d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=120; // #a04020 計曲線
         } else if (isMinor) {
-          d[j]=200; d[j+1]=120; d[j+2]=80;  d[j+3]=100; // #c87850 主曲線
+          d[j]=200; d[j+1]=120; d[j+2]=80;  d[j+3]=70;  // #c87850 主曲線
         }
       }
     }

@@ -1,6 +1,6 @@
 # ADR-SRS-015: HTML ビューアへの等高線オーバーレイ追加
 
-| 状態 | 採用・未実装 |
+| 状態 | 採用・モックアップ実装済み |
 | 決定日 | 2026-06-02 |
 
 ## Context
@@ -9,7 +9,9 @@ HTML ビューア（[FR-013](../02_SRS.md#fr-013-html-ビューア生成)）の�
 
 地理院標準・地理院淡色・OpenTopoMap はいずれも等高線入りであるため、OSM 選択時のみ等高線情報が失われる。この欠落を補う手段として等高線オーバーレイの追加を検討した。
 
-参考実装: frogcat 氏の手法 https://qiita.com/frogcat/items/1224c4c8f1bc308c4b42
+参考実装:
+- frogcat 氏の手法（等高線ピクセル描画）: https://qiita.com/frogcat/items/1224c4c8f1bc308c4b42
+- タイル境界の解消手法: https://www.openstreetmap.org/user/a2021/diary/405245
 
 ## Decision
 
@@ -24,7 +26,12 @@ HTML ビューア（[FR-013](../02_SRS.md#fr-013-html-ビューア生成)）の�
 - 主用途は OSM 選択時の補完だが、独立 overlay として他の基図との同時 ON も可能（等高線入り基図との組み合わせでは二重表示になる）
 - 帰属表示: GeoJSON データ自体も地理院標高タイル由来であるため、基図選択に関わらず `© 国土地理院`（`https://maps.gsi.go.jp/`）を常時表示するよう変更する
 
-描画パラメータ（色・間隔・線幅）の詳細は HLD で確定する。
+タイル境界での等高線の途切れ解消: 主タイル・右隣・下隣の3タイルを並列取得して 257×257 の拡張グリッドを構築し、境界ピクセルの比較を可能にする（参考: https://www.openstreetmap.org/user/a2021/diary/405245）。同一 URL は Map キャッシュ（上限 300 件）で管理し重複 fetch を防ぐ。
+
+描画パラメータの HLD 向け暫定値（`docs/mockup/viewer_mockup.html` で確認済み）:
+- 色: 計曲線 `#a04020` (alpha=120) / 主曲線 `#c87850` (alpha=70)
+- 間隔: z≤11: 500m/100m、z≤13: 200m/50m、z≤14: 100m/20m、z≥15: 50m/10m
+- 最終値は HLD で確定する（ISSUE-070）
 
 ## Alternatives
 
