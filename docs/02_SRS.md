@@ -25,7 +25,7 @@
    - [フェーズ1: タイル取得・前処理](#フェーズ1-タイル取得前処理)
      - [FR-017: N03 行政区域前処理（データ準備）](#fr-017-n03-行政区域前処理データ準備)
      - [FR-001: 標高タイル事前取得](#fr-001-標高タイル事前取得)
-   - [フェーズ2: ピーク解析（per-mesh）](#フェーズ2-ピーク解析per-mesh)
+   - [フェーズ2-1: 3x3メッシュ解析](#フェーズ2-1-3x3メッシュ解析)
      - [FR-004: メッシュ結合解析](#fr-004-メッシュ結合解析)
      - [FR-002: DEM 階層フォールバック](#fr-002-dem-階層フォールバック)
      - [FR-003: 標高デコード・NODATA 処理](#fr-003-標高デコードnodata-処理)
@@ -34,10 +34,12 @@
      - [FR-006: コル検出・プロミネンス計算](#fr-006-コル検出プロミネンス計算)
      - [FR-016: ピーク域ポリゴン生成](#fr-016-ピーク域ポリゴン生成)
      - [FR-007: プロミネンスフィルタ・per-mesh CSV 出力](#fr-007-プロミネンスフィルタper-mesh-csv-出力)
-   - [フェーズ3: ピーク統合（全国）](#フェーズ3-ピーク統合全国)
+   - [フェーズ2-2: 広域メッシュ解析](#フェーズ2-2-広域メッシュ解析)
+     - [FR-014: 独立峰のコル探索](#fr-014-独立峰のコル探索)
+   - [フェーズ3: ピーク統合・コル充足判定](#フェーズ3-ピーク統合コル充足判定)
      - [FR-008: per-mesh CSV 統合](#fr-008-per-mesh-csv-統合)
      - [FR-018: per-mesh activation.geojson 統合](#fr-018-per-mesh-activationgeojson-統合)
-     - [FR-014: 独立峰のコル探索](#fr-014-独立峰のコル探索)
+     - [FR-022: コル充足判定](#fr-022-コル充足判定)
    - [フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成](#フェーズ4-sota突合中心成果物生成html-ビューア生成)
      - [FR-009: SOTAリスト突合・match_status 判定](#fr-009-sotaリスト突合match_status-判定)
      - [FR-010: 削除候補のスコープ](#fr-010-削除候補のスコープ)
@@ -134,7 +136,7 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 | per-mesh ピーク候補 CSV | フェーズ2（[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力)）が出力する 1次メッシュ単位のピーク候補リスト（通常モード）。カラム定義・ファイル仕様は [FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力) 出力仕様参照 | [FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力) → [FR-008](#fr-008-per-mesh-csv-統合) |
 | 広域 per-mesh ピーク候補 CSV | [FR-014](#fr-014-独立峰のコル探索) が広域モードで出力するピーク候補 CSV。通常 per-mesh と区別できる命名（具体規則は HLD） | [FR-014](#fr-014-独立峰のコル探索) → [FR-008](#fr-008-per-mesh-csv-統合) |
 | per-mesh アクティベーションゾーン GeoJSON | フェーズ2（[FR-016](#fr-016-ピーク域ポリゴン生成)）が出力する 1次メッシュ単位のピーク域ポリゴン（AZ + delete判定ゾーン）。ファイル仕様は [FR-016](#fr-016-ピーク域ポリゴン生成) 出力仕様参照 | [FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-activationgeojson-統合) |
-| 統合ピーク候補 work CSV（`merged_peak.csv`） | per-mesh CSV を統合・重複排除した内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用 | [FR-008](#fr-008-per-mesh-csv-統合)/[FR-014](#fr-014-独立峰のコル探索) → [FR-009](#fr-009-sotaリスト突合match_status-判定)/[FR-014](#fr-014-独立峰のコル探索) |
+| 統合ピーク候補 work CSV（`merged_peak.csv`） | per-mesh CSV を統合・重複排除した内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用 | [FR-008](#fr-008-per-mesh-csv-統合)/[FR-014](#fr-014-独立峰のコル探索) → [FR-009](#fr-009-sotaリスト突合match_status-判定)/[FR-022](#fr-022-コル充足判定) |
 | 統合済みピーク域 GeoJSON（`merged_activation.geojson`） | per-mesh アクティベーションゾーン GeoJSON を統合した内部中間ファイル。デバッグ・差分検査用として物理出力を残す。ファイル仕様は [FR-018](#fr-018-per-mesh-activationgeojson-統合) 出力仕様参照 | [FR-018](#fr-018-per-mesh-activationgeojson-統合) → [FR-009](#fr-009-sotaリスト突合match_status-判定) |
 | N03 前処理済み地域 GeoJSON（都道府県/振興局単位） | [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成する都道府県/振興局単位の行政区域 GeoJSON。SOTA エリアコード自動付与に使用。詳細は [6.10](#610-入力-n03-前処理済みファイルfr-017-生成) 参照 | [FR-017](#fr-017-n03-行政区域前処理データ準備) → [FR-009](#fr-009-sotaリスト突合match_status-判定) |
 | N03 前処理済み市区町村 GeoJSON | [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成する市区町村単位の行政区域 GeoJSON。所在地（市区町村名）取得に使用。詳細は [6.10](#610-入力-n03-前処理済みファイルfr-017-生成) 参照 | [FR-017](#fr-017-n03-行政区域前処理データ準備) → [FR-009](#fr-009-sotaリスト突合match_status-判定) |
@@ -187,17 +189,24 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 行政区域前処理コンポーネント           N03 行政区域前処理（初回のみ）
        └─ $DATA_DIR/ref/N03-{n03_year}_regions.geojson  ← 統合・突合コンポーネントが参照
        ↓ ユーザーが解析コマンドを実行
-【フェーズ2: ピーク解析（per-mesh）】
-地形解析エンジン         ピーク・コル検出・ピーク域ポリゴン生成
+【フェーズ2-1: 3x3メッシュ解析】
+地形解析エンジン         ピーク・コル検出・ピーク域ポリゴン生成（3×3 通常モード）
        ├─ per-mesh CSV              ($DATA_DIR/results/csv/<meshcode>.csv)
        ├─ per-peak polygons         ($DATA_DIR/results/csv/<meshcode>_activation.geojson)
        └─ 標高地形図                ($DATA_DIR/images/<meshcode>_terrain.png)
        ↓
-【フェーズ3: ピーク統合（全国・独立峰広域再解析を内包）】
-統合コンポーネント        ピーク統合・独立峰コル探索
+【フェーズ3: ピーク統合・コル充足判定】
+統合コンポーネント        ピーク統合・コル充足判定
        ├─ merged_peak.csv           （内部 work CSV）
        └─ merged_activation.geojson ($DATA_DIR/results/merged_activation.geojson) ← 内部中間ファイル
-       ↓
+       │  ↓ key_col_resolved=false ゼロ → フェーズ4 へ
+       │  ↑ key_col_resolved=false が残っていれば N=4→5→6 で以下を繰り返す
+       │
+【フェーズ2-2: 広域メッシュ解析】（コル充足判定が未充足を検出した場合のみ実行）
+地形解析エンジン         ピーク・コル検出（N×N + L14 広域モード・コル確定のみ）
+       └─ 広域 per-mesh CSV         ($DATA_DIR/results/csv/<meshcode>_wide_N.csv 等)
+       ↓ → FR-008（per-mesh CSV 統合）を再実行 → コル充足判定へ戻る
+       ↓ N=6 まで使い切っても未解決なら以下へ（FR-009 が is_key_col_unresolved で異常終了）
 【フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成】
 統合・突合コンポーネント   SOTA突合・中心成果物生成
        ├─ merged.geojson            ($DATA_DIR/results/merged.geojson) ← 中心成果物（全フィーチャ + rationale）
@@ -277,7 +286,9 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 
 ---
 
-### フェーズ2: ピーク解析（per-mesh）
+### フェーズ2-1: 3x3メッシュ解析
+
+全解析対象メッシュを 3×3 の通常モードで処理し、per-mesh CSV・アクティベーションゾーン GeoJSON・標高地形図を生成する。
 
 #### FR-004: メッシュ結合解析
 
@@ -289,7 +300,7 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 | データ名 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|
 | 1次メッシュコードリスト | 必須 | — | — |
-| 解析範囲サイズ N | 任意 | 3。[FR-014](#fr-014-独立峰のコル探索) からの呼び出し時は N=4/5/6 が指定される | [データ辞書参照](#221-設定可能項目) |
+| 解析範囲サイズ N | 任意 | 3。フェーズ2-2（[FR-014](#fr-014-独立峰のコル探索)）から呼び出された場合は N=4〜6 が渡される | [データ辞書参照](#221-設定可能項目) |
 
 **出力**:
 
@@ -332,7 +343,7 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
   - 結合範囲の外周に 1px 幅の海面ボーダー（0m）を付加し、メッシュ端を海岸線とみなす
   - 解析対象メッシュ全体の地理的範囲内のピークを per-mesh CSV に出力する
   - 全176メッシュを逐次実行すると、同一ピークが複数の解析（最大 N² 回）に含まれる。フェーズ3 の重複排除後に `analysis_count`（実際の解析回数）と `expected_count`（期待解析回数）で安定性を評価する（[FR-009 参照](#fr-009-sotaリスト突合match_status-判定)）
-  - N≥4 の場合（[FR-014](#fr-014-独立峰のコル探索) 呼び出し時）は [FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成を呼び出さない。また [FR-014](#fr-014-独立峰のコル探索) から呼び出された場合は対象ピークの行だけを per-mesh CSV に出力する（詳細は [FR-014](#fr-014-独立峰のコル探索) 参照）
+  - フェーズ2-2（[FR-014](#fr-014-独立峰のコル探索)）から呼び出された場合（N≥4）は [FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成を呼び出さない。また対象ピークの行だけを per-mesh CSV に出力する（詳細は [FR-014](#fr-014-独立峰のコル探索) 参照）
   - 解析・ピーク検出・コル検出のロジック自体は N の値によらず共通（[FR-005](#fr-005-ピーク候補検出)・[FR-006](#fr-006-コル検出プロミネンス計算)・[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力)）
   - 詳細は [`decisions/ADR-SRS-003-3x3-mesh-analysis.md`](decisions/ADR-SRS-003-3x3-mesh-analysis.md) を参照
 
@@ -454,7 +465,7 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
   - 各ピークに対してプロミネンスを規定するコルを検出する
   - [FR-005](#fr-005-ピーク候補検出) の処理中に 2 つ以上の山塊グループが初めて接触した時点のピクセルがコルであり、その標高がコル標高となる
   - プロミネンス = ピーク標高 − コル標高
-  - コルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に `key_col_resolved=false` を付与する（[FR-014 参照](#fr-014-独立峰のコル探索)）
+  - コルが解析範囲外の場合、プロミネンスは暫定値とし、per-mesh CSV に `key_col_resolved=false` を付与する（[FR-022 参照](#fr-022-コル充足判定)）
 
 #### FR-016: ピーク域ポリゴン生成
 
@@ -528,7 +539,55 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 
 ---
 
-### フェーズ3: ピーク統合（全国）
+### フェーズ2-2: 広域メッシュ解析
+
+コル充足判定（[FR-022](#fr-022-コル充足判定)）から `key_col_resolved=false` ピークの広域解析を要求された場合のみ実行する。N×N + L14 max pooling の広域モードで per-mesh パイプラインを呼び出し、指定ピークのコル確定を試みる。
+
+#### FR-014: 独立峰のコル探索
+
+- **対応 UR**: [UR-007](01_URD.md#ur-007)
+- **概要**: コル充足判定（[FR-022](#fr-022-コル充足判定)）から渡された対象ピークリストと N に対して、N×N メッシュ + L14 max pooling の広域モードで [FR-004](#fr-004-メッシュ結合解析) ピーク解析を呼び出し、広域 per-mesh CSV を出力する。単発実行（エスカレーションループは [FR-022](#fr-022-コル充足判定) が管理する）。
+
+**入力**:
+
+| データ名 | 必須/任意 | デフォルト（任意時） | 備考 |
+|---|---|---|---|
+| 対象ピークリスト | 必須 | — | コル充足判定（[FR-022](#fr-022-コル充足判定)）が抽出した `key_col_resolved=false` ピーク群 |
+| N | 必須 | — | 4・5・6 のいずれか（コル充足判定が指定） |
+| 統合ピーク候補 work CSV（`merged_peak.csv`） | 必須 | — | 各対象ピークの所属メッシュ算出に使用 |
+
+**出力**:
+
+| データ名 | 形式 | 備考 |
+|---|---|---|
+| 広域 per-mesh ピーク候補 CSV | CSV | 通常 per-mesh と区別できるファイル名（命名規則は HLD 参照） |
+
+- **詳細**:
+  - `area_complete=false` のピークはトリガー対象外（通常 per-mesh で 3×3 内に完結する想定であり、想定外発生時は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグで処理停止。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
+  - **基本フロー（単発実行）**:
+    1. 各対象ピークの緯度経度から、ピークが属するメッシュコードを算出
+    2. そのメッシュコードを含む N×N メッシュコードリストを生成（対象メッシュの位置は (1,1)〜(N,N) の N² 通り。後述の全パターン探索で順に試す）
+    3. **[FR-004](#fr-004-メッシュ結合解析) を「処理モード = N×N + L14」パラメータ付きで呼び出す**。per-mesh パイプライン（[FR-004](#fr-004-メッシュ結合解析)→[FR-005](#fr-005-ピーク候補検出)→[FR-006](#fr-006-コル検出プロミネンス計算)→[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力)）が広域モードで実行され、広域 per-mesh CSV が出力される（[FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成は実行しない。広域再解析の目的はコル特定のみであり、ポリゴンは通常 per-mesh の結果を使用する）
+    4. **対象ピーク絞り込み**: 広域モードでは、解析範囲内に検出される他のピークは出力せず、対象ピークの行だけを per-mesh CSV に出力する（merged 統合時のノイズを防ぐため）
+    5. 全対象ピーク分の広域 per-mesh CSV を出力して終了（`merged_peak.csv` の更新は [FR-008](#fr-008-per-mesh-csv-統合) の責務）
+  - **解析ウィンドウ全パターン探索**: 各対象ピークについて N×N ウィンドウ内 (1,1)〜(N,N) の各位置に置いた N² 通りのパターンを順に試す。`key_col_resolved=true` を得たパターンが見つかった時点で早期終了する。存在しないメッシュ（海上・日本国外等）を含むパターンはスキップする
+  - **広域 per-mesh ファイル命名**: 通常 per-mesh と区別できるファイル名で出力する。具体的な命名規則の詳細は HLD 参照
+  - **実装方針（[ADR-SRS-010](decisions/ADR-SRS-010-cpp-opencv-migration.md) 移行後の C++ エンジン前提）**:
+    - C++ エンジンに「処理モード（N, L）」入力を追加するだけで、`mesh` / `elevation` / `unionfind` / `analyze` / `mesh_analyze` モジュールを通常モードと共有する（広域モード専用のロジック実装は行わない）
+    - 広域モードでは `activation` モジュール（[FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成）は呼び出さない（広域再解析の目的はコル特定のみ）
+    - Python オーケストレーションの責務: 対象ピークリスト・N×N メッシュコードリスト生成・処理モードパラメータ指定で C++ エンジン呼び出し・出力ファイル確認
+  - **実装設計**（詳細は [`decisions/ADR-SRS-004`](decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md) Consequences 参照）:
+    - 座標変換: 各 256×256 L15 タイルを 128×128 に 2×2 max pooling し L14 combined image に書き込む（combined image を L15 で先に作ってから pooling しない）
+    - col_margin_px: px 単位のまま per-mesh CSV に出力、`zoom_level` 列を追加して [FR-008](#fr-008-per-mesh-csv-統合) の統合時に L15 相当値に換算
+    - 1px ボーダー: 現行実装を踏襲（L14 での 1px 幅増加は FR-014 対象ピークへの影響なし、許容）
+    - 257×257 オーバーラップ: 広域モードでは使用しない（cross-tile pooling は不要）
+  - 詳細は [`decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md`](decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md) を参照
+
+---
+
+### フェーズ3: ピーク統合・コル充足判定
+
+per-mesh 出力（通常モード・広域モード）を全国スケールで統合し、コル充足判定でフェーズ4 移行可否を決める。全ピークのコルが確定するまでフェーズ2-2（[FR-014](#fr-014-独立峰のコル探索)）への要求とフェーズ3 再実行を繰り返す。
 
 #### FR-008: per-mesh CSV 統合
 
@@ -548,7 +607,7 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 |---|---|
 | 統合ピーク候補 work CSV（`merged_peak.csv`） | CSV（内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用される中間ファイル） |
 - **詳細**:
-  - **通常モード（フェーズ2）の per-mesh CSV** と **広域モード（[FR-014](#fr-014-独立峰のコル探索) から生成）の per-mesh CSV** が同一ディレクトリ配下に混在することがある。両方を読み込み、同一ピーク座標で重複排除する
+  - **通常モード（フェーズ2-1）の per-mesh CSV** と **広域モード（フェーズ2-2・[FR-014](#fr-014-独立峰のコル探索) が生成）の per-mesh CSV** が同一ディレクトリ配下に混在することがある。両方を読み込み、同一ピーク座標で重複排除する
   - 同一ピーク座標（ズームレベル15 タイル座標が一致）のレコードを同一ピークとして重複排除し、統合する
     - 複数解析のうち `(key_col_resolved=true, コル標高が最も高い)` レコードを代表に採用する（保守的評価）
     - 通常 per-mesh では `key_col_resolved=false` だったピークも、広域 per-mesh で `key_col_resolved=true` の結果が得られていれば、本ロジックにより広域モード結果が自動的に代表として採用される
@@ -556,7 +615,7 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
     - `expected_count`: メッシュコードリスト（オプション）をもとに算出する期待解析回数。リストが省略された場合は空欄
     - `stability`: `key_col_resolved=false` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`
   - プロミネンス最終フィルタ: **プロミネンス最終フィルタ閾値**（[データ辞書参照](#221-設定可能項目)）以上（[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力) の一次フィルタ通過済みのレコードに適用）
-  - **再入可能性**: 本機能は [FR-014](#fr-014-独立峰のコル探索) のループから複数回呼び出され、その都度 merged_peak.csv（内部 work CSV）が再生成される
+  - **再入可能性**: 本機能はコル充足判定（[FR-022](#fr-022-コル充足判定)）のループから複数回呼び出され、その都度 merged_peak.csv（内部 work CSV）が再生成される
 
 #### FR-018: per-mesh activation.geojson 統合
 
@@ -580,59 +639,37 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
   - 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_complete=true`（完全なポリゴン）のものを採用する
   - `area_complete=true` がどこにも存在しない場合は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグが true となり、後続の [FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は実施されない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
   - delete判定ゾーンポリゴン（`feature_type="delete_zone"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ方針（`area_complete=true` のものを採用）で処理する
-  - **再入可能性**: [FR-014](#fr-014-独立峰のコル探索) のループ中は再入しない。広域モードは GeoJSON を生成しないため、本機能は [FR-014](#fr-014-独立峰のコル探索) 以前の1回のみ実行される
+  - **再入可能性**: コル充足判定（[FR-022](#fr-022-コル充足判定)）のループ中は再入しない。広域モードは GeoJSON を生成しないため、本機能はフェーズ2-2 実行前の1回のみ実行される
 
----
-
-フェーズ3 の統合結果（内部 work CSV `merged_peak.csv`）で `key_col_resolved=false` が残ったピークを対象に、per-mesh 解析エンジンを
-広域モード（[FR-004](#fr-004-メッシュ結合解析) の N×N + L14 パラメータ）で再呼び出しし、
-Key コルを特定する。生成された広域 per-mesh CSV は通常 per-mesh CSV とともに
-[FR-008](#fr-008-per-mesh-csv-統合) に再投入され、内部 work CSV `merged_peak.csv` の `key_col_resolved` ・`col_elev` ・`prominence` が更新される。
-N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮小版パイプラインのループ）。
-広域モードでは [FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成は実行しない（広域再解析の目的は Key コル特定のみであり、ポリゴンは通常 per-mesh の結果を使用する。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。
-アクティベーションゾーンポリゴン・delete判定ゾーンポリゴンは通常 per-mesh で常に 3×3 内で完結する想定のため、`area_complete=false` は広域再解析のトリガー対象外とする。
-
-#### FR-014: 独立峰のコル探索
+#### FR-022: コル充足判定
 
 - **対応 UR**: [UR-007](01_URD.md#ur-007)
-- **概要**: merged_peak.csv の `key_col_resolved=false` ピークに対して、N×N メッシュ + L14 max pooling の広域モードで [FR-004](#fr-004-メッシュ結合解析) ピーク解析を再呼び出しし、Key コルを特定する。フェーズ3（統合の直後・フェーズ4 突合の直前）に位置する。
+- **概要**: `merged_peak.csv` の全ピークがコル確定（`key_col_resolved=true`）であるかを判定し、フェーズ4 への移行可否を決める。未確定ピークがある場合は N=4→5→6 のエスカレーションでフェーズ2-2（[FR-014](#fr-014-独立峰のコル探索)）を呼び出し、`merged_peak.csv` を更新する。
+
 **入力**:
 
 | データ名 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|
-| 統合ピーク候補 work CSV（`merged_peak.csv`） | 必須 | — | FR-008 出力 |
+| 統合ピーク候補 work CSV（`merged_peak.csv`） | 必須 | — | [FR-008](#fr-008-per-mesh-csv-統合) 出力 |
 
 **出力**:
 
 | データ名 | 形式 | 備考 |
 |---|---|---|
-| 広域 per-mesh ピーク候補 CSV | CSV | 通常 per-mesh と区別できるファイル名（命名規則は HLD 参照） |
-| 統合ピーク候補 work CSV（`merged_peak.csv`） | CSV | FR-008 再実行後の更新版 |
+| 統合ピーク候補 work CSV（`merged_peak.csv`） | CSV | フェーズ2-2 ループ実行後の更新版（[FR-008](#fr-008-per-mesh-csv-統合) 再実行を経由） |
+| フェーズ4 移行可否 | 判定結果 | 全ピーク `key_col_resolved=true` なら pass。N=6 を使い切っても未解決が残る場合はそのままフェーズ4 へ移行（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_key_col_unresolved` 不備フラグで異常終了する） |
+
 - **詳細**:
-  - **再解析トリガー**: `merged_peak.csv` の各ピークのうち `key_col_resolved=false`（コルが通常 per-mesh 3×3 解析範囲外 → プロミネンス未確定）のピークを対象とする
-    - アクティベーションゾーン・delete判定ゾーンの `area_complete=false` はトリガー対象外（通常 per-mesh で 3×3 内に完結する想定であり、想定外発生時は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグで処理停止。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
-  - **基本フロー（縮小版パイプラインのループ）**:
-    1. **対象ピーク特定**: 上記トリガー条件で `merged_peak.csv` から対象ピークを抽出する
-    2. **エスカレーション・ループ（N = 4, 5, 6 の順）**:
-       - 各対象ピークの緯度経度から、ピークが属するメッシュコードを算出
-       - そのメッシュコードを含む N×N メッシュコードリストを生成（対象メッシュの位置は (1,1)〜(N,N) の N² 通り。後述の全パターン探索で順に試す）
-       - **[FR-004](#fr-004-メッシュ結合解析) を「処理モード = N×N + L14」パラメータ付きで呼び出す**。per-mesh パイプライン（[FR-004](#fr-004-メッシュ結合解析)→[FR-005](#fr-005-ピーク候補検出)→[FR-006](#fr-006-コル検出プロミネンス計算)→[FR-007](#fr-007-プロミネンスフィルタper-mesh-csv-出力)）が広域モードで実行され、広域 per-mesh CSV が出力される（[FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成は実行しない。広域再解析の目的は Key コル特定のみであり、ポリゴンは通常 per-mesh の結果を使用する）
-       - **対象ピーク絞り込み**: 広域モードでは、解析範囲内に検出される他のピークは出力せず、対象ピークの行だけを per-mesh CSV に出力する（merged 統合時のノイズを防ぐため）
-       - **[FR-008](#fr-008-per-mesh-csv-統合) を再実行**: 通常 per-mesh CSV と広域 per-mesh CSV を**まとめて**入力として再統合し、`merged_peak.csv` を更新する
-       - 更新後の `merged_peak.csv` で対象ピークの `key_col_resolved=false` が解消されていなければ、N+1 にエスカレーションして 2 を繰り返す
-    3. **最終残存**: N=6 でも `key_col_resolved=false` のピークが残った場合、当該フラグ状態を維持したまま処理を継続する（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_key_col_unresolved` 不備フラグが true となり、[FR-009](#fr-009-sotaリスト突合match_status-判定) が異常終了する。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
-  - **解析ウィンドウ全パターン探索**: 各 N の段階で、対象メッシュを N×N ウィンドウ内 (1,1)〜(N,N) の各位置に置いた N² 通りのパターンを順に試す。`key_col_resolved=true` を得たパターンが見つかった時点で早期終了する（次のパターン・次の N へは進まない）。存在しないメッシュ（海上・日本国外等）を含むパターンはスキップする
-  - **広域 per-mesh ファイル命名**: 通常 per-mesh と区別できるファイル名で出力する。具体的な命名規則の詳細は HLD 参照
-  - **実装方針（[ADR-SRS-010](decisions/ADR-SRS-010-cpp-opencv-migration.md) 移行後の C++ エンジン前提）**:
-    - C++ エンジンに「処理モード（N, L）」入力を追加するだけで、`mesh` / `elevation` / `unionfind` / `analyze` / `mesh_analyze` モジュールを通常モードと共有する（広域モード専用のロジック実装は行わない）
-    - 広域モードでは `activation` モジュール（[FR-016](#fr-016-ピーク域ポリゴン生成) のポリゴン生成）は呼び出さない（広域再解析の目的は Key コル特定のみ）
-    - Python オーケストレーションの責務は: 対象ピーク特定・N×N メッシュコードリスト生成・処理モードパラメータ指定で C++ エンジン呼び出し・出力ファイル確認・[FR-008](#fr-008-per-mesh-csv-統合) 再呼び出し・エスカレーション判定のみ
-  - **実装設計**（詳細は [`decisions/ADR-SRS-004`](decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md) Consequences 参照）:
-    - 座標変換: 各 256×256 L15 タイルを 128×128 に 2×2 max pooling し L14 combined image に書き込む（combined image を L15 で先に作ってから pooling しない）
-    - col_margin_px: px 単位のまま per-mesh CSV に出力、`zoom_level` 列を追加して [FR-008](#fr-008-per-mesh-csv-統合) の統合時に L15 相当値に換算
-    - 1px ボーダー: 現行実装を踏襲（L14 での 1px 幅増加は [FR-014](#fr-014-独立峰のコル探索) 対象ピークへの影響なし、許容）
-    - 257×257 オーバーラップ: 広域モードでは使用しない（cross-tile pooling は不要）
-  - 詳細は [`decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md`](decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md) を参照
+  - **判定**: `merged_peak.csv` 全行の `key_col_resolved` を検査し、未確定ピーク（`key_col_resolved=false`）を抽出する
+  - **全充足**: 未確定ピークがゼロなら判定 pass。フェーズ4 へ移行する
+  - **未充足ループ（N=4→5→6 のエスカレーション）**:
+    1. 抽出した未確定ピーク群と現在の N をフェーズ2-2（[FR-014](#fr-014-独立峰のコル探索)）に渡して呼び出す
+    2. [FR-014](#fr-014-独立峰のコル探索) が広域 per-mesh CSV を出力したら、[FR-008](#fr-008-per-mesh-csv-統合) を再実行して `merged_peak.csv` を再生成する（通常 per-mesh CSV と広域 per-mesh CSV を統合し、`key_col_resolved=true` のレコードがあれば代表として採用する）
+    3. 更新後の `merged_peak.csv` を再判定する
+    4. まだ未確定が残れば N を +1 して 1 を繰り返す（N の上限は 6）
+  - **最終残存**: N=6 でも未確定ピークが残った場合、当該フラグ状態を維持したままフェーズ4 へ移行する（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `is_key_col_unresolved` 不備フラグを検出して異常終了する。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）
+  - アクティベーションゾーン・delete判定ゾーンの `area_complete=false` は本 FR のトリガー対象外（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグで処理停止。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
+  - 詳細・設計判断: [ADR-SRS-004](decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md)
 
 ---
 
@@ -723,7 +760,7 @@ N=4 で解消しなければ N=5、N=6 とエスカレーションする（縮�
   - **不備フラグ**（merged.geojson の `metadata` プロパティに格納。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) により不備を集中管理し、後続処理（[FR-013](#fr-013-html-ビューア生成)）への波及を防ぐ）:
     - `is_unmatched_summit` (bool): 既存サミット行で `summit.match_status="unmatched"` となった場合 true
     - `is_area_incomplete` (bool): ピーク行で AZ または delete判定ゾーンポリゴンの `area_complete=false`（[FR-016](#fr-016-ピーク域ポリゴン生成) で 3×3 完結が想定されているが、想定外に発生した場合に true）
-    - `is_key_col_unresolved` (bool): ピーク行で `key_col_resolved=false`（[FR-014](#fr-014-独立峰のコル探索) 広域再解析でも解消せず）
+    - `is_key_col_unresolved` (bool): ピーク行で `key_col_resolved=false`（コル充足判定（[FR-022](#fr-022-コル充足判定)）の N=4→5→6 エスカレーションでも解消せず）
     - `is_out_of_range_summit` (bool): 既存サミット座標が解析対象メッシュ範囲外（[FR-010](#fr-010-削除候補のスコープ) のスコープ外）
     - `is_dem_invalid_summit` (bool): 既存サミット座標の DEM が NODATA / 海面
     - **異常終了制御**: 本 FR は処理終了時に上記いずれかの不備フラグが true の場合、**異常終了**する。merged.geojson は不備フィーチャも含めて出力する（調査用）が、[FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は本 FR の終了状態を見てスキップする（exit code の詳細は HLD 参照）
