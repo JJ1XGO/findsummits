@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-02",
-    "counter": 73
+    "last_updated": "2026-06-04",
+    "counter": 76
   },
   "issues": [
     {
@@ -2106,6 +2106,63 @@
       "assignee": null,
       "resolution": null,
       "notes": "【HLD で詰める内容】(1) map.attributionControl.addAttribution() による固定 attribution 追加方式の本番実装（モックアップで確認済み）。(2) 基図の GSI 系タイル（地理院標準・淡色）自体の attribution と固定 attribution の重複表示の扱い（現状: 2つの GSI リンクが並ぶ。許容するか整理するか）。(3) 公開用 HTML エクスポート（FR-020）への引き継ぎ確認。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-074",
+      "title": "Phase構造の再編: Phase 2-1/2-2/3 → Phase 2/3 フェーズ単位ループへ変更",
+      "description": "Phase 2-1/2-2/3 の3区分構造を Phase 2/3 のフェーズ単位ループへ変更する。Phase 3 のループ構造を明示し、3.3.2 俯瞰図と関連 FR 本文を更新する。3.3.1 マトリクスの横軸も Phase 1/2/3/4/5 に再編する。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-04",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-075",
+      "title": "FR-004/FR-014 責務分担変更 + ADR-SRS-004 更新",
+      "description": "FR-004 を「3x3メッシュ結合解析オーケストレーション」に改名・3x3 専用に純化（N≥4 モード削除）。FR-014 を「広域結合解析オーケストレーション」に格上げし、4 コーナー配置（NW/NE/SW/SE）生成を内部化。ADR-SRS-004 を本方針に合わせて再更新する。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-04",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-076",
+      "title": "FR-022 出力明示 + フェーズ遷移制御の所在",
+      "description": "FR-022 出力テーブルに「未解決ピーク座標リスト」「次の N 値」「次のアクション (Phase 3 起動 / Phase 4 移行)」を明示する。フェーズ遷移制御を SRS のどこまで規定し HLD に何を委ねるかを決定する。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-04",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
       "resolved_date": null,
       "verified_date": null,
       "history": []
