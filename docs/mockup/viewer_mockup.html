@@ -606,7 +606,7 @@ function getContourIntervals(z) {
 
 const ContourLayer = L.GridLayer.extend({
   options: {
-    maxZoom: 18,
+    maxZoom: 19,
     pane: 'contourPane',
     attribution: ''   // 固定 attribution で処理済み
   },
@@ -625,42 +625,47 @@ const ContourLayer = L.GridLayer.extend({
   },
 
   async _render(canvas, coords) {
-    if (coords.z === 18) {
-      // z=17 ネイティブデータを取得し 128×128 クアドラント → 256×256 (2×2 マーク) で描画
-      const elev = await this._loadExtendedFor18(coords.x, coords.y);
-      if (elev) this._drawScaled(canvas, elev, map.getZoom());
+    if (coords.z >= 18) {
+      // z=18: scale=2, z=19: scale=4（z=17 ネイティブをソースに固定）
+      const scale = 1 << (coords.z - 17);
+      const elev = await this._loadExtendedQuadrant(coords.x, coords.y, scale);
+      if (elev) this._drawScaled(canvas, elev, map.getZoom(), scale);
     } else {
       const elev = await this._loadExtended(coords.z, coords.x, coords.y);
       if (elev) this._draw(canvas, elev, map.getZoom());
     }
   },
 
-  // z=18 タイル専用: z=17 親タイルの 257×257 拡張グリッドから
-  // 対象クアドラントの 129×129 サブグリッドを切り出して返す
-  async _loadExtendedFor18(x18, y18) {
-    const x17 = x18 >> 1, y17 = y18 >> 1;
-    const qx  = x18 & 1,  qy  = y18 & 1;
+  // z=18/19 タイル専用: z=17 親タイルの 257×257 拡張グリッドから
+  // 対象サブクアドラント（scale 比に応じた領域）を切り出して返す
+  async _loadExtendedQuadrant(xZ, yZ, scale) {
+    const levels = scale === 2 ? 1 : 2;   // z=18→1段, z=19→2段
+    const x17 = xZ >> levels, y17 = yZ >> levels;
+    const qx  = xZ & (scale - 1), qy = yZ & (scale - 1);
     const ext = await this._loadExtended(17, x17, y17);
     if (!ext) return null;
     const W = 257;
-    const sub = new Float32Array(129 * 129);
-    const r0 = qy * 128, c0 = qx * 128;
-    for (let r = 0; r <= 128; r++)
-      for (let c = 0; c <= 128; c++)
-        sub[r * 129 + c] = ext[(r0 + r) * W + (c0 + c)];
+    const subN = 256 / scale;       // 128 or 64
+    const subW = subN + 1;          // 129 or 65（右下に 1px バッファ）
+    const sub = new Float32Array(subW * subW);
+    const r0 = qy * subN, c0 = qx * subN;
+    for (let r = 0; r <= subN; r++)
+      for (let c = 0; c <= subN; c++)
+        sub[r * subW + c] = ext[(r0 + r) * W + (c0 + c)];
     return sub;
   },
 
-  // z=17 ネイティブ 129×129 サブグリッド → 256×256 キャンバスへ 2×2 マークで描画
-  _drawScaled(canvas, elev, mapZ) {
-    const W = 129;
+  // z=17 ネイティブ (subN+1)×(subN+1) サブグリッド → 256×256 キャンバスへ scale×scale マークで描画
+  _drawScaled(canvas, elev, mapZ, scale) {
+    const subN = 256 / scale;       // 128 or 64
+    const W = subN + 1;
     const { major, minor } = getContourIntervals(mapZ);
     const ctx = canvas.getContext('2d');
     const imd = ctx.createImageData(256, 256);
     const d   = imd.data;
 
-    for (let py = 0; py < 128; py++) {
-      for (let px = 0; px < 128; px++) {
+    for (let py = 0; py < subN; py++) {
+      for (let px = 0; px < subN; px++) {
         const i = py * W + px;
         const e = elev[i];
         if (e === -9999) continue;
@@ -676,9 +681,9 @@ const ContourLayer = L.GridLayer.extend({
         }
 
         if (!isMajor && !isMinor) continue;
-        for (let dy = 0; dy < 2; dy++) {
-          for (let dx = 0; dx < 2; dx++) {
-            const j = ((py * 2 + dy) * 256 + (px * 2 + dx)) * 4;
+        for (let dy = 0; dy < scale; dy++) {
+          for (let dx = 0; dx < scale; dx++) {
+            const j = ((py * scale + dy) * 256 + (px * scale + dx)) * 4;
             if (isMajor) {
               d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=75;
             } else {
