@@ -606,7 +606,6 @@ function getContourIntervals(z) {
 
 const ContourLayer = L.GridLayer.extend({
   options: {
-    maxNativeZoom: 17,
     maxZoom: 18,
     pane: 'contourPane',
     attribution: ''   // 固定 attribution で処理済み
@@ -650,6 +649,21 @@ const ContourLayer = L.GridLayer.extend({
   },
 
   async _loadSingleElev(z, x, y) {
+    // z=18: dem1a(z=17 を 2 倍スケール) → dem5(z=15 を 8 倍スケール)
+    if (z === 18) {
+      const dem1a = await this._fetchCached(
+        `https://cyberjapandata.gsi.go.jp/xyz/dem1a_png/17/${x >> 1}/${y >> 1}.png`
+      );
+      if (dem1a) return this._scaleQuadrant(dem1a, x & 1, y & 1);
+      for (const kind of ['dem5a_png', 'dem5b_png', 'dem5c_png']) {
+        const e = await this._fetchCached(
+          `https://cyberjapandata.gsi.go.jp/xyz/${kind}/15/${x >> 3}/${y >> 3}.png`
+        );
+        if (e) return this._scaleQuadrant3(e, x & 7, y & 7);
+      }
+      return null;
+    }
+
     // z=17: dem1a → dem5(z=15 を 4 倍スケール) のフォールバック
     if (z === 17) {
       const dem1a = await this._fetchCached(
@@ -727,6 +741,17 @@ const ContourLayer = L.GridLayer.extend({
     for (let py = 0; py < 256; py++) {
       for (let px = 0; px < 256; px++) {
         out[py * 256 + px] = elev256[((py >> 2) + qy * 64) * 256 + (px >> 2) + qx * 64];
+      }
+    }
+    return out;
+  },
+
+  // 8 倍スケール（3 レベル差: z=15→z=18 のフォールバック用、qx/qy は 0-7）
+  _scaleQuadrant3(elev256, qx, qy) {
+    const out = new Float32Array(256 * 256);
+    for (let py = 0; py < 256; py++) {
+      for (let px = 0; px < 256; px++) {
+        out[py * 256 + px] = elev256[((py >> 3) + qy * 32) * 256 + (px >> 3) + qx * 32];
       }
     }
     return out;
