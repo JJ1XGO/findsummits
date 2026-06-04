@@ -194,9 +194,9 @@ FR 間で受け渡されるデータ（メモリ上または一時ファイル�
 | | [FR-006](#fr-006-コル検出プロミネンス計算) | コル検出・プロミネンス計算 | | ○ | ○ | | | |
 | | [FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) | per-mesh CSV 出力（プロミネンス閾値適用） | | ○ | ○ | | | |
 | | [FR-016](#fr-016-ピーク域ポリゴン生成) | ピーク域ポリゴン生成 | | ○ | | | | |
-| 統合・突合 | [FR-008](#fr-008-per-mesh-csv-統合) | per-mesh CSV 統合 | | | | ○ | | |
-| | [FR-018](#fr-018-per-mesh-activationgeojson-統合) | per-mesh activation.geojson 統合 | | | | ○ | | |
-| | [FR-022](#fr-022-コル充足判定) | コル充足判定 | | | | ○ | | |
+| 統合・突合 | [FR-008](#fr-008-per-mesh-csv-統合) | per-mesh CSV 統合 | | ○ | ○ | ○ | | |
+| | [FR-018](#fr-018-per-mesh-activationgeojson-統合) | per-mesh activation.geojson 統合 | | ○ | ○ | ○ | | |
+| | [FR-022](#fr-022-コル充足判定) | コル充足判定 | | ○ | ○ | ○ | | |
 | | [FR-009](#fr-009-sotaリスト突合match_status-判定) | SOTAリスト突合・match_status 判定 | | | | | ○ | |
 | | [FR-010](#fr-010-削除候補のスコープ) | 削除候補のスコープ | | | | | ○ | |
 | 可視化生成 | [FR-013](#fr-013-html-ビューア生成) | HTML ビューア生成 | | | | | ○ | |
