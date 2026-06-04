@@ -600,12 +600,13 @@ function getContourIntervals(z) {
   if (z <= 11) return { major: 500, minor: 100 };
   if (z <= 13) return { major: 200, minor:  50 };
   if (z <= 14) return { major: 100, minor:  20 };
-  return               { major:  50, minor:  10 };
+  if (z <= 16) return { major:  50, minor:  10 };
+  return               { major:  20, minor:   5 };  // z=17+（dem1a精度）
 }
 
 const ContourLayer = L.GridLayer.extend({
   options: {
-    maxNativeZoom: 15,
+    maxNativeZoom: 17,
     maxZoom: 18,
     pane: 'contourPane',
     attribution: ''   // 固定 attribution で処理済み
@@ -649,43 +650,83 @@ const ContourLayer = L.GridLayer.extend({
   },
 
   async _loadSingleElev(z, x, y) {
-    const srcZ = Math.min(z, 15);
-    const candidates = srcZ === 15 ? [
-      `https://cyberjapandata.gsi.go.jp/xyz/dem5a_png/${srcZ}/${x}/${y}.png`,
-      `https://cyberjapandata.gsi.go.jp/xyz/dem5b_png/${srcZ}/${x}/${y}.png`,
-      `https://cyberjapandata.gsi.go.jp/xyz/dem5c_png/${srcZ}/${x}/${y}.png`,
-    ] : [
-      `https://cyberjapandata.gsi.go.jp/xyz/dem_png/${srcZ}/${x}/${y}.png`,
-    ];
-
-    for (const url of candidates) {
-      const elev = await this._fetchCached(url);
-      if (elev) return elev;
+    // z=17: dem1a → dem5(z=15 を 4 倍スケール) のフォールバック
+    if (z === 17) {
+      const dem1a = await this._fetchCached(
+        `https://cyberjapandata.gsi.go.jp/xyz/dem1a_png/17/${x}/${y}.png`
+      );
+      if (dem1a) return dem1a;
+      for (const kind of ['dem5a_png', 'dem5b_png', 'dem5c_png']) {
+        const e = await this._fetchCached(
+          `https://cyberjapandata.gsi.go.jp/xyz/${kind}/15/${x >> 2}/${y >> 2}.png`
+        );
+        if (e) return this._scaleQuadrant2(e, x & 3, y & 3);
+      }
+      return null;
     }
-    // z=15 で全 dem5 が 404 → dem_png z=14 から象限を切り出して拡大
-    if (srcZ === 15) {
-      const elev14 = await this._fetchCached(
+
+    // z=16: dem5(z=15 を 2 倍スケール) → dem_png(z=14 を 4 倍スケール)
+    if (z === 16) {
+      for (const kind of ['dem5a_png', 'dem5b_png', 'dem5c_png']) {
+        const e = await this._fetchCached(
+          `https://cyberjapandata.gsi.go.jp/xyz/${kind}/15/${x >> 1}/${y >> 1}.png`
+        );
+        if (e) return this._scaleQuadrant(e, x & 1, y & 1);
+      }
+      const e14 = await this._fetchCached(
+        `https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/${x >> 2}/${y >> 2}.png`
+      );
+      if (e14) return this._scaleQuadrant2(e14, x & 3, y & 3);
+      return null;
+    }
+
+    // z=15: dem5 → dem_png(z=14 を 2 倍スケール)
+    if (z === 15) {
+      for (const kind of ['dem5a_png', 'dem5b_png', 'dem5c_png']) {
+        const e = await this._fetchCached(
+          `https://cyberjapandata.gsi.go.jp/xyz/${kind}/15/${x}/${y}.png`
+        );
+        if (e) return e;
+      }
+      const e14 = await this._fetchCached(
         `https://cyberjapandata.gsi.go.jp/xyz/dem_png/14/${x >> 1}/${y >> 1}.png`
       );
-      if (elev14) return this._scaleQuadrant(elev14, x & 1, y & 1);
+      if (e14) return this._scaleQuadrant(e14, x & 1, y & 1);
+      return null;
     }
-    return null;
+
+    // z≤14: dem_png
+    return this._fetchCached(
+      `https://cyberjapandata.gsi.go.jp/xyz/dem_png/${z}/${x}/${y}.png`
+    );
   },
 
   // 同一 URL は一度だけ fetch してキャッシュ（隣接タイルの重複取得を防ぐ）
   _fetchCached(url) {
     if (!this._cache.has(url)) {
-      if (this._cache.size >= 300) this._cache.delete(this._cache.keys().next().value);
+      if (this._cache.size >= 600) this._cache.delete(this._cache.keys().next().value);
       this._cache.set(url, this._fetchElev(url));
     }
     return this._cache.get(url);
   },
 
+  // 2 倍スケール（1 レベル差: z=14→z=15/16、z=15→z=16 のフォールバック用）
   _scaleQuadrant(elev256, qx, qy) {
     const out = new Float32Array(256 * 256);
     for (let py = 0; py < 256; py++) {
       for (let px = 0; px < 256; px++) {
         out[py * 256 + px] = elev256[((py >> 1) + qy * 128) * 256 + (px >> 1) + qx * 128];
+      }
+    }
+    return out;
+  },
+
+  // 4 倍スケール（2 レベル差: z=15→z=17、z=14→z=16 のフォールバック用）
+  _scaleQuadrant2(elev256, qx, qy) {
+    const out = new Float32Array(256 * 256);
+    for (let py = 0; py < 256; py++) {
+      for (let px = 0; px < 256; px++) {
+        out[py * 256 + px] = elev256[((py >> 2) + qy * 64) * 256 + (px >> 2) + qx * 64];
       }
     }
     return out;
@@ -752,9 +793,9 @@ const ContourLayer = L.GridLayer.extend({
 
         const j = (py * 256 + px) * 4;
         if (isMajor) {
-          d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=120; // #a04020 計曲線
+          d[j]=160; d[j+1]=64;  d[j+2]=32;  d[j+3]=75;  // #a04020 計曲線
         } else if (isMinor) {
-          d[j]=200; d[j+1]=120; d[j+2]=80;  d[j+3]=70;  // #c87850 主曲線
+          d[j]=200; d[j+1]=120; d[j+2]=80;  d[j+3]=40;  // #c87850 主曲線
         }
       }
     }
