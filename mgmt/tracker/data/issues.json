@@ -768,12 +768,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-015 に縮小方式を明示する（推奨: max pooling でダウンサンプル、NODATA は除外）。もしくは HLD で規定する旨を SRS に明記。",
       "notes": null,
       "resolved_date": "2026-05-23",
-      "verified_date": null,
+      "verified_date": "2026-05-23",
       "history": [
         {
           "date": "2026-05-23T16:39:57",
@@ -781,6 +781,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-23T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ],
       "planned_stage": "SRS"
@@ -955,12 +962,12 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "URD",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "以下のいずれかに整理:\n案A: UR-008 / UR-009 を URD に残しつつ '(品質要件)' と明示し、SRS で NFR-XXX に明示マップ\n案B: URD から削除し、SRS の NFR として独立記載\n案C: URD に残し、トレース確認のための専用節を新設",
       "notes": "【Opus相談推奨】URD/SRS構造に関わる設計哲学的判断。後から変更すると影響範囲が大きい。\n\n相談ポイント:\n(1) 案A・案B・案Cそれぞれの長所短所。要件管理の一般的なプラクティスに照らした評価\n(2) UR-008（環境構築から成果物生成までの実行可能性）とUR-009（仕様・実装の整合性）は本質的に '品質目標' であり、ユーザー要求とは性質が異なる。これをURDに残すべきか、NFRに移すべきか\n(3) ISO/IEC 25010 等の品質特性モデルとのマッピング\n(4) 既存のNFR-003 / NFR-007との対応関係を明示するか、独立した品質目標として扱うか\n(5) ISSUE-031（UR↔FR/NFRトレース調査）・ISSUE-032（RTM作成）の進め方への影響",
       "resolved_date": "2026-05-24",
-      "verified_date": null,
+      "verified_date": "2026-05-24",
       "history": [
         {
           "date": "2026-05-24T09:25:48",
@@ -975,6 +982,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-24T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ],
       "planned_stage": "SRS"
@@ -1642,12 +1656,12 @@
       "created_date": "2026-05-24",
       "stage": null,
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-05-24",
-      "verified_date": null,
+      "verified_date": "2026-05-24",
       "history": [
         {
           "date": "2026-05-24T10:54:25",
@@ -1662,6 +1676,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-24T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -1676,12 +1697,12 @@
       "created_date": "2026-05-24",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "HTMLビューアはユーザーI/Fの1つ（外部I/F）であり、SRSに以下を記載する必要がある。\n- match_status別の視覚的区別表示要件\n- key_col_resolved=falseピークの陸地最高峰/島嶼部最高峰特別表示\n- ポップアップ表示項目と編集可否（山岳名は新規のみ入力可など）\n- 変更の根拠フィールドの入力要件・初期値テンプレート（※2/※4/※5）\n- エクスポート機能の存在と出力内容\n実装手段（Leaflet・HTML単体・localStorage等）はHLDに記載する。",
       "resolved_date": "2026-05-28",
-      "verified_date": null,
+      "verified_date": "2026-05-28",
       "history": [
         {
           "date": "2026-05-28T17:04:02",
@@ -1689,6 +1710,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "SRS 改訂（ADR-SRS-013 採用: merged.geojson 中心成果物モデル）に統合。FR-013・FR-009 に rationale 編集 UI 要件・初期値テンプレート（※2/※4/※5）・XLSX 反映要件・ポップアップ表示項目・編集可否を記載。"
+        },
+        {
+          "date": "2026-05-28T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -1722,12 +1750,12 @@
       "created_date": "2026-05-29",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "形式・入出力欄の扱いはユーザーと事前合意済み（plan.md 参照）。20 FR 各々の概要・入力・出力は plan.md の表で確定済み。",
       "resolved_date": "2026-05-29",
-      "verified_date": null,
+      "verified_date": "2026-05-29",
       "history": [
         {
           "date": "2026-05-29T11:15:41",
@@ -1735,6 +1763,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-29T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -1749,12 +1784,12 @@
       "created_date": "2026-05-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "ステップ層撤廃・フェーズ3.5内包・FR-013をビューア生成仕様(残置)とビューア機能仕様(FR-019新規)に分割・フェーズ5:申請書生成新設(FR-019/011/012/020)・公開用HTML生成FR-020新規追加。詳細: mgmt/plan.md",
       "resolved_date": "2026-05-29",
-      "verified_date": null,
+      "verified_date": "2026-05-29",
       "history": [
         {
           "date": "2026-05-29T12:01:31",
@@ -1769,6 +1804,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-29T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -1821,12 +1863,12 @@
       "created_date": "2026-05-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "docs/02_SRS.md を改訂。§3.3 俯瞰図・FR-008/FR-009/FR-014/FR-012 出力欄・§6 成果物一覧をすべて新命名に更新",
       "notes": null,
       "resolved_date": "2026-05-29",
-      "verified_date": null,
+      "verified_date": "2026-05-29",
       "history": [
         {
           "date": "2026-05-29T15:48:06",
@@ -1841,6 +1883,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "docs/02_SRS.md の merged.csv 命名整理完了。FR-008→merged_peak.csv、FR-009→merged_summit.csv 追加、FR-012 出力→TBD マーカー化。§3.3・FR-014・§6 の全参照箇所を追従修正済み"
+        },
+        {
+          "date": "2026-05-29T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -1950,12 +1999,12 @@
       "created_date": "2026-05-31",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "UR-011 新設（URD）、FR-013/FR-012/FR-021 出典要件追加（SRS）、ADR-URD-014 作成済み。実装対象: README / output_geojson.py / merge.py / viewer_mockup.html XLSX出力。ADR-URD-014 参照: docs/decisions/ADR-URD-014-gsi-tile-attribution-policy.md",
       "resolved_date": "2026-05-31",
-      "verified_date": null,
+      "verified_date": "2026-05-31",
       "history": [
         {
           "date": "2026-05-31T13:01:49",
@@ -1970,6 +2019,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-31T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -1984,12 +2040,12 @@
       "created_date": "2026-05-31",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "Phase A: ADR-SRS-014 起案 / Phase B: 02_SRS.md にデータ辞書セクション・テンプレ追加 / Phase C: 既存 FR を新テンプレへ移行（FR-004/008/001 で先行確認）/ Phase D: 00_GLOSSARY.md 同期",
       "notes": "計画ファイル: mgmt/plan.md（srs-nifty-tarjan）",
       "resolved_date": "2026-05-31",
-      "verified_date": null,
+      "verified_date": "2026-05-31",
       "history": [
         {
           "date": "2026-05-31T17:44:09",
@@ -1997,6 +2053,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-05-31T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -2011,12 +2074,12 @@
       "created_date": "2026-06-01",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "データ辞書(3.4→2.2)移動、中間データ登録、全21FR入出力テーブル辞書名統一、ADR-SRS-014規約5追加",
       "resolved_date": "2026-06-01",
-      "verified_date": null,
+      "verified_date": "2026-06-01",
       "history": [
         {
           "date": "2026-06-01T16:57:06",
@@ -2031,6 +2094,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-06-01T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },
@@ -2178,12 +2248,12 @@
       "created_date": "2026-06-05",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "CLAUDE.md・GLOSSARY・SRS・ADR-SRS-016 を更新。2.2.2廃止→7.2、6.10/6.14/6.16/6.17移設、7→8/8→9/9→10リナンバリング",
       "resolved_date": "2026-06-05",
-      "verified_date": null,
+      "verified_date": "2026-06-05",
       "history": [
         {
           "date": "2026-06-05T13:06:06",
@@ -2198,6 +2268,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-06-05T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     },

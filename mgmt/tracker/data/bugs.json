@@ -394,14 +394,14 @@
       "found_in": "src/mesh_analyze.c",
       "repro": "毎回",
       "severity": "中",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "stage": "COD",
       "cause": "src/mesh_analyze.c",
       "resolution": "CSV 出力ループで mesh_set 地理範囲外ピークをスキップ（C 側フィルタ）",
       "notes": null,
       "resolved_date": "2026-05-02",
-      "verified_date": null,
+      "verified_date": "2026-05-02",
       "history": [
         {
           "date": "2026-05-02T14:00:49",
@@ -416,6 +416,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "src/mesh_analyze.c のCSV出力ループに mesh_set 地理範囲フィルタを追加。combined ループで lat/lon コード min/max を追跡し、ピーク出力時に geo_lat_south/north/lon_west/east で境界外ピークをスキップ。ビルド確認済み（警告なし）。findsummits 再実行による動作確認はユーザーが verify 時に実施。"
+        },
+        {
+          "date": "2026-05-02T00:00:00",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
         }
       ]
     }
