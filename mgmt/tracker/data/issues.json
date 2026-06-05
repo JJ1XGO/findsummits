@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-05",
-    "counter": 77
+    "counter": 79
   },
   "issues": [
     {
@@ -2200,6 +2200,44 @@
           "comment": ""
         }
       ]
+    },
+    {
+      "id": "ISSUE-078",
+      "title": "ADR-URD-005 北方領土除外タイル取り逃しリスクの実データ検証",
+      "description": "ADR-URD-005「タイル単位除外で十分な精度が得られる理由」の論証が「本土を誤除外しない」のみで、「北方領土を取り逃さない」根拠が実データで未検証。FR-017 レビュー（2026-06-05）で論点として浮上し、別タスクに切り出し。\n\n検証内容:\n- N03 から北方領土ポリゴン抽出\n- 北方領土領域の DEM タイル（dem5/dem10）でピーク検出\n- プロミネンス 150m 以上のピークがポリゴン端付近に存在するか確認\n- 存在しなければ ADR の論証として確定\n- 存在する場合は buffer 処理（ポリゴンを海側に拡張）を導入",
+      "type": "調査",
+      "priority": "高",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-05",
+      "stage": "URD",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-017 レビュー時にユーザーから「ADR-URD-005 の主張が疑わしい」との指摘あり。論理的には『取り逃しタイル ≒ 海岸線付近 ≒ 標高低 = サミット候補にならない』だが、実データ確認が必要。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-079",
+      "title": "scripts/preprocess_pref_boundaries.py を FR-017 改訂版仕様に追従",
+      "description": "FR-017 SRS 改訂（2026-06-05）に伴う実装変更。\n\n主な変更点:\n1. ZIP 自動検出方式に対応（$DATA_DIR/ref/ を N03-(\\\\d{8})_GML\\\\.zip で走査、YYYYMMDD 最大を採用）\n2. ZIP 内市区町村版 GeoJSON のみを一時ディレクトリに展開して処理、処理後削除\n3. 都府県/振興局 dissolve 出力を 60 地域（46 都府県 + 14 振興局）に修正（現状実装が 61 地域となっていないか確認）\n4. params/config.ini の n03_year 設定参照を廃止\n5. 採用 ZIP 名・YYYYMMDD・サイズをログに出力\n6. 公式 _prefecture.geojson は使用しない（dissolve されておらず振興局情報なし）\n\n仕様詳細: docs/02_SRS.md FR-017・7.1.3・7.2.1・ADR-URD-005",
+      "type": "改善",
+      "priority": "高",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-05",
+      "stage": "COD",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "SRS 確定（コミット予定）後に着手する。実装側 ISSUE。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
