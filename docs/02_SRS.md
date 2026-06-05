@@ -66,7 +66,7 @@
    - [6.3 出力: 申請書 XLSX](#63-出力-申請書-xlsx)
    - [6.4 出力: サミット一覧（申請内容反映版）](#64-出力-サミット一覧申請内容反映版)
    - [6.5 出力: サミット一覧（突合後）](#65-出力-サミット一覧突合後)
-   - [6.6 出力: GeoJSON・作業用 HTML ビューア](#66-出力-geojsonhtml-作業用-html-ビューア)
+   - [6.6 出力: GeoJSON・作業用 HTML ビューア](#66-出力-geojson作業用-html-ビューア)
    - [6.8 出力: 標高地形図（Terrain-RGB PNG）](#68-出力-標高地形図terrain-rgb-png)
    - [6.11 入力: SOTA 既存サミット GeoJSON（geojson_v{N}）](#611-入力-sota-既存サミット-geojsongeojson_vn)
    - [6.13 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）](#613-出力-公開用-html閲覧専用ブラウザダウンロード)
@@ -248,7 +248,7 @@
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 地理院標高タイル | 内部データ | PNG（DEM 種別・ズームレベル・タイル座標ごとに1ファイル） | キャッシュ保存先は [6.1 参照](#61-入出力-地理院標高タイル取得ローカルキャッシュ) |
+| 地理院標高タイル | 内部データ | PNG（DEM 種別・ズームレベル・タイル座標ごとに1ファイル） | キャッシュ保存先は [6.1 参照](#61-入力-地理院標高タイルリモート取得元) |
 
 **説明**:
 
@@ -570,7 +570,7 @@
   - ピーク候補検出・プロミネンス計算（[FR-005](#fr-005-ピーク候補検出)・[FR-006](#fr-006-コル検出プロミネンス計算)）完了後に、各ピークについて以下の2種類のポリゴンを GeoJSON として生成する
   - **共通仕様**:
     - **計算方法**: ピーク位置を起点として Flood Fill（隣接ピクセルを再帰的に広げる領域塗りつぶし）を実行し、条件を満たす連続ピクセルを抽出する。ピクセル群の外周輪郭を GeoJSON Polygon として出力する
-    - **出力は lossless とする**: [FR-009](#fr-009-sota-リスト突合) の point-in-polygon 突合精度を確保するため、形状を変える簡略化（Douglas-Peucker 等）や等間隔での頂点間引きは行わない。直線上にある冗長な中間頂点の削除（ピクセル境界トレース結果で連続する collinear 点の除去）は形状を変えないため可とする
+    - **出力は lossless とする**: [FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合精度を確保するため、形状を変える簡略化（Douglas-Peucker 等）や等間隔での頂点間引きは行わない。直線上にある冗長な中間頂点の削除（ピクセル境界トレース結果で連続する collinear 点の除去）は形状を変えないため可とする
     - Flood Fill が解析対象メッシュ全体の地理的範囲内で完結している場合 `area_complete=true`、解析範囲外で途切れた場合 `area_complete=false` を付与する（false の場合、ポリゴンが実際より小さく計算されている可能性を示す）。同一ピークは複数の 3×3 メッシュ解析（中心メッシュ・隣接メッシュ）にまたがって検出されるため、[FR-018](#fr-018-per-mesh-activationgeojson-統合) で複数の per-mesh GeoJSON を統合する段階で `area_complete=true` のレコードが必ず見つかる想定（AZ は 25m 標高差以内、delete判定ゾーンは `delete_zone_max_drop` 上限キャップにより、いずれかの 3×3 解析で完結する。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。[FR-018](#fr-018-per-mesh-activationgeojson-統合) 統合後も `area_complete=true` が見つからなかった場合は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグが true となり、後続処理を停止する
   - **アクティベーションゾーンポリゴン**（`feature_type="activation_zone"`）:
     - **定義**: SOTA ルールに従い、ピークから標高差 25m 以内の連続エリア
@@ -1330,10 +1330,10 @@ matched / dominant のみ。
 | ファイル名 | 内容 | 仕様参照 |
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版） | [6.4](#64-出力-サミット一覧申請内容反映版) |
-| `new.geojson` | 新規ピーク候補フィーチャ（`match_status="new"` の Point・Polygon・LineString） | [6.6](#66-出力-geojsonhtml-作業用-html-ビューア) より抽出 |
-| `dominant.geojson` | 差替候補ピークおよびその従属サミット（`match_status="dominant"` ピーク + 対応する `match_status="delete"` サミット） | [6.6](#66-出力-geojsonhtml-作業用-html-ビューア) より抽出 |
-| `changed.geojson` | バンド変更候補（`match_status="matched"` かつ `is_band_change_candidate=true` のピーク + 対応サミット） | [6.6](#66-出力-geojsonhtml-作業用-html-ビューア) より抽出 |
-| `unchanged.geojson` | 変更なし既存サミット（`match_status="matched"` かつ `is_band_change_candidate=false` のピーク + 対応サミット） | [6.6](#66-出力-geojsonhtml-作業用-html-ビューア) より抽出 |
+| `new.geojson` | 新規ピーク候補フィーチャ（`match_status="new"` の Point・Polygon・LineString） | [6.6](#66-出力-geojson作業用-html-ビューア) より抽出 |
+| `dominant.geojson` | 差替候補ピークおよびその従属サミット（`match_status="dominant"` ピーク + 対応する `match_status="delete"` サミット） | [6.6](#66-出力-geojson作業用-html-ビューア) より抽出 |
+| `changed.geojson` | バンド変更候補（`match_status="matched"` かつ `is_band_change_candidate=true` のピーク + 対応サミット） | [6.6](#66-出力-geojson作業用-html-ビューア) より抽出 |
+| `unchanged.geojson` | 変更なし既存サミット（`match_status="matched"` かつ `is_band_change_candidate=false` のピーク + 対応サミット） | [6.6](#66-出力-geojson作業用-html-ビューア) より抽出 |
 
 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（詳細は [FR-021](#fr-021-申請エビデンス-zip-生成)）。
 
@@ -1440,8 +1440,8 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 国土地理院 標高タイル配信（`cyberjapandata.gsi.go.jp`） | DEM5a/5b/5c/DEM10b タイル取得（[FR-001](#fr-001-標高タイル事前取得)） |
 | SOTA データベース（`sotadata.org.uk`） | サミットリスト CSV 取得（[6.2](#62-入力-sota-サミットリスト-csv)） |
 | 国土数値情報 N03（国土交通省） | 行政区域データ取得（[FR-017](#fr-017-n03-行政区域前処理データ準備)） |
-| 地図タイル配信（OSM・OpenTopoMap） | HTML ビューアの背景地図（[6.6](#66-出力-geojsonhtml-作業用-html-ビューア)） |
-| CDN（Leaflet・SheetJS） | HTML ビューアの地図・XLSX エクスポートライブラリ（[6.6](#66-出力-geojsonhtml-作業用-html-ビューア)） |
+| 地図タイル配信（OSM・OpenTopoMap） | HTML ビューアの背景地図（[6.6](#66-出力-geojson作業用-html-ビューア)） |
+| CDN（Leaflet・SheetJS） | HTML ビューアの地図・XLSX エクスポートライブラリ（[6.6](#66-出力-geojson作業用-html-ビューア)） |
 
 ---
 
