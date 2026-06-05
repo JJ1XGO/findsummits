@@ -2289,13 +2289,28 @@
       "created_date": "2026-06-05",
       "stage": "URD",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-017 レビュー時にユーザーから「ADR-URD-005 の主張が疑わしい」との指摘あり。論理的には『取り逃しタイル ≒ 海岸線付近 ≒ 標高低 = サミット候補にならない』だが、実データ確認が必要。",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-05",
+      "history": [
+        {
+          "date": "2026-06-05T19:15:24",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-05T19:27:16",
+          "actor": "JJ1XGO",
+          "from": "対応中",
+          "to": "解決済",
+          "comment": "[解決確認] 衝突タイル0件を実データで確認（analysis/verify_northern_territories_tile_isolation.py）。ADR-URD-005・SRS のコード範囲誤記（01696-01701→01695-01700）も修正済み"
+        }
+      ]
     },
     {
       "id": "ISSUE-079",
