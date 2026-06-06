@@ -2342,12 +2342,12 @@
       "created_date": "2026-06-06",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "対象ファイル全件の用語を統一する。ユーザー→ユーザー は機械置換（42件）、キャッシュ→ローカルキャッシュ はタイル限定の文脈判別置換（16箇所）。アンカーリンクも同時更新。コードは対象外。",
       "notes": null,
       "resolved_date": "2026-06-06",
-      "verified_date": null,
+      "verified_date": "2026-06-06",
       "history": [
         {
           "date": "2026-06-06T12:08:15",
@@ -2362,6 +2362,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-06-06T12:13:37",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     }
