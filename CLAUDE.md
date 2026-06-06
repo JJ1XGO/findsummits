@@ -79,8 +79,8 @@ prefetch_tiles.py でタイルを $DATA_DIR/tiles/ へ取得済み
   ↓
 mesh_analyze() [mesh_analyze.c]
   ├─ 中心メッシュ + 隣接メッシュ（最大3×3）の結合範囲を計算 [mesh.c]
-  ├─ キャッシュ済みタイルを読み込み [elevation.c]
-  │   （未キャッシュ時はエラー終了）
+  ├─ ローカルキャッシュ済みタイルを読み込み [elevation.c]
+  │   （ローカルキャッシュ未取得時はエラー終了）
   └─ 全タイルを1枚の大画像に結合
   ↓
 標高地形図 PNG 出力 [mesh_analyze.c]
@@ -98,7 +98,7 @@ Union-Find アルゴリズムでピーク・コルを検出 [unionfind.c]
 | モジュール | 役割 |
 |---|---|
 | `mesh.c/h` | 1次メッシュコード ↔ タイル座標変換（ズーム15 Web Mercator）、隣接メッシュ計算・MeshSet |
-| `elevation.c/h` | PNG タイルデコード（RGB→標高）、8方向オーバーラップ対応、キャッシュ参照のみ |
+| `elevation.c/h` | PNG タイルデコード（RGB→標高）、8方向オーバーラップ対応、ローカルキャッシュ参照のみ |
 | `unionfind.c/h` | Union-Find（経路圧縮・rank による union）でピークグループ管理 |
 | `analyze.c/h` | タイル単体のピーク候補検出・比高計算、`col_margin_px` 算出 |
 | `mesh_analyze.c/h` | メッシュ全体のオーケストレーション・標高地形図 PNG 出力・CSV 出力 |
@@ -159,7 +159,7 @@ mgmt/          # 管理ドキュメント（lessons.md, plan.md, tracker/）※ 
 $DATA_DIR/images/       # 標高地形図 PNG（findsummits が自動出力: <meshcode>_terrain.png）
 $DATA_DIR/results/      # 最終O/Pのxlsx,geojson,csv
 $DATA_DIR/results/csv/  # 一時csv（findsummits が出力するper-mesh CSV）
-$DATA_DIR/tiles/        # ダウンロード済みタイルのキャッシュ
+$DATA_DIR/tiles/        # ダウンロード済みタイルのローカルキャッシュ
   └─ {z}/     # タイルのURLの命名規則と同様
      └─ {x}   # タイルのURLの命名規則と同様
          └─ {y}
@@ -206,17 +206,17 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 - GLOSSARY の説明文に規約詳細を書かず、SOURCES へのリンクで委ねること
 - 各セクション冒頭の注釈（`利用規約・出典の詳細は ref/SOURCES.md を参照`）を維持すること
 
-### 外部I/F・ユーザ入力・内部データ・内部トランザクションの分類ルール
+### 外部I/F・ユーザー入力・内部データ・内部トランザクションの分類ルール
 
 | 分類 | 定義 | 主な例 |
 |---|---|---|
-| 外部I/F | システム境界の外に存在するもの、またはユーザが外部で利用するためにシステムが出力する成果物 | 国土地理院タイルサーバー・SOTA データベース・N03 行政区域（生）・申請書 XLSX・標高地形図 PNG |
-| ユーザ入力 | ユーザーがツールに与える入力 | コマンド引数・HTML ビューア上のユーザー入力 |
+| 外部I/F | システム境界の外に存在するもの、またはユーザーが外部で利用するためにシステムが出力する成果物 | 国土地理院タイルサーバー・SOTA データベース・N03 行政区域（生）・申請書 XLSX・標高地形図 PNG |
+| ユーザー入力 | ユーザーがツールに与える入力 | コマンド引数・HTML ビューア上のユーザー入力 |
 | 内部データ | システムが生成・管理するもの（メモリ・一時ファイル・永続キャッシュ・ブラウザ永続化を含む） | ローカルキャッシュ・FR 間中間データ・per-mesh CSV・N03 前処理済み GeoJSON・localStorage 編集内容 |
 | 内部トランザクション | FR の入出力として一時的に発生し、独立した中央データ構造として保持されない値（永続化されない） | FR-002/003 間のピクセル単位の RGB / 標高値、関数の戻り値相当 |
 
 - SRS セクション6「外部インターフェース仕様」には **外部I/F のみ** を記載する
-- ユーザ入力は SRS 7.1、内部データは SRS 7.2 に記載する
+- ユーザー入力は SRS 7.1、内部データは SRS 7.2 に記載する
 - 内部トランザクションは 7.2 の対象外。発生する FR の入出力欄に発生元 FR を明示する（根拠: [ADR-SRS-017](docs/decisions/ADR-SRS-017-internal-transaction-category.md)）
 
 ### ドキュメントフォーマット標準

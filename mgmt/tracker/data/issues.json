@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-05",
-    "counter": 79
+    "last_updated": "2026-06-06",
+    "counter": 80
   },
   "issues": [
     {
@@ -1722,8 +1722,8 @@
     },
     {
       "id": "ISSUE-056",
-      "title": "prefetch_tiles.py: FR-001 仕様追従（全種別独立取得・404時キャッシュ削除）",
-      "description": "SRS FR-001 改訂（2026-05-25）に合わせて prefetch_tiles.py の実装を修正する。\n\n【修正内容】\n1. fetch_dem5_with_fallback() の早期 break を撤廃し、dem5a/b/c を独立ジョブとして列挙・取得する（種別間の条件分岐なし）\n2. enumerate_jobs() で dem5b/dem5c も常に列挙対象に含める\n3. fetch_one() で HTTP 404 受信時に同パスのローカルキャッシュが存在すれば os.unlink(path) で削除し、地理院側と同じ状態に保つ\n\n【背景】\n旧実装は dem5a 取得成功で break する「タイル単位フォールバック取得」になっており、FR-002 のピクセル単位フォールバックが機能するための前提（全種別のタイルがローカルに揃っていること）を満たしていなかった。また 404 受信時にキャッシュを残すと地理院側で削除されたタイルがローカルに残り続ける問題があった。\n\n【対象ファイル】\n- scripts/prefetch_tiles.py\n  - fetch_dem5_with_fallback() (185-199行付近): early break 撤廃\n  - enumerate_jobs() : dem5b/dem5c を列挙対象に追加\n  - fetch_one() (131-180行付近): 404時の os.unlink 追加",
+      "title": "prefetch_tiles.py: FR-001 仕様追従（全種別独立取得・404時ローカルキャッシュ削除）",
+      "description": "SRS FR-001 改訂（2026-05-25）に合わせて prefetch_tiles.py の実装を修正する。\n\n【修正内容】\n1. fetch_dem5_with_fallback() の早期 break を撤廃し、dem5a/b/c を独立ジョブとして列挙・取得する（種別間の条件分岐なし）\n2. enumerate_jobs() で dem5b/dem5c も常に列挙対象に含める\n3. fetch_one() で HTTP 404 受信時に同パスのローカルキャッシュが存在すれば os.unlink(path) で削除し、地理院側と同じ状態に保つ\n\n【背景】\n旧実装は dem5a 取得成功で break する「タイル単位フォールバック取得」になっており、FR-002 のピクセル単位フォールバックが機能するための前提（全種別のタイルがローカルに揃っていること）を満たしていなかった。また 404 受信時にローカルキャッシュを残すと地理院側で削除されたタイルがローカルに残り続ける問題があった。\n\n【対象ファイル】\n- scripts/prefetch_tiles.py\n  - fetch_dem5_with_fallback() (185-199行付近): early break 撤廃\n  - enumerate_jobs() : dem5b/dem5c を列挙対象に追加\n  - fetch_one() (131-180行付近): 404時の os.unlink 追加",
       "type": "改善",
       "priority": "高",
       "category": null,
@@ -1944,7 +1944,7 @@
       "planned_stage": null,
       "status": "未対応",
       "assignee": null,
-      "resolution": "scripts/merge.py または scripts/prefetch_tiles.py でキャッシュタイルの mtime 最大値を集計し、gsi_tile_latest_date として merged.geojson の metadata に格納する。タイルの mtime は地理院サーバの Last-Modified ヘッダと一致（prefetch_tiles.py で os.utime() により設定済み）。SRS FR-019 に仕様記載済み。",
+      "resolution": "scripts/merge.py または scripts/prefetch_tiles.py でローカルキャッシュタイルの mtime 最大値を集計し、gsi_tile_latest_date として merged.geojson の metadata に格納する。タイルの mtime は地理院サーバの Last-Modified ヘッダと一致（prefetch_tiles.py で os.utime() により設定済み）。SRS FR-019 に仕様記載済み。",
       "notes": "フォーマット規定: YYYY-MM-DD 形式（UTC）。ビューア表示時は末尾に (UTC) を付記すること。SRS FR-019 に明記済み（2026-05-31 更新）",
       "resolved_date": null,
       "verified_date": null,
@@ -2239,7 +2239,7 @@
     },
     {
       "id": "ISSUE-077",
-      "title": "外部I/F・ユーザ入力・内部データの三分類規約とSRS再編",
+      "title": "外部I/F・ユーザー入力・内部データの三分類規約とSRS再編",
       "description": null,
       "type": "設計",
       "priority": "高",
@@ -2330,6 +2330,40 @@
       "resolved_date": null,
       "verified_date": null,
       "history": []
+    },
+    {
+      "id": "ISSUE-080",
+      "title": "全文書「ユーザー」→「ユーザー」・「キャッシュ」→「ローカルキャッシュ」表記統一",
+      "description": null,
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-06",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "対象ファイル全件の用語を統一する。ユーザー→ユーザー は機械置換（42件）、キャッシュ→ローカルキャッシュ はタイル限定の文脈判別置換（16箇所）。アンカーリンクも同時更新。コードは対象外。",
+      "notes": null,
+      "resolved_date": "2026-06-06",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-06T12:08:15",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-06T12:11:13",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": ""
+        }
+      ]
     }
   ]
 }

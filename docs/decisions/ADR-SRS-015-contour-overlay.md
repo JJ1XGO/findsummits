@@ -18,7 +18,7 @@ HTML ビューア（[FR-013](../02_SRS.md#fr-013-html-ビューア生成)）の�
 **地理院標高タイルを Canvas でピクセル処理する独自等高線オーバーレイ**を HTML ビューアに追加する。
 
 主な仕様：
-- データソース: 地理院標高タイル（dem5a_png/dem5b_png/dem5c_png/dem_png）をブラウザから直接 fetch（プロジェクトの prefetch キャッシュには依存せず、ブラウザ HTTP キャッシュに任せる）
+- データソース: 地理院標高タイル（dem5a_png/dem5b_png/dem5c_png/dem_png）をブラウザから直接 fetch（プロジェクトの prefetch ローカルキャッシュには依存せず、ブラウザ HTTP キャッシュに任せる）
 - ズーム別タイル選択: マップズーム ≤14 は `dem_png`（z=14）/ ズーム 15 は `dem5a_png`（z=15、404時 dem5b→dem5c→dem_png z=14 縮小補完）/ ズーム ≥16 は z=15 タイルを Leaflet `maxNativeZoom` 機能で拡大表示
 - dem1a（z=17、1m メッシュ）はカバレッジが限定的なため現時点では採用しない。HLD で改めて評価する
 - 描画レイヤー: `contourPane`（z-index=250、`pointerEvents=none`）を独自追加し、基図（z=200）と overlayPane（z=400）の間に挿入
