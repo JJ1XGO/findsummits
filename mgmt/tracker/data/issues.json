@@ -377,13 +377,21 @@
       "reporter": null,
       "created_date": "2026-05-08",
       "stage": "COD",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "Claude",
       "resolution": "scripts/prefetch_tiles.py の enumerate_jobs() から隣接メッシュ拡張ロジック（nb not in mesh_set の分岐）を削除し、各メッシュ単独の mesh_to_tile_range(meshcode) のみを取得するよう修正する。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
-      "history": [],
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:40",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ],
       "planned_stage": "COD"
     },
     {
@@ -483,13 +491,21 @@
       "reporter": null,
       "created_date": "2026-05-09",
       "stage": "COD",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "Sonnet",
       "resolution": "scripts/merge.py の load_peaks() に --mesh-list 指定時の絞り込みロジックを追加する。指定メッシュコードのセットを受け取り、csv_dir 配下から {meshcode}.csv のみを対象にする。省略時は現行の glob 全読み込みを維持する。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
-      "history": [],
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:41",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ],
       "planned_stage": "COD"
     },
     {
@@ -1324,13 +1340,21 @@
       "reporter": null,
       "created_date": "2026-05-19",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "却下",
       "assignee": "Sonnet",
       "resolution": null,
       "notes": "【背景】commit 633e54b (is_tile_top → key_col_unresolved) + commit ea6bbbe (key_col_unresolved → key_col_resolved + area_truncated → area_complete) で仕様側を更新済み。実装側はまだ旧名のまま。仕様優先原則のため仕様変更が先行している。\n\n【関連 ISSUE】\n- ISSUE-014: 仕様変更の母 ISSUE（対応中）\n- ISSUE-037 (ADR-SRS-010 Phase 1): elevation.c の C++/OpenCV 化\n- ISSUE-038 (ADR-SRS-010 Phase 2): 残り src/ の C++ 翻訳\n- ISSUE-040 (ADR-SRS-010 Phase 4): FR-016 (area_complete を含む) C++ 新規実装",
       "resolved_date": null,
-      "verified_date": null,
-      "history": [],
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:43",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ],
       "planned_stage": "COD"
     },
     {
@@ -1400,13 +1424,21 @@
       "reporter": "JJ1XGO",
       "created_date": "2026-05-21",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": null,
       "notes": "【作業範囲】\n- params/config.ini.example の [analysis] セクション（または相当箇所）に delete_zone_max_drop = 250 を追加\n- 値の根拠コメントとして ADR-SRS-011 を参照\n- 既存のローカル params/config.ini（gitignore）は手動で同期する旨をユーザーに通知\n\n【参照】\n- ADR docs/decisions/ADR-SRS-011-delete-zone-polygon.md\n- SRS FR-016\n\n【元 ISSUE】ISSUE-020 から分離",
       "resolved_date": null,
-      "verified_date": null,
-      "history": [],
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:44",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ],
       "planned_stage": "COD"
     },
     {
@@ -1637,13 +1669,21 @@
       "created_date": "2026-05-23",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:45",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ]
     },
     {
       "id": "ISSUE-054",
@@ -1731,13 +1771,21 @@
       "created_date": "2026-05-25",
       "stage": "COD",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": null,
       "notes": "【ADR-SRS-018 反映】北方領土除外タイルリストの読み込みと取得スキップ処理が追加変更点として加わった。enumerate_jobs() または fetch() の段階で、北方領土除外タイルリスト（テキスト: x y ペア）を読み込み、リスト内のタイルはジョブに含めない（HTTP リクエストを発行しない）。既存ローカルキャッシュが存在する場合は削除して地理院側と同じ状態に保つこと（取得しない = リストに入れないのと同義）。",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:47",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ]
     },
     {
       "id": "ISSUE-057",
@@ -1825,13 +1873,21 @@
       "created_date": "2026-05-29",
       "stage": "COD",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": "merge.py の DEFAULT_OUTPUT 変更 + output_geojson.py の DEFAULT_INPUT 変更 + output_geojson.py に merged_summit.csv 出力処理追加",
       "notes": "SRS 改訂（2026-05-29: xlsx 化）に伴い追加スコープ: merged_summit.csv → merged_summit.xlsx（scripts/merge.py の出力変更）、output_geojson.py の DEFAULT_INPUT を merged_peak.csv に変更。FR-012 実装（merged_summit_revised.xlsx 生成）は ISSUE-062 として分離起票のため本 ISSUE のスコープには含めない。",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:48",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ]
     },
     {
       "id": "ISSUE-060",
@@ -1844,13 +1900,21 @@
       "created_date": "2026-05-29",
       "stage": "COD",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": "CLAUDE.md・README.md 内の merged.csv 参照を検索し新命名に置換",
       "notes": "merged.csv 命名整理に加えて、2026-05-29 の xlsx 化により merged_summit.xlsx の言及も追加対象。CLAUDE.md L63 他を更新。",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:49",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ]
     },
     {
       "id": "ISSUE-061",
@@ -1942,13 +2006,21 @@
       "created_date": "2026-05-31",
       "stage": null,
       "planned_stage": null,
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": "scripts/merge.py または scripts/prefetch_tiles.py でローカルキャッシュタイルの mtime 最大値を集計し、gsi_tile_latest_date として merged.geojson の metadata に格納する。タイルの mtime は地理院サーバの Last-Modified ヘッダと一致（prefetch_tiles.py で os.utime() により設定済み）。SRS FR-019 に仕様記載済み。",
       "notes": "フォーマット規定: YYYY-MM-DD 形式（UTC）。ビューア表示時は末尾に (UTC) を付記すること。SRS FR-019 に明記済み（2026-05-31 更新）",
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:51",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ]
     },
     {
       "id": "ISSUE-065",
@@ -1961,13 +2033,21 @@
       "created_date": "2026-05-31",
       "stage": null,
       "planned_stage": null,
-      "status": "未対応",
+      "status": "却下",
       "assignee": null,
       "resolution": "viewer_mockup.html の「変更あり」フィルター判定を localStorage 保存ありから is_band_change_candidate=true ベースに変更する。SRS 定義（FR-012 / FR-021）との整合を取る。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "verified_date": "2026-06-07",
+      "history": [
+        {
+          "date": "2026-06-07T12:28:51",
+          "actor": "Claude",
+          "from": "未対応",
+          "to": "却下",
+          "comment": "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"
+        }
+      ]
     },
     {
       "id": "ISSUE-066",
@@ -2383,12 +2463,12 @@
       "created_date": "2026-06-07",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-07",
-      "verified_date": null,
+      "verified_date": "2026-06-07",
       "history": [
         {
           "date": "2026-06-07T11:47:58",
@@ -2403,6 +2483,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-06-07T12:05:47",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     }

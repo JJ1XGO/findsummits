@@ -289,16 +289,39 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 ## 課題管理ルール
 
-**開発タスク（機能追加・改善・調査・設計）は `venv/bin/python3 mgmt/tracker/track.py issue` で管理する。**  
-バグ（欠陥）は `track.py bug`、開発課題は `track.py issue` と使い分けること。
+**課題管理（`mgmt/tracker/` issue）はプロジェクトの仕様・設計・調査・新機能に特化する。**
+文書（URD / SRS / HLD / LLD / ADR / GLOSSARY 等）と紐づく議論を伴うものだけを `issue` に登録する。
+それ以外の作業リスト（実装タスク・ファイル名追従・ログ整備・運用作業等）は `mgmt/todo.md` で管理する（後述「ToDo リスト運用ルール」）。
+バグ（欠陥）は `track.py bug`、課題は `track.py issue` と使い分けること。
 
-1. 新規の開発タスクが発生したら `venv/bin/python3 mgmt/tracker/track.py issue add` で登録する
+**判定基準: 文書・仕様の議論を伴うか？**
+- Yes → `issue`（例: SRS の FR 追加、ADR 作成、SRS と実装の乖離調査）
+- No  → `todo.md`（例: 関数名のリネーム、ログ書式の統一、設定ファイルの追従）
+
+1. 新規の課題が発生したら `venv/bin/python3 mgmt/tracker/track.py issue add` で登録する
 2. 作業開始時は `issue update --status 対応中` でステータスを更新する
 3. 実装完了後は `issue close` コマンドでステータスを「対応完了」にする
 4. ユーザーが確認完了後、`issue verify` コマンドでステータスを「解決済」にする
 5. `stage` フィールドは次ステージ移行の判断材料として活用する
 
 詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
+
+## ToDo リスト運用ルール
+
+**作業リスト（仕様議論を伴わない実装タスク等）は `mgmt/todo.md` で管理する。**
+
+- **用途**: 文書・仕様の議論を伴わない作業の保管庫（実装タスク・ファイル名追従・ログ整備・運用作業・チェックリスト等）
+- **粒度**: 数行で書ける作業単位。実装ステップは箇条書きでチェックボックス化可
+- **管理方法**: 完了したものは消す（履歴は git で追える）。長期保留中のものは「保留」セクションへ
+- **新規発生時**: 「文書・仕様の議論を伴うか？」で判定し、No なら todo.md へ追記（issue 登録不要）
+
+handover との関係:
+- todo.md と issue は **原本**（永続的な作業リスト）
+- handover はセッション終了時点の **スナップショット**。todo.md と issue の未対応分を抜粋して載せる
+
+Issue から todo.md への降格判定:
+- 文書・仕様の議論が不要 / 単独のファイル修正で完結 / 純粋な実装タスクのみ → todo.md へ移行可
+- 移行時は `issue close` の理由欄に「todo.md に移行」と記載し、todo.md 側に転記する
 
 ## handover 実行時のルール
 
