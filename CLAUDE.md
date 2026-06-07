@@ -140,9 +140,9 @@ params/       # パラメータファイル
   fetch_config.ini              # 実設定（gitignore・メールアドレス記入）
 docs/         # 設計ドキュメント（git管理・devel/main 両ブランチ）
   00_GLOSSARY.md                           # 用語集
-  01_URD.md                                # ユーザー要件定義書
-  02_SRS.md                                # ソフトウェア要件仕様書
-  environment.md                           # 環境定義
+  01_environment.md                        # 環境定義
+  10_URD.md                                # ユーザー要件定義書
+  20_SRS.md                                # ソフトウェア要件仕様書
   decisions/                               # アーキテクチャ決定記録（ADR）
     research/                              # ADR 決定前の設計調査資料
 ref/          # 参照データ（git管理）
@@ -168,25 +168,47 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 ## 開発ドキュメント管理
 
+### ベースラインドキュメント採番ルール
+
+`docs/` 配下のベースラインドキュメント（常駐 + ステージ別）は、10 番台カテゴリ方式で採番する。
+
+| 範囲 | カテゴリ | 本体ファイル |
+|---|---|---|
+| 00 ～ 09 | 共通（常駐） | `00_GLOSSARY.md`、`01_environment.md` 等 |
+| 10 ～ 19 | URD ファミリ | `10_URD.md` |
+| 20 ～ 29 | SRS ファミリ | `20_SRS.md` |
+| 30 ～ 39 | HLD ファミリ | `30_HLD.md` |
+| 40 ～ 49 | LLD ファミリ | `40_LLD.md` |
+| 50 ～ 59 | UT ファミリ | `50_UT.md` |
+| 60 ～ 69 | IT ファミリ | `60_IT.md` |
+| 70 ～ 79 | ST ファミリ | `70_ST.md` |
+| 80 ～ 89 | OPS ファミリ | `80_OPS.md` |
+| 90 ～ 99 | 予備（予定外） | カテゴリ未確定の暫定配置 |
+
+- **対象**: `docs/` 配下の常駐 + ステージ別ドキュメント。`ADR-*.md`・`research/`・`figures/`・`mockup/`・`ref/SOURCES.md` は対象外
+- **本体は X0**、**付随ドキュメントは X1〜X9**（例: `20_SRS.md` 本体、`21_SRS_RTM.md` 等）
+- カテゴリ未確定のドキュメントは **90 番台**に暫定配置し、確定後に該当カテゴリへリネームする
+- リネーム時は参照箇所を全て更新する（`grep` で旧パス残存ゼロを確認）
+
 ### 各ステージの成果物
 
 ウォーターフォール方式（URD→SRS→HLD→LLD→COD→UT→IT→ST→OPS）で開発を進める。各ステージの成果物を `docs/` に作成する。
 
 | ステージ | 成果物ファイル |
 |---------|--------------|
-| URD | `docs/01_URD.md` |
-| SRS | `docs/02_SRS.md` |
-| HLD | `docs/03_HLD.md` |
-| LLD | `docs/04_LLD.md` |
+| URD | `docs/10_URD.md` |
+| SRS | `docs/20_SRS.md` |
+| HLD | `docs/30_HLD.md` |
+| LLD | `docs/40_LLD.md` |
 | COD | `src/*.c`, `scripts/*.py` |
-| UT  | `docs/05_UT.md` |
-| IT  | `docs/06_IT.md` |
-| ST  | `docs/07_ST.md` |
-| OPS | `docs/08_OPS.md` |
+| UT  | `docs/50_UT.md` |
+| IT  | `docs/60_IT.md` |
+| ST  | `docs/70_ST.md` |
+| OPS | `docs/80_OPS.md` |
 
 常駐ドキュメント（ステージ不問）:
 - `docs/00_GLOSSARY.md` — 用語集（全文書から参照）
-- `docs/environment.md` — 環境定義
+- `docs/01_environment.md` — 環境定義
 - `ref/SOURCES.md` — 参照資料の出典一覧
 - `docs/decisions/ADR-*.md` — アーキテクチャ決定記録
 - `docs/decisions/research/` — ADR 決定前の設計調査資料

@@ -118,7 +118,7 @@ Phase 1〜4 の詳細手順・検証手順は採用後に各 ISSUE として登�
 ### 既存ドキュメントへの波及
 
 - **ADR-SRS-001**: 状態を「採用・実装済み（ADR-SRS-010 により C 部分が C++ に置換予定）」に更新
-- **SRS（02_SRS.md）のアーキテクチャ概要（3.2/3.3）**: 論理コンポーネント名で記述するため、本 ADR の言語変更による影響を受けない。実装言語・ファイル名の決定は本 ADR で完結し、HLD/LLD で具体的なビルド構成を扱う。
+- **SRS（20_SRS.md）のアーキテクチャ概要（3.2/3.3）**: 論理コンポーネント名で記述するため、本 ADR の言語変更による影響を受けない。実装言語・ファイル名の決定は本 ADR で完結し、HLD/LLD で具体的なビルド構成を扱う。
 - **CLAUDE.md**: 「依存: libpng, libm, pthread（GCC / C99）」を「依存: OpenCV, libm, pthread（g++ / C++17）」に更新（Phase 1 着手時に実施）
 
 ### 既存 ISSUE への影響
@@ -129,6 +129,6 @@ Phase 1〜4 の詳細手順・検証手順は採用後に各 ISSUE として登�
 ## 関連ドキュメント
 
 - [ADR-SRS-001: C + Python ハイブリッドアーキテクチャ](ADR-SRS-001-hybrid-c-python-architecture.md)（部分置換）
-- [SRS FR-015: 標高地形図出力](../02_SRS.md#fr-015-標高地形図出力)
-- [SRS FR-016: アクティベーションゾーン計算](../02_SRS.md#fr-016-アクティベーションゾーン計算)
+- [SRS FR-015: 標高地形図出力](../20_SRS.md#fr-015-標高地形図出力)
+- [SRS FR-016: アクティベーションゾーン計算](../20_SRS.md#fr-016-アクティベーションゾーン計算)
 - [調査資料: cpp-opencv-migration-research.md](research/cpp-opencv-migration-research.md)

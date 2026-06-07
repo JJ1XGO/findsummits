@@ -103,7 +103,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 
 ## 出力物関連
 
-出力ファイルの詳細仕様は SRS（`docs/02_SRS.md`）を参照。
+出力ファイルの詳細仕様は SRS（`docs/20_SRS.md`）を参照。
 
 | 用語 | 説明 |
 |---|---|
@@ -170,8 +170,8 @@ per-mesh CSV / GeoJSON の列名・フラグ・コード体系。
 
 | 略語 | 正式名称 | 説明 |
 |---|---|---|
-| URD | User Requirements Document | ユーザー要件定義書。利用者視点での「何ができるべきか」を記述（`docs/01_URD.md`）。要件識別子: `UR-XXX` |
-| SRS | Software Requirements Specification | ソフトウェア要件仕様書。システム視点での機能・非機能要件を記述（`docs/02_SRS.md`）。識別子: 機能要件 `FR-XXX` / 非機能要件 `NFR-XXX` |
+| URD | User Requirements Document | ユーザー要件定義書。利用者視点での「何ができるべきか」を記述（`docs/10_URD.md`）。要件識別子: `UR-XXX` |
+| SRS | Software Requirements Specification | ソフトウェア要件仕様書。システム視点での機能・非機能要件を記述（`docs/20_SRS.md`）。識別子: 機能要件 `FR-XXX` / 非機能要件 `NFR-XXX` |
 | HLD | High-Level Design | 概要設計。アーキテクチャ・主要モジュール構成を記述（`docs/03_HLD.md`、未作成） |
 | LLD | Low-Level Design | 詳細設計。モジュール内部のアルゴリズム・データ構造を記述（`docs/04_LLD.md`、未作成） |
 | COD | Coding | 実装フェーズ。成果物: `src/*.c`・`scripts/*.py` |

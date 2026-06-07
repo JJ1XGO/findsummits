@@ -5,7 +5,7 @@
 
 ## Context
 
-HTML ビューア（[FR-013](../02_SRS.md#fr-013-html-ビューア生成)）の背景タイルには国土地理院標準地図・地理院淡色・OSM・OpenTopoMap の4種が選択可能だが（[ADR-SRS-006](ADR-SRS-006-viewer-background-tile-selection.md)）、OSM は等高線を含まず山岳部での視認性が低い。ADR-SRS-006 Consequences 行 47 でもこの制約が明記されていた。
+HTML ビューア（[FR-013](../20_SRS.md#fr-013-html-ビューア生成)）の背景タイルには国土地理院標準地図・地理院淡色・OSM・OpenTopoMap の4種が選択可能だが（[ADR-SRS-006](ADR-SRS-006-viewer-background-tile-selection.md)）、OSM は等高線を含まず山岳部での視認性が低い。ADR-SRS-006 Consequences 行 47 でもこの制約が明記されていた。
 
 地理院標準・地理院淡色・OpenTopoMap はいずれも等高線入りであるため、OSM 選択時のみ等高線情報が失われる。この欠落を補う手段として等高線オーバーレイの追加を検討した。
 

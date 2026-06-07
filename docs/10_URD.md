@@ -61,7 +61,7 @@ SOTA日本支部への更新申請に必要な成果物を生成する支援ツ�
 - 竹島（島根県、HL/GB-430 として韓国 SOTA に登録済み）が含まれる1次メッシュ 5531 は解析対象外とする（根拠: [ADR-URD-009](decisions/ADR-URD-009-takeshima-exclusion.md)）
 - タイル取得時はインターネット接続が必要（解析・出力生成はオフラインで可）
 - 地理院サーバへのアクセスは[国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)に従い、サーバへの過度な負荷を避けること
-- 本ツールは開発者本人の特定マシン上での動作を前提とする。動作環境は [`environment.md`](environment.md) を参照
+- 本ツールは開発者本人の特定マシン上での動作を前提とする。動作環境は [`01_environment.md`](01_environment.md) を参照
 
 ## 6. スコープ外（対象外）
 

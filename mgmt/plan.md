@@ -1,83 +1,55 @@
-# ISSUE-079 todo 移行・ISSUE-062 以降のステージ情報補正
+# ベースラインドキュメント採番ルールの整備
 
 ## Context
 
-前回コミット（`fc9cb8c chore(mgmt): 課題管理と ToDo リストの管理を分離`）で課題管理と todo.md の分離整備を実施したが、以下の補正が必要：
+ベースラインドキュメント（仕様基準として参照される土台文書）に体系的な番号を割り当て、将来のドキュメント追加（予定／予定外）にも対応できる枠組みを整備する。
 
-1. **ISSUE-079** (preprocess_pref_boundaries.py FR-017 追従) を境界線として「Issue 残し」にしたが、内容を再確認すると **仕様は確定済みで実装作業のみ**。todo.md に移行する。
-2. 現在 **SRS ステージ中** に登録した ISSUE-062 以降の未対応 Issue について、発生ステージが未設定または別ステージになっているものがある。**発生ステージを SRS に統一**する。
-3. 各 Issue の **「対応予定ステージ」（どこまでに対応すれば良いか）** が未設定。個別に設定する。
+### 現状の問題
 
-## 修正対象
+- `docs/01_environment.md` のみ番号が無く、他のベースラインドキュメント（`00_GLOSSARY`, `01_URD`, `02_SRS`）と命名が不揃い。
+- 採番ルールが暗黙的で、将来ステージ別ドキュメントに付随ドキュメント（例: SRS の RTM、HLD の方式調査資料）が増えた場合の置き場と命名が定まらない。
+- カテゴリが未確定の「予定外」ドキュメントの暫定配置場所がない。
 
-### 1. ISSUE-079 を todo.md へ移行
+### 範囲
 
-- `track.py issue update ISSUE-079 --status 却下 --actor "Claude" --comment "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"`
-- `mgmt/todo.md` の高優先セクションに以下を追記:
+`docs/` 配下の常駐ドキュメントとステージ別ドキュメントのみ。
+対象外: `docs/decisions/ADR-*.md`（別命名規則）、`docs/decisions/research/`、`docs/figures/`、`docs/mockup/`、`ref/SOURCES.md`（`ref/` 配下で役割が異なる）。
 
-```
-- [ ] (元 ISSUE-079) scripts/preprocess_pref_boundaries.py を FR-017 改訂版仕様に追従
-  - ZIP 自動検出方式（$DATA_DIR/ref/ を N03-(\d{8})_GML\.zip で走査、YYYYMMDD 最大を採用）
-  - ZIP 内市区町村版 GeoJSON のみを一時ディレクトリに展開して処理、処理後削除
-  - dissolve 出力を 60 地域（46 都府県 + 14 振興局）に修正
-  - params/config.ini の n03_year 設定参照を廃止
-  - 採用 ZIP 名・YYYYMMDD・サイズをログに出力
-  - 北方領土除外タイルリスト生成（ADR-SRS-018: NORTHERN_CODES = {01695..01700}）
-  - 仕様詳細: docs/02_SRS.md FR-017・7.1.3・7.2.1・ADR-URD-005
-```
+---
 
-### 2. ISSUE-062 以降の未対応 Issue の発生ステージを SRS に統一
+## 採用ルール（10 番台カテゴリ方式）
 
-対象 10 件（ISSUE-079 を除く未対応分）:
-- ISSUE-062, ISSUE-063, ISSUE-066, ISSUE-070, ISSUE-071, ISSUE-072, ISSUE-073, ISSUE-074, ISSUE-075, ISSUE-076
+### カテゴリ区分
 
-実行: `track.py issue update ISSUE-XXX --stage SRS --actor "Claude" --comment "発生ステージを現行 SRS ステージに統一"`
+| 範囲 | カテゴリ | 用途 |
+|---|---|---|
+| 00 ～ 09 | 共通（常駐） | ステージに紐づかない参照基盤 |
+| 10 ～ 19 | URD ファミリ | URD 本体 + 付随ドキュメント |
+| 20 ～ 29 | SRS ファミリ | SRS 本体 + 付随ドキュメント |
+| 30 ～ 39 | HLD ファミリ | HLD 本体 + 付随ドキュメント |
+| 40 ～ 49 | LLD ファミリ | LLD 本体 + 付随ドキュメント |
+| 50 ～ 59 | UT ファミリ | UT 本体 + 付随ドキュメント |
+| 60 ～ 69 | IT ファミリ | IT 本体 + 付随ドキュメント |
+| 70 ～ 79 | ST ファミリ | ST 本体 + 付随ドキュメント |
+| 80 ～ 89 | OPS ファミリ | OPS 本体 + 付随ドキュメント |
+| 90 ～ 99 | 予備（予定外） | カテゴリ未確定の暫定配置・後でリネーム |
 
-### 3. 対応予定ステージの個別設定
+各カテゴリの **X0 を本体**、**X1〜X9 を付随ドキュメント**に割り当てる（例: `20_SRS.md` 本体、`21_SRS_RTM.md` のように付随）。
 
-**判定基準**（ユーザー指示）: SRS に書かれており HLD/LLD に影響せずプログラム修正だけで良ければ COD、HLD/LLD で記述事項があるなら該当ステージ。
+### 既存ファイルの新番号
 
-| ID | タイトル要約 | 対応予定 | 判定理由 |
-|---|---|---|---|
-| ISSUE-062 | FR-012 実装: merged_summit_revised.xlsx | **HLD** | ブラウザ内生成方針に確定（SRS 修正済み）。HTML ビューア側の設計が HLD 領域 |
-| ISSUE-063 | FR-021 実装: 申請エビデンス ZIP 生成 | **HLD** | ブラウザ内 JSZip 実装。HTML ビューアのボタン・統合設計が HLD 領域 |
-| ISSUE-066 | FR-019 検索機能実装 | **HLD** | HTML ビューア UI 機能。検索方式・対象プロパティ・サジェストの設計が HLD 領域 |
-| ISSUE-070 | 等高線レイヤー描画パラメータ確定（HLD） | **HLD** | HLD 段階で方針確定する設計判断 |
-| ISSUE-071 | 標高タイル選択・フォールバック実装方針（HLD） | **HLD** | HLD 段階で方針確定する設計判断 |
-| ISSUE-072 | Leaflet pane 構成と重ね順の整理（HLD） | **HLD** | HLD 段階で構成決定 |
-| ISSUE-073 | attribution 制御方式の確定（HLD） | **HLD** | HLD 段階で方式確定 |
-| ISSUE-074 | Phase 構造の再編 | **SRS** | SRS 改訂で完結 |
-| ISSUE-075 | FR-004/FR-014 責務分担変更 + ADR-SRS-004 更新 | **SRS** | SRS と ADR 改訂で完結 |
-| ISSUE-076 | FR-022 出力明示 + フェーズ遷移制御の所在 | **SRS** | SRS 改訂で完結 |
+| 現在 | 新規 | 操作 |
+|---|---|---|
+| `docs/00_GLOSSARY.md` | `docs/00_GLOSSARY.md` | 変更なし |
+| `docs/01_environment.md` | `docs/01_environment.md` | リネーム（新規番号付与） |
+| `docs/10_URD.md` | `docs/10_URD.md` | リネーム |
+| `docs/20_SRS.md` | `docs/20_SRS.md` | リネーム |
 
-実行: `track.py issue update ISSUE-XXX --planned_stage XXX --actor "Claude" --comment "対応予定ステージを設定"`
+### 採番運用ルール（CLAUDE.md に明文化）
 
-### 4. Excel レポート再生成
-
-`venv/bin/python3 mgmt/tracker/track.py issue export --if-changed`
-
-### 5. コミット
-
-対象ファイル: `mgmt/todo.md` / `mgmt/tracker/data/issues.json` / `mgmt/tracker/reports/issues_export.xlsx` / `mgmt/plan.md`
-
-メッセージ案:
-```
-chore(tracker): ISSUE-079 todo 移行・ISSUE-062 以降のステージ情報補正
-
-- ISSUE-079 (preprocess_pref_boundaries.py FR-017 追従) を todo.md へ移行
-- ISSUE-062 以降の未対応 Issue 10 件の発生ステージを SRS に統一
-- 各 Issue に対応予定ステージを設定（HTML ビューア系/HLD 確定系=HLD、SRS 改訂系=SRS）
-```
-
-## 検証
-
-- `track.py issue list --open` で未対応 Issue が **22 件**（23 - ISSUE-079）になる
-- `track.py issue show ISSUE-XXX` で発生ステージ・対応予定ステージが反映されていることを確認（サンプル: ISSUE-062 / 070 / 074 で各カテゴリ 1 件ずつ）
-- `mgmt/todo.md` の高優先セクションに ISSUE-079 由来項目が追加されている
-- `git status` でクリーン状態
-
-## 影響範囲
-
-- ドキュメント・トラッカーデータのみ（コード変更なし）
-- 既存 ID は維持
-- 棚卸し済み Issue / バグ件数は変動するが、判定基準（文書議論の有無）は前回コミットで明文化済み
+1. ベースラインドキュメント = `docs/` 配下の常駐 + ステージ別。ADR・research・figures・mockup・`ref/SOURCES.md` は対象外。
+2. カテゴリ範囲（10 番台単位）に従って採番する。
+3. 本体は X0、付随ドキュメントは X1〜X9（カテゴリ内連番）。
+4. カテゴリが確定しないドキュメントは **90 番台**に暫定配置し、所属が決まった時点で該当カテゴリへリネームする。
+5. ファイル名は `NN_<TITLE>.md`（共通は `01_environment.md` のように小文字、ステージ系は `10_URD.md` のように大文字略号を踏襲）。
+6. リネーム時は参照箇所を全て更新する（`grep` で旧パス残存ゼロを確認）。
