@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-06",
-    "counter": 80
+    "last_updated": "2026-06-07",
+    "counter": 81
   },
   "issues": [
     {
@@ -1734,7 +1734,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": null,
+      "notes": "【ADR-SRS-018 反映】北方領土除外タイルリストの読み込みと取得スキップ処理が追加変更点として加わった。enumerate_jobs() または fetch() の段階で、北方領土除外タイルリスト（テキスト: x y ペア）を読み込み、リスト内のタイルはジョブに含めない（HTTP リクエストを発行しない）。既存ローカルキャッシュが存在する場合は削除して地理院側と同じ状態に保つこと（取得しない = リストに入れないのと同義）。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -2326,7 +2326,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": "SRS 確定（コミット予定）後に着手する。実装側 ISSUE。",
+      "notes": "【ADR-SRS-018 反映】4.1/4.2 の章順序入れ替え自体には実装上の影響なし。出力ファイル仕様（3 種類）は変更なし。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -2369,6 +2369,33 @@
           "from": "対応完了",
           "to": "解決済",
           "comment": "[解決確認]"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-081",
+      "title": "SRS: 北方領土除外をタイル取得段階に前倒し・4.1/4.2 入れ替え・3.2/3.3.1/3.3.2 修正",
+      "description": "FR-001/FR-017 の順序入れ替えに伴う SRS 改訂。\n主な変更:\n1. 4.1/4.2 セクション番号入れ替え（行政区域前処理→タイル取得の順）\n2. 3.2/3.3.1/3.3.2 もそれに合わせて修正\n3. FR-001 入力: 北方領土除外タイルリスト（必須）追加・1次メッシュコードリストを任意（デフォルト=日本全土）に変更\n4. FR-017 概要修正（FR-004→FR-001）・フォールバック節削除\n5. FR-004 から北方領土タイル除外段落削除\n6. データ辞書 7.2/7.2.1 の参照先を FR-004→FR-001 に変更\n7. ADR-SRS-018 新規作成\n8. ISSUE-056/ISSUE-079 説明文追記\n仕様詳細: mgmt/plan.md",
+      "type": null,
+      "priority": "高",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-07",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-07T11:47:58",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
         }
       ]
     }
