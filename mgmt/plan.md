@@ -1,88 +1,83 @@
-# 課題管理と ToDo リストの分離整備
+# ISSUE-079 todo 移行・ISSUE-062 以降のステージ情報補正
 
 ## Context
 
-現状、開発タスクの管理が課題管理トラッカー（`mgmt/tracker/`）に過度に集中しており、「文書・仕様に紐づかないオペレーション作業」も Issue として登録されている。`mgmt/todo.md` は実在するが、ルールが todo.md 自身にしか書かれておらず、グローバル/プロジェクト CLAUDE.md からリンクされていないため、運用に組み込まれず死蔵状態。
+前回コミット（`fc9cb8c chore(mgmt): 課題管理と ToDo リストの管理を分離`）で課題管理と todo.md の分離整備を実施したが、以下の補正が必要：
 
-調査結果：
-- 全 Issue 81 件中、約 16%（13 件）が作業 ToDo 的（「ファイル名追従」「ログ追記」「実装修正」レベル）
-- `mgmt/tracker/CLAUDE.md` には Issue/Bug の有効値（type など）の定義はあるが、「何を Issue として登録すべきか」の概念的線引きがない
-- 結果、handover の「次にやること」を選ぶ際に Claude が「これは Issue か todo か」で判断を迷う
+1. **ISSUE-079** (preprocess_pref_boundaries.py FR-017 追従) を境界線として「Issue 残し」にしたが、内容を再確認すると **仕様は確定済みで実装作業のみ**。todo.md に移行する。
+2. 現在 **SRS ステージ中** に登録した ISSUE-062 以降の未対応 Issue について、発生ステージが未設定または別ステージになっているものがある。**発生ステージを SRS に統一**する。
+3. 各 Issue の **「対応予定ステージ」（どこまでに対応すれば良いか）** が未設定。個別に設定する。
 
-### 目指す状態
+## 修正対象
 
-| 管理場所 | 対象 |
-|---|---|
-| `mgmt/tracker/` issue | プロジェクトの**仕様・設計・調査・新機能**（文書・仕様の議論を伴うもの） |
-| `mgmt/tracker/` bug | 動作不良・欠陥 |
-| `mgmt/todo.md` | 上記以外の作業リスト（実装タスク・ファイル名追従・修正作業・運用作業 等） |
-| `mgmt/plan.md` | 現在進行中の実装計画（既存運用維持） |
-| `mgmt/lessons.md` | 学び・避けるべきパターン（既存運用維持） |
+### 1. ISSUE-079 を todo.md へ移行
 
-判定基準: **「文書・仕様の議論を伴うか？」が機械的判定軸**。Yes → issue、No → todo.md。
+- `track.py issue update ISSUE-079 --status 却下 --actor "Claude" --comment "todo.md に移行（運用ルール改訂: 仕様議論を伴わない実装タスクは todo.md 管理）"`
+- `mgmt/todo.md` の高優先セクションに以下を追記:
 
-## 修正対象ファイル
+```
+- [ ] (元 ISSUE-079) scripts/preprocess_pref_boundaries.py を FR-017 改訂版仕様に追従
+  - ZIP 自動検出方式（$DATA_DIR/ref/ を N03-(\d{8})_GML\.zip で走査、YYYYMMDD 最大を採用）
+  - ZIP 内市区町村版 GeoJSON のみを一時ディレクトリに展開して処理、処理後削除
+  - dissolve 出力を 60 地域（46 都府県 + 14 振興局）に修正
+  - params/config.ini の n03_year 設定参照を廃止
+  - 採用 ZIP 名・YYYYMMDD・サイズをログに出力
+  - 北方領土除外タイルリスト生成（ADR-SRS-018: NORTHERN_CODES = {01695..01700}）
+  - 仕様詳細: docs/02_SRS.md FR-017・7.1.3・7.2.1・ADR-URD-005
+```
 
-### 1. `/workspace/CLAUDE.md`
+### 2. ISSUE-062 以降の未対応 Issue の発生ステージを SRS に統一
 
-**「課題管理ルール」セクション（L195前後）の改訂**:
+対象 10 件（ISSUE-079 を除く未対応分）:
+- ISSUE-062, ISSUE-063, ISSUE-066, ISSUE-070, ISSUE-071, ISSUE-072, ISSUE-073, ISSUE-074, ISSUE-075, ISSUE-076
 
-- 現状: 「開発タスク（機能追加・改善・調査・設計）は track.py issue で管理」
-- 改訂後: 「**プロジェクトの仕様・設計・調査・新機能（文書に紐づくもの）は track.py issue で管理**」「**それ以外の作業リスト（実装タスク・運用作業等）は `mgmt/todo.md` で管理**」と境界を明示
+実行: `track.py issue update ISSUE-XXX --stage SRS --actor "Claude" --comment "発生ステージを現行 SRS ステージに統一"`
 
-**ToDo リスト運用ルール節を新規追加**（課題管理ルール節の直後）:
+### 3. 対応予定ステージの個別設定
 
-- `mgmt/todo.md` の用途・書き方・粒度
-- handover の「次にやること」との関係（todo.md と一部重複する場合の方針）
-- Issue から todo.md に降格させる判定基準
+**判定基準**（ユーザー指示）: SRS に書かれており HLD/LLD に影響せずプログラム修正だけで良ければ COD、HLD/LLD で記述事項があるなら該当ステージ。
 
-### 2. `/workspace/mgmt/tracker/CLAUDE.md`
+| ID | タイトル要約 | 対応予定 | 判定理由 |
+|---|---|---|---|
+| ISSUE-062 | FR-012 実装: merged_summit_revised.xlsx | **HLD** | ブラウザ内生成方針に確定（SRS 修正済み）。HTML ビューア側の設計が HLD 領域 |
+| ISSUE-063 | FR-021 実装: 申請エビデンス ZIP 生成 | **HLD** | ブラウザ内 JSZip 実装。HTML ビューアのボタン・統合設計が HLD 領域 |
+| ISSUE-066 | FR-019 検索機能実装 | **HLD** | HTML ビューア UI 機能。検索方式・対象プロパティ・サジェストの設計が HLD 領域 |
+| ISSUE-070 | 等高線レイヤー描画パラメータ確定（HLD） | **HLD** | HLD 段階で方針確定する設計判断 |
+| ISSUE-071 | 標高タイル選択・フォールバック実装方針（HLD） | **HLD** | HLD 段階で方針確定する設計判断 |
+| ISSUE-072 | Leaflet pane 構成と重ね順の整理（HLD） | **HLD** | HLD 段階で構成決定 |
+| ISSUE-073 | attribution 制御方式の確定（HLD） | **HLD** | HLD 段階で方式確定 |
+| ISSUE-074 | Phase 構造の再編 | **SRS** | SRS 改訂で完結 |
+| ISSUE-075 | FR-004/FR-014 責務分担変更 + ADR-SRS-004 更新 | **SRS** | SRS と ADR 改訂で完結 |
+| ISSUE-076 | FR-022 出力明示 + フェーズ遷移制御の所在 | **SRS** | SRS 改訂で完結 |
 
-**「Issue と Bug の概念定義」セクションを新規追加**:
+実行: `track.py issue update ISSUE-XXX --planned_stage XXX --actor "Claude" --comment "対応予定ステージを設定"`
 
-- Issue = プロジェクトの仕様・設計・調査・新機能（文書議論を伴う）
-- Bug = 動作不良・欠陥
-- **Issue に登録すべきでない例**: 単独のファイル修正・ログ追記・ファイル名追従（→ todo.md へ）
-- type 有効値（機能追加/改善/調査/設計）の各定義を補足
+### 4. Excel レポート再生成
 
-### 3. `/workspace/mgmt/todo.md`
+`venv/bin/python3 mgmt/tracker/track.py issue export --if-changed`
 
-- 現状の旧メモ（アーキテクチャ刷新時のチェックリスト）はクリア
-- 新運用テンプレートに置き換え:
-  - 冒頭にルール（用途・判定基準・Issue との使い分け）を明記
-  - セクション例: 「進行中」「次回着手」「保留」
-  - 完了したものは消す or 取り消し線（運用上の好みをユーザーに確認しつつ決定）
+### 5. コミット
 
-### 4. 既存 Issue の棚卸し
+対象ファイル: `mgmt/todo.md` / `mgmt/tracker/data/issues.json` / `mgmt/tracker/reports/issues_export.xlsx` / `mgmt/plan.md`
 
-**未対応 Issue から ToDo 寄りを抽出** → ユーザーに一覧提示 → 承認後に処理:
+メッセージ案:
+```
+chore(tracker): ISSUE-079 todo 移行・ISSUE-062 以降のステージ情報補正
 
-- 「Issue に残す」: 仕様・設計議論を含む
-- 「todo.md に転記して Issue クローズ」: 単独オペレーション
-- 「却下/不要」: 既に意義を失っている
+- ISSUE-079 (preprocess_pref_boundaries.py FR-017 追従) を todo.md へ移行
+- ISSUE-062 以降の未対応 Issue 10 件の発生ステージを SRS に統一
+- 各 Issue に対応予定ステージを設定（HTML ビューア系/HLD 確定系=HLD、SRS 改訂系=SRS）
+```
 
-候補（要再確認）: ISSUE-013（prefetch 取得範囲修正）、ISSUE-056（prefetch FR-001 仕様追従）、ISSUE-059（実装側ファイル名追従）、ISSUE-064（gsi_tile_latest_date を merged に）、ISSUE-079（preprocess_pref_boundaries.py 仕様追従）など。
+## 検証
 
-**判定は実装フェーズで全未対応 Issue を 1 件ずつ確認してから提示**（独断で動かさない）。
-
-## 実装手順
-
-1. CLAUDE.md の課題管理ルール改訂・ToDo 節新規追加
-2. mgmt/tracker/CLAUDE.md に Issue/Bug 概念定義追記
-3. 全未対応 Issue を読み、棚卸し候補一覧をユーザーに提示
-4. ユーザー承認後、対象 Issue を mgmt/todo.md に転記 → Issue クローズ（理由欄に「todo.md に移行」と記載）
-5. mgmt/todo.md の中身をクリアし、棚卸しで移ってきた項目で再構成
-6. ドキュメント変更分をまとめて 1 コミット（Conventional Commits 形式・本文日本語）
-
-## 検証方法
-
-- `/workspace/CLAUDE.md` の改訂内容を実際に読み、Claude が次セッションで判定軸として使えるか確認
-- `mgmt/todo.md` 冒頭ルールを Claude が読んだ際に迷わない記述か確認
-- 棚卸し後の Issue 一覧（`venv/bin/python3 mgmt/tracker/track.py issue list --open`）が「仕様・設計・調査・新機能」に絞られているか目視
-- 棚卸し後の todo.md が「作業リスト」として機能する粒度になっているか目視
+- `track.py issue list --open` で未対応 Issue が **22 件**（23 - ISSUE-079）になる
+- `track.py issue show ISSUE-XXX` で発生ステージ・対応予定ステージが反映されていることを確認（サンプル: ISSUE-062 / 070 / 074 で各カテゴリ 1 件ずつ）
+- `mgmt/todo.md` の高優先セクションに ISSUE-079 由来項目が追加されている
+- `git status` でクリーン状態
 
 ## 影響範囲
 
-- ドキュメントのみ（コード変更なし）
-- 既存 Issue データの ID は維持（移動した Issue は理由欄に「todo.md に移行」と記載してクローズ）
-- handover・plan.md・lessons.md の運用は現状維持
+- ドキュメント・トラッカーデータのみ（コード変更なし）
+- 既存 ID は維持
+- 棚卸し済み Issue / バグ件数は変動するが、判定基準（文書議論の有無）は前回コミットで明文化済み

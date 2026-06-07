@@ -18,6 +18,15 @@
 
 ### 高
 
+- [ ] **(元 ISSUE-079) scripts/preprocess_pref_boundaries.py を FR-017 改訂版仕様に追従**
+  - ZIP 自動検出方式（`$DATA_DIR/ref/` を `N03-(\d{8})_GML\.zip` で走査、YYYYMMDD 最大を採用）
+  - ZIP 内市区町村版 GeoJSON のみを一時ディレクトリに展開して処理、処理後削除
+  - dissolve 出力を 60 地域（46 都府県 + 14 振興局）に修正
+  - `params/config.ini` の `n03_year` 設定参照を廃止
+  - 採用 ZIP 名・YYYYMMDD・サイズをログに出力
+  - 北方領土除外タイルリスト生成（ADR-SRS-018: NORTHERN_CODES = {01695..01700}）
+  - 仕様詳細: `docs/02_SRS.md` FR-017・7.1.3・7.2.1・ADR-URD-005
+
 - [ ] **(元 ISSUE-056) prefetch_tiles.py: FR-001 仕様追従**
   - `fetch_dem5_with_fallback()` の早期 break 撤廃 → dem5a/b/c を独立ジョブとして列挙
   - `enumerate_jobs()` に dem5b/dem5c を常に含める
