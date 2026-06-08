@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-07",
-    "counter": 81
+    "last_updated": "2026-06-08",
+    "counter": 86
   },
   "issues": [
     {
@@ -2500,6 +2500,101 @@
           "comment": "[解決確認]"
         }
       ]
+    },
+    {
+      "id": "ISSUE-082",
+      "title": "SRS/URD 全体の裸 FR-XXX/UR-XXX/NFR-XXX 参照の一括リンク化",
+      "description": "SRS・URD 全体に散在する裸の FR-XXX/UR-XXX/NFR-XXX 表記（約100件規模）を Markdown リンクに一括変換する。CLAUDE.md ドキュメントフォーマット標準にリンク化方針を追記済み（FR-015 レビュー観点 G 対応時に追記）。FR-015 周辺は観点 G の対応で解決済み。残りの SRS/URD 全体分が対象。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-08",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-015 レビュー（観点 G）の別 ISSUE として登録。CLAUDE.md のフォーマット標準『他 FR/UR/NFR/セクションへの参照は Markdown リンクで記述する』が根拠",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-083",
+      "title": "SRS 全 FR の入出力テーブル形式欄の一括見直し",
+      "description": "SRS の全 FR 入出力テーブルの「形式」欄を見直し、ファイル形式・データ型のみに統一する。特性記述（解像度・色分け・データ範囲等）は「備考」欄に移動する。CLAUDE.md ドキュメントフォーマット標準に方針を追記済み（FR-015 レビュー観点 I 対応時に追記）。FR-015 出力テーブルは観点 I の対応で修正済み。残りの全 FR 分が対象。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-08",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-015 レビュー（観点 I）の別 ISSUE として登録。CLAUDE.md のフォーマット標準『入出力テーブルの形式欄はファイル形式・データ型のみを記載する』が根拠",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-084",
+      "title": "ピーク候補リスト・コル情報の内部トランザクション化検討",
+      "description": "解析範囲結合画像と同様に、ピーク候補リスト・コル情報も内部トランザクションとして分類すべきかを検討する。FR-005 出力のピーク候補リストと FR-006 出力のコル情報は独立した中央データ構造として保持されるか（内部データ）、FR 間の一時的な受け渡し値に過ぎないか（内部トランザクション）を ADR-SRS-017 の基準で判定する。",
+      "type": "設計",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-08",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-015 レビュー（観点 H）の別 ISSUE として登録。解析範囲結合画像の内部トランザクション化（ISSUE-083 相当修正）との一貫性検討として登録",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-085",
+      "title": "mesh_analyze.c::elev_to_rgb() の標高レーン定義ハードコード外出し",
+      "description": "src/mesh_analyze.c の elev_to_rgb() 内に直接記述されている標高レーン定義（stops[] / colors[][]）を外部化する。SRS 6.8 で標高レーン定義表を確定したため（FR-015 レビュー観点 J）、SRS で定義された値を実装側が参照する形にする。外出しの具体形式（設定ファイル / 専用ヘッダー / JSON 等）は HLD/LLD マター。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-08",
+      "stage": "COD",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-015 レビュー（観点 J 実装側）の別 ISSUE として登録。SRS 6.8 に Japan Topo スキームの標高レーン定義表が確定済み",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-086",
+      "title": "mesh_analyze.h 内コメント「Terrain-RGB PNG」の修正",
+      "description": "src/mesh_analyze.h 内のコメントに含まれる「Terrain-RGB PNG」という誤用表現を修正する。「Terrain-RGB」は Mapbox 由来の入力タイル形式の業界用語であり、出力ファイルの呼称として誤っている。SRS 6.8 のタイトル変更（FR-015 レビュー観点 B）に合わせて実装側コメントも追従する。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": null,
+      "created_date": "2026-06-08",
+      "stage": "COD",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-015 レビュー（観点 B 実装側追従）の別 ISSUE として登録",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
