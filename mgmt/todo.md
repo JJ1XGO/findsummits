@@ -68,6 +68,11 @@
 
 ### 低
 
+- [ ] **docs/figures/phases_overview.drawio: FR-014 タイトル追従**
+  - 「FR-014: 独立峰のコル探索」→「FR-014: 広域結合解析オーケストレーション」
+  - 対象: `docs/figures/phases_overview.drawio` および `phases_overview.drawio.svg`（再エクスポート必要）
+  - 根拠: ISSUE-075（2026-06-09 SRS 改訂）
+
 - [ ] **(元 ISSUE-053) docs/figures/context.drawio: ラベル大文字統一**
 
 - [ ] **(元 ISSUE-060) CLAUDE.md / README.md の merged.csv 言及箇所追従**

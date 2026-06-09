@@ -2290,13 +2290,21 @@
       "created_date": "2026-06-04",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "未対応",
+      "status": "対応中",
       "assignee": null,
       "resolution": null,
       "notes": "完了後、ISSUE-087（SRS FR-005 ピーク候補検出のレビュー反映）に着手すること。FR-005 観点 L（制御フロー・オーケストレーション所在）の確定は本 ISSUE の再編結果に依存する。",
       "resolved_date": null,
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-09T15:14:24",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        }
+      ]
     },
     {
       "id": "ISSUE-076",
