@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-08",
-    "counter": 86
+    "last_updated": "2026-06-09",
+    "counter": 87
   },
   "issues": [
     {
@@ -2293,7 +2293,7 @@
       "status": "未対応",
       "assignee": null,
       "resolution": null,
-      "notes": null,
+      "notes": "完了後、ISSUE-087（SRS FR-005 ピーク候補検出のレビュー反映）に着手すること。FR-005 観点 L（制御フロー・オーケストレーション所在）の確定は本 ISSUE の再編結果に依存する。",
       "resolved_date": null,
       "verified_date": null,
       "history": []
@@ -2592,6 +2592,25 @@
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 B 実装側追従）の別 ISSUE として登録",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-087",
+      "title": "SRS FR-005 ピーク候補検出のレビュー反映",
+      "description": "SRS FR-005「ピーク候補検出」のレビュー結果を反映する。\n\n## 前提条件\n\nISSUE-075（FR-004/FR-014 責務再編 + ADR-SRS-004 更新）完了が前提。\n観点 L/M/N の確定は ISSUE-075 の再編結果に依存するため、ISSUE-075 完了後に着手すること。\n\n## レビュー観点リスト\n\n| 観点 | 内容 | 優先度 | 備考 |\n|---|---|---|---|\n| L | 制御フロー・オーケストレーション所在の明示 | 最重要 | ISSUE-075 完了後に確定 |\n| M | FR-005/006 単一走査の明示（C から発展） | 高 | ISSUE-075 完了後に確定 |\n| N | FR-007/016 への遷移条件 | 高 | ISSUE-075 完了後に確定 |\n| A | 対応 UR（UR-002 除外検討） | 中 | 独立に判断可 |\n| B | 概要の中粒度化 | 中 | 独立に判断可 |\n| D | 説明の仕様抜け（NODATA・0m・決定論・1px ボーダー） | 中 | 独立に判断可 |\n| E | 出力テーブル形式欄整理（CLAUDE.md 観点 I 違反） | 低 | 独立に判断可 |\n| F | 「ピーク候補」と「ピーク」の使い分け | 中 | 独立に判断可 |\n| G | 「山塊グループ」用語定義 | 低 | 独立に判断可 |\n| H | 異常系セクションの有無 | 低 | 独立に判断可 |\n| I | 広域モード言及 | 低 | ISSUE-075 完了後に整合確認 |\n| J | アルゴリズム説明の SRS/HLD 所在 | 中 | 独立に判断可 |\n| K | 内部データ分類見直し | — | ISSUE-084 既登録・本件対象外 |\n\n## 観点 L の現状認識\n\n- SRS では各 FR の責務は書かれているが、全体の制御がどう流れるかが見えない\n- FR-004 概要「per-mesh パイプライン（FR-005〜FR-007・FR-016）に引き渡す」の「引き渡す」が曖昧\n- FR-005 説明はピクセル単位の動作のみで、ループの主体（誰が回すか）が不明\n- FR-006 説明「FR-005 の処理中に…」で走査共有が暗黙\n- per-mesh パイプライン全体の処理フロー俯瞰図が SRS にない\n\n## 改善方向（ISSUE-075 完了後に確定）\n\n1. FR-004 に「per-mesh オーケストレーション役割」を明示（結合画像生成 → FR-005/006 走査 → FR-007 出力 → FR-016 ポリゴン生成）\n2. FR-005/FR-006 を「同一の単一ピクセル走査ループ内で機能分担して実行」と明示\n3. 4.3 セクション冒頭 or FR-004 説明末尾に per-mesh パイプライン処理フロー図を追加\n\n## 議論経緯（2026-06-09 セッション）\n\nFR-005 レビュー観点を整理する中で、ユーザーから「全体との関連がよくわからない。FR-004 と FR-005 の制御所在が不明」との指摘があり観点 L が浮上。L の改善方向は FR-004 のオーケストレーション役割明示を含み、ISSUE-075 の再編と一体作業になるため、ISSUE-075 完了後に本 ISSUE 着手とした。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": "JJ1XGO",
+      "created_date": "2026-06-09",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
       "resolved_date": null,
       "verified_date": null,
       "history": []
