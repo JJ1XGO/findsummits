@@ -330,6 +330,8 @@ $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 
 詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
+トラッカーで担当者（`--actor`）にモデル名を記入する場合はバージョン番号なしで「Sonnet」「Opus」とだけ書く（バージョンアップ追従の手間を避けるため）。
+
 ## ToDo リスト運用ルール
 
 **作業リスト（仕様議論を伴わない実装タスク等）は `mgmt/todo.md` で管理する。**
