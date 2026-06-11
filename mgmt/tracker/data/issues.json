@@ -2641,11 +2641,11 @@
       "created_date": "2026-06-11",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応中",
+      "status": "対応完了",
       "assignee": "Fable",
       "resolution": "SRS FR-004 セクション・FR-007（観点 D）・ADR-SRS-003（観点 A）を修正し、処理フロー図を追加する",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-11",
       "verified_date": null,
       "history": [
         {
@@ -2654,6 +2654,13 @@
           "from": "未対応",
           "to": "対応中",
           "comment": ""
+        },
+        {
+          "date": "2026-06-11T21:36:01",
+          "actor": "Fable",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "観点 A〜J を SRS（FR-004・FR-007）と ADR-SRS-003 に一括反映し commit (ad81041)。次セッションで修正後の FR-004 を再レビューし、その結果をもって verify とする"
         }
       ]
     }
