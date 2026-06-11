@@ -76,4 +76,4 @@ ISSUE-020 の設計判断材料として、前プロジェクト findsummits4sot
 - `analysis/九州・四国サミット削除一覧.xlsx` — 削除一覧入力データ
 - `analysis/keycol_threshold_analysis.py` — 分析スクリプト
 - `analysis/keycol_threshold_analysis.csv` — 計算結果 CSV
-- `mgmt/plan_2026-05-20_issue-020-discussion.md` — ISSUE-020 前セッション議論経過
+- `mgmt/archive/plan_2026-05-20_issue-020-discussion.md` — ISSUE-020 前セッション議論経過
