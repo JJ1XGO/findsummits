@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-09",
-    "counter": 87
+    "last_updated": "2026-06-11",
+    "counter": 88
   },
   "issues": [
     {
@@ -2629,6 +2629,33 @@
       "resolved_date": null,
       "verified_date": null,
       "history": []
+    },
+    {
+      "id": "ISSUE-088",
+      "title": "SRS FR-004 メッシュ結合解析のレビュー反映",
+      "description": "FR-004（メッシュ結合解析）のレビュー結果（観点 A〜J）を SRS / ADR-SRS-003 に反映する。\n\n## レビュー観点リスト\n\n| 観点 | 内容 | 重要度 |\n|---|---|---|\n| A | ADR-SRS-003 との矛盾: ADR「出力は中心メッシュ内のピークのみ」vs SRS「解析対象メッシュ全体の地理的範囲内のピークを出力」。SRS が正（analysis_count 最大9回・FR-008 重複排除と整合）。ADR の Decision を更新 | 高 |\n| B | 入力テーブル不足: 「標高タイル（ローカルキャッシュ）」が FR-004 入力に無い（7.2 一覧・FR-002 入力と不整合）→ 追加 | 高 |\n| C | 誤参照: 「安定性を評価する（FR-009 参照）」→ stability の定義・算出は FR-008 → 修正 | 中 |\n| D | ピーク出力範囲（地理的範囲フィルタ＝フリンジ除外）の記述所在: FR-007 の責務だが FR-007 に記述なし → 整理 | 中 |\n| E | FR-015 呼び出しがオーケストレーション記述から漏れ → タイミング含め明示 | 中 |\n| F | 出力備考「解析対象メッシュ範囲情報を伴う」が未定義 → 定義明文化 | 中 |\n| G | 結合画像範囲の曖昧さ: リスト外メッシュの NODATA 扱いと範囲定義（bounding box）を明文化 | 中 |\n| H | 「全176メッシュ」ハードコード → 「メッシュコードリストの全メッシュ」表現に修正 | 低 |\n| I | 入力備考: 1次メッシュコードリストに [7.1.1 参照] 付与 | 低 |\n| J | オーケストレーション役割の明示 + per-mesh パイプライン処理フロー図追加（ISSUE-087 観点 L の FR-004 側作業を本 ISSUE に取り込み） | 高 |\n\n## 運用合意（2026-06-11）\n\n観点 A〜J は個別確認を省略し Fable 提案通りに一括修正。次回セッションで修正後の FR-004 を再レビューする（実質の verify）。ISSUE-075・ISSUE-087 への注記・verify は FR-004 と FR-014 両方のレビュー完了後に行う。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": "JJ1XGO",
+      "created_date": "2026-06-11",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "対応中",
+      "assignee": "Fable",
+      "resolution": "SRS FR-004 セクション・FR-007（観点 D）・ADR-SRS-003（観点 A）を修正し、処理フロー図を追加する",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-11T21:32:25",
+          "actor": "Fable",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        }
+      ]
     }
   ]
 }
