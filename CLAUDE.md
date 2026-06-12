@@ -190,15 +190,20 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 それ以外の作業リスト（実装タスク・ファイル名追従・ログ整備・運用作業等）は `mgmt/todo.md` で管理する（後述「ToDo リスト運用ルール」）。
 バグ（欠陥）は `track.py bug`、課題は `track.py issue` と使い分けること。
 
-**判定基準: 文書・仕様の議論を伴うか？**
+**判定基準: 残作業に文書・仕様の議論が必要か？**
 - Yes → `issue`（例: SRS の FR 追加、ADR 作成、SRS と実装の乖離調査）
-- No  → `todo.md`（例: 関数名のリネーム、ログ書式の統一、設定ファイルの追従）
+- No  → `todo.md`（例: 関数名のリネーム、ログ書式の統一、設定ファイルの追従、コメント修正）
 
-1. 新規の課題が発生したら `venv/bin/python3 mgmt/tracker/track.py issue add` で登録する
-2. 作業開始時は `issue update --status 対応中` でステータスを更新する
-3. 実装完了後は `issue close` コマンドでステータスを「対応完了」にする
-4. ユーザーが確認完了後、`issue verify` コマンドでステータスを「解決済」にする
-5. `stage` フィールドは次ステージ移行の判断材料として活用する
+**重要: 判定は「出自」ではなく「残作業」で行う。**
+レビューで仕様が確定済みで、残りが実装追従（コメント修正・命名追従・機械的変換等）だけなら、
+そのレビュー由来でも `todo.md`。複数件をまとめて登録するときも 1 件ずつ判定すること。
+
+1. 登録前に上記判定基準を適用する。No と判定したら `mgmt/todo.md` へ追記して終了（`issue add` しない）
+2. Yes と判定した課題を `venv/bin/python3 mgmt/tracker/track.py issue add` で登録する
+3. 作業開始時は `issue update --status 対応中` でステータスを更新する
+4. 実装完了後は `issue close` コマンドでステータスを「対応完了」にする
+5. ユーザーが確認完了後、`issue verify` コマンドでステータスを「解決済」にする
+6. `stage` フィールドは次ステージ移行の判断材料として活用する
 
 詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
@@ -245,10 +250,15 @@ handover ファイルの本文を書き終えた後、**必ず以下の手順を
    - ISSUE-XXX [高/機能追加] タイトル
    - ...
 
+   ### todo.md 残件（高=x / 中=y / 低=z）
+   - （高優先のみタイトルを抜粋）
+   - ...
+
    ※ 詳細は `mgmt/tracker/reports/{bugs,issues}_export.xlsx` または
      `venv/bin/python3 mgmt/tracker/track.py {bug,issue} show <ID>` で確認
    ```
-   件数・集計値は `track.py bug list --open` / `track.py issue list --open` の結果から取得すること。
+   件数・集計値は `track.py bug list --open` / `track.py issue list --open` の結果から、
+   todo.md 残件は `mgmt/todo.md` の件数を直接カウントして取得すること。
 
 3. コミット漏れ確認・コミット:
    - `git status` で未コミットの変更を確認する

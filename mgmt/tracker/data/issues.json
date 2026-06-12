@@ -2527,13 +2527,21 @@
       "created_date": "2026-06-08",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 G）の別 ISSUE として登録。CLAUDE.md のフォーマット標準『他 FR/UR/NFR/セクションへの参照は Markdown リンクで記述する』が根拠",
-      "resolved_date": null,
+      "resolved_date": "2026-06-12",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-12T10:32:51",
+          "actor": "Fable",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "todo.md に移行。仕様議論はなく機械的変換のみのため"
+        }
+      ]
     },
     {
       "id": "ISSUE-083",
@@ -2603,13 +2611,21 @@
       "created_date": "2026-06-08",
       "stage": "COD",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 B 実装側追従）の別 ISSUE として登録",
-      "resolved_date": null,
+      "resolved_date": "2026-06-12",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-12T10:32:52",
+          "actor": "Fable",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "todo.md に移行。コメント修正のみで仕様議論なし"
+        }
+      ]
     },
     {
       "id": "ISSUE-087",

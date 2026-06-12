@@ -68,6 +68,14 @@
 
 ### 低
 
+- [ ] **(元 ISSUE-086) src/mesh_analyze.h 内コメント「Terrain-RGB PNG」の修正**
+  - 「Terrain-RGB」は Mapbox 由来の入力タイル形式の業界用語。出力ファイルの呼称として誤っている
+  - SRS 6.8 のタイトル変更（標高地形図 PNG）に合わせて実装側コメントを追従する
+
+- [ ] **(元 ISSUE-082) SRS/URD 全体の裸 FR-XXX/UR-XXX/NFR-XXX 参照の一括リンク化**
+  - FR-015 周辺は対応済み。残りの SRS/URD 全体分（約 100 件規模）が対象
+  - CLAUDE.md フォーマット標準「他 FR/UR/NFR/セクションへの参照は Markdown リンクで記述する」に基づく機械的変換
+
 - [ ] **docs/figures/phases_overview.drawio: FR-014 タイトル追従**
   - 「FR-014: 独立峰のコル探索」→「FR-014: 広域結合解析オーケストレーション」
   - 対象: `docs/figures/phases_overview.drawio` および `phases_overview.drawio.svg`（再エクスポート必要）

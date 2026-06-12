@@ -33,9 +33,9 @@
 - スクリプトのオプション追加（仕様議論を伴わないもの）
 - セットアップ手順整備・運用作業・チェックリスト
 
-**判定基準: 文書・仕様の議論を伴うか？**
+**判定基準: 残作業に文書・仕様の議論が必要か？（出自ではなく残作業で判定）**
 - Yes → `issue` / `bug`
-- No  → `mgmt/todo.md`
+- No  → `mgmt/todo.md`（レビュー由来でも、残りが実装追従・コメント修正等だけなら todo.md）
 
 詳細は `/workspace/CLAUDE.md` の「課題管理ルール」「ToDo リスト運用ルール」を参照。
 
@@ -115,6 +115,7 @@ venv/bin/python3 mgmt/tracker/track.py issue list --stage IT
 # 課題の詳細（履歴つき）
 venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-001
 
+# 登録前チェック: 残作業に文書・仕様の議論が必要か？ No なら mgmt/todo.md へ（冒頭の『登録すべきでない例』参照）
 # 課題を登録（非対話）
 venv/bin/python3 mgmt/tracker/track.py issue add --title "..." --priority 高 --type 機能追加 \
   --stage COD --category merge.py \
