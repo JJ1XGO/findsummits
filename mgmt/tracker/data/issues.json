@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-11",
-    "counter": 88
+    "last_updated": "2026-06-12",
+    "counter": 89
   },
   "issues": [
     {
@@ -2661,6 +2661,40 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "観点 A〜J を SRS（FR-004・FR-007）と ADR-SRS-003 に一括反映し commit (ad81041)。次セッションで修正後の FR-004 を再レビューし、その結果をもって verify とする"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-089",
+      "title": "SRS FR-004 第2回レビュー反映（タイトル・入力・解析識別子・異常系）",
+      "description": "FR-004 の第2回レビュー（ISSUE-088 の実質 verify）で確定した4件の修正を反映する。①タイトルを「3×3メッシュ結合解析オーケストレーション」に変更、②入力の1次メッシュコードリストを任意化（デフォルト=日本全土リスト）、③解析識別子（FR-004: 3-<meshcode>、FR-014: N-<meshcode>-<corner>）を導入してFR-007/FR-015/FR-016のファイル名を統一、④異常系をフェイルファーストに書き換え（タイルゼロ=処理中止+原因調査促し）。",
+      "type": null,
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-12",
+      "stage": null,
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": "2026-06-12",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-12T09:52:13",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-12T09:56:39",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS FR-004 の4件修正を反映：①タイトル変更、②入力任意化+日本全土リスト追加、③解析識別子導入（FR-007/015/016/018/7.2/俯瞰図追従）、④異常系フェイルファースト。docs/CLAUDE.md も追従。"
         }
       ]
     }
