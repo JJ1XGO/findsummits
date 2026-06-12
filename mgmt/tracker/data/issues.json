@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-12",
-    "counter": 89
+    "counter": 90
   },
   "issues": [
     {
@@ -1631,13 +1631,28 @@
       "created_date": "2026-05-23",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-12",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-12T14:35:02",
+          "actor": "Fable",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-12T14:35:02",
+          "actor": "Fable",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ISSUE-090（FR-014 レビュー反映）で対応。FR-014 トリガー条件を正とし、FR-022 側の area_complete=false 記述を FR-014 への参照に簡約した。"
+        }
+      ]
     },
     {
       "id": "ISSUE-052",
@@ -1650,13 +1665,28 @@
       "created_date": "2026-05-23",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-12",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-12T14:35:02",
+          "actor": "Fable",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-12T14:35:02",
+          "actor": "Fable",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ISSUE-090（FR-014 レビュー反映）で対応。FR-014 トリガー条件に「key_col_resolved=false = Key コルが 3×3 解析範囲内で見つからなかった独立峰」の注記を追加した。"
+        }
+      ]
     },
     {
       "id": "ISSUE-053",
@@ -2725,6 +2755,33 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "追補: 「解析範囲結合画像」→「解析範囲標高グリッド」改名（16箇所）、FR-004出力テーブルを3行に分割・形式欄修正（標高値の2次元配列）、FR-007/FR-016入力テーブルに解析対象メッシュ範囲情報行を追加。"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-090",
+      "title": "SRS FR-014 広域結合解析のレビュー反映",
+      "description": "FR-014 のレビュー（FR-004 確定書式・ADR-SRS-004・FR-007/008/022 との整合性検査）で検出した修正を反映する。A群（機械的整合）: 入力テーブル是正（1次メッシュコードリスト→日本全土リスト・標高タイル行追加）、出力テーブルを FR-004 書式（内部トランザクション3行+対象ピーク座標リスト）に是正、FR-007 入力テーブルに対象ピーク座標リスト行追加、コーナー配置根拠式の誤記修正、コーナー座標表記を方角ベースに統一（ADR と矛盾解消）、FR-015 呼び出しを明記（広域でも標高地形図を出力・ユーザー確認済み）。B群（仕様判断・Fable 推奨案で修正し修正後レビューで確認）: 無効パターンスキップ条件の再定義（NODATA 充填続行+新規存在メッシュゼロのみスキップ）、同一メッシュ所属の複数未確定ピークのグルーピング、L14 解析時の L15 座標保持、FR-007 カラム表に zoom_level 追加、異常系フェイルファースト追加。C群: ISSUE-051/052 の取り込み。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-12",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": "docs/20_SRS.md（FR-014/007/015/022・俯瞰図）と ADR-SRS-004 を改訂。修正後にユーザーレビューを実施し第2回反映を行う。持ち越し議論: 解析範囲サイズ N の種別・B群推奨案の妥当性。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-12T14:26:17",
+          "actor": "Fable",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
         }
       ]
     }
