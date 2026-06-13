@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-12",
+    "last_updated": "2026-06-13",
     "counter": 91
   },
   "issues": [
@@ -1631,12 +1631,12 @@
       "created_date": "2026-05-23",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T14:35:02",
@@ -1651,6 +1651,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "ISSUE-090（FR-014 レビュー反映）で対応。FR-014 トリガー条件を正とし、FR-022 側の area_complete=false 記述を FR-014 への参照に簡約した。"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -1665,12 +1672,12 @@
       "created_date": "2026-05-23",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T14:35:02",
@@ -1685,6 +1692,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "ISSUE-090（FR-014 レビュー反映）で対応。FR-014 トリガー条件に「key_col_resolved=false = Key コルが 3×3 解析範囲内で見つからなかった独立峰」の注記を追加した。"
+        },
+        {
+          "date": "2026-06-13T11:45:55",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2320,12 +2334,12 @@
       "created_date": "2026-06-04",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "完了後、ISSUE-087（SRS FR-005 ピーク候補検出のレビュー反映）に着手すること。FR-005 観点 L（制御フロー・オーケストレーション所在）の確定は本 ISSUE の再編結果に依存する。",
       "resolved_date": "2026-06-09",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-09T15:14:24",
@@ -2340,6 +2354,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": ""
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2557,12 +2578,12 @@
       "created_date": "2026-06-08",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 G）の別 ISSUE として登録。CLAUDE.md のフォーマット標準『他 FR/UR/NFR/セクションへの参照は Markdown リンクで記述する』が根拠",
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T10:32:51",
@@ -2570,6 +2591,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "todo.md に移行。仕様議論はなく機械的変換のみのため"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2639,14 +2667,14 @@
       "category": null,
       "reporter": null,
       "created_date": "2026-06-08",
-      "stage": "COD",
+      "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 B 実装側追従）の別 ISSUE として登録",
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T10:32:52",
@@ -2654,6 +2682,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "todo.md に移行。コメント修正のみで仕様議論なし"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2683,16 +2718,16 @@
       "type": "改善",
       "priority": "中",
       "category": "その他",
-      "reporter": "JJ1XGO",
+      "reporter": "Fable",
       "created_date": "2026-06-11",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Fable",
       "resolution": "SRS FR-004 セクション・FR-007（観点 D）・ADR-SRS-003（観点 A）を修正し、処理フロー図を追加する",
       "notes": null,
       "resolved_date": "2026-06-11",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-11T21:32:25",
@@ -2707,6 +2742,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "観点 A〜J を SRS（FR-004・FR-007）と ADR-SRS-003 に一括反映し commit (ad81041)。次セッションで修正後の FR-004 を再レビューし、その結果をもって verify とする"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2721,12 +2763,12 @@
       "created_date": "2026-06-12",
       "stage": null,
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T09:52:13",
@@ -2755,6 +2797,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "追補: 「解析範囲結合画像」→「解析範囲標高グリッド」改名（16箇所）、FR-004出力テーブルを3行に分割・形式欄修正（標高値の2次元配列）、FR-007/FR-016入力テーブルに解析対象メッシュ範囲情報行を追加。"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2769,12 +2818,12 @@
       "created_date": "2026-06-12",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "docs/20_SRS.md（FR-014/007/015/022・俯瞰図）と ADR-SRS-004 を改訂。修正後にユーザーレビューを実施し第2回反映を行う。持ち越し議論: 解析範囲サイズ N の種別・B群推奨案の妥当性。",
       "notes": "【第2回レビュー反映完了 (2026-06-12 Sonnet)】\n\n第2回レビュー確定事項:\nA. 解析範囲サイズ N の種別: ユーザー入力 → 内部トランザクションに変更。FR-022 が key_col_unresolved_peaks-<N>.csv のファイル名から N を抽出し N+1 を渡す。データ辞書 2.2.1 の「解析範囲サイズ N」行を削除\nB. 無効パターンスキップ一般化: 「3×3 解析済み範囲から 1 枚も増えない」→「それまでに解析済みのどの範囲（3×3 + 既解析広域窓）と比べても 1 枚も増えない配置はスキップ」に拡張（N 段階間の重複も排除）\nC. 異常系追加: ウィンドウ（bounding box）内の存在メッシュにローカルタイルが 1 枚も無い → エラー中止（prefetch 漏れ検出 + 海面確定規則誤発動防止）\nD. FR-007 広域モード: 対象ピーク絞り込みの一致判定方法を明記（緯度経度→ L15 タイル座標変換して比較）\nE. max pooling 同値時: 採用ピクセルの決定は決定的とする（具体規則は HLD/LLD）\nF. FR-022 出力: key_col_unresolved_peaks-<N>.csv を内部データとして追加\nG. 陸地最高峰対策（ISSUE-091 として別途登録・本作業内で SRS 反映済み）: FR-006 海面確定規則 + FR-022 陸地最高峰リスト適用 + 7.1.4 追加 + ADR-SRS-019 新規作成\n\nSRS 変更箇所: FR-006・FR-007・FR-014・FR-022・2.2.1・7.1・7.2",
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T14:26:17",
@@ -2789,6 +2838,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "第2回レビュー反映完了。FR-014・FR-006・FR-007・FR-022・2.2.1・7.1・7.2 を更新。ADR-SRS-004 改訂・ADR-SRS-019 新規作成。ISSUE-091 として陸地最高峰対策を別途登録"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2803,12 +2859,12 @@
       "created_date": "2026-06-12",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": null,
       "notes": "ISSUE-090 第2回レビュー中に発見した仕様ギャップ。現行仕様では富士山・旭岳・中岳（九重）が永遠に key_col_resolved=false のまま FR-009 で異常終了する。二層構造で対応: (1) FR-006 海面確定規則（山塊が範囲端に触れずに flood 完結 → Key コル = 0m 自動確定）、(2) 陸地最高峰リスト（ユーザー入力パラメータ・3 件）を FR-022 が広域ループ前に海面確定に手動更新。ADR-SRS-019-land-summit-highest-peak-handling.md を新規作成済み。SRS の FR-006・FR-022・7.1・7.2 を本 ISSUE-090 レビュー反映作業内で更新済み。検証ポイント: 石鎚山が実データで 3×3 海面確定規則により自動確定するかを実装後に確認（しなければリストに追加）。",
       "resolved_date": "2026-06-12",
-      "verified_date": null,
+      "verified_date": "2026-06-13",
       "history": [
         {
           "date": "2026-06-12T19:22:53",
@@ -2816,6 +2872,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "ISSUE-090 の第2回レビュー反映作業内で SRS（FR-006・FR-022・7.1・7.2）と ADR-SRS-019 の反映を完了"
+        },
+        {
+          "date": "2026-06-13T11:45:54",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     }
