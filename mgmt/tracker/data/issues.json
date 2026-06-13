@@ -2703,13 +2703,21 @@
       "created_date": "2026-06-09",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-13",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-13T16:44:25",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "観点A〜N 全14観点処理完了。修正8件(A/B/D/E/G/J/L/M)・閉じる5件(F/H/I/N/K)。なお観点Jは当初の「Union-Find除去」から「SRSに残しGLOSSARYに説明追加」に方針変更（ユーザー指示）。"
+        }
+      ]
     },
     {
       "id": "ISSUE-088",
