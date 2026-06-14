@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-14",
-    "counter": 93
+    "counter": 96
   },
   "issues": [
     {
@@ -2978,6 +2978,108 @@
       "resolved_date": null,
       "verified_date": null,
       "history": []
+    },
+    {
+      "id": "ISSUE-094",
+      "title": "FR-005/006/007/016: ピーク↔コル紐付けモデルを per-peak 対応レコードへ一本化",
+      "description": "FR-006 出力「コル情報」は FR-007・FR-016 でピーク候補リストと別々に入力されているが、アルゴリズム上ピーク↔Key コルは 1:1 対応であり、ジョインキーが未定義・3成分同時接触エッジケースで曖昧になる問題がある。FR-006 出力を「ピーク候補・コル情報リスト」（1レコード＝1ピーク＋その Key コル）に一本化し、FR-016 の独立「ピーク候補リスト」入力を削除する。ADR-SRS-020 を新設して設計根拠を記録する。",
+      "type": "改善",
+      "priority": "高",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-14",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": null,
+      "notes": null,
+      "resolved_date": "2026-06-14",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-14T17:30:55",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-14T17:33:55",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-020 新設。SRS FR-006 出力/FR-007 入力/FR-016 入力を per-peak 対応レコード（ピーク候補・コル情報リスト）に一本化。FR-005 出力備考も追従修正。GLOSSARY・docs/CLAUDE.md・ADR-SRS-017 の例示名称も追従。"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-095",
+      "title": "FR-006: コル確定/未確定の判定基準（境界辺接触 topology）と未確定行の値定義",
+      "description": "FR-006 の説明（587-588行）に以下の2点が欠落している。(1) resolved 判定基準: 連結成分がグリッド最外周 1px 海面ボーダーに接触→resolved=false、接触せず内部完結→resolved=true（Key コル=海面0m）という境界辺接触 topology で記述する必要がある。(2) resolved=false 時の col_elev/prominence: 真の Key コルは窓外のため未確定。sentinel（空欄 or NODATA）で表現する。また FR-006 入力テーブルに「解析範囲標高グリッド」が欠落している（コル標高算出・境界接触判定に必要）。",
+      "type": "改善",
+      "priority": "高",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-14",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": null,
+      "notes": null,
+      "resolved_date": "2026-06-14",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-14T17:30:55",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-14T17:33:55",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "FR-006 入力に解析範囲標高グリッドを追加。説明を境界辺接触 topology で書き直し。resolved=false 行の col_elev/prominence を未確定（空欄）と明記。コルの帰属も追記。"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-096",
+      "title": "FR-007: col_margin_px の位置づけ確定（診断・将来用）と 629行誤記述の訂正",
+      "description": "col_margin_px は FR-008 の stability 判定では未使用（stability は key_col_resolved と analysis_count/expected_count のみで決まる）。ADR-SRS-004 98行に『将来の最適化余地』として言及されており、診断・将来用フィールドとして CSV に残す。FR-007 出力カラム（629行）の『FR-008 の stability 判定時に col_margin_px を L15 相当へ換算する』という記述は誤りのため、診断用フィールドである旨に訂正する。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-14",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": null,
+      "notes": null,
+      "resolved_date": "2026-06-14",
+      "verified_date": null,
+      "history": [
+        {
+          "date": "2026-06-14T17:30:55",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-14T17:33:55",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "FR-007 col_margin_px を診断・将来用フィールドと改め ADR-SRS-020 参照に変更。zoom_level 備考（629行）の stability 換算誤記述を削除。"
+        }
+      ]
     }
   ]
 }
