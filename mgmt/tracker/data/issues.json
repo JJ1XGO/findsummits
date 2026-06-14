@@ -2612,12 +2612,12 @@
       "created_date": "2026-06-08",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 I）の別 ISSUE として登録。CLAUDE.md のフォーマット標準『入出力テーブルの形式欄はファイル形式・データ型のみを記載する』が根拠",
       "resolved_date": "2026-06-14",
-      "verified_date": null,
+      "verified_date": "2026-06-14",
       "history": [
         {
           "date": "2026-06-14T12:36:05",
@@ -2632,6 +2632,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "SRS 全 FR 出力テーブルの形式欄を 12 箇所修正。データ型のみに統一し特性記述を備考欄へ移動。FR-010・FR-019 は別 ISSUE を起こし各レビュー時に検討"
+        },
+        {
+          "date": "2026-06-14T12:41:16",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
