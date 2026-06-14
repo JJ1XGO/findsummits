@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-13",
+    "last_updated": "2026-06-14",
     "counter": 91
   },
   "issues": [
@@ -2631,13 +2631,28 @@
       "created_date": "2026-06-08",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 H）の別 ISSUE として登録。解析範囲結合画像の内部トランザクション化（ISSUE-083 相当修正）との一貫性検討として登録",
-      "resolved_date": null,
+      "resolved_date": "2026-06-14",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-14T11:55:08",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-14T11:56:00",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "解析範囲標高グリッド（内部トランザクション）との一貫性に基づき、ピーク候補リスト・コル情報を「内部データ」→「内部トランザクション」に変更。7.2 一覧から削除し、各 FR 入出力欄に発生元 FR を明示。FR-005 出力・FR-006 出力の形式欄もデータ型のみ（「メモリ上のデータ構造」）に整理し特性記述を備考へ移動（ISSUE-083 FR-005/006 先行分）。"
+        }
+      ]
     },
     {
       "id": "ISSUE-085",
