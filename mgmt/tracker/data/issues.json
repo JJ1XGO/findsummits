@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-14",
-    "counter": 91
+    "counter": 93
   },
   "issues": [
     {
@@ -2612,13 +2612,28 @@
       "created_date": "2026-06-08",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 I）の別 ISSUE として登録。CLAUDE.md のフォーマット標準『入出力テーブルの形式欄はファイル形式・データ型のみを記載する』が根拠",
-      "resolved_date": null,
+      "resolved_date": "2026-06-14",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-14T12:36:05",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": ""
+        },
+        {
+          "date": "2026-06-14T12:38:02",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS 全 FR 出力テーブルの形式欄を 12 箇所修正。データ型のみに統一し特性記述を備考欄へ移動。FR-010・FR-019 は別 ISSUE を起こし各レビュー時に検討"
+        }
+      ]
     },
     {
       "id": "ISSUE-084",
@@ -2918,6 +2933,44 @@
           "comment": "[解決確認]"
         }
       ]
+    },
+    {
+      "id": "ISSUE-092",
+      "title": "FR-010 出力テーブルの形式欄が形式記述になっていない",
+      "description": "FR-010（削除候補のスコープ）の出力テーブルの「形式」欄が「[FR-009] 内のフィルタとして機能」となっており、ファイル形式・データ型の記述になっていない。ISSUE-083 対応時にスコープ外と判断し別課題として登録。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-14",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": "Sonnet",
+      "resolution": null,
+      "notes": "FR-010 レビュー時に検討。ISSUE-083 で対象外とした別種の問題（形式欄の意味論）。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
+    },
+    {
+      "id": "ISSUE-093",
+      "title": "FR-019 出力テーブルの形式欄が形式記述になっていない",
+      "description": "FR-019（HTML ビューア機能仕様）の出力テーブルの「各エクスポート」行の「形式」欄が他 FR へのリンク列記となっており、ファイル形式・データ型の記述になっていない。ISSUE-083 対応時にスコープ外と判断し別課題として登録。",
+      "type": "改善",
+      "priority": "低",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-14",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": "Sonnet",
+      "resolution": null,
+      "notes": "FR-019 レビュー時に検討。ISSUE-083 で対象外とした別種の問題（形式欄の意味論）。",
+      "resolved_date": null,
+      "verified_date": null,
+      "history": []
     }
   ]
 }
