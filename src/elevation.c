@@ -89,12 +89,16 @@ static uint8_t *load_png_rgb(const char *path,
     return imgbuf;
 }
 
-/* パス形式: {base}/{z}/{x}/{y}_{dem}.png */
+/* パス形式: {base}/{service}/{z}/{x}/{y}.png
+ * service: z==14 → dem_png / z==15 → dem5{dem}_png */
 static void make_tile_path(char *buf, size_t bufsize,
                             const char *base, int z,
                             int x, int y, const char *dem)
 {
-    snprintf(buf, bufsize, "%s/%d/%d/%d_%s.png", base, z, x, y, dem);
+    if (z == 14)
+        snprintf(buf, bufsize, "%s/dem_png/%d/%d/%d.png", base, z, x, y);
+    else
+        snprintf(buf, bufsize, "%s/dem5%s_png/%d/%d/%d.png", base, dem, z, x, y);
 }
 
 /* dem10b (z=14) がキャッシュ済みか確認する */

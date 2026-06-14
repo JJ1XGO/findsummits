@@ -68,7 +68,8 @@ def load_mesh_set(path):
 # ---- タイルパス ----
 
 def tile_path(tile_dir, z, x, y, dem):
-    return os.path.join(tile_dir, str(z), str(x), f"{y}_{dem}.png")
+    service = "dem_png" if z == 14 else f"dem5{dem}_png"
+    return os.path.join(tile_dir, service, str(z), str(x), f"{y}.png")
 
 
 def tile_url(z, x, y, dem):
