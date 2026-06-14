@@ -32,7 +32,9 @@
   - `enumerate_jobs()` に dem5b/dem5c を常に含める
   - `fetch_one()` で HTTP 404 受信時にローカルキャッシュを `os.unlink()` 削除
   - 北方領土除外タイルリスト読み込みとスキップ処理（ADR-SRS-018）
-  - 対象: `scripts/prefetch_tiles.py` （185-199 行付近・131-180 行付近）
+  - キャッシュパスを `{サービス名}/{z}/{x}/{y}.png` 方式へ変更（`prefetch_tiles.py:71` の `tile_path()` 組み立て・SRS 7.2 にミラー）
+  - `src/elevation.c:97` の `snprintf(... "%s/%d/%d/%d_%s.png" ...)` も同方式へ追従
+  - 対象: `scripts/prefetch_tiles.py` （185-199 行付近・131-180 行付近・71 行）, `src/elevation.c:97`
 
 - [ ] **(元 ISSUE-059) 実装側ファイル名追従（merged_peak.csv / merged_summit.xlsx）**
   - `scripts/merge.py:50` の DEFAULT_OUTPUT → `merged_peak.csv`

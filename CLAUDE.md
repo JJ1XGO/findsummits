@@ -160,9 +160,10 @@ $DATA_DIR/images/       # 標高地形図 PNG（findsummits が自動出力: <me
 $DATA_DIR/results/      # 最終O/Pのxlsx,geojson,csv
 $DATA_DIR/results/csv/  # 一時csv（findsummits が出力するper-mesh CSV）
 $DATA_DIR/tiles/        # ダウンロード済みタイルのローカルキャッシュ
-  └─ {z}/     # タイルのURLの命名規則と同様
-     └─ {x}   # タイルのURLの命名規則と同様
-         └─ {y}
+  └─ {サービス名}/  # dem5a_png / dem5b_png / dem5c_png / dem_png（タイル URL の命名規則と同様）
+     └─ {z}/
+        └─ {x}
+           └─ {y}.png
 $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 ```
 
