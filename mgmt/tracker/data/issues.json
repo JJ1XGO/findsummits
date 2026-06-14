@@ -2631,12 +2631,12 @@
       "created_date": "2026-06-08",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-015 レビュー（観点 H）の別 ISSUE として登録。解析範囲結合画像の内部トランザクション化（ISSUE-083 相当修正）との一貫性検討として登録",
       "resolved_date": "2026-06-14",
-      "verified_date": null,
+      "verified_date": "2026-06-14",
       "history": [
         {
           "date": "2026-06-14T11:55:08",
@@ -2651,6 +2651,13 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "解析範囲標高グリッド（内部トランザクション）との一貫性に基づき、ピーク候補リスト・コル情報を「内部データ」→「内部トランザクション」に変更。7.2 一覧から削除し、各 FR 入出力欄に発生元 FR を明示。FR-005 出力・FR-006 出力の形式欄もデータ型のみ（「メモリ上のデータ構造」）に整理し特性記述を備考へ移動（ISSUE-083 FR-005/006 先行分）。"
+        },
+        {
+          "date": "2026-06-14T12:13:16",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
@@ -2718,12 +2725,12 @@
       "created_date": "2026-06-09",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-13",
-      "verified_date": null,
+      "verified_date": "2026-06-14",
       "history": [
         {
           "date": "2026-06-13T16:44:25",
@@ -2731,6 +2738,13 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "観点A〜N 全14観点処理完了。修正8件(A/B/D/E/G/J/L/M)・閉じる5件(F/H/I/N/K)。なお観点Jは当初の「Union-Find除去」から「SRSに残しGLOSSARYに説明追加」に方針変更（ユーザー指示）。"
+        },
+        {
+          "date": "2026-06-14T12:13:16",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]"
         }
       ]
     },
