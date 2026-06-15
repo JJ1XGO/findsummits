@@ -2990,12 +2990,12 @@
       "created_date": "2026-06-14",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-14",
-      "verified_date": null,
+      "verified_date": "2026-06-15",
       "history": [
         {
           "date": "2026-06-14T17:30:55",
@@ -3010,6 +3010,14 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "ADR-SRS-020 新設。SRS FR-006 出力/FR-007 入力/FR-016 入力を per-peak 対応レコード（ピーク候補・コル情報リスト）に一本化。FR-005 出力備考も追従修正。GLOSSARY・docs/CLAUDE.md・ADR-SRS-017 の例示名称も追従。"
+        },
+        {
+          "date": "2026-06-15T19:27:02",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "9d9107fd-fbf8-4238-a4db-f4f36d3eadb6"
         }
       ]
     },
@@ -3024,12 +3032,12 @@
       "created_date": "2026-06-14",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-14",
-      "verified_date": null,
+      "verified_date": "2026-06-15",
       "history": [
         {
           "date": "2026-06-14T17:30:55",
@@ -3044,6 +3052,14 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "FR-006 入力に解析範囲標高グリッドを追加。説明を境界辺接触 topology で書き直し。resolved=false 行の col_elev/prominence を未確定（空欄）と明記。コルの帰属も追記。"
+        },
+        {
+          "date": "2026-06-15T19:27:02",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "9d9107fd-fbf8-4238-a4db-f4f36d3eadb6"
         }
       ]
     },
@@ -3058,12 +3074,12 @@
       "created_date": "2026-06-14",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-14",
-      "verified_date": null,
+      "verified_date": "2026-06-15",
       "history": [
         {
           "date": "2026-06-14T17:30:55",
@@ -3078,6 +3094,14 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "FR-007 col_margin_px を診断・将来用フィールドと改め ADR-SRS-020 参照に変更。zoom_level 備考（629行）の stability 換算誤記述を削除。"
+        },
+        {
+          "date": "2026-06-15T19:27:02",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "9d9107fd-fbf8-4238-a4db-f4f36d3eadb6"
         }
       ]
     },
@@ -3092,12 +3116,12 @@
       "created_date": "2026-06-15",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "key_col_resolved=false 行はフィルタを適用せず無条件出力。一次フィルタは key_col_resolved=true（prominence確定済み）行にのみ適用。SRS FR-007 説明・概要に明記する。",
       "notes": null,
       "resolved_date": "2026-06-15",
-      "verified_date": null,
+      "verified_date": "2026-06-15",
       "created_session_id": "8e031b7c-8314-473f-b389-b4ad560d946f",
       "history": [
         {
@@ -3115,6 +3139,14 @@
           "to": "対応完了",
           "comment": "SRS FR-007 説明・概要・NFR-001 に key_col_resolved=false 無条件出力を明記。一次フィルタは key_col_resolved=true 行のみに適用と定義した。",
           "session_id": "8e031b7c-8314-473f-b389-b4ad560d946f"
+        },
+        {
+          "date": "2026-06-15T19:27:02",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "9d9107fd-fbf8-4238-a4db-f4f36d3eadb6"
         }
       ]
     },
@@ -3129,12 +3161,12 @@
       "created_date": "2026-06-15",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "center_mesh + zoom_level を廃止し analysis_id（解析識別子: 3-5239 / 4-5239-NW）1列に集約。points を FR-007 出力から削除し消費段（FR-009/出力生成）で peak_elev から算出する。ADR-SRS-021 として記録。",
       "notes": null,
       "resolved_date": "2026-06-15",
-      "verified_date": null,
+      "verified_date": "2026-06-15",
       "created_session_id": "8e031b7c-8314-473f-b389-b4ad560d946f",
       "history": [
         {
@@ -3152,6 +3184,14 @@
           "to": "対応完了",
           "comment": "center_mesh + zoom_level を廃止し analysis_id（解析識別子）1列に集約。points を FR-007 出力から削除。ADR-SRS-021 として記録。SRS FR-007 カラム表・FR-008 説明を更新。",
           "session_id": "8e031b7c-8314-473f-b389-b4ad560d946f"
+        },
+        {
+          "date": "2026-06-15T19:27:02",
+          "actor": "不明",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "9d9107fd-fbf8-4238-a4db-f4f36d3eadb6"
         }
       ]
     }

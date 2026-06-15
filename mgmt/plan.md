@@ -1,94 +1,99 @@
-# トラッカー＆handover にセッションID トレーサビリティを追加
+# 計画: 対応完了 ISSUE の verify + FR-016 レビュー反映
 
-## Context（背景・目的）
+## Context
 
-課題管理トラッカー（`mgmt/tracker/track.py`）の各レコードは現在、ステータス遷移を
-`history[]`（`{date, actor, from, to, comment}`）として記録しているが、**どの Claude Code
-セッションでその操作が行われたか**を残していない。後から「この課題はどの会話で議論・対応
-されたか」を辿る手段が、日時の突合しかなく不確実。
+前回（handover 2026-06-15_1831）で FR-007 レビュー完了。今回は連続フローとして **FR-016（ピーク域ポリゴン生成）の本格レビュー**を実施し、Opus と 1 論点ずつ相談して仕様を確定済み。本計画はその確定仕様を一気に実装（SRS/ADR/GLOSSARY 反映）するためのもの。
+あわせて、ユーザー確認が済んだ「対応完了」ISSUE 5 件を `verify`（解決済）にする。
 
-`$CLAUDE_CODE_SESSION_ID` 環境変数で各セッションの一意 id（jsonl ファイル名と一致）が確実に
-取得できることを確認したため、これをトラッカーと handover に記録し、トレーサビリティを確立する。
+仕様優先原則によりコードは触らず、SRS/ADR/GLOSSARY のみ更新する。
 
-### 設計方針（確定済み）
+## 確定した仕様（ユーザー合意済み）
 
-「どのセッションで何をいじったか」は、以下の **3 層**で追える設計とする。重い「内容編集ログ」を
-history に焼く方式は採らない（肥大化回避）。
+1. **論点1 = join 方式**: per-mesh GeoJSON の各ポリゴン Feature properties は `peak_lat` / `peak_lon`（joinキー）＋ `feature_type`（activation_zone / delete_zone）＋ `area_complete` のみ。属性（prominence/col_elev/peak_elev/key_col_resolved 等）は merged_peak.csv に集約し、FR-009 が peak 座標で join。FR-018 統合・FR-009 突合のキーも peak 座標に統一（決定論的なピクセル→緯度経度変換で完全一致＝NFR-003 担保）。
+1b. **論点6 = FR-007 → FR-016 データフロー**: FR-016 の入力をフィルタ前の `ピーク候補・コル情報リスト`（FR-006）から、**FR-007 が出力するフィルタ後ピーク候補・コル情報リスト**に変更。FR-007 を「採用ピーク確定」工程と位置づけ、一次フィルタ＋地理的範囲フィルタ後の集合を FR-016 が受け取る。これにより CSV と GeoJSON が同一ピーク集合となり join 破綻（孤立ポリゴン）・フィルタ重複を防ぐ。順序（FR-007→FR-016）は俯瞰図上すでに正しい。
+   - **責務の所在**: FR-016 を呼ぶ/呼ばないは**オーケストレーター（FR-004/FR-014）の責務**。FR-007 には呼び出し制御を書かない（FR-007 は受動的サブ処理）。FR-007 が出力するフィルタ後リストを FR-016 に**渡すのは FR-004**。広域モード（FR-014）は FR-016 非呼出（446行に明記済み）のため、このリストは未使用。
+2. **論点3 = 現状維持＋根拠明記**: key_col_resolved=false の delete_zone は再生成しない。FR-016 に許容根拠（未確定ピーク＝3×3 でコル未検出＝実質プロミネンス大で max_drop キャップが実効的、過大化しない）を明記。
+3. **指摘1**: FR-016/008/018/009 の出力テーブル末尾と `**説明**:` の間に空行を挿入（テーブル混入解消）。
+4. **指摘2**: AZ 標高差 25m を設定可能項目化（プロミネンス最終フィルタと同じ扱い）。
+5. **論点2 = 現状維持**（名称紐付け済み・修正不要）。
+6. **論点4・5 = todo.md 行き**。
 
-1. **session_id**（トラッカー history + handover 冒頭）… どのセッションで操作したか
-2. **handover 本文**（「今回やったこと」要約）… そのセッションの作業内容（人間可読）
-3. **git diff**（`issues.json`/`bugs.json` は git 管理）… フィールド単位の厳密な変更内容
+---
 
-→ history の session_id から同 id の handover を引き、必要なら git diff で厳密差分を確認できる。
+## タスク1: 対応完了 ISSUE の verify（5件）
 
-**運用前提**: トラッカーを変更したセッションは handover を残す（handover 無しセッションの編集は
-git diff でのみ追える）。
+```
+venv/bin/python3 mgmt/tracker/track.py issue verify ISSUE-094
+venv/bin/python3 mgmt/tracker/track.py issue verify ISSUE-095
+venv/bin/python3 mgmt/tracker/track.py issue verify ISSUE-096
+venv/bin/python3 mgmt/tracker/track.py issue verify ISSUE-098
+venv/bin/python3 mgmt/tracker/track.py issue verify ISSUE-099
+```
+完了後 `issue list --open` で対応完了が消えたことを確認。
 
-## 実装スコープ
+---
 
-### A. `mgmt/tracker/track.py`（中核）
+## タスク2: SRS / ADR / GLOSSARY 反映
 
-import は `os`・`datetime` とも追加済み（28-32 行）。新規引数は追加せず、環境変数から自動取得する
-（手動指定不要・形骸化防止）。
+### 2-1. データ辞書 2.2.1（`docs/20_SRS.md` 117〜125行）
+- 新項目「アクティベーションゾーン標高差」を追加。意味=AZ Flood Fill のピークからの標高差上限、デフォルト 25m、許容範囲「25m（SOTA 日本支部規定値）」（プロミネンス最終フィルタ閾値と同パターン）。
 
-1. **session_id 取得ヘルパー追加**（`append_history`（94 行）付近）
-   ```python
-   def current_session_id():
-       return os.environ.get("CLAUDE_CODE_SESSION_ID", "")
-   ```
-2. **`append_history` に session_id を追加**（94-101 行）
-   - dict に `"session_id": current_session_id()` を追加
-   - bug/issue 両方の `update --status`・`verify` がこの関数を経由するため、**1 箇所の修正で遷移時の
-     session_id 記録が完結**（呼び出し: 376・423・684・729 行）
-3. **`created_session_id` をトップレベルに追加**
-   - `new_bug` の dict（240-259 行）に `"created_session_id": current_session_id()`
-   - `new_issue` の dict（555-571 行）に同上
-   - これらは add 時に生成されるため、登録セッションが自動記録される
-4. **詳細表示（show）に反映**
-   - `bug_show`（312-318 行）・`issue_show`（625 行付近）の history 表示行に session_id（短縮 8 桁）を併記
-   - 登録セッション（`created_session_id`）も詳細に 1 行表示
-5. **後方互換**: 既存レコードは新フィールドを持たないため、表示は必ず `.get(..., "")` 経由で
-   フォールバック（`-` 表示）。`history[]` の旧エントリも `h.get("session_id")` で安全に扱う。
+### 2-2. FR-016 本体（`docs/20_SRS.md` 636〜670行）
+- **入力の変更（論点6）**: 入力テーブルの「ピーク候補・コル情報リスト（FR-006 出力）」を「**フィルタ後ピーク候補・コル情報リスト（FR-007 出力）**」へ差し替え。解析範囲標高グリッド・解析対象メッシュ範囲情報・解析識別子（FR-004）は維持。
+- **出力テーブルの空行挿入**（654行末↔655行間）。
+- **出力プロパティ仕様の明記**（join 方式）: 出力欄の「プロパティ仕様は下記『詳細』参照」を受け、詳細に Feature properties = `peak_lat`/`peak_lon`/`feature_type`/`area_complete` を列挙。属性は merged_peak.csv 側・FR-009 が peak 座標 join で参照することを明記（二重管理回避）。
+- **AZ 25m のデータ辞書参照化**: 639/663/664/665 行の「25m」「25.0m」を「アクティベーションゾーン標高差（データ辞書参照）」へ置換。Flood Fill 閾値は `peak_elev − アクティベーションゾーン標高差` 以上。
+- **delete_zone 再生成しない根拠の追記**（668行付近）: 「key_col_resolved=false のピークは 3×3 でコル未検出＝実質プロミネンス大のため、コル確定後も max_drop キャップが実効的でゾーンは過大化しない。ゆえに再生成不要」を 1 文追加。
 
-※ xlsx エクスポート（`reports/*.xlsx`）への列追加は今回**対象外**。session_id は長く列向きでないため、
-  `show` コマンドと JSON 記録で十分。必要になれば別途。
+### 2-2b. FR-007 本体（`docs/20_SRS.md` 591〜634行）（論点6）
+- 出力テーブルに「**フィルタ後ピーク候補・コル情報リスト**」（内部トランザクション）を追加。一次フィルタ＋地理的範囲フィルタ適用後の採用ピーク集合であることを説明に明記。
+- **主語をオーケストレーターにする**: 「通常モード（FR-004）では本リストを FR-004 が FR-016 に渡す。広域モード（FR-014）では FR-016 を呼ばないため本リストは未使用」と注記。FR-007 自身には呼び出し制御を書かない（責務分離）。
 
-### B. handover テンプレ（`/home/node/.claude/commands/handover.md`）
+### 2-2c. FR-004 俯瞰図（`docs/20_SRS.md` 390〜401行）（論点6）
+- FR-007 → FR-016 の矢印に、FR-007 のフィルタ後リストを FR-016 に渡す旨を明確化（順序は既に正しい）。
+- FR-014（446行）の「FR-016 は呼び出さない」は維持（追加不要）。
 
-- 「引き継ぎノートの構成」冒頭（タイトル直下）に **セッションID・日時**の記録を必須化する項目を追加
-  - 日時: `date '+%Y-%m-%d_%H%M'` で取得（既存ルールに準拠）
-  - session_id: `$CLAUDE_CODE_SESSION_ID`
-  - 記載例:
-    ```
-    - セッションID: 5222a314-a00e-4d70-979b-1cbcccf3f81d
-    - 日時: 2026-06-15_HHmm
-    ```
-- ※ このファイルはグローバル（`~/.claude` 配下）でプロジェクト git 管理外 → コミット対象外。
+### 2-3. FR-018（`docs/20_SRS.md` 707〜730行）
+- 出力テーブルの空行挿入（723行末↔724行間）。
+- 統合キー=peak 座標（`peak_lat`/`peak_lon`）であることを明記（現状「同一ピーク座標で統合」を join 方式に整合）。
 
-### C. ドキュメント追従（`mgmt/tracker/CLAUDE.md`）
+### 2-4. FR-009（`docs/20_SRS.md` 767〜863行）
+- 出力テーブルの空行挿入（786行末↔787行間）。
+- merged_peak.csv と merged_activation.geojson の **join キー=peak 座標** を突合説明（791行付近）に明記。
 
-- フィールド説明に `created_session_id` / `history[].session_id` を追記
-- 「session_id は `$CLAUDE_CODE_SESSION_ID` から自動記録される（引数指定不要）」旨を注記
+### 2-5. FR-008（`docs/20_SRS.md` 690〜695行）
+- 出力テーブルの空行挿入（694行末↔695行間）。※指摘1 の波及分のみ。
+
+### 2-6. GLOSSARY（`docs/00_GLOSSARY.md`）
+- アクティベーションゾーン（22行）: SOTA ルールの 25m 概念定義を維持しつつ、データ辞書「アクティベーションゾーン標高差」へのリンクを追記。
+
+### 2-7. ADR 作成: ADR-SRS-022（per-mesh GeoJSON プロパティ設計＝join 方式＋FR-007→FR-016 データフロー）
+- 採番: 次の SRS = 022（前回 021）。
+- Context: FR-016 出力プロパティ未定義・FR-009 が csv+geojson 両入力で join キー未定義・FR-016 が FR-006 生リストを受け取ると採用ピーク集合が CSV と不一致。
+- Decision: ① join 方式（GeoJSON=形状＋peak 座標キー、CSV=属性）② FR-016 入力を FR-007 のフィルタ後リストにする（採用ピーク集合の一致を構造保証）。
+- Alternatives: self-contained 方式（二重管理）／FR-016 が独自フィルタ再適用（ロジック重複）を却下。
+- Consequences: FR-016/018/009/007 記述更新、AZ 標高差設定可能化との関係。
+
+### 2-8. ISSUE 登録（仕様議論を伴うもの・1 論点 1 課題）
+- 論点1（GeoJSON プロパティ設計／join 方式・ADR-SRS-022）
+- 論点3（delete_zone 再生成根拠の明記）
+- 指摘2（AZ 標高差の設定可能項目化）
+※ それぞれ `issue add` → 反映後 `issue close`（対応完了）。
+
+### 2-9. todo.md 追記（機械修正）
+- 論点4: GLOSSARY 152行「SRS 3.4.1」→「2.2.1」修正（docs なので本作業で即修正も可）。
+- 論点5: per-mesh GeoJSON 出力パス（results/csv/ 配下）の命名整理検討。
+- コード追従: mesh_analyze.c / merge.py の GeoJSON プロパティ・join 対応（既存 todo に追記）。
+
+---
 
 ## 検証
+- `issue list --open` で対応完了 5 件が解決済へ移行。
+- SRS 内で FR-016（出力プロパティ）↔ FR-018（統合キー）↔ FR-009（join キー）が peak 座標で一貫することを grep 確認。
+- 出力テーブル直後に空行が入り `**説明**:` が独立段落になることを確認（`grep -B1 '^\*\*説明\*\*:'` で直前行が空行）。
+- ADR-SRS-022 のリンク整合・採番重複なしを確認。
+- ドキュメント更新は作業ターン内に commit（即時 commit ルール）。
 
-1. ダミー課題で一連の流れを確認:
-   ```bash
-   venv/bin/python3 mgmt/tracker/track.py issue add --title "session_id 検証用" --priority 低 --type 調査
-   # → issues.json に created_session_id が入ることを確認
-   venv/bin/python3 mgmt/tracker/track.py issue update <ID> --status 対応中 --actor Sonnet
-   # → history エントリに session_id が入ることを確認
-   venv/bin/python3 mgmt/tracker/track.py issue show <ID>
-   # → 登録セッション・遷移セッションが表示されることを確認
-   ```
-2. **既存レコードの回帰確認**: `issue show ISSUE-001`（session_id 無しの旧レコード）が
-   エラーなく `-` フォールバック表示されること
-3. bug 側も同様に `bug add` → `bug update` → `bug show` で確認
-4. 検証後、ダミーレコードは JSON から削除（または検証専用に残さない）
-5. `git diff mgmt/tracker/track.py` で意図した差分のみか確認
-
-## コミット方針
-
-- `track.py` 改修 + `mgmt/tracker/CLAUDE.md` 追従を 1 コミット（Conventional Commits・本文日本語）
-- handover.md はグローバル管理外のためコミット不要
-- ダミー検証で変化した `issues.json`/`bugs.json` を元に戻してからコミット
+## 注記
+- 本作業は ADR 作成・仕様判断を含むため **Opus 継続を推奨**。
+- 確定後この計画を `mgmt/plan.md` へ移動。
