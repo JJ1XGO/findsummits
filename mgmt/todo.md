@@ -55,6 +55,16 @@
   - `load_peaks()` に指定メッシュコードでの絞り込みを追加
   - 省略時は現行の glob 全読み込みを維持
 
+- [ ] **(ADR-SRS-022) mesh_analyze.c: per-mesh GeoJSON プロパティを join 方式に追従**
+  - Feature properties を `peak_lat`/`peak_lon`/`feature_type`/`area_complete` の4フィールドのみに変更
+  - プロミネンス・コル標高等の属性は GeoJSON から除去（per-mesh CSV に集約済み）
+  - 根拠: [ADR-SRS-022](../docs/decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)
+  - 注: ADR-SRS-010 C++ 移行（ISSUE-037/038/040）と同時実施が効率的
+
+- [ ] **(ADR-SRS-022) merge.py: merged_peak.csv と merged_activation.geojson の join 実装**
+  - FR-009 突合処理で `peak_lat`/`peak_lon` を join キーとして merged_peak.csv と merged_activation.geojson を突合するロジックを実装
+  - 根拠: [ADR-SRS-022](../docs/decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)
+
 - [ ] **(元 ISSUE-041) 実装側フラグ命名追従（is_tile_top → key_col_resolved + 真偽値反転）**
   - C 側: `src/analyze.h/c`, `src/mesh_analyze.c`, `tests/test_analyze.c`
   - Python 側: `scripts/merge.py`, `scripts/output_geojson.py`
@@ -80,6 +90,10 @@
   - 「FR-014: 独立峰のコル探索」→「FR-014: 広域結合解析オーケストレーション」
   - 対象: `docs/figures/phases_overview.drawio` および `phases_overview.drawio.svg`（再エクスポート必要）
   - 根拠: ISSUE-075（2026-06-09 SRS 改訂）
+
+- [ ] **(FR-016 論点5) per-mesh GeoJSON 出力パスの命名整理検討**
+  - 現在 `$DATA_DIR/results/csv/<meshcode>_activation.geojson` に出力しているが、csv/ 配下に geojson を置く命名が紛らわしい
+  - CSV と GeoJSON で出力先を分けるか、サブディレクトリを設けるか検討する（ADR または todo で決定後に SRS FR-016 と mesh_analyze.c を更新）
 
 - [ ] **(元 ISSUE-053) docs/figures/context.drawio: ラベル大文字統一**
 

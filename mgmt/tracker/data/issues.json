@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-15",
-    "counter": 99
+    "counter": 102
   },
   "issues": [
     {
@@ -3194,6 +3194,66 @@
           "session_id": "9d9107fd-fbf8-4238-a4db-f4f36d3eadb6"
         }
       ]
+    },
+    {
+      "id": "ISSUE-100",
+      "title": "FR-016 per-mesh GeoJSON プロパティ設計（join 方式）",
+      "description": "FR-016 出力プロパティが未定義のまま FR-009 が merged_activation.geojson と merged_peak.csv を突合する設計だった。プロパティを peak_lat/peak_lon（join キー）+ feature_type + area_complete の4フィールドに限定し、属性は CSV に集約する join 方式を採用（ADR-SRS-022）。",
+      "type": "設計",
+      "priority": "高",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-15",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "SRS FR-016/018/009 を join 方式に整合して更新。ADR-SRS-022 作成済み。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
+      "history": []
+    },
+    {
+      "id": "ISSUE-101",
+      "title": "FR-016 delete_zone 再生成不要の根拠明記",
+      "description": "key_col_resolved=false のピークはコル確定後も delete_zone を再生成しない。理由が SRS に記載されていなかった。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-15",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "FR-016 の詳細説明に許容根拠（3×3 でコル未検出＝実質プロミネンス大で max_drop キャップが実効的、過大化しない）を追記済み。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
+      "history": []
+    },
+    {
+      "id": "ISSUE-102",
+      "title": "アクティベーションゾーン標高差の設定可能項目化",
+      "description": "AZ Flood Fill の標高差閾値 25m がハードコードされていた。プロミネンス最終フィルタと同様に設定可能項目としてデータ辞書（SRS 2.2.1）で管理するべきとのユーザー指摘。",
+      "type": "機能追加",
+      "priority": "中",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-15",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "SRS 2.2.1 データ辞書に「アクティベーションゾーン標高差」を追加（デフォルト 25m・SOTA 規定値）。FR-016 の 25m 記述をデータ辞書参照化済み。GLOSSARY のアクティベーションゾーン定義にもデータ辞書リンクを追記済み。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
+      "history": []
     }
   ]
 }

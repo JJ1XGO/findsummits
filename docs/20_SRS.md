@@ -698,6 +698,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部データ | CSV | 内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用される中間ファイル |
+
 **説明**:
 
   - **通常モード（フェーズ2-1）の per-mesh CSV** と **広域モード（フェーズ2-2・[FR-014](#fr-014-広域結合解析オーケストレーション) で生成）の per-mesh CSV** が同一ディレクトリ配下に混在することがある。両方を読み込み、同一ピーク座標で重複排除する。通常/広域の区別は `analysis_id` の接頭辞で判別する（接頭辞 `3` = 通常・`4/5/6` = 広域）
@@ -727,10 +728,11 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
 | 統合済みピーク域 GeoJSON（merged_activation.geojson） | 内部データ | GeoJSON | 内部中間ファイル。ファイル: `$DATA_DIR/results/merged_activation.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。[FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合に使用。デバッグ・差分検査用として物理出力は残す。詳細: [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) |
+
 **説明**:
 
   - 通常 per-mesh の `3-<meshcode>_activation.geojson`（[FR-016](#fr-016-ピーク域ポリゴン生成) 出力）のみを統合対象とする。広域モード（[FR-014](#fr-014-広域結合解析オーケストレーション)）は GeoJSON を生成しないため、広域 per-mesh ファイルは本機能の入力に含まれない
-  - 同一ピーク座標（ズームレベル15 タイル座標が一致）の Polygon のうち、`area_complete=true`（完全なポリゴン）のものを採用する
+  - 同一ピーク座標（join キー: `peak_lat`/`peak_lon`）の Polygon のうち、`area_complete=true`（完全なポリゴン）のものを採用する。`peak_lat`/`peak_lon` は [FR-016](#fr-016-ピーク域ポリゴン生成) が GeoJSON Feature properties として出力する join キーであり、[FR-009](#fr-009-sotaリスト突合match_status-判定) が merged_peak.csv と merged_activation.geojson を突合する際にも同一キーを使用する（[ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）
   - `area_complete=true` がどこにも存在しない場合は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグが true となり、後続の [FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は実施されない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
   - delete判定ゾーンポリゴン（`feature_type="delete_zone"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ方針（`area_complete=true` のものを採用）で処理する
   - **再入可能性**: コル充足判定（[FR-022](#fr-022-コル充足判定)）のループ中は再入しない。広域モードは GeoJSON を生成しないため、本機能はフェーズ2-2 実行前の1回のみ実行される
@@ -790,11 +792,12 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 |---|---|---|---|
 | 統合ピーク候補（`merged.geojson`） | 内部データ | GeoJSON | フェーズ4 末尾の中心成果物。全フィーチャ・rationale・不備フラグ metadata を含む |
 | サミット一覧（突合後）（`merged_summit.xlsx`） | 内部データ | XLSX | バッチ生成時点の確認用。HTML ビューア編集内容は反映しない |
+
 **説明**:
 
   - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
   - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
-  - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-activationgeojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
+  - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-activationgeojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。merged_peak.csv と merged_activation.geojson の突合キーは `peak_lat`/`peak_lon`（join キー）であり、[FR-018](#fr-018-per-mesh-activationgeojson-統合) が GeoJSON Feature properties として保持する値と merged_peak.csv の列値が完全一致する（[ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
   - マッチング一意性: **プロミネンス最終フィルタ閾値**の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない（delete判定ゾーン内には縦走路上などで複数 SOTA サミットが含まれうるが、主ピーク特定アルゴリズム（[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)）で各サミットの主ピークが一意に決まる）
   - **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成した市区町村単位の N03 前処理済み地域 GeoJSON と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged_summit.xlsx に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
   - **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-URD-007](decisions/ADR-URD-007-peak-match-status-terminology.md)、ポリゴン種別変更の経緯は [ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）:
