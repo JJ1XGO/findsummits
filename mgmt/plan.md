@@ -1,58 +1,94 @@
-# SRS FR-006 レビュー反映プラン
+# トラッカー＆handover にセッションID トレーサビリティを追加
 
-## Context
+## Context（背景・目的）
 
-FR-006「コル検出・プロミネンス計算」を Opus 視点でレビューした結果、FR-005/006/007/016 にまたがる**データモデルの不整合**と**仕様記述の欠落**が複数見つかった。ユーザーとの議論で全論点に決着がついたため、その決定を SRS・GLOSSARY・ADR に反映する。コードには手を入れない（仕様優先原則）。
+課題管理トラッカー（`mgmt/tracker/track.py`）の各レコードは現在、ステータス遷移を
+`history[]`（`{date, actor, from, to, comment}`）として記録しているが、**どの Claude Code
+セッションでその操作が行われたか**を残していない。後から「この課題はどの会話で議論・対応
+されたか」を辿る手段が、日時の突合しかなく不確実。
 
-## 確定した設計判断
+`$CLAUDE_CODE_SESSION_ID` 環境変数で各セッションの一意 id（jsonl ファイル名と一致）が確実に
+取得できることを確認したため、これをトラッカーと handover に記録し、トレーサビリティを確立する。
 
-| # | 論点 | 決定 |
-|---|---|---|
-| 1 | FR-006 入力欠落（重大1・縮小版） | FR-006 入力に **「解析範囲標高グリッド」を1つ追加**。`解析対象メッシュ範囲情報` は不要（resolved 判定はグリッド最外周 1px ボーダー基準で、グリッドに焼き込み済み）|
-| 2 | ピーク↔コルの紐付け（重大1b＋中4＋ユーザー指摘） | FR-006 出力を **「ピーク候補・コル情報リスト」**（1レコード＝1ピーク＋その Key コル）に一本化。FR-007・FR-016 はこの単一リストを入力にし、FR-016 の独立「ピーク候補リスト」入力は削除 |
-| 3 | col_margin_px の位置づけ（重大2） | **診断・将来用**として CSV に残す（ADR-SRS-004 98行が裏付け）。629行の「stability 判定時に換算」という誤記述を診断用に訂正 |
-| 4 | resolved 判定セマンティクス（重大3/defect-A） | 588行を**境界辺接触 topology** で正確に記述（連結成分がグリッド最外周 1px ボーダーに接触→`false`／接触せず内部完結→`true`・Key コル=海面0m）|
-| 5 | resolved=false の暫定値（重大3/defect-B） | `col_elev`/`prominence` は **未確定値（sentinel：空欄 or NODATA）**。`col_lat`/`col_lon`=0.0 は既定義のまま |
+### 設計方針（確定済み）
 
-※ レビュー中に判明した訂正: 当初の重大1 で `解析対象メッシュ範囲情報` も欠落と述べたが、これは FR-007 の役割（フリンジフィルタ・ピクセル→緯度経度変換）で既に正しく配置済み。FR-006 には不要。
-※ FR-006/FR-022 の責務分界は ADR-SRS-004 で既に明確（FR-006 が resolved 決定、FR-022 は読むだけ＋陸地最高峰の手動上書き）。defect ではない。
+「どのセッションで何をいじったか」は、以下の **3 層**で追える設計とする。重い「内容編集ログ」を
+history に焼く方式は採らない（肥大化回避）。
 
-## 課題登録（実装前にユーザー確認）
+1. **session_id**（トラッカー history + handover 冒頭）… どのセッションで操作したか
+2. **handover 本文**（「今回やったこと」要約）… そのセッションの作業内容（人間可読）
+3. **git diff**（`issues.json`/`bugs.json` は git 管理）… フィールド単位の厳密な変更内容
 
-1論点1課題で以下を `track.py issue add`（報告者・actor=Opus）。決定済みなので登録→SRS/ADR反映→`issue close`（対応完了）まで一気に進める。
+→ history の session_id から同 id の handover を引き、必要なら git diff で厳密差分を確認できる。
 
-- **ISSUE-α**: FR-005/006/007/016 のピーク↔コル紐付けモデル — per-peak 対応レコードへの一本化（判断2）。→ **ADR-SRS-020** を新設して根拠（1:1 対応・ジョイン曖昧性排除・3成分同時接触エッジケース）を記録
-- **ISSUE-β**: FR-006 コル確定/未確定の判定基準（境界辺接触 topology）と未確定行の値定義（判断4＋5）
-- **ISSUE-γ**: col_margin_px の位置づけ確定（診断・将来用）と 629行記述訂正（判断3）
+**運用前提**: トラッカーを変更したセッションは handover を残す（handover 無しセッションの編集は
+git diff でのみ追える）。
 
-※ 判断1（FR-006 入力グリッド追加）は ISSUE-β の SRS 反映に同梱（FR-006 I/O 是正の一部）。
+## 実装スコープ
 
-## 編集対象
+### A. `mgmt/tracker/track.py`（中核）
 
-### docs/20_SRS.md
-- **FR-006 入力テーブル（545-547行付近）**: 「解析範囲標高グリッド」行を追加（判断1）
-- **FR-006 出力テーブル（578-580行）**: 「コル情報」→「ピーク候補・コル情報リスト」。形式欄に1レコードの構成（ピーク座標・ピーク標高・コル座標・コル標高・プロミネンス・`key_col_resolved`・`col_margin_px`）を明記（判断2・3）
-- **FR-006 説明 587-588行**: 境界辺接触 topology で書き直し＋未確定行の sentinel を明記（判断4・5）。「2成分接触＝低い方のピークの Key コル」帰属も1文追記（中4）
-- **FR-007 入力テーブル（599行）**: 「コル情報」→「ピーク候補・コル情報リスト」に置換（判断2）
-- **FR-007 出力カラム（622-627行）**: `col_elev`/`prominence` の resolved=false 時=未確定値を明記（判断5）。`col_margin_px` 説明を診断用に整える
-- **FR-007 zoom_level 備考（629行）**: col_margin_px の「stability 換算」誤記述を訂正（判断3）
-- **FR-016 入力テーブル（644-645行）**: 独立「ピーク候補リスト」「コル情報」を削除し「ピーク候補・コル情報リスト」に置換（解析範囲標高グリッド・範囲情報・識別子は維持）（判断2）
+import は `os`・`datetime` とも追加済み（28-32 行）。新規引数は追加せず、環境変数から自動取得する
+（手動指定不要・形骸化防止）。
 
-### docs/00_GLOSSARY.md
-- **123行**: 内部トランザクション例「FR-006 出力『コル情報』」→「ピーク候補・コル情報リスト」に名称追従
+1. **session_id 取得ヘルパー追加**（`append_history`（94 行）付近）
+   ```python
+   def current_session_id():
+       return os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+   ```
+2. **`append_history` に session_id を追加**（94-101 行）
+   - dict に `"session_id": current_session_id()` を追加
+   - bug/issue 両方の `update --status`・`verify` がこの関数を経由するため、**1 箇所の修正で遷移時の
+     session_id 記録が完結**（呼び出し: 376・423・684・729 行）
+3. **`created_session_id` をトップレベルに追加**
+   - `new_bug` の dict（240-259 行）に `"created_session_id": current_session_id()`
+   - `new_issue` の dict（555-571 行）に同上
+   - これらは add 時に生成されるため、登録セッションが自動記録される
+4. **詳細表示（show）に反映**
+   - `bug_show`（312-318 行）・`issue_show`（625 行付近）の history 表示行に session_id（短縮 8 桁）を併記
+   - 登録セッション（`created_session_id`）も詳細に 1 行表示
+5. **後方互換**: 既存レコードは新フィールドを持たないため、表示は必ず `.get(..., "")` 経由で
+   フォールバック（`-` 表示）。`history[]` の旧エントリも `h.get("session_id")` で安全に扱う。
 
-### docs/decisions/
-- **ADR-SRS-020**（新規）: per-peak 対応レコードモデルの決定記録（判断2）
-- **ADR-SRS-017**: 例示名称の追従が必要なら改訂注記追記（コル情報→新名称）
+※ xlsx エクスポート（`reports/*.xlsx`）への列追加は今回**対象外**。session_id は長く列向きでないため、
+  `show` コマンドと JSON 記録で十分。必要になれば別途。
 
-### docs/CLAUDE.md（プロジェクト分類ルール表）
-- 内部トランザクション例「FR-006 出力のコル情報」→新名称に追従
+### B. handover テンプレ（`/home/node/.claude/commands/handover.md`）
+
+- 「引き継ぎノートの構成」冒頭（タイトル直下）に **セッションID・日時**の記録を必須化する項目を追加
+  - 日時: `date '+%Y-%m-%d_%H%M'` で取得（既存ルールに準拠）
+  - session_id: `$CLAUDE_CODE_SESSION_ID`
+  - 記載例:
+    ```
+    - セッションID: 5222a314-a00e-4d70-979b-1cbcccf3f81d
+    - 日時: 2026-06-15_HHmm
+    ```
+- ※ このファイルはグローバル（`~/.claude` 配下）でプロジェクト git 管理外 → コミット対象外。
+
+### C. ドキュメント追従（`mgmt/tracker/CLAUDE.md`）
+
+- フィールド説明に `created_session_id` / `history[].session_id` を追記
+- 「session_id は `$CLAUDE_CODE_SESSION_ID` から自動記録される（引数指定不要）」旨を注記
 
 ## 検証
-- `grep -n "コル情報" docs/20_SRS.md docs/00_GLOSSARY.md docs/CLAUDE.md` で旧名称の残存ゼロを確認（意図的に残す箇所がなければ）
-- FR-005→FR-006→FR-007/016 の入出力チェーンが一貫しているか目視（出力名＝下流入力名が一致）
-- FR-006 出力レコードの全フィールドが FR-007 出力カラム・FR-016 入力要求を満たすか突合
-- ADR リンク（SRS↔ADR-SRS-020）の双方向参照を確認
 
-## コミット
-ドキュメント更新ルールに従い、編集一段落で個別 `git add` → Conventional Commits（本文日本語）でコミット。push は指示があるまで不要。
+1. ダミー課題で一連の流れを確認:
+   ```bash
+   venv/bin/python3 mgmt/tracker/track.py issue add --title "session_id 検証用" --priority 低 --type 調査
+   # → issues.json に created_session_id が入ることを確認
+   venv/bin/python3 mgmt/tracker/track.py issue update <ID> --status 対応中 --actor Sonnet
+   # → history エントリに session_id が入ることを確認
+   venv/bin/python3 mgmt/tracker/track.py issue show <ID>
+   # → 登録セッション・遷移セッションが表示されることを確認
+   ```
+2. **既存レコードの回帰確認**: `issue show ISSUE-001`（session_id 無しの旧レコード）が
+   エラーなく `-` フォールバック表示されること
+3. bug 側も同様に `bug add` → `bug update` → `bug show` で確認
+4. 検証後、ダミーレコードは JSON から削除（または検証専用に残さない）
+5. `git diff mgmt/tracker/track.py` で意図した差分のみか確認
+
+## コミット方針
+
+- `track.py` 改修 + `mgmt/tracker/CLAUDE.md` 追従を 1 コミット（Conventional Commits・本文日本語）
+- handover.md はグローバル管理外のためコミット不要
+- ダミー検証で変化した `issues.json`/`bugs.json` を元に戻してからコミット

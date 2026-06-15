@@ -91,13 +91,17 @@ def ask_interactive(prompt, required=True, choices=None, default=None):
             continue
         return val or None
 
+def current_session_id():
+    return os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+
 def append_history(item, actor, from_s, to_s, comment=""):
     item["history"].append({
-        "date":    datetime.now().isoformat(timespec="seconds"),
-        "actor":   actor or "不明",
-        "from":    from_s,
-        "to":      to_s,
-        "comment": comment or "",
+        "date":       datetime.now().isoformat(timespec="seconds"),
+        "actor":      actor or "不明",
+        "from":       from_s,
+        "to":         to_s,
+        "comment":    comment or "",
+        "session_id": current_session_id(),
     })
 
 
@@ -237,25 +241,26 @@ def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
 
 def new_bug(bug_id):
     return {
-        "id":            bug_id,
-        "title":         None,
-        "description":   None,
-        "reporter":      None,
-        "found_date":    date.today().isoformat(),
-        "found_stage":   None,
-        "category":      None,
-        "found_in":      None,
-        "repro":         None,
-        "severity":      "中",
-        "status":        "未対応",
-        "assignee":      None,
-        "stage":         None,
-        "cause":         None,
-        "resolution":    None,
-        "notes":         None,
-        "resolved_date": None,
-        "verified_date": None,
-        "history":       [],
+        "id":                 bug_id,
+        "title":              None,
+        "description":        None,
+        "reporter":           None,
+        "found_date":         date.today().isoformat(),
+        "found_stage":        None,
+        "category":           None,
+        "found_in":           None,
+        "repro":              None,
+        "severity":           "中",
+        "status":             "未対応",
+        "assignee":           None,
+        "stage":              None,
+        "cause":              None,
+        "resolution":         None,
+        "notes":              None,
+        "resolved_date":      None,
+        "verified_date":      None,
+        "created_session_id": current_session_id(),
+        "history":            [],
     }
 
 def print_bug_row(bug):
@@ -309,11 +314,15 @@ def bug_show(args):
         print(f"\n  {BOLD}備考:{RESET}\n    {bug['notes']}")
     print(f"\n  対応完了日    : {bug.get('resolved_date') or '-'}")
     print(f"  解決確認日    : {bug.get('verified_date') or '-'}")
+    csid = bug.get("created_session_id") or "-"
+    print(f"  登録セッション: {csid[:8] if csid != '-' else '-'}")
     history = bug.get("history", [])
     if history:
         print(f"\n  {BOLD}変更履歴:{RESET}")
         for h in history:
-            print(f"    {DIM}{h['date'][:10]}{RESET}  {h['actor']}  {h['from']} → {h['to']}")
+            sid = h.get("session_id") or ""
+            sid_str = f"  [{sid[:8]}]" if sid else ""
+            print(f"    {DIM}{h['date'][:10]}{RESET}  {h['actor']}  {h['from']} → {h['to']}{sid_str}")
             if h.get("comment"):
                 print(f"             {DIM}{h['comment']}{RESET}")
     print()
@@ -552,22 +561,23 @@ def bug_export(args):
 def new_issue(issue_id):
     return {
         "id":            issue_id,
-        "title":         None,
-        "description":   None,
-        "type":          None,
-        "priority":      "中",
-        "category":      None,
-        "reporter":      None,
-        "created_date":  date.today().isoformat(),
-        "stage":         None,
-        "planned_stage": None,
-        "status":        "未対応",
-        "assignee":      None,
-        "resolution":    None,
-        "notes":         None,
-        "resolved_date": None,
-        "verified_date": None,
-        "history":       [],
+        "title":              None,
+        "description":        None,
+        "type":               None,
+        "priority":           "中",
+        "category":           None,
+        "reporter":           None,
+        "created_date":       date.today().isoformat(),
+        "stage":              None,
+        "planned_stage":      None,
+        "status":             "未対応",
+        "assignee":           None,
+        "resolution":         None,
+        "notes":              None,
+        "resolved_date":      None,
+        "verified_date":      None,
+        "created_session_id": current_session_id(),
+        "history":            [],
     }
 
 def print_issue_row(issue):
@@ -622,11 +632,15 @@ def issue_show(args):
         print(f"\n  {BOLD}備考:{RESET}\n    {issue['notes']}")
     print(f"\n  対応完了日    : {issue.get('resolved_date') or '-'}")
     print(f"  解決確認日    : {issue.get('verified_date') or '-'}")
+    csid = issue.get("created_session_id") or "-"
+    print(f"  登録セッション: {csid[:8] if csid != '-' else '-'}")
     history = issue.get("history", [])
     if history:
         print(f"\n  {BOLD}変更履歴:{RESET}")
         for h in history:
-            print(f"    {DIM}{h['date'][:10]}{RESET}  {h['actor']}  {h['from']} → {h['to']}")
+            sid = h.get("session_id") or ""
+            sid_str = f"  [{sid[:8]}]" if sid else ""
+            print(f"    {DIM}{h['date'][:10]}{RESET}  {h['actor']}  {h['from']} → {h['to']}{sid_str}")
             if h.get("comment"):
                 print(f"             {DIM}{h['comment']}{RESET}")
     print()

@@ -66,6 +66,23 @@ tracker/
 
 `却下` はユーザーが対応不要と判断した場合のみ使用。
 
+## セッションID トレーサビリティ
+
+`track.py` は各レコードに以下のセッション情報を**自動記録**する（引数指定不要）。
+
+| フィールド | 場所 | 内容 |
+|---|---|---|
+| `created_session_id` | トップレベル | 登録（add）時のセッションID |
+| `session_id` | `history[]` 各エントリ | ステータス遷移時のセッションID |
+
+値は `$CLAUDE_CODE_SESSION_ID` 環境変数から取得する（Claude Code 実行時に自動設定）。
+手動実行時（環境変数未設定）は空文字列 `""` が記録される。
+
+**トレーサビリティの辿り方（3 層）:**
+1. `session_id` → 同 id の handover ファイル（`.claude/handovers/<session_id>.jsonl` と同一 id）
+2. handover 本文 → そのセッションの作業要約（人間可読）
+3. `git log mgmt/tracker/data/` → フィールド単位の厳密な変更内容
+
 ---
 
 ## バグ管理コマンド
