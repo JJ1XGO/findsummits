@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-15",
-    "counter": 97
+    "counter": 99
   },
   "issues": [
     {
@@ -3078,6 +3078,80 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "FR-007 col_margin_px を診断・将来用フィールドと改め ADR-SRS-020 参照に変更。zoom_level 備考（629行）の stability 換算誤記述を削除。"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-098",
+      "title": "FR-007 一次フィルタの key_col_resolved=false 適用未定義",
+      "description": "FR-007の一次フィルタ記述が「一次フィルタ閾値を超えたピーク候補のみ出力」となっており、key_col_resolved=false行（prominence空欄）への適用が未定義。文面通りだと独立峰が出力されず FR-014 広域解析に回らずパイプライン破綻する。",
+      "type": "設計",
+      "priority": "高",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-15",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "key_col_resolved=false 行はフィルタを適用せず無条件出力。一次フィルタは key_col_resolved=true（prominence確定済み）行にのみ適用。SRS FR-007 説明・概要に明記する。",
+      "notes": null,
+      "resolved_date": "2026-06-15",
+      "verified_date": null,
+      "created_session_id": "8e031b7c-8314-473f-b389-b4ad560d946f",
+      "history": [
+        {
+          "date": "2026-06-15T18:24:25",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "8e031b7c-8314-473f-b389-b4ad560d946f"
+        },
+        {
+          "date": "2026-06-15T18:27:01",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS FR-007 説明・概要・NFR-001 に key_col_resolved=false 無条件出力を明記。一次フィルタは key_col_resolved=true 行のみに適用と定義した。",
+          "session_id": "8e031b7c-8314-473f-b389-b4ad560d946f"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-099",
+      "title": "FR-007 per-mesh CSV カラム設計整理（analysis_id 集約・points 除外）",
+      "description": "FR-007 出力カラムに設計上の問題が3点ある。(1) center_mesh: 広域モードでは「中心メッシュ」が存在せず名称が誤り。(2) zoom_level: analysis_id 接頭辞から導出可能な冗長列。(3) points: peak_elevからの純粋派生値でFR-008は読まず・FR-009で再計算するデッドカラム。",
+      "type": "設計",
+      "priority": "高",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-15",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "center_mesh + zoom_level を廃止し analysis_id（解析識別子: 3-5239 / 4-5239-NW）1列に集約。points を FR-007 出力から削除し消費段（FR-009/出力生成）で peak_elev から算出する。ADR-SRS-021 として記録。",
+      "notes": null,
+      "resolved_date": "2026-06-15",
+      "verified_date": null,
+      "created_session_id": "8e031b7c-8314-473f-b389-b4ad560d946f",
+      "history": [
+        {
+          "date": "2026-06-15T18:24:25",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "8e031b7c-8314-473f-b389-b4ad560d946f"
+        },
+        {
+          "date": "2026-06-15T18:27:01",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "center_mesh + zoom_level を廃止し analysis_id（解析識別子）1列に集約。points を FR-007 出力から削除。ADR-SRS-021 として記録。SRS FR-007 カラム表・FR-008 説明を更新。",
+          "session_id": "8e031b7c-8314-473f-b389-b4ad560d946f"
         }
       ]
     }
