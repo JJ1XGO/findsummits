@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-16",
-    "counter": 103
+    "counter": 104
   },
   "issues": [
     {
@@ -3281,6 +3281,43 @@
           "to": "対応完了",
           "comment": "SRS FR-008/FR-022/データ辞書7.2へ反映、ADR-SRS-023作成完了",
           "session_id": "996f27de-7c19-462e-817d-31f26f3e41f6"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-104",
+      "title": "FR-018 を FR-008 とセットでループ内再入させ merged_peak.csv で絞る",
+      "description": "FR-018（per-mesh activation.geojson統合）が merged_peak.csv を入力に取らず、FR-007一次フィルタ（130m）通過の全ポリゴンを統合していた。FR-008最終フィルタ（150m）通過の最終ピーク集合とポリゴン集合が不一致となり、(A) is_area_incomplete判定母集団のズレ、(B) FR-009 point-in-polygon誤マッチのリスクがあった。レビューで「FR-018はFR-008とセットでFR-022ループ内を毎回再入し、その世代のmerged_peak.csvでポリゴンを絞る」方針に確定（広域解析待ち時間中の可視化要件が決定打）。ADR-SRS-024作成済み。SRS本文（FR-018入力/説明/再入記述・FR-009 orphan明記・データフロー図・トレーサビリティ表）への反映が残作業。",
+      "type": "設計",
+      "priority": "高",
+      "category": "GeoJSON出力",
+      "reporter": "Opus",
+      "created_date": "2026-06-16",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": "ADR-SRS-024（fr018-loop-reentry-and-peak-filter）で決定。SRS本文へ反映後 close。",
+      "notes": null,
+      "resolved_date": "2026-06-16",
+      "verified_date": null,
+      "created_session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c",
+      "history": [
+        {
+          "date": "2026-06-16T17:07:31",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c"
+        },
+        {
+          "date": "2026-06-16T17:09:37",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-024 作成・SRS本文（FR-018入力/説明/再入・FR-009 orphan明記・処理フロー俯瞰図）反映完了",
+          "session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c"
         }
       ]
     }
