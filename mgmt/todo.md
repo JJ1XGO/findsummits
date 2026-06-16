@@ -51,9 +51,12 @@
   - `enumerate_jobs()` の隣接メッシュ拡張ロジック（`nb not in mesh_set` の分岐）を削除
   - 各メッシュ単独の `mesh_to_tile_range(meshcode)` のみを取得
 
-- [ ] **(元 ISSUE-016) merge.py: --mesh-list 指定時の絞り込み（FR-008 追従）**
-  - `load_peaks()` に指定メッシュコードでの絞り込みを追加
-  - 省略時は現行の glob 全読み込みを維持
+- [ ] **(元 ISSUE-016・ADR-SRS-023) merge.py: --mesh-list 指定時の絞り込み（FR-008 追従）**
+  - `--mesh-list` 指定時は `load_peaks()` を**通常 per-mesh CSV（`3-<meshcode>.csv`）のみ**に絞り込み、**広域 per-mesh CSV（`4/5/6-<meshcode>-<コーナー>.csv`）は対象外**とする
+  - 省略時（デフォルト）は現行の glob 全読み込み（通常+広域）を維持
+  - `expected_count` 算出は `--mesh-list` の指定有無に関わらず**常に日本全土1次メッシュコードリスト（`params/mesh_list_japan.txt`）基準**で行う（絞り込みリストを expected_count 算出に流用しない）
+  - 代表採用ロジックを ADR-SRS-023 の4段（key_col_resolved優先→col_elev降順→通常モード優先＋analysis_id昇順→全件false時はfalse維持）に合わせる
+  - 根拠: [ADR-SRS-023](../docs/decisions/ADR-SRS-023-fr008-merge-input-mesh-list-semantics.md)
 
 - [ ] **(ADR-SRS-022) mesh_analyze.c: per-mesh GeoJSON プロパティを join 方式に追従**
   - Feature properties を `peak_lat`/`peak_lon`/`feature_type`/`area_complete` の4フィールドのみに変更
