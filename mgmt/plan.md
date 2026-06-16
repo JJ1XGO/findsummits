@@ -1,4 +1,11 @@
-# 計画: FR-018 統合タイミング・絞り込み仕様の確定（SRS 反映）
+# 計画: 観測可能性要件（中間成果物の可視化検証）を URD に追加（完了）
+
+UR-013 新設・ADR-URD-016 作成・ISSUE-105（対応完了）・ISSUE-106（次工程: UR-013 を満たす
+SRS 設計検討、ピーク↔コル対応の表示方式）。詳細は `docs/decisions/ADR-URD-016-observability-intermediate-visualization-ur.md` 参照。
+
+---
+
+# 計画: FR-018 統合タイミング・絞り込み仕様の確定（SRS 反映）（完了）
 
 ## Context
 
