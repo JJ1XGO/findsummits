@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-16",
-    "counter": 106
+    "last_updated": "2026-06-17",
+    "counter": 107
   },
   "issues": [
     {
@@ -3377,6 +3377,43 @@
       "verified_date": null,
       "created_session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c",
       "history": []
+    },
+    {
+      "id": "ISSUE-107",
+      "title": "UR-013（観測可能性）をSRSに反映 — NFR-009新設・FR-018トレース追加・ADR-SRS-025作成",
+      "description": "UR-013（ADR-URD-016）がURDに追加されたが、SRS側に受け皿が無くトレースが切れている。NFR-009（観測可能性）を新設し、FR-016/FR-018との相互リンクを張ることでUR-013→SRSのトレースを確立する。ピーク↔コル対応の表示方式（ISSUE-106）は本ISSUEのスコープ外。",
+      "type": "設計",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-17",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": "2026-06-17",
+      "verified_date": null,
+      "created_session_id": "fb33609e-0478-4cf0-9bfe-b3c243176b33",
+      "history": [
+        {
+          "date": "2026-06-17T19:20:22",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "fb33609e-0478-4cf0-9bfe-b3c243176b33"
+        },
+        {
+          "date": "2026-06-17T19:22:22",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "NFR-009新設・FR-018への参照追加・ADR-SRS-025作成でUR-013→SRSのトレースを確立。ピーク↔コル対応はISUE-106としてスコープ外を明示。",
+          "session_id": "fb33609e-0478-4cf0-9bfe-b3c243176b33"
+        }
+      ]
     }
   ]
 }

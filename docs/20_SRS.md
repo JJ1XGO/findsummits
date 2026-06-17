@@ -3,8 +3,8 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-06-16 |
-| ステータス | ドラフト（FR-018 レビュー反映 — FR-008 とセットでループ内再入・merged_peak.csv での絞り込み確定。ADR-SRS-024） |
+| 最終更新日 | 2026-06-17 |
+| ステータス | ドラフト（NFR-009「観測可能性」新設・UR-013→SRS トレース確立。ADR-SRS-025） |
 | 参照 URD | [`10_URD.md`](10_URD.md) |
 
 ---
@@ -60,6 +60,7 @@
    - [NFR-006: 可搬性・環境](#nfr-006-可搬性環境)
    - [NFR-007: ログ出力](#nfr-007-ログ出力)
    - [NFR-008: UI レスポンス](#nfr-008-ui-レスポンス)
+   - [NFR-009: 観測可能性（中間成果物の可視化）](#nfr-009-観測可能性中間成果物の可視化)
 6. [外部インターフェース仕様](#6-外部インターフェース仕様)
    - [6.1 入力: 地理院標高タイル](#61-入力-地理院標高タイル)
    - [6.2 入力: SOTA サミットリスト CSV](#62-入力-sota-サミットリスト-csv)
@@ -742,7 +743,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - **最終ピーク集合への絞り込み（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）**: per-mesh GeoJSON 統合後、統合ピーク候補 work CSV（`merged_peak.csv`）に存在する `peak_lat`/`peak_lon` のピークのみを採用する。`merged_peak.csv` はプロミネンス最終フィルタ（[FR-008](#fr-008-per-mesh-csv-統合)）通過後の集合であり、本機能の統合対象（[FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) の一次フィルタ通過後の集合）より狭い。絞り込みにより `merged_activation.geojson` のピーク集合が `merged_peak.csv` と完全一致し、`is_area_incomplete`（次項）の判定母集団・[FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合対象がともに最終ピーク集合に揃う
   - `area_complete=true` が（絞り込み後の）いずれのピークにも存在しない場合は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグが true となり、後続の [FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は実施されない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
   - delete判定ゾーンポリゴン（`feature_type="delete_zone"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ方針（`area_complete=true` のものを採用）で処理する
-  - **再入可能性（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）**: [FR-008](#fr-008-per-mesh-csv-統合) とセットで、コル充足判定（[FR-022](#fr-022-コル充足判定)）のループ内を毎回再入する。FR-008 が `merged_peak.csv` を再生成するたびに本機能も再実行され、その世代の `merged_peak.csv` で絞り込んだ `merged_activation.geojson` を上書き再生成する。広域解析（[FR-014](#fr-014-広域結合解析オーケストレーション)）は計算負荷が高く待ち時間が長いため、その間に人間が各世代の `merged_activation.geojson` を地理院地図上で確認できるようにすることが目的（コル確定済みピークのゾーン確認・未確定ピークの位置の見当付け）
+  - **再入可能性（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）**: [FR-008](#fr-008-per-mesh-csv-統合) とセットで、コル充足判定（[FR-022](#fr-022-コル充足判定)）のループ内を毎回再入する。FR-008 が `merged_peak.csv` を再生成するたびに本機能も再実行され、その世代の `merged_peak.csv` で絞り込んだ `merged_activation.geojson` を上書き再生成する。広域解析（[FR-014](#fr-014-広域結合解析オーケストレーション)）は計算負荷が高く待ち時間が長いため、その間に人間が各世代の `merged_activation.geojson` を地理院地図上で確認できるようにすることが目的（コル確定済みピークのゾーン確認・未確定ピークの位置の見当付け）。本動作は [NFR-009](#nfr-009-観測可能性中間成果物の可視化) が根拠とする [UR-013](10_URD.md#ur-013) の実現手段
 
 #### FR-022: コル充足判定
 
@@ -1310,6 +1311,14 @@ matched / dominant のみ。
 - HTML ビューア（[FR-013](#fr-013-html-ビューア生成)）上のボタンクリック・地図操作などの UI 操作に対して、1秒以内に応答すること
 - XLSX エクスポート: 5秒以内に完了すること
 - 公開用 HTML エクスポート・GeoJSON ダウンロード: 10秒以内に完了すること
+
+### NFR-009: 観測可能性（中間成果物の可視化）
+
+- **対応 UR**: [UR-013](10_URD.md#ur-013)
+- 解析パイプラインが各段階で生成する中間成果物（per-mesh アクティベーションゾーン GeoJSON（[FR-016](#fr-016-ピーク域ポリゴン生成)）・統合済みピーク域 GeoJSON `merged_activation.geojson`（[FR-018](#fr-018-per-mesh-activationgeojson-統合)））を、生成されたタイミングで物理ファイルとして出力し、地理院地図等の地図ソフトに読み込んで（手動ドラッグ＆ドロップ可）位置・形状の妥当性を目視確認できること
+- 中間 GeoJSON は申請エビデンス（[UR-006](10_URD.md#ur-006)）ではなく、開発・テスト・運用時の妥当性検証を目的とする。デバッグ・差分検査のため物理出力を残す（[FR-018](#fr-018-per-mesh-activationgeojson-統合) の `merged_activation.geojson` は世代ごとに上書き再生成）
+- **保証範囲外**: ピーク・コルの「対応関係」の精密な可視化（コル位置の地図表示）は本 NFR の対象外とし、別途 SRS 設計で扱う（現行 GeoJSON はコル座標を持たない。根拠: [ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)。検討課題: [ISSUE-106]）
+- 本 NFR の設計判断詳細: [ADR-SRS-025](decisions/ADR-SRS-025-observability-nfr-ur013-srs-scope.md)
 
 ---
 
