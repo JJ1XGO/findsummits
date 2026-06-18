@@ -5,7 +5,7 @@
 
 ## Context
 
-FR-018（per-mesh activation.geojson 統合）のレビューで、入力に統合ピーク候補 work CSV
+FR-018（per-mesh ピーク候補 GeoJSON 統合）のレビューで、入力に統合ピーク候補 work CSV
 （`merged_peak.csv`）が含まれていないことが論点となった。データフローを精読した結果、
 2 つの構造的問題と 1 つの運用要件が明らかになった。
 
@@ -15,8 +15,8 @@ FR-018（per-mesh activation.geojson 統合）のレビューで、入力に統�
 **一次フィルタ（130m）**を通過したピークをポリゴン化する。一方、**最終150mフィルタ**は
 [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合) が `merged_peak.csv` に対してのみ適用する。
 現状の FR-018 は `merged_peak.csv` を参照せず per-mesh GeoJSON を全統合するため、
-`merged_activation.geojson` には **130〜150m で最終脱落するピークのポリゴン**が残り、
-最終ピーク集合（`merged_peak.csv`）とポリゴン集合（`merged_activation.geojson`）が一致しない。
+`merged_peak.geojson` には **130〜150m で最終脱落するピークのポリゴン**が残り、
+最終ピーク集合（`merged_peak.csv`）とポリゴン集合（`merged_peak.geojson`）が一致しない。
 
 **問題2: 不整合に起因する 2 つの下流障害**
 
@@ -30,7 +30,7 @@ FR-018（per-mesh activation.geojson 統合）のレビューで、入力に統�
 **運用要件: 広域解析の待ち時間中の可視化確認**
 
 広域解析（[FR-014](../20_SRS.md#fr-014-広域結合解析オーケストレーション)）は計算が重く待ち時間が
-長い。人間はその間、各世代の `merged_activation.geojson` を地理院地図で確認し、
+長い。人間はその間、各世代の `merged_peak.geojson` を地理院地図で確認し、
 「コルが確定したピークとそのゾーン」を目視し、未確定ピークのおおよその位置に当たりをつけたい。
 FR-018 を最終段で 1 回だけ実行するとこの途中経過がすべて失われる。FR-018（ポリゴン統合＋絞り込み）
 は FR-014 に比して**軽処理**であり、毎ループ再生成してもコストは無視できる。
@@ -50,11 +50,11 @@ FR-018 を最終段で 1 回だけ実行するとこの途中経過がすべて�
 
 - FR-018 の入力に「統合ピーク候補 work CSV（`merged_peak.csv`）」を**必須**で追加する。
   per-mesh GeoJSON を統合した後、`merged_peak.csv` に存在する `peak_lat`/`peak_lon` の
-  ポリゴンのみを採用し、`merged_activation.geojson` を最終ピーク集合と一致させる。
+  ポリゴンのみを採用し、`merged_peak.geojson` を最終ピーク集合と一致させる。
 - FR-018 の再入可能性を「フェーズ2-2 実行前の 1 回のみ」から
-  「**FR-008 とセットで FR-022 ループ内を毎回再入し、その都度 `merged_activation.geojson` を
+  「**FR-008 とセットで FR-022 ループ内を毎回再入し、その都度 `merged_peak.geojson` を
   再生成する**」に変更する。最終段は FR-008 → FR-018 → FR-009 の並びとなる。
-- `merged_activation.geojson` は同一ファイルを毎世代**上書き**して最新状態を保持する
+- `merged_peak.geojson` は同一ファイルを毎世代**上書き**して最新状態を保持する
   （世代別履歴の保存はしない）。
 - 形状＝GeoJSON / 属性＝CSV の役割分担（[ADR-SRS-022](ADR-SRS-022-per-mesh-geojson-property-design.md)）は
   維持する。FR-018 は CSV の属性を GeoJSON に取り込まず、ピーク集合の絞り込みにのみ
@@ -74,7 +74,7 @@ FR-018 を最終段で 1 回だけ実行するとこの途中経過がすべて�
 **Y: FR-018 は全ポリゴンを保持し、絞り込みを FR-009 の join 時に委ねる**
 
 FR-018 は全ポリゴン統合のままとし、FR-009 が `merged_peak.csv` をマスターに join して
-非対応ポリゴン（orphan）を弾く案。却下。`merged_activation.geojson` 単体が最終集合と一致しない
+非対応ポリゴン（orphan）を弾く案。却下。`merged_peak.geojson` 単体が最終集合と一致しない
 ため可視化が不正確になり、問題2(A) の `is_area_incomplete` 母集団ズレも解消されない。絞り込みの
 責務を形状生成側（FR-018）に置くほうが、中間成果物が自己完結し下流が単純になる。
 
@@ -82,11 +82,11 @@ FR-018 は全ポリゴン統合のままとし、FR-009 が `merged_peak.csv` �
 
 - **FR-018**: 入力に `merged_peak.csv` を必須追加。説明部に絞り込みロジック・ループ内再入・
   毎世代上書き再生成・`is_area_incomplete` 母集団が絞り込み後集合である旨を明記。
-- **FR-009**: `merged_activation.geojson` が最終ピーク集合と一致するため orphan ポリゴンは
+- **FR-009**: `merged_peak.geojson` が最終ピーク集合と一致するため orphan ポリゴンは
   発生しない旨を明文化（問題2(B) を仕様で固定）。
 - **データフロー俯瞰図・FR トレーサビリティ表**: FR-018 を FR-022 ループ内（FR-008 の直後）に
   配置し直す。
-- **可視化への波及**: 各世代で `merged_activation.geojson` が更新され、人間が地理院地図で
+- **可視化への波及**: 各世代で `merged_peak.geojson` が更新され、人間が地理院地図で
   途中経過を確認できる。可視化を見て解析を途中中断するシナリオは本 ADR のスコープ外（追って検討）。
 - **コード追従（別タスク）**: per-mesh GeoJSON 統合スクリプトに `merged_peak.csv` による
   絞り込みと、FR-022 ループ内での FR-008 とセットの再実行を実装する。

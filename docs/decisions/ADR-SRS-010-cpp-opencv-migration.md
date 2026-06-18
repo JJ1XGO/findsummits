@@ -72,7 +72,7 @@ ADR-SRS-002（DEM 階層フォールバック）・ADR-SRS-004（L14 max pooling
 | Phase 1 | ビルド基盤の C++ 化（Makefile を g++ + pkg-config 化）<br>`elevation.c` を C++ + `cv::imread` 化 | 中 | **タイル PNG デコード後の標高 float 値が現行 libpng 実装と完全一致**すること |
 | Phase 2 | `mesh.c`, `unionfind.c`, `analyze.c`, `mesh_analyze.c`, `main.c` および tests/ を C++ 翻訳<br>（malloc → std::vector、構造体 → class への機械的変換主体） | 大 | 既存テスト（`test_mesh_analyze`, `test_analyze`）が全通過 + 既知メッシュの per-mesh CSV が現行と完全一致 |
 | Phase 3 | FR-015 標高地形図を `cv::applyColorMap` + `cv::resize` + `cv::imwrite` で書き直し | 小 | 既存出力との視覚比較（同等の可読性であれば可） |
-| Phase 4 | FR-016 を `cv::floodFill` + `cv::findContours` で新規実装 | 中 | per-mesh `<meshcode>_activation.geojson` を実メッシュで出力し、地理院地図上で目視確認 |
+| Phase 4 | FR-016 を `cv::floodFill` + `cv::findContours` で新規実装 | 中 | per-mesh `<meshcode>.geojson` を実メッシュで出力し、地理院地図上で目視確認 |
 
 Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加は伴わない。Phase 3 は内部実装の置換のみで仕様変更なし。Phase 4 で初めて FR-016 として新機能を追加する。
 

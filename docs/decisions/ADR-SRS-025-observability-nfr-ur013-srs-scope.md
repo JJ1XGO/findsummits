@@ -17,9 +17,9 @@ UR-013 が要求する内容は性質の異なる2つの要求に分解できる
    現行 GeoJSON はコル座標を持たない。[ADR-SRS-022](ADR-SRS-022-per-mesh-geojson-property-design.md) の join 方式）
 
 ① の出力実体は既に SRS に存在する:
-- [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) が per-mesh アクティベーションゾーン GeoJSON を物理ファイルとして出力する
-- [FR-018](../20_SRS.md#fr-018-per-mesh-activationgeojson-統合) が統合済みピーク域 GeoJSON `merged_activation.geojson` を世代ごとに上書き再生成する
-- `merged_activation.geojson` はデバッグ・差分検査用に物理出力を残す仕様になっている
+- [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) が per-mesh ピーク候補 GeoJSON を物理ファイルとして出力する
+- [FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合) が統合ピーク候補 GeoJSON `merged_peak.geojson` を世代ごとに上書き再生成する
+- `merged_peak.geojson` はデバッグ・差分検査用に物理出力を残す仕様になっている
 
 足りていたのは「なぜこれを物理出力するか・ループ内再入が必要か」を裏付ける根拠（URD/SRS レベルの要件）だけであった。
 
@@ -38,7 +38,7 @@ NFR として扱う根拠: ① は「特定のフィーチャを追加する」�
 
 **(b) 新規 FR は起こさない**
 
-①の出力実体（per-mesh GeoJSON・merged_activation.geojson の物理出力）は既存 FR で充足済み。
+①の出力実体（per-mesh GeoJSON・merged_peak.geojson の物理出力）は既存 FR で充足済み。
 機能を追加する必要はなく、根拠付けと相互リンクのみで対応できる。
 - FR-018 の「再入可能性」説明に NFR-009 / UR-013 への参照を追加
 
@@ -64,7 +64,7 @@ NFR として扱う根拠: ① は「特定のフィーチャを追加する」�
 
 **3. 専用の「中間可視化コンポーネント」FR を新設する案（却下）**
 
-per-mesh GeoJSON・merged_activation.geojson を一括で扱う専用 FR を新設する案。
+per-mesh GeoJSON・merged_peak.geojson を一括で扱う専用 FR を新設する案。
 現状の物理出力は既存 FR の副産物として自然に生成されており、専用コンポーネントを
 導入する実装上の必要性がない。過剰設計のため却下。
 

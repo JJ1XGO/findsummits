@@ -25,7 +25,7 @@ UR-013 が要求する可視化の具体的な内容（ユーザー確認済み�
 
 ### 追加フィーチャ
 
-FR-016（per-mesh GeoJSON）・FR-018（merged_activation.geojson）の両出力に、既存のゾーンポリゴンに加えて
+FR-016（per-mesh GeoJSON）・FR-018（merged_peak.geojson）の両出力に、既存のゾーンポリゴンに加えて
 以下のフィーチャを**加算的に追加**する（既存の 4 プロパティ・ポリゴン設計は変更しない）。
 
 | feature_type | geometry | 追加条件 |
@@ -57,7 +57,7 @@ FR-016（per-mesh GeoJSON）・FR-018（merged_activation.geojson）の両出力
 
 ### FR-009 への帰結
 
-merged_activation.geojson が非ポリゴンフィーチャ（Point・LineString）を含むようになるため、
+merged_peak.geojson が非ポリゴンフィーチャ（Point・LineString）を含むようになるため、
 FR-009 の point-in-polygon 処理は `feature_type ∈ {activation_zone, delete_zone}` のポリゴンフィーチャに
 絞って実行する（Point・LineString を誤って評価しない）。
 
@@ -77,7 +77,7 @@ merged_viewer.html を拡張し、FR-016/FR-018 の中間 GeoJSON を読み込�
 
 **B: 可視化専用に別ファイルを分離**
 
-merged_activation.geojson はポリゴン専用に維持し、点・線を別ファイル（例: merged_peaks.geojson）として出力する案。
+merged_peak.geojson はポリゴン専用に維持し、点・線を別ファイル（例: merged_peaks.geojson）として出力する案。
 ファイルが増えてドラッグ&ドロップ回数が増える。ユーザーは 1 ファイル確認を希望したため却下。
 
 **C: コル座標を属性のみで付与（幾何なし）**
@@ -87,9 +87,9 @@ GeoJSON の properties に `col_lat`/`col_lon` を追加するだけで点・線
 
 ## Consequences
 
-- **FR-016**: per-mesh activation.geojson に peak/key_col Point・peak_col_link LineString を追加
+- **FR-016**: per-mesh ピーク候補 GeoJSON（`3-<meshcode>.geojson`）に peak/key_col Point・peak_col_link LineString を追加
   （コルは key_col_resolved=true のみ。地理院地図スタイル属性付き）。コード追従: mesh_analyze.c の GeoJSON 出力拡張（HLD/COD）
-- **FR-018**: merged_activation.geojson に merged_peak.csv 由来の peak/key_col Point・peak_col_link LineString を追加
+- **FR-018**: merged_peak.geojson に merged_peak.csv 由来の peak/key_col Point・peak_col_link LineString を追加
   （独立峰の確定コルも含む）。コード追従: merge.py の GeoJSON 統合処理追従（HLD/COD）
 - **FR-009**: point-in-polygon を `feature_type ∈ {activation_zone, delete_zone}` のポリゴンに絞る注記を追加。コード追従: HLD/COD
 - **NFR-009**: 「保証範囲外」の記述を削除し、本 ADR を参照してスコープ内に改訂

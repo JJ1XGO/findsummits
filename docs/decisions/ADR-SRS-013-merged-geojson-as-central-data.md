@@ -10,13 +10,13 @@
 フェーズ3 末尾の中心データが以下のように分割されており、設計上の課題を生んでいた：
 
 - `merged.csv`（FR-012 規定）: ピーク・サミットの属性データ（Point のみ）
-- `merged_activation.geojson`（FR-018/6.11 規定）: ポリゴン（活性化ゾーン・delete判定ゾーン）のみ・Point フィーチャなし
+- `merged_peak.geojson`（FR-018/6.11 規定）: ポリゴン（活性化ゾーン・delete判定ゾーン）のみ・Point フィーチャなし
 
 最終的な `merged.geojson` は FR-013（GeoJSON/HTML ビューア生成）で上記 2 ファイルを統合して組み立てる構造であった。
 
 ### 課題
 
-1. **rationale プロパティの格納場所問題**: 申請書 XLSX の列 I（根拠テキスト）を HTML ビューアで編集可能にするには、`rationale` プロパティをピーク・サミットフィーチャに持たせる必要がある。`merged_activation.geojson` は Point フィーチャを持たず、`merged.csv` にカラム追加する案はポリゴンを持てないため中心データにはなれない
+1. **rationale プロパティの格納場所問題**: 申請書 XLSX の列 I（根拠テキスト）を HTML ビューアで編集可能にするには、`rationale` プロパティをピーク・サミットフィーチャに持たせる必要がある。`merged_peak.geojson` は Point フィーチャを持たず、`merged.csv` にカラム追加する案はポリゴンを持てないため中心データにはなれない
 
 2. **中心データのイメージ乖離**: ユーザーの本来のイメージは「バッチ処理完了時に全結果が集約した 1 つの中心データが出来ていて、HTML ビューアはそれを表示するだけ」というものだったが、現設計では 2 ファイルを FR-013 で統合するまで中心データが存在しなかった
 
@@ -34,7 +34,7 @@ FR-009（SOTA リスト突合・match_status 判定）の出力を `merged.geojs
 |---|---|
 | `merged.geojson` | **フェーズ3 末尾の中心成果物**（全 Point + 全 Polygon + rationale + 不備フラグを含む） |
 | `merged.csv` | merged.geojson から派生する**エビデンス CSV**（UR-005 対応）。`rationale` 列は含めない |
-| `merged_activation.geojson` | per-mesh activation 統合の**内部中間ファイル**（デバッグ・差分検査用）。物理出力は残す |
+| `merged_peak.geojson` | per-mesh activation 統合の**内部中間ファイル**（デバッグ・差分検査用）。物理出力は残す |
 | `merged_viewer.html` | フェーズ4 で `merged.geojson` のみを入力に生成（責務縮小） |
 
 ### merged.geojson のフィーチャ構成
@@ -72,7 +72,7 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 
 ### 案 A: 現状維持（2 ファイル分割）（不採用）
 
-`merged.csv` + `merged_activation.geojson` の 2 ファイル分割を維持し、FR-013 で統合する案。`rationale` プロパティの格納場所問題が解決できない。`merged_activation.geojson` は Point フィーチャを持たないため、ピーク・サミットの rationale を持てない。`merged.csv` に rationale 列を追加しても、ポリゴンフィーチャの rationale との統一的な管理ができない。
+`merged.csv` + `merged_peak.geojson` の 2 ファイル分割を維持し、FR-013 で統合する案。`rationale` プロパティの格納場所問題が解決できない。`merged_peak.geojson` は Point フィーチャを持たないため、ピーク・サミットの rationale を持てない。`merged.csv` に rationale 列を追加しても、ポリゴンフィーチャの rationale との統一的な管理ができない。
 
 ### 案 B: GeoJSON 中心化 + rationale を localStorage のみに保持（不採用）
 
@@ -95,7 +95,7 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 | **FR-011** | ※2/※4/※5 を FR-009 参照に変更。XLSX 列 I は rationale プロパティを転記 |
 | **FR-012** | 「merged.geojson から派生する CSV」と再定義。`rationale` 列を含めない |
 | **FR-013** | merged.geojson 生成をフェーズ3 末尾に前倒し。フェーズ4 は HTML ビューア生成のみ |
-| **FR-018** | 出力 `merged_activation.geojson` を「内部中間ファイル」と明記 |
+| **FR-018** | 出力 `merged_peak.geojson` を「内部中間ファイル」と明記 |
 | **6.4/6.5/6.11** | 出力物・中間ファイルの役割を新方針に合わせて再定義 |
 
 ### 既存 ADR への波及

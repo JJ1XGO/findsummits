@@ -193,7 +193,7 @@
         <mxCell id="7kW802zkPkAvV46Z_aIt-39" connectable="0" parent="1" style="group" value="" vertex="1">
           <mxGeometry height="78" width="145" x="409" y="1120" as="geometry" />
         </mxCell>
-        <mxCell id="7kW802zkPkAvV46Z_aIt-40" parent="7kW802zkPkAvV46Z_aIt-39" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="merged_activation.geojson" vertex="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-40" parent="7kW802zkPkAvV46Z_aIt-39" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontColor=#333333;fontSize=10;" value="merged_peak.geojson" vertex="1">
           <mxGeometry height="32.5" width="145" y="45.5" as="geometry" />
         </mxCell>
         <mxCell id="7kW802zkPkAvV46Z_aIt-41" parent="7kW802zkPkAvV46Z_aIt-39" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.json" value="" vertex="1">

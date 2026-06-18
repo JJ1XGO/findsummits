@@ -9,8 +9,8 @@ FR-016（ピーク域ポリゴン生成）レビューで以下の2つの設計�
 
 **問題1: per-mesh GeoJSON の出力プロパティ未定義**
 
-FR-016 が生成する per-mesh アクティベーションゾーン GeoJSON（`3-<meshcode>_activation.geojson`）の
-Feature properties が未定義だった。FR-009（SOTA リスト突合）は merged_activation.geojson と
+FR-016 が生成する per-mesh ピーク候補 GeoJSON（`3-<meshcode>.geojson`）の
+Feature properties が未定義だった。FR-009（SOTA リスト突合）は merged_peak.geojson と
 merged_peak.csv の2入力を受け取るが、両者をどのキーで紐付けるかが規定されていなかった。
 
 **問題2: FR-016 の入力ソースが CSV と不整合を起こす構造だった**
@@ -35,7 +35,7 @@ per-mesh GeoJSON の各 Feature `properties` には以下の4フィールドの�
 - `area_complete`（bool）: ポリゴンが解析範囲内で完結しているか
 
 プロミネンス・コル標高・ピーク標高・`key_col_resolved` 等の属性は per-mesh CSV（FR-007）側に
-集約する。FR-009 は `peak_lat`/`peak_lon` をキーに merged_peak.csv と merged_activation.geojson を
+集約する。FR-009 は `peak_lat`/`peak_lon` をキーに merged_peak.csv と merged_peak.geojson を
 join して属性を参照する（形状＝GeoJSON / 属性＝CSV の役割分担）。
 
 join キーはピクセル→緯度経度の決定論的変換により CSV と GeoJSON の値が完全一致する
@@ -82,6 +82,6 @@ FR-007 のフィルタ変更が FR-016 に自動伝播しないため保守性�
 - **FR-007**: 出力にフィルタ後ピーク候補・コル情報リスト（内部トランザクション）を追加。
   FR-004 が FR-016 に渡す旨を注記（FR-007 自身は呼び出し制御を持たない）。
 - **FR-018**: 統合キー = `peak_lat`/`peak_lon` を明記。
-- **FR-009**: merged_peak.csv と merged_activation.geojson の join キー = `peak_lat`/`peak_lon` を明記。
+- **FR-009**: merged_peak.csv と merged_peak.geojson の join キー = `peak_lat`/`peak_lon` を明記。
 - **コード追従（別タスク）**: mesh_analyze.c の GeoJSON 出力プロパティ・merge.py の join 実装を本 ADR に合わせて修正する。
 - **可視化フィーチャ追加（[ADR-SRS-026](ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）**: UR-013 を満たすため、ゾーンポリゴンに加えてピーク/コル Point・peak→col LineString を中間 GeoJSON に追加する。本 ADR の join 方式（4 プロパティ・ポリゴン設計）は不変で、フィーチャを加算的に追加する。

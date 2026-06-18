@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-18",
-    "counter": 110
+    "counter": 113
   },
   "issues": [
     {
@@ -3577,6 +3577,66 @@
           "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
         }
       ]
+    },
+    {
+      "id": "ISSUE-111",
+      "title": "全国一括突合の確定・FR-010 削除・範囲外/DEM 無効フラグ廃止",
+      "description": "FR-009 設計レビューで、部分解析前提の機構（FR-010・メッシュリスト入力・is_out_of_range_summit・is_dem_invalid_summit）が全国一括運用では不要と判明。ユーザー確認を経て全国一括突合を運用前提に確定し、不要機構を削除。ADR-SRS-028 に決定を記録。SRS に反映済み。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": "全国一括突合を運用前提に確定（ADR-SRS-028）。FR-010 削除・FR-009 メッシュリスト入力削除・is_out_of_range_summit/is_dem_invalid_summit 削除を SRS に反映。残る不備フラグは is_unmatched_summit/is_area_incomplete/is_key_col_unresolved の 3 つに限定。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
+      "history": []
+    },
+    {
+      "id": "ISSUE-112",
+      "title": "FR-009 異常終了フローの一本化（全判定後にまとめて検査）",
+      "description": "FR-009 の異常終了制御が「1件見つかった時点で即時停止」と「全判定後にまとめて検査」の 2 通りが混在していた。全判定後にまとめて検査する方式に一本化し、SRS に反映済み（ADR-SRS-028 の Consequences に含む）。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": "全サミット評価完了後に不備フラグを一括検査し、いずれか true なら必ず出力してから停止する方式に統一。SRS FR-009 の異常終了制御セクションを更新済み。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
+      "history": []
+    },
+    {
+      "id": "ISSUE-113",
+      "title": "GeoJSON ファイル名を CSV と同 basename に統一（_activation 廃止）",
+      "description": "ADR-SRS-026 により中間 GeoJSON が多目的ファイルになったため _activation という名称が実態より狭くなった。CSV との basename 不揃いも問題。3-<meshcode>_activation.geojson → 3-<meshcode>.geojson、merged_activation.geojson → merged_peak.geojson に変更。ADR-SRS-029 に決定を記録。SRS・URD・関連 ADR すべて反映済み。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Opus",
+      "resolution": "per-mesh: 3-<meshcode>_activation.geojson → 3-<meshcode>.geojson、merged: merged_activation.geojson → merged_peak.geojson。和名も更新（per-mesh アクティベーションゾーン GeoJSON → per-mesh ピーク候補 GeoJSON、統合済みピーク域 GeoJSON → 統合ピーク候補 GeoJSON）。feature_type 値（activation_zone/delete_zone）は据え置き（ADR-SRS-029）。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
+      "history": []
     }
   ]
 }
