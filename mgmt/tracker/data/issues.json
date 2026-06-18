@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-18",
-    "counter": 107
+    "counter": 110
   },
   "issues": [
     {
@@ -3206,14 +3206,23 @@
       "created_date": "2026-06-15",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "SRS FR-016/018/009 を join 方式に整合して更新。ADR-SRS-022 作成済み。",
       "notes": null,
       "resolved_date": "2026-06-15",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        }
+      ]
     },
     {
       "id": "ISSUE-101",
@@ -3226,14 +3235,23 @@
       "created_date": "2026-06-15",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "FR-016 の詳細説明に許容根拠（3×3 でコル未検出＝実質プロミネンス大で max_drop キャップが実効的、過大化しない）を追記済み。",
       "notes": null,
       "resolved_date": "2026-06-15",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        }
+      ]
     },
     {
       "id": "ISSUE-102",
@@ -3246,14 +3264,23 @@
       "created_date": "2026-06-15",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "SRS 2.2.1 データ辞書に「アクティベーションゾーン標高差」を追加（デフォルト 25m・SOTA 規定値）。FR-016 の 25m 記述をデータ辞書参照化済み。GLOSSARY のアクティベーションゾーン定義にもデータ辞書リンクを追記済み。",
       "notes": null,
       "resolved_date": "2026-06-15",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        }
+      ]
     },
     {
       "id": "ISSUE-103",
@@ -3266,12 +3293,12 @@
       "created_date": "2026-06-16",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-SRS-023として記録。SRS FR-008/FR-022/データ辞書7.2へ反映済み。",
       "notes": "Opus 4.8によるレビュー討議で決着。",
       "resolved_date": "2026-06-16",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "996f27de-7c19-462e-817d-31f26f3e41f6",
       "history": [
         {
@@ -3281,6 +3308,14 @@
           "to": "対応完了",
           "comment": "SRS FR-008/FR-022/データ辞書7.2へ反映、ADR-SRS-023作成完了",
           "session_id": "996f27de-7c19-462e-817d-31f26f3e41f6"
+        },
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
         }
       ]
     },
@@ -3295,12 +3330,12 @@
       "created_date": "2026-06-16",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": "ADR-SRS-024（fr018-loop-reentry-and-peak-filter）で決定。SRS本文へ反映後 close。",
       "notes": null,
       "resolved_date": "2026-06-16",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c",
       "history": [
         {
@@ -3318,6 +3353,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-024 作成・SRS本文（FR-018入力/説明/再入・FR-009 orphan明記・処理フロー俯瞰図）反映完了",
           "session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c"
+        },
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
         }
       ]
     },
@@ -3332,12 +3375,12 @@
       "created_date": "2026-06-16",
       "stage": "URD",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "UR-013新設・ADR-URD-016作成で決着。",
       "notes": null,
       "resolved_date": "2026-06-16",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c",
       "history": [
         {
@@ -3355,6 +3398,14 @@
           "to": "対応完了",
           "comment": "UR-013追加・ADR-URD-016作成完了",
           "session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c"
+        },
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
         }
       ]
     },
@@ -3369,12 +3420,12 @@
       "created_date": "2026-06-16",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
-      "resolution": null,
+      "resolution": "ADR-SRS-026 を新規作成し、中間 GeoJSON に peak/key_col の Point フィーチャと peak_col_link LineString を追加する設計で決着。SRS FR-016/FR-018/FR-009/NFR-009 に反映し、ADR-SRS-022 に前方リンクを追加。地理院地図のドラッグ&ドロップ表示を前提に、スタイル属性を properties に埋め込む近似方式を採用（▲▽の厳密再現は非保証）。コード追従（mesh_analyze.c・merge.py・FR-009 ポリゴン絞り込み）は todo.md に転記。",
       "notes": null,
       "resolved_date": "2026-06-18",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c",
       "history": [
         {
@@ -3384,6 +3435,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-026作成（中間GeoJSONへのpeak/key_col Point・peak_col_link LineString追加）。SRS FR-016/FR-018/FR-009/NFR-009に反映済み。ADR-SRS-022に前方リンク追加。コード追従（mesh_analyze.c・merge.py・FR-009絞り込み）はtodo.mdに転記。",
           "session_id": "77763e58-b333-44f9-8204-dbf34abc8c06"
+        },
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
         }
       ]
     },
@@ -3398,12 +3457,12 @@
       "created_date": "2026-06-17",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
-      "resolution": null,
+      "resolution": "NFR-009（観測可能性）を新設し、FR-016/FR-018 と相互リンクを張ることで UR-013→SRS のトレースを確立。ADR-SRS-025 を作成。ピーク↔コル対応の表示方式は ISSUE-106 としてスコープ外を明示。",
       "notes": null,
       "resolved_date": "2026-06-17",
-      "verified_date": null,
+      "verified_date": "2026-06-18",
       "created_session_id": "fb33609e-0478-4cf0-9bfe-b3c243176b33",
       "history": [
         {
@@ -3421,6 +3480,101 @@
           "to": "対応完了",
           "comment": "NFR-009新設・FR-018への参照追加・ADR-SRS-025作成でUR-013→SRSのトレースを確立。ピーク↔コル対応はISUE-106としてスコープ外を明示。",
           "session_id": "fb33609e-0478-4cf0-9bfe-b3c243176b33"
+        },
+        {
+          "date": "2026-06-18T09:41:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] ユーザー確認完了（2026-06-18）",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-108",
+      "title": "FR-022 純化・FR-023 解析パイプライン制御新設（SRS反映完了）",
+      "description": "FR-022レビュー指摘2: FR-022がN エスカレーションループ制御・FR-014呼び出し・FR-008再実行を抱えており判定とオーケストレーションが混在。FR-022を純粋判定に純化し、新FR-023（解析パイプライン制御・shell）でPhase2/3/4統括・N一元管理。Nは明示引数。生成段階タグ命名規則（key_col_unresolved_peaks-<N>.csv）確立。",
+      "type": "設計",
+      "priority": "高",
+      "category": "merge.py",
+      "reporter": null,
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "ADR-SRS-027・SRS §4.3 新設FR-023・FR-022大幅縮小・FR-014入力変更として反映完了（2026-06-18）。コード追従はtodo.md管理。",
+      "notes": null,
+      "resolved_date": "2026-06-18",
+      "verified_date": null,
+      "created_session_id": "a0cc3911-9d82-4bed-9451-11356666b54d",
+      "history": [
+        {
+          "date": "2026-06-18T14:01:35",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS・ADR 編集完了（2026-06-18）。ADR-SRS-027新設・SRS §4.3 FR-023新設・FR-022縮小・FR-014/FR-008入力更新・フェーズ表記統一。",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-109",
+      "title": "陸地最高峰海面確定を FR-022→FR-008 に移管（案B、SRS反映完了）",
+      "description": "FR-022レビュー指摘1: FR-022がエスカレーションループ内でFR-008再実行後に陸地最高峰確定を行う設計では、FR-008再実行のたびに確定が消えるバグがある。FR-008がmerged_peak.csv生成時に毎回陸地最高峰確定を適用する案B（FR-008所有）を採用。陸地最高峰リストをユーザー入力(7.1.4)→内部データ(7.2)に再分類。",
+      "type": "設計",
+      "priority": "高",
+      "category": "merge.py",
+      "reporter": null,
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "ADR-SRS-027・ADR-SRS-019改訂・SRS FR-008入力追加・7.1.4削除・7.2追加として反映完了（2026-06-18）。コード追従はtodo.md管理。",
+      "notes": null,
+      "resolved_date": "2026-06-18",
+      "verified_date": null,
+      "created_session_id": "a0cc3911-9d82-4bed-9451-11356666b54d",
+      "history": [
+        {
+          "date": "2026-06-18T14:01:35",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS・ADR 編集完了（2026-06-18）。ADR-SRS-027・ADR-SRS-019改訂・FR-008入力追加・7.1.4削除・7.2追加。",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-110",
+      "title": "フェーズ番号統一（フェーズ2-1/2-2→フェーズ2/3、SRS反映完了）",
+      "description": "SRS 3.3.1マトリクス（フェーズ2=3×3解析・フェーズ3=広域解析）が正であるが、3.3.2俯瞰図・各FR本文では「フェーズ2-1/フェーズ2-2/フェーズ3（統合・判定）」という別表記が混在していた。3.3.1マトリクスを正として全体を統一。統合・判定は番号なしで「統合時(FR-008)」と参照。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "SRS全体のフェーズ表記を統一。旧フェーズ2-1→フェーズ2、旧フェーズ2-2→フェーズ3、旧フェーズ3（統合）→統合時(FR-008)。反映完了（2026-06-18）。",
+      "notes": null,
+      "resolved_date": "2026-06-18",
+      "verified_date": null,
+      "created_session_id": "a0cc3911-9d82-4bed-9451-11356666b54d",
+      "history": [
+        {
+          "date": "2026-06-18T14:01:35",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS全フェーズ表記統一完了（2026-06-18）。",
+          "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
         }
       ]
     }

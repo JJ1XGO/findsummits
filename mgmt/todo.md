@@ -18,6 +18,26 @@
 
 ### 高
 
+- [ ] **(ISSUE-108 コード追従) FR-023 shell スクリプト新規実装**
+  - Phase2（FR-004 全メッシュ）→ FR-008+FR-018 → FR-022 → N=4/5/6 ループ（FR-014→FR-008+FR-018→FR-022）→ Phase4（FR-009）を制御する shell スクリプト
+  - N カウンタを一元管理。FR-014 に N を明示引数で渡す
+  - 各フェーズ単独起動オプション・自動ループオプションを実装
+  - 仕様詳細: `docs/20_SRS.md` FR-023・`docs/decisions/ADR-SRS-027-fr022-purification-fr023-pipeline-control.md`
+
+- [ ] **(ISSUE-108 コード追従) FR-022 コード純化（N ループ・陸地最高峰・FR-014呼び出し削除）**
+  - `scripts/merge.py` の FR-022 相当処理からエスカレーションループ・FR-014 呼び出し・FR-008 再実行・陸地最高峰処理を除去
+  - 出力: `key_col_unresolved_peaks-<N>.csv`（N は呼び出し元から渡す）・未確定有無の返却のみ
+  - 仕様詳細: `docs/20_SRS.md` FR-022
+
+- [ ] **(ISSUE-108 コード追従) FR-014 入力変更: N は明示引数で受け取る（ファイル名から抽出しない）**
+  - `scripts/merge.py` または C エンジンの FR-014 相当処理で N をファイル名から導出せず、引数として受け取るよう修正
+  - 仕様詳細: `docs/20_SRS.md` FR-014 入力テーブル「解析範囲サイズ N」
+
+- [ ] **(ISSUE-109 コード追従) FR-008: 陸地最高峰リスト読み込みと海面確定処理を追加**
+  - `scripts/merge.py` の統合処理に `params/` 配下の陸地最高峰リスト読み込みを追加
+  - merged_peak.csv 生成時に陸地最高峰リスト一致ピークを `key_col_resolved=true`・`col_elev=0` に更新する処理を追加
+  - 仕様詳細: `docs/20_SRS.md` FR-008 入力・説明（陸地最高峰の海面確定）
+
 - [ ] **(元 ISSUE-106) コード追従: 中間 GeoJSON へのピーク/コル可視化フィーチャ追加（ADR-SRS-026）**
   - `mesh_analyze.c` の GeoJSON 出力に `feature_type="peak"` Point・`feature_type="key_col"` Point（key_col_resolved=true のみ）・`feature_type="peak_col_link"` LineString を追加。地理院地図スタイル属性付与（色スキームは HLD で規定）
   - `merge.py` の `merged_activation.geojson` 生成処理に同様のフィーチャを追加（座標元は `merged_peak.csv` の col_lat/col_lon）
