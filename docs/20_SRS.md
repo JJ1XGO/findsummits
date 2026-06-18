@@ -655,7 +655,7 @@
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| per-mesh アクティベーションゾーン GeoJSON | 内部データ | GeoJSON | 2 種類のポリゴンを同一ファイルに収録。ファイル: `$DATA_DIR/results/csv/<解析識別子>_activation.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。各ポリゴン Feature のプロパティは下記「詳細」共通仕様参照 |
+| per-mesh アクティベーションゾーン GeoJSON | 内部データ | GeoJSON | 2 種類のゾーンポリゴン・ピーク/コル Point・peak→col 接続線を同一ファイルに収録。ファイル: `$DATA_DIR/results/csv/<解析識別子>_activation.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。各ポリゴン Feature のプロパティは下記「詳細」共通仕様参照。Point/LineString の仕様は下記「可視化フィーチャ」参照 |
 
 **説明**:
 
@@ -674,6 +674,10 @@
     - **Flood Fill 閾値**: Key コルの標高と「ピーク標高 − **delete_zone 比高上限**」のどちらか高い方以上を対象として Flood Fill する。`key_col_resolved=false`（Key コルの標高が未確定）のピークでは「ピーク標高 − **delete_zone 比高上限**」を下限として使用する（上限キャップにより、プロミネンス未確定でもポリゴン生成が可能）
     - **コル確定後の再生成は行わない**（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）: `key_col_resolved=false` のピークが [FR-014](#fr-014-広域結合解析オーケストレーション) 広域解析で後に Key コル確定（`key_col_resolved=true`）しても、delete判定ゾーンは通常 per-mesh で生成済みのものを使用し再生成しない。`key_col_resolved=false` になるのは 3×3 解析範囲（中心メッシュ＋隣接で約 20km 四方）内でコルが見つからない独立峰級＝実質プロミネンスが **delete_zone 比高上限** を大きく超えるピークであり、上限キャップが実効的に効くため確定後もゾーンは過大化しない
     - **area_complete の扱い**: 共通仕様の通り。**delete_zone 比高上限** 上限キャップにより、いずれかの 3×3 解析で必ず完結する想定
+  - **可視化フィーチャ（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）**: UR-013（[NFR-009](#nfr-009-観測可能性中間成果物の可視化)）を満たすため、ゾーンポリゴンに加えて以下の Point・LineString を同一ファイルに出力する。地理院地図へのドラッグ&ドロップで位置・ピーク↔コル対応を目視確認できる（地理院地図スタイル属性を `properties` に付与。色スキームは HLD で規定）:
+    - `feature_type="peak"`（Point）: フィルタ後ピーク候補リストの全採用ピーク座標
+    - `feature_type="key_col"`（Point）: `key_col_resolved=true` のピークのみコル座標。独立峰は出力しない
+    - `feature_type="peak_col_link"`（LineString）: `key_col` がある場合にピーク→コル接続線を出力
   - ファイル仕様は [FR-016](#fr-016-ピーク域ポリゴン生成) 出力仕様参照
 
 ---
@@ -734,7 +738,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 統合済みピーク域 GeoJSON（merged_activation.geojson） | 内部データ | GeoJSON | 内部中間ファイル。ファイル: `$DATA_DIR/results/merged_activation.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。[FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合に使用。同一ファイルを世代ごとに上書き再生成する（世代別履歴は保存しない）。デバッグ・差分検査用として物理出力は残す。詳細: [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md) |
+| 統合済みピーク域 GeoJSON（merged_activation.geojson） | 内部データ | GeoJSON | 内部中間ファイル。ファイル: `$DATA_DIR/results/merged_activation.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。ゾーンポリゴン・ピーク/コル Point・peak→col 接続線を収録。[FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合（ポリゴンのみ使用）および地理院地図上での中間確認（全フィーチャ）に使用。同一ファイルを世代ごとに上書き再生成する（世代別履歴は保存しない）。デバッグ・差分検査用として物理出力は残す。詳細: [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)・[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md) |
 
 **説明**:
 
@@ -744,6 +748,11 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - `area_complete=true` が（絞り込み後の）いずれのピークにも存在しない場合は [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグが true となり、後続の [FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は実施されない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
   - delete判定ゾーンポリゴン（`feature_type="delete_zone"`）も同様に統合する。同一ピーク座標で複数ある場合は activation zone と同じ方針（`area_complete=true` のものを採用）で処理する
   - **再入可能性（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）**: [FR-008](#fr-008-per-mesh-csv-統合) とセットで、コル充足判定（[FR-022](#fr-022-コル充足判定)）のループ内を毎回再入する。FR-008 が `merged_peak.csv` を再生成するたびに本機能も再実行され、その世代の `merged_peak.csv` で絞り込んだ `merged_activation.geojson` を上書き再生成する。広域解析（[FR-014](#fr-014-広域結合解析オーケストレーション)）は計算負荷が高く待ち時間が長いため、その間に人間が各世代の `merged_activation.geojson` を地理院地図上で確認できるようにすることが目的（コル確定済みピークのゾーン確認・未確定ピークの位置の見当付け）。本動作は [NFR-009](#nfr-009-観測可能性中間成果物の可視化) が根拠とする [UR-013](10_URD.md#ur-013) の実現手段
+  - **可視化フィーチャ（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）**: ゾーンポリゴンに加えて以下の Point・LineString を同一ファイルに出力する。座標元は `merged_peak.csv`（FR-008 出力）であり、広域解析で確定した独立峰のコルも含む:
+    - `feature_type="peak"`（Point）: `merged_peak.csv` の全採用ピーク座標
+    - `feature_type="key_col"`（Point）: `merged_peak.csv` で `col_lat`/`col_lon` が存在するピークのみコル座標
+    - `feature_type="peak_col_link"`（LineString）: `key_col` がある場合にピーク→コル接続線を出力
+    - 地理院地図スタイル属性を `properties` に付与し、地理院地図へのドラッグ&ドロップでピーク↔コル対応を目視確認できる（色スキームは HLD で規定）
 
 #### FR-022: コル充足判定
 
@@ -805,7 +814,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
   - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
   - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
-  - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-activationgeojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。merged_peak.csv と merged_activation.geojson の突合キーは `peak_lat`/`peak_lon`（join キー）であり、[FR-018](#fr-018-per-mesh-activationgeojson-統合) が GeoJSON Feature properties として保持する値と merged_peak.csv の列値が完全一致する（[ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。[FR-018](#fr-018-per-mesh-activationgeojson-統合) が当該世代の merged_peak.csv に絞り込んだ上で merged_activation.geojson を生成するため（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）、merged_peak.csv に対応しない孤立ポリゴン（orphan）は merged_activation.geojson に存在せず、本突合で誤って参照されることはない
+  - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-activationgeojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。merged_peak.csv と merged_activation.geojson の突合キーは `peak_lat`/`peak_lon`（join キー）であり、[FR-018](#fr-018-per-mesh-activationgeojson-統合) が GeoJSON Feature properties として保持する値と merged_peak.csv の列値が完全一致する（[ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。[FR-018](#fr-018-per-mesh-activationgeojson-統合) が当該世代の merged_peak.csv に絞り込んだ上で merged_activation.geojson を生成するため（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）、merged_peak.csv に対応しない孤立ポリゴン（orphan）は merged_activation.geojson に存在せず、本突合で誤って参照されることはない。**merged_activation.geojson にはポリゴン以外（`feature_type="peak"`/`"key_col"`/`"peak_col_link"` 等）のフィーチャも含まれるため、point-in-polygon は `feature_type ∈ {activation_zone, delete_zone}` のポリゴンフィーチャに絞って処理する**（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）
   - マッチング一意性: **プロミネンス最終フィルタ閾値**の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない（delete判定ゾーン内には縦走路上などで複数 SOTA サミットが含まれうるが、主ピーク特定アルゴリズム（[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)）で各サミットの主ピークが一意に決まる）
   - **市区町村判定**: 各ピーク（matched/new/dominant）および delete サミットの座標を [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成した市区町村単位の N03 前処理済み地域 GeoJSON と照合し、`municipality` カラム（例: "根室市"・"標津町"）を merged_summit.xlsx に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
   - **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-URD-007](decisions/ADR-URD-007-peak-match-status-terminology.md)、ポリゴン種別変更の経緯は [ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）:
@@ -1315,9 +1324,9 @@ matched / dominant のみ。
 ### NFR-009: 観測可能性（中間成果物の可視化）
 
 - **対応 UR**: [UR-013](10_URD.md#ur-013)
-- 解析パイプラインが各段階で生成する中間成果物（per-mesh アクティベーションゾーン GeoJSON（[FR-016](#fr-016-ピーク域ポリゴン生成)）・統合済みピーク域 GeoJSON `merged_activation.geojson`（[FR-018](#fr-018-per-mesh-activationgeojson-統合)））を、生成されたタイミングで物理ファイルとして出力し、地理院地図等の地図ソフトに読み込んで（手動ドラッグ＆ドロップ可）位置・形状の妥当性を目視確認できること
+- 解析パイプラインが各段階で生成する中間成果物（per-mesh アクティベーションゾーン GeoJSON（[FR-016](#fr-016-ピーク域ポリゴン生成)）・統合済みピーク域 GeoJSON `merged_activation.geojson`（[FR-018](#fr-018-per-mesh-activationgeojson-統合)））を、生成されたタイミングで物理ファイルとして出力し、地理院地図等の地図ソフトにドラッグ&ドロップして、ピーク・コル・ゾーン（アクティベーション/削除判定）の位置とそれらの**対応関係**の妥当性を目視確認できること
 - 中間 GeoJSON は申請エビデンス（[UR-006](10_URD.md#ur-006)）ではなく、開発・テスト・運用時の妥当性検証を目的とする。デバッグ・差分検査のため物理出力を残す（[FR-018](#fr-018-per-mesh-activationgeojson-統合) の `merged_activation.geojson` は世代ごとに上書き再生成）
-- **保証範囲外**: ピーク・コルの「対応関係」の精密な可視化（コル位置の地図表示）は本 NFR の対象外とし、別途 SRS 設計で扱う（現行 GeoJSON はコル座標を持たない。根拠: [ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)。検討課題: [ISSUE-106]）
+- 各中間 GeoJSON にはゾーンポリゴンに加え、ピーク Point（`feature_type="peak"`）・コル Point（`feature_type="key_col"`・コル確定済みのみ）・peak→col 接続線（`feature_type="peak_col_link"`）を同梱する。地理院地図スタイル属性を付与し、ドラッグ&ドロップ 1 回で全フィーチャを確認できる（凡例規約は [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) を踏襲。設計詳細: [ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）
 - 本 NFR の設計判断詳細: [ADR-SRS-025](decisions/ADR-SRS-025-observability-nfr-ur013-srs-scope.md)
 
 ---

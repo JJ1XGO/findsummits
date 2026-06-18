@@ -84,3 +84,4 @@ FR-007 のフィルタ変更が FR-016 に自動伝播しないため保守性�
 - **FR-018**: 統合キー = `peak_lat`/`peak_lon` を明記。
 - **FR-009**: merged_peak.csv と merged_activation.geojson の join キー = `peak_lat`/`peak_lon` を明記。
 - **コード追従（別タスク）**: mesh_analyze.c の GeoJSON 出力プロパティ・merge.py の join 実装を本 ADR に合わせて修正する。
+- **可視化フィーチャ追加（[ADR-SRS-026](ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）**: UR-013 を満たすため、ゾーンポリゴンに加えてピーク/コル Point・peak→col LineString を中間 GeoJSON に追加する。本 ADR の join 方式（4 プロパティ・ポリゴン設計）は不変で、フィーチャを加算的に追加する。
