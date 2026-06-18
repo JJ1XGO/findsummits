@@ -1,3 +1,12 @@
+# 計画: ISSUE-106 — UR-013（中間可視化）ピーク↔コル対応の表示方式（完了）
+
+FR-016/FR-018 の中間 GeoJSON に peak/key_col Point・peak_col_link LineString を追加（ADR-SRS-026）。
+SRS FR-016/FR-018/FR-009/NFR-009 反映・ADR-SRS-022 前方リンク追加。ISSUE-106 対応完了。
+ISSUE-100/101/102 の resolved_date を 2026-06-15 に補完。
+コード追従（mesh_analyze.c・merge.py・FR-009絞り込み）は todo.md に転記済み。
+
+---
+
 # 計画: UR-013（観測可能性）の SRS 反映 第1段（完了）
 
 NFR-009「観測可能性（中間成果物の可視化）」新設・FR-018トレース追加・ADR-SRS-025作成。

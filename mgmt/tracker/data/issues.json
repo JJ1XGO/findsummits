@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-17",
+    "last_updated": "2026-06-18",
     "counter": 107
   },
   "issues": [
@@ -3210,7 +3210,7 @@
       "assignee": "Sonnet",
       "resolution": "SRS FR-016/018/009 を join 方式に整合して更新。ADR-SRS-022 作成済み。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-15",
       "verified_date": null,
       "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
       "history": []
@@ -3230,7 +3230,7 @@
       "assignee": "Sonnet",
       "resolution": "FR-016 の詳細説明に許容根拠（3×3 でコル未検出＝実質プロミネンス大で max_drop キャップが実効的、過大化しない）を追記済み。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-15",
       "verified_date": null,
       "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
       "history": []
@@ -3250,7 +3250,7 @@
       "assignee": "Sonnet",
       "resolution": "SRS 2.2.1 データ辞書に「アクティベーションゾーン標高差」を追加（デフォルト 25m・SOTA 規定値）。FR-016 の 25m 記述をデータ辞書参照化済み。GLOSSARY のアクティベーションゾーン定義にもデータ辞書リンクを追記済み。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-15",
       "verified_date": null,
       "created_session_id": "bf5319a9-2b73-47f1-9b25-12baa5928128",
       "history": []
@@ -3369,14 +3369,23 @@
       "created_date": "2026-06-16",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-18",
       "verified_date": null,
       "created_session_id": "db99eba9-ab2f-4c5a-a434-42a5710eb87c",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-18T09:32:41",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "ADR-SRS-026作成（中間GeoJSONへのpeak/key_col Point・peak_col_link LineString追加）。SRS FR-016/FR-018/FR-009/NFR-009に反映済み。ADR-SRS-022に前方リンク追加。コード追従（mesh_analyze.c・merge.py・FR-009絞り込み）はtodo.mdに転記。",
+          "session_id": "77763e58-b333-44f9-8204-dbf34abc8c06"
+        }
+      ]
     },
     {
       "id": "ISSUE-107",

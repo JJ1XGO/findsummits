@@ -18,6 +18,12 @@
 
 ### 高
 
+- [ ] **(元 ISSUE-106) コード追従: 中間 GeoJSON へのピーク/コル可視化フィーチャ追加（ADR-SRS-026）**
+  - `mesh_analyze.c` の GeoJSON 出力に `feature_type="peak"` Point・`feature_type="key_col"` Point（key_col_resolved=true のみ）・`feature_type="peak_col_link"` LineString を追加。地理院地図スタイル属性付与（色スキームは HLD で規定）
+  - `merge.py` の `merged_activation.geojson` 生成処理に同様のフィーチャを追加（座標元は `merged_peak.csv` の col_lat/col_lon）
+  - FR-009 の point-in-polygon 処理を `feature_type ∈ {activation_zone, delete_zone}` のポリゴンに絞るフィルタを追加
+  - 仕様詳細: `docs/decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md`
+
 - [ ] **(元 ISSUE-079) scripts/preprocess_pref_boundaries.py を FR-017 改訂版仕様に追従**
   - ZIP 自動検出方式（`$DATA_DIR/ref/` を `N03-(\d{8})_GML\.zip` で走査、YYYYMMDD 最大を採用）
   - ZIP 内市区町村版 GeoJSON のみを一時ディレクトリに展開して処理、処理後削除
