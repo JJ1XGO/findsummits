@@ -282,9 +282,9 @@ handover ファイルの本文を書き終えた後、**必ず以下の手順を
    - `git status` で未コミットの変更を確認する
    - 変更がなければスキップ
    - 変更がある場合:
-     - `params/config.ini` / `.claude-container` など機密・gitignore 対象が含まれていないことを確認
+     - `git status` で未追跡ファイルに想定外のものがないことを確認（機密は `.gitignore` 除外済みだが目視習慣として）
      - 変更内容から Conventional Commits 形式・本文日本語のメッセージを作成
-     - ファイルを**個別指定**で `git add <files>` してコミット（`git add .` / `git add -A` は使わない）
+     - 過不足なければ `git add -A` でまとめて追加（意図しない野良ファイルが見える場合のみ個別指定）
      - handover ファイル・xlsx 更新分もこのコミットに含める
      - コミット後に `git status` でクリーンになったことを確認する
 
@@ -301,7 +301,7 @@ handover ファイルの本文を書き終えた後、**必ず以下の手順を
 
 手順:
 1. 更新作業が一段落したら `git status` で対象を確認
-2. **個別ファイル指定**で `git add <files>`（`git add .` / `-A` は禁止）
+2. `git status` で想定外の野良ファイルがないことを確認のうえ `git add -A`（意図しない変更が見える場合のみ個別指定）
 3. Conventional Commits 形式・本文日本語でコミット
 4. push は別途指示があるまで行わない（ユーザーが任意のタイミングで push する）
 
