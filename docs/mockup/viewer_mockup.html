@@ -235,7 +235,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ---- ダミーデータ（実物では merged.geojson の内容が埋め込まれる） ----
+// ---- ダミーデータ（実物では merged_summit.geojson の内容が埋め込まれる） ----
 // points は merge.py が peak_elev / sota_alt_m から標高バンドで算出してセットする
 const GEOJSON_DATA = {
   type: "FeatureCollection",
@@ -326,24 +326,24 @@ const GEOJSON_DATA = {
     // アクティベーションゾーン外 → ピークが dominant peak、サミットが削除候補
     { type: "Feature", geometry: { type: "Point", coordinates: [138.65, 35.25] },
       properties: { feature_type: "peak", match_status: "dominant",
-                    summit_code: "JA/YN-A01", summit_name: "", summit_name_jp: "",
+                    summit_code: "JA/YN-A00", summit_name: "", summit_name_jp: "",
                     peak_elev: 1050, prominence: 320, stability: "confirmed", key_col_resolved: true,
                     points: 8 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.640,35.240],[138.660,35.240],[138.660,35.260],[138.640,35.260],[138.640,35.240]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/YN-A01", area_complete: true, points: 8 } },
+      properties: { feature_type: "activation_zone", summit_code: "JA/YN-A00", area_complete: true, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.63, 35.23] },
-      properties: { feature_type: "col", summit_code: "JA/YN-A01", col_elev: 730, points: 8 } },
+      properties: { feature_type: "col", summit_code: "JA/YN-A00", col_elev: 730, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
       properties: { feature_type: "summit", match_status: "delete",
                     summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
                     sota_alt_m: 880, sota_points: 6,
-                    dominant_peak_code: "JA/YN-A01" } },
+                    dominant_peak_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/YN-A01" } },
+      properties: { feature_type: "delete_zone", summit_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/YN-A01" } },
+      properties: { feature_type: "prominence_range", summit_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.655,35.245]] },
-      properties: { feature_type: "coord_diff", summit_code: "JA/YN-A01", match_status: "dominant" } }
+      properties: { feature_type: "coord_diff", summit_code: "JA/YN-A00", match_status: "dominant" } }
   ]
 };
 

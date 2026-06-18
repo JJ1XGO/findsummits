@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-18",
-    "counter": 113
+    "counter": 115
   },
   "issues": [
     {
@@ -3636,6 +3636,46 @@
       "resolved_date": null,
       "verified_date": null,
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
+      "history": []
+    },
+    {
+      "id": "ISSUE-114",
+      "title": "FR-009中心成果物GeoJSONのリネーム・和名整理（merged.geojson → merged_summit.geojson）",
+      "description": "FR-009の中心成果物merged.geojsonの和名「統合ピーク候補」が中間ファイルmerged_peak.geojson（和名「統合ピーク候補 GeoJSON」）と重複しており、FR-009の概念（ピーク中心→サミット中心の節目）とも乖離。ファイル名をmerged_summit.geojsonへ変更し、和名を「突合済み統合 GeoJSON」へ整理する。",
+      "type": "改善",
+      "priority": "中",
+      "category": "GeoJSON出力",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "ファイル名をmerged_summit.geojsonに変更（merged_summit.xlsxとペア）。和名を「突合済み統合 GeoJSON」に統一。ADR-SRS-030作成・SRS本文反映・関連ADR整合更新で対応。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
+      "history": []
+    },
+    {
+      "id": "ISSUE-115",
+      "title": "仮サミットコード連番上限の設定可能化・00始まり化（A99固定 → 設定項目化）",
+      "description": "仮サミットコードの連番上限がA99固定のため、初年度に1エリア100件超となる可能性がある。上限を2.2.1設定可能項目へ追加し運用年度で切り替えられるようにする。あわせて連番を00始まりへ変更（A00〜A99で1prefix100件）。",
+      "type": "改善",
+      "priority": "中",
+      "category": "設定",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-18",
+      "stage": "SRS",
+      "planned_stage": "SRS",
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "2.2.1設定可能項目に「仮サミットコード連番上限」を追加（デフォルトA・許容A〜Z）。連番を01始まり→00始まりへ変更。フォーマット例をA01→A00へ全更新。ADR-SRS-031作成・SRS本文反映で対応。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
       "history": []
     }
   ]

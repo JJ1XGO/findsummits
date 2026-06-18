@@ -34,7 +34,7 @@ FR-016（per-mesh GeoJSON）・FR-018（merged_peak.geojson）の両出力に、
 | `"key_col"` | Point（コル座標） | key_col_resolved=true のピークのみ（FR-016）／col_lat が存在するピークのみ（FR-018） |
 | `"peak_col_link"` | LineString（ピーク→コル） | key_col がある場合に生成 |
 
-凡例は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)（merged.geojson）の規約を踏襲する
+凡例は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)（`merged_summit.geojson`）の規約を踏襲する
 （summit Point・peak→summit 線は SOTA 突合専用のため中間段階は対象外）。
 
 ### コル座標の入手元
@@ -47,7 +47,7 @@ FR-016（per-mesh GeoJSON）・FR-018（merged_peak.geojson）の両出力に、
 地理院地図は GeoJSON Feature の `properties` に含まれるスタイル属性（`_`プレフィックス系、例: `_color`・`_opacity`・`_weight` 等）を描画に反映する。
 各フィーチャにこれらを埋め込み、ピーク/コル/接続線を色・形状で区別する。
 `▲`（caret-up）・`▽`（caret-down）の厳密再現は地理院地図では保証しない（FontAwesome 非対応）。
-中間段階は SOTA ポイント未割当のため merged.geojson の `pointsToColor` スケールは使えない。
+中間段階は SOTA ポイント未割当のため `merged_summit.geojson` の `pointsToColor` スケールは使えない。
 **色のマッピングは HLD で規定**（標高ベース等の代替スキーム）。
 
 ### 1 ステージ 1 ファイル方針

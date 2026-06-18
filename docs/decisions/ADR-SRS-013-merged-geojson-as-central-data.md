@@ -20,27 +20,27 @@
 
 2. **中心データのイメージ乖離**: ユーザーの本来のイメージは「バッチ処理完了時に全結果が集約した 1 つの中心データが出来ていて、HTML ビューアはそれを表示するだけ」というものだったが、現設計では 2 ファイルを FR-013 で統合するまで中心データが存在しなかった
 
-3. **不備フラグの格納場所**: ADR-SRS-011 では不備フラグを merged.csv 列に追加するとしていたが、merged.geojson を中心とするなら metadata プロパティに持つ方が自然
+3. **不備フラグの格納場所**: ADR-SRS-011 では不備フラグを merged.csv 列に追加するとしていたが、中心 GeoJSON を中心とするなら metadata プロパティに持つ方が自然
 
 4. **dominant ケースの 2 行問題**: dominant ピーク 1 エントリは申請書 XLSX で「追加（dominant）」と「削除（既存サミット）」の 2 行に展開され、それぞれ異なる根拠（※2 と ※4）が必要。Point フィーチャが独立していれば各フィーチャに rationale を持たせることで自然に解決できる
 
 ## Decision
 
-### 中心データを merged.geojson 1 つに統一
+### 中心データを GeoJSON 1 つに統一
 
-FR-009（SOTA リスト突合・match_status 判定）の出力を `merged.geojson` とし、フェーズ3 末尾の中心成果物と位置付ける：
+FR-009（SOTA リスト突合・match_status 判定）の出力を `merged_summit.geojson` とし、フェーズ3 末尾の中心成果物と位置付ける（※ 本 ADR 決定時のファイル名は `merged.geojson` であったが、[ADR-SRS-030](ADR-SRS-030-rename-central-geojson-merged-summit.md) によって `merged_summit.geojson` へリネームされた）：
 
 | ファイル | 新しい役割 |
 |---|---|
-| `merged.geojson` | **フェーズ3 末尾の中心成果物**（全 Point + 全 Polygon + rationale + 不備フラグを含む） |
-| `merged.csv` | merged.geojson から派生する**エビデンス CSV**（UR-005 対応）。`rationale` 列は含めない |
+| `merged_summit.geojson` | **フェーズ3 末尾の中心成果物**（全 Point + 全 Polygon + rationale + 不備フラグを含む） |
+| `merged.csv` | `merged_summit.geojson` から派生する**エビデンス CSV**（UR-005 対応）。`rationale` 列は含めない |
 | `merged_peak.geojson` | per-mesh activation 統合の**内部中間ファイル**（デバッグ・差分検査用）。物理出力は残す |
-| `merged_viewer.html` | フェーズ4 で `merged.geojson` のみを入力に生成（責務縮小） |
+| `merged_viewer.html` | フェーズ4 で `merged_summit.geojson` のみを入力に生成（責務縮小） |
 
-### merged.geojson のフィーチャ構成
+### merged_summit.geojson のフィーチャ構成
 
 ```
-merged.geojson
+merged_summit.geojson
 ├ Point: peak（new/dominant/matched_band_change に rationale プロパティ付与）
 ├ Point: col
 ├ Point: summit（match_status=delete に rationale プロパティ付与）
@@ -76,7 +76,7 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 
 ### 案 B: GeoJSON 中心化 + rationale を localStorage のみに保持（不採用）
 
-中心データを `merged.geojson` に統一するが、rationale は HTML ビューアの localStorage にのみ保持する案。公開用 HTML をエクスポートして別端末で開いた場合に rationale が消失する。`merged.geojson` の `rationale` プロパティとして保持することで、HTML エクスポート時にも rationale が埋め込まれ消失しない。
+中心データを `merged_summit.geojson` に統一するが、rationale は HTML ビューアの localStorage にのみ保持する案。公開用 HTML をエクスポートして別端末で開いた場合に rationale が消失する。`merged_summit.geojson` の `rationale` プロパティとして保持することで、HTML エクスポート時にも rationale が埋め込まれ消失しない。
 
 ### 案 C: CSV 中心化（非現実的・不採用）
 
@@ -88,19 +88,20 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 
 | セクション | 変更内容 |
 |---|---|
-| **3.2 主要コンポーネント構成** | 統合・突合コンポーネントの主要出力を `merged.geojson` に一本化 |
-| **3.3 フェーズ俯瞰** | フェーズ3 末尾を「`merged.geojson`（中心）+ `merged.csv`（派生エビデンス）」に書き換え |
+| **3.2 主要コンポーネント構成** | 統合・突合コンポーネントの主要出力を `merged_summit.geojson` に一本化 |
+| **3.3 フェーズ俯瞰** | フェーズ3 末尾を「`merged_summit.geojson`（中心）+ `merged.csv`（派生エビデンス）」に書き換え |
 | **FR-008** | 出力を「内部 work CSV」と位置付け |
-| **FR-009** | 出力を `merged.geojson` として記述。※2/※4/※5 テンプレート集約。rationale 生成要件追加 |
+| **FR-009** | 出力を `merged_summit.geojson` として記述。※2/※4/※5 テンプレート集約。rationale 生成要件追加 |
 | **FR-011** | ※2/※4/※5 を FR-009 参照に変更。XLSX 列 I は rationale プロパティを転記 |
-| **FR-012** | 「merged.geojson から派生する CSV」と再定義。`rationale` 列を含めない |
-| **FR-013** | merged.geojson 生成をフェーズ3 末尾に前倒し。フェーズ4 は HTML ビューア生成のみ |
+| **FR-012** | 「`merged_summit.geojson` から派生する CSV」と再定義。`rationale` 列を含めない |
+| **FR-013** | `merged_summit.geojson` 生成をフェーズ3 末尾に前倒し。フェーズ4 は HTML ビューア生成のみ |
 | **FR-018** | 出力 `merged_peak.geojson` を「内部中間ファイル」と明記 |
 | **6.4/6.5/6.11** | 出力物・中間ファイルの役割を新方針に合わせて再定義 |
 
 ### 既存 ADR への波及
 
-- **ADR-SRS-011**（delete-zone-polygon）: Consequences の「不備フラグ列は merged.csv に追加」記述を「不備フラグは merged.geojson のフィーチャプロパティ（metadata）に格納し、merged.csv（派生エビデンス）には含めない」に補足追記
+- **ADR-SRS-011**（delete-zone-polygon）: Consequences の「不備フラグ列は merged.csv に追加」記述を「不備フラグは `merged_summit.geojson` のフィーチャプロパティ（metadata）に格納し、merged.csv（派生エビデンス）には含めない」に補足追記
+- **ADR-SRS-030**（rename-central-geojson-merged-summit）: 本 ADR 決定時のファイル名 `merged.geojson` を `merged_summit.geojson`（和名「突合済み統合 GeoJSON」）へリネームした。本 ADR の本文は最新名に更新済み
 - **ADR-SRS-004 / ADR-SRS-010**: 影響なし（per-mesh 段階の出力フォーマットは変更不要）
 
 ### 関連 ISSUE への影響

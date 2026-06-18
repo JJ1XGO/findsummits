@@ -19,7 +19,7 @@ URD に既存の UR-010（タイル取得時の規約遵守）は取得時の責
 ### 現状のギャップ
 
 - HTML ビューア（`docs/mockup/viewer_mockup.html`）の Leaflet attribution には `© 国土地理院` リンクを実装済み（SRS FR-021 規定）
-- その他の成果物（README / `merged.geojson` / `merged.csv` / ビューア出力 XLSX）には出典情報がない
+- その他の成果物（README / `merged_summit.geojson` / `merged.csv` / ビューア出力 XLSX）には出典情報がない
 
 ## Decision
 
@@ -34,7 +34,7 @@ URD に既存の UR-010（タイル取得時の規約遵守）は取得時の責
 | 成果物 | 出典埋め込み方法 |
 |---|---|
 | `README.md` | 「データソース・出典」セクションとして明示 |
-| `merged.geojson`（中央データ） | top-level `metadata` プロパティ |
+| `merged_summit.geojson`（中央データ） | top-level `metadata` プロパティ |
 | 配布版 GeoJSON（ビューアと一緒に配布） | 同上（output_geojson.py で出力） |
 | `merged.csv` | ファイル先頭の `#` コメント行（3行） |
 | ビューア出力 XLSX | 「出典」シートまたは先頭行 |
@@ -66,7 +66,7 @@ URD に既存の UR-010（タイル取得時の規約遵守）は取得時の責
 
 プロジェクト全体の出典宣言を README に一括記載し、各成果物への埋め込みは省略する案。
 
-却下理由：GeoJSON / CSV ファイルが単体で配布・参照される場合に出典情報が失われ、規約違反リスクが残る。ADR-SRS-013 で `merged.geojson` が中央成果物と位置付けられており、中央データ自体に出典を持たせることが自然かつ確実。
+却下理由：GeoJSON / CSV ファイルが単体で配布・参照される場合に出典情報が失われ、規約違反リスクが残る。ADR-SRS-013 で `merged_summit.geojson` が中央成果物と位置付けられており、中央データ自体に出典を持たせることが自然かつ確実。
 
 ### C. 全成果物に均一に埋め込む（不採用）
 

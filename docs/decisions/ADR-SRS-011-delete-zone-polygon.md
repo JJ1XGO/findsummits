@@ -109,7 +109,7 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 - **output_geojson.py**: dominant フィーチャ構成変更
 - **params/config.ini.example**: `delete_zone_max_drop` パラメータ追加
 
-> **補足（ADR-SRS-013 採用後）**: 不備フラグは `merged.csv` の列ではなく `merged.geojson` のメタデータプロパティに格納する（詳細は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)）。`merged.csv` は `merged.geojson` から派生するエビデンス CSV であり不備フラグは含めない。
+> **補足（ADR-SRS-013 採用後）**: 不備フラグは `merged.csv` の列ではなく `merged_summit.geojson` のメタデータプロパティに格納する（詳細は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)）。`merged.csv` は `merged_summit.geojson` から派生するエビデンス CSV であり不備フラグは含めない。
 
 ### 未確定事項
 
