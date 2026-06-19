@@ -131,6 +131,30 @@
 
 - [ ] **(元 ISSUE-065) モックアップ「変更あり」フィルターを is_band_change_cand に変更**
 
+### FR-013レビュー決着の機械反映（finding 3/4/6/7・用語変更）
+
+以下は仕様確定済み。SRS/ADR は反映済み。実装追従のみ残る。
+
+- [ ] **finding 6: `feature_type="col"` → `"key_col"` への統一（実装追従）**
+  - `scripts/merge.py`: GeoJSON フィーチャ生成時の `feature_type` を `"col"` → `"key_col"` に変更
+  - `scripts/output_geojson.py`（存在する場合）: 同上
+
+- [ ] **finding 5（実装追従）: 不備ゲート発動時の xlsx セット出力**
+  - `scripts/merge.py`: FR-009 の不備ゲート判定箇所で xlsx も必ず出力してから exit するよう修正
+  - xlsx に `area_complete` 列を追加・`match_status` 値域に delete/unmatched を含める
+
+- [ ] **finding 3（実装追従）: `is_band_change_candidate` を GeoJSON ピーク Point プロパティに追加**
+  - `scripts/merge.py`: ピーク Point フィーチャの properties に `is_band_change_candidate` を出力
+
+- [ ] **finding 2（実装追従）: FR-001 での `Last-Modified` → mtime 焼き込み**
+  - `scripts/prefetch_tiles.py`: HTTP 200 取得時に `os.utime()` で `Last-Modified` を mtime に設定
+
+- [ ] **finding 2（実装追従）: FR-009 での `gsi_tile_latest_date` 格納**
+  - `scripts/merge.py`: 処理末尾で `$DATA_DIR/tiles/` 全 PNG の mtime 最大値を取得し metadata に格納
+
+- [ ] **finding 7: 旧名 `merged.geojson` の追従漏れ確認**
+  - `scripts/` 配下のコードに `merged.geojson` （`merged_summit`/`merged_peak` を除く）が残存していないか確認・修正
+
 ---
 
 ## 保留

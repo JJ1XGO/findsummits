@@ -110,6 +110,8 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 - **params/config.ini.example**: `delete_zone_max_drop` パラメータ追加
 
 > **補足（ADR-SRS-013 採用後）**: 不備フラグは `merged.csv` の列ではなく `merged_summit.geojson` のメタデータプロパティに格納する（詳細は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)）。`merged.csv` は `merged_summit.geojson` から派生するエビデンス CSV であり不備フラグは含めない。
+>
+> **補足（ADR-SRS-033 採用後）**: top-level boolean 不備フラグ（`is_unmatched_summit`/`is_area_incomplete`/`is_key_col_unresolved`）は `merged_summit.geojson` の metadata からも削除し、不備確認の責務を `merged_summit.xlsx`（per-row 表示）へ移行する。per-feature プロパティ（`key_col_resolved`・`area_complete`）は維持する（詳細は [ADR-SRS-033](ADR-SRS-033-defect-confirmation-via-xlsx.md)）。
 
 ### 未確定事項
 

@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-18",
-    "counter": 115
+    "last_updated": "2026-06-19",
+    "counter": 118
   },
   "issues": [
     {
@@ -3677,6 +3677,117 @@
       "verified_date": null,
       "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
       "history": []
+    },
+    {
+      "id": "ISSUE-116",
+      "title": "FR-013レビュー: metadata責務分離・正準定義移動・license_url統一",
+      "description": "FR-013レビューで発覚。merged_summit.geojson の metadata キー attribution/source_url/license_url は ADR-URD-014/UR-011 由来の固定定数だが、正準定義が消費側の FR-013 に置かれている（L1261/L1493 が「FR-013 メタデータ定義参照」と指す）。metadata の構造定義の正準を生成元 FR-009 に集約し、固定定数の値の正準を ADR-URD-014/データ辞書に置く。加えてキー名不一致: ADR-URD-014 §3 は 'license'、SRS は 'license_url'。SRS 側が多箇所使用済みのため license_url に統一し ADR-URD-014 を合わせる。",
+      "type": "改善",
+      "priority": "高",
+      "category": "merge.py",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-19",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "①FR-009 の説明に metadata 全キー（データ由来＋固定定数）の生成責務を明記。②ADR-URD-014 §3 の GeoJSON metadata キーを license → license_url に修正。③SRS L1261/L1493 の参照先を FR-009 に変更。④FR-013 の metadata 一覧は消費側として参照のみに修正。ADR-URD-014 改訂。",
+      "notes": null,
+      "resolved_date": "2026-06-19",
+      "verified_date": null,
+      "created_session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2",
+      "history": [
+        {
+          "date": "2026-06-19T10:25:08",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        },
+        {
+          "date": "2026-06-19T10:31:03",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-URD-014 の license→license_url 統一。FR-009 に metadata 付与セクション新設（全キーの生成責務を集約）。FR-013 を消費側参照のみに修正。SRS L1261/L1493 の参照先を FR-009 に変更。",
+          "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-117",
+      "title": "FR-013レビュー: gsi_tile_latest_date を FR-001 起点で上流化",
+      "description": "FR-013レビューで発覚。gsi_tile_latest_date（地理院タイル更新日）の生成責務が未定義（SRS L1110 で「生成実装は別 ISSUE 管理」と棚上げ）。現状案の「キャッシュ全体の mtime 最大」は、mtime がダウンロード日時になってしまい提供元更新日の意味にならない。正確な意味にするには FR-001 でタイル取得時の HTTP Last-Modified をキャッシュファイルの mtime に焼き込む（os.utime）必要がある。集約スコープは案②（キャッシュ全体の mtime 最大・パイプライン末尾で1回スキャン）を採用。全国一括運用なら案①（使用タイルのみ集計）と実質同値、表示専用で判定未使用のため費用対効果で案②。FR-009 が metadata に格納し FR-013/FR-019 は表示のみ。",
+      "type": "改善",
+      "priority": "高",
+      "category": "prefetch",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-19",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "①FR-001 の説明に「HTTP Last-Modified をキャッシュファイルの mtime に設定する（os.utime）」を追記。②FR-009 の説明に「パイプライン末尾でキャッシュ全体の mtime 最大を取得し gsi_tile_latest_date として metadata に格納」を追記。③FR-013 の metadata 一覧に gsi_tile_latest_date を追加（上流生成・表示用・部分解析時は過大評価の可能性あり旨を注記）。ADR 新規作成（SRS）。",
+      "notes": null,
+      "resolved_date": "2026-06-19",
+      "verified_date": null,
+      "created_session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2",
+      "history": [
+        {
+          "date": "2026-06-19T10:25:08",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        },
+        {
+          "date": "2026-06-19T10:31:03",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-032 新規作成。FR-001 に Last-Modified mtime 焼き込みを追記。FR-009 の metadata 付与セクションに gsi_tile_latest_date 格納を追記。FR-013 の metadata 利用一覧に gsi_tile_latest_date を追加。",
+          "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-118",
+      "title": "FR-013レビュー: 不備確認責務を geojson metadata から xlsx へ移行",
+      "description": "FR-013レビューで発覚。現状の設計は不備フラグ（is_unmatched_summit/is_area_incomplete/is_key_col_unresolved）を merged_summit.geojson の top-level metadata に格納（ADR-SRS-011/013）しているが、消費者がいない（FR-013 のスキップ判定は exit code、地図可視化は per-feature プロパティが担う）。また不備ゲート（データ品質による意図的な停止）発動時に geojson は「必ず出力」と明記（SRS L914）されているが xlsx は記述なし。不備確認の主役が xlsx（per-row で確認可能）であるにもかかわらず、失敗時に xlsx が出力される保証がない。加えて xlsx には area_complete 列がなく（is_area_incomplete を per-row 化できない）、unmatched サミットが行として出力されない（match_status 値域が matched/new/dominant のみ）。",
+      "type": "改善",
+      "priority": "高",
+      "category": "merge.py",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-19",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": "Sonnet",
+      "resolution": "①geojson metadata から top-level boolean 不備フラグを削除（per-feature の key_col_resolved/area_complete は残す）。②xlsx の列に area_complete を追加、match_status 値域に delete/unmatched を追加。③FR-009 L914 を書き換え「不備ゲート発動時は xlsx+geojson をセット出力してから停止」と明記（ハードクラッシュとは区別）。ADR-SRS-011/013 改訂。",
+      "notes": null,
+      "resolved_date": "2026-06-19",
+      "verified_date": null,
+      "created_session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2",
+      "history": [
+        {
+          "date": "2026-06-19T10:25:08",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        },
+        {
+          "date": "2026-06-19T10:31:03",
+          "actor": "不明",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-033 新規作成。ADR-SRS-011/013 に補足追記。FR-009 の不備フラグ定義を不備ゲート方式に書き換え（xlsx セット出力保証・ハードクラッシュ区別）。FR-012 に area_complete 列追加・match_status 値域拡張。6.5 の出力保証・用途を更新。6.6 の metadata 記述を FR-009 参照に修正。",
+          "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        }
+      ]
     }
   ]
 }

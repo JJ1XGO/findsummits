@@ -47,7 +47,7 @@ URD に既存の UR-010（タイル取得時の規約遵守）は取得時の責
 | 用途 | 文面 |
 |---|---|
 | 短形式（CSV コメント・XLSX） | `地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)` |
-| GeoJSON metadata キー | `attribution`（文面）+ `source_url`（URL）+ `license`（規約URL） |
+| GeoJSON metadata キー | `attribution`（文面）+ `source_url`（URL）+ `license_url`（規約URL） |
 | README セクション | 本文で「加工して作成」と明示し、出典URL・利用規約URLをリンク形式で記載 |
 
 ### 4. GeoJSON 仕様への適合

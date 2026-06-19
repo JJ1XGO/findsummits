@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-06-18 |
+| 最終更新日 | 2026-06-19 |
 | ステータス | ドラフト（FR-022 純化・FR-023 解析パイプライン制御新設・N 扱い再設計・phase 番号統一。ADR-SRS-027） |
 | 参照 URD | [`10_URD.md`](10_URD.md) |
 
@@ -158,7 +158,7 @@
 | タイル取得コンポーネント | DEM タイルを国土地理院から取得・ローカルキャッシュ | メッシュコード、取得設定、北方領土除外タイルリスト | ローカルキャッシュ済み PNG タイル |
 | パイプライン制御コンポーネント | フェーズ2〜4 の実行順序・N エスカレーションループを管理（shell スクリプト） | merged_peak.csv・コル未確定ピーク座標リスト（[FR-022](#fr-022-コル充足判定) 出力） | （各 FR への委譲によって成果物が生成される） |
 | 地形解析エンジン | DEM からピーク／コル／プロミネンス／AZ・delete判定ゾーンを検出 | ローカルキャッシュ済み PNG タイル | 処理モードにより異なる（通常モード: per-mesh CSV / per-mesh ピーク候補 GeoJSON / 標高地形図 PNG、広域モード: per-mesh CSV のみ） |
-| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、rationale 生成・不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、境界 GeoJSON | **merged_summit.geojson**（中心成果物）、merged_summit.xlsx（サミット一覧（突合後））、merged_peak.csv（内部 work CSV）、merged_peak.geojson（内部中間） |
+| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、rationale 生成・不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、境界 GeoJSON | **merged_summit.geojson**（中心データ）、merged_summit.xlsx（サミット一覧（突合後））、merged_peak.csv（内部 work CSV）、merged_peak.geojson（内部中間） |
 | 可視化生成コンポーネント | merged_summit.geojson から HTML ビューアを生成 | merged_summit.geojson | merged_viewer.html |
 | 申請書生成 UI | HTML ビューア内でユーザー操作に応じて申請書 XLSX を生成 | ユーザー操作（HTML ビューア上） | 申請用 XLSX |
 
@@ -220,9 +220,9 @@
        └─ 標高地形図                ($DATA_DIR/images/<N>-<meshcode>-<コーナー>_terrain.png)
        ↓ → FR-008（per-mesh CSV 統合）+ FR-018（per-mesh ピーク候補 GeoJSON 統合）をセットで再実行 → FR-022（コル充足判定）へ戻る
        ↓ N=6 まで使い切っても未解決なら以下へ（FR-009 が is_key_col_unresolved で異常終了）
-【フェーズ4: SOTA突合・中心成果物生成・HTML ビューア生成】
-統合・突合コンポーネント   SOTA突合・中心成果物生成
-       ├─ merged_summit.geojson     ($DATA_DIR/results/merged_summit.geojson) ← 中心成果物（全フィーチャ + rationale）
+【フェーズ4: SOTA突合・中心データ生成・HTML ビューア生成】
+統合・突合コンポーネント   SOTA突合・中心データ生成
+       ├─ merged_summit.geojson     ($DATA_DIR/results/merged_summit.geojson) ← 中心データ（全フィーチャ + rationale）
        └─ merged_summit.xlsx        ($DATA_DIR/results/merged_summit.xlsx) ← サミット一覧（突合後）
 可視化生成コンポーネント   HTML ビューア生成
        └─ merged_viewer.html        ← 編集可能なローカル HTML ビューア（GeoJSON 埋め込み・rationale 編集機能付き）
@@ -315,7 +315,8 @@
   - 1次メッシュコードリストの各メッシュコードについて、[メッシュコード → 緯度経度変換](00_GLOSSARY.md#mesh-to-latlon)の計算式でそのメッシュの四隅の緯度経度を求め、[緯度経度 → XYZ タイル番号変換](00_GLOSSARY.md#latlon-to-tile)の計算式から取得対象のタイル番号範囲を特定する
   - **北方領土除外**: 取得対象タイル範囲から、北方領土除外タイルリストに含まれるタイル（ズームレベル 15 の x/y 整数ペア）を除外する。除外タイル分は HTTP リクエストを発行しない。北方領土除外タイルリストが存在しない場合はエラー終了する（詳細: [ADR-SRS-018](decisions/ADR-SRS-018-northern-territories-skip-at-tile-fetch.md)）
   - **取得範囲**: メッシュコードリストの各メッシュコードについて、そのメッシュをカバーする最小範囲の標高タイルを取得する（隣接メッシュへの拡張は行わない。全176メッシュを一括取得する運用では、メッシュ境界付近のタイルが複数メッシュから重複して取得されるが問題ない）
-  - ローカルキャッシュ済みタイルの再取得時は `If-Modified-Since` ヘッダーを付与してリクエストし、サーバー側に更新がない場合（HTTP 304）はダウンロードをスキップする
+  - ローカルキャッシュ済みタイルの再取得時は `If-Modified-Since` ヘッダーを付与してリクエストし、サーバー側に更新がない場合（HTTP 304）はダウンロードをスキップする（ファイルの mtime は前回取得時の値を保持する）
+  - タイルの取得成功時（HTTP 200）は、レスポンスヘッダー `Last-Modified` の日時を `os.utime()` でキャッシュ PNG ファイルの mtime に設定する。これにより mtime が「ダウンロード日時」ではなく「提供元更新日」を正確に表す（[ADR-SRS-032](decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md)）
   - HTTP 429（リクエスト過多）または HTTP 503（一時利用不可）が返された場合は再試行する（リトライ戦略の詳細は HLD 参照）
   - タイル取得の HTTP リクエストに **User-Agent 識別子**（[データ辞書参照](#221-設定可能項目)）を付与する（地理院サーバー側でアクセス元を特定・問い合わせできるようにするため）
   - **タイル取得のリクエスト間隔**（[データ辞書参照](#221-設定可能項目)）を守ってリクエストする
@@ -828,7 +829,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 #### FR-009: SOTAリスト突合・match_status 判定
 
 - **対応 UR**: [UR-003](10_URD.md#ur-003)
-- **概要**: merged_peak.csv（ピーク中心の内部 work CSV）と SOTA サミットリストを point-in-polygon 突合し（ポリゴン形状はピーク候補 GeoJSON `merged_peak.geojson` から取得、その他の属性は merged_peak.csv から join; [ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）、全 Point/Polygon/LineString フィーチャ・rationale プロパティ・不備フラグ metadata を含む merged.geojson（中心成果物）と merged_summit.xlsx（サミット中心の確認用 XLSX）を出力する。本 FR はデータ概念が「ピーク中心 → サミット中心」へ切り替わる節目である。
+- **概要**: merged_peak.csv（ピーク中心の内部 work CSV）と SOTA サミットリストを point-in-polygon 突合し（ポリゴン形状はピーク候補 GeoJSON `merged_peak.geojson` から取得、その他の属性は merged_peak.csv から join; [ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）、全 Point/Polygon/LineString フィーチャ・rationale プロパティを含む `merged_summit.geojson`（中心データ）と `merged_summit.xlsx`（サミット中心の確認用 XLSX）を出力する。本 FR はデータ概念が「ピーク中心 → サミット中心」へ切り替わる節目である。
 **入力**:
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
@@ -844,7 +845,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | GeoJSON | フェーズ4 末尾の中心成果物。全フィーチャ・rationale・不備フラグ metadata を含む |
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・不備フラグ metadata を含む |
 | サミット一覧（突合後）（`merged_summit.xlsx`） | 内部データ | XLSX | バッチ生成時点の確認用。HTML ビューア編集内容は反映しない |
 
 **説明**:
@@ -907,12 +908,19 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
       ```
     - `key_col_resolved=false` のピークは `col_elev`・`prominence` が確定していないため、※2 の該当箇所を「未確定」と表示する
     - rationale はビューア上の textarea で**編集可能**。編集後の値が [FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に反映される（編集前は上記フォーマットの自動生成値が初期値）。永続化方式・編集値マージロジックの詳細は HLD 範疇
-  - **不備フラグ**（`merged_summit.geojson` の `metadata` プロパティに格納。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) により不備を集中管理し、後続処理（[FR-013](#fr-013-html-ビューア生成)）への波及を防ぐ）:
-    - `is_unmatched_summit` (bool): 既存サミット行で `summit.match_status="unmatched"` となった場合 true
-    - `is_area_incomplete` (bool): ピーク行で AZ または delete判定ゾーンポリゴンの `area_complete=false`（[FR-016](#fr-016-ピーク域ポリゴン生成) で 3×3 完結が想定されているが、想定外に発生した場合に true）
-    - `is_key_col_unresolved` (bool): ピーク行で `key_col_resolved=false`（解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）の N=4→5→6 エスカレーションでも解消せず）
-    - **異常終了制御**: 本 FR は**全サミット評価完了後**に `is_unmatched_summit`・`is_area_incomplete`・`is_key_col_unresolved` のいずれかが true の場合、**異常終了**する（即時停止ではなく全判定後にまとめて検査）。`merged_summit.geojson` は不備フィーチャも含めて必ず出力してから停止する（調査用）。[FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は本 FR の終了状態を見てスキップする（exit code の詳細は HLD 参照）
-    - フラグの追加は実装中に随時行ってよい（網羅性が必要）。新規不備種別を発見した場合は本リストに追記する
+  - **不備ゲートと異常終了制御**（[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）: 本 FR は**全サミット評価完了後**に以下の不備条件を検査し、いずれかに該当する場合は**不備ゲート**として**意図的に異常終了**する（即時停止ではなく全判定後にまとめて検査。入力欠落・例外によるハードクラッシュとは区別する）:
+    - 既存サミット行で `summit.match_status="unmatched"` が1件以上存在する
+    - ピーク行で AZ または delete判定ゾーンポリゴンの `area_complete=false` が1件以上存在する（[FR-016](#fr-016-ピーク域ポリゴン生成) で 3×3 完結が想定されているが想定外に発生した場合）
+    - ピーク行で `key_col_resolved=false` が1件以上存在する（解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）の N=4→5→6 エスカレーションでも解消せず）
+    - 不備ゲート発動時は `merged_summit.geojson` および `merged_summit.xlsx` をともに不備エントリを含めて**必ず出力してから停止**する（調査用）。ハードクラッシュ時は出力を保証しない。[FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は本 FR の exit code を見てスキップする（exit code の詳細は HLD 参照）
+    - 不備条件の追加は実装中に随時行ってよい（網羅性が必要）。新規不備種別を発見した場合は本リストに追記する
+  - **metadata 付与**（`merged_summit.geojson` の top-level `metadata` オブジェクトとして格納。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）:
+    - `summitslist_date`: `ref/summitslist.csv` 1行目（`SOTA Summits List (Date=DD/MM/YYYY)` 形式）からパースした日付文字列
+    - `generated_at`: 本 FR 実行時の ISO 8601 形式の日時文字列（パイプライン最終実行日時）
+    - `gsi_tile_latest_date`: `$DATA_DIR/tiles/` 配下の全 PNG ファイルの mtime 最大値（ISO 8601 UTC 形式）。タイルの提供元更新日を表す（[ADR-SRS-032](decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md)。部分解析時は過大評価の可能性あり）
+    - `attribution`: `"地理院タイル（標高タイル）を加工して作成。出典: 国土地理院"`（固定文字列。[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
+    - `source_url`: `"https://maps.gsi.go.jp/development/ichiran.html"`（固定文字列）
+    - `license_url`: `"https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html"`（固定文字列）
   - **変更申請判定（Points バンド遷移）**:
     - 判定対象: `peak.match_status="matched"` のピーク
     - `peak_points = band(floor(peak_elev))`: `peak_elev` を切り捨て（floor）した整数 m でバンド判定
@@ -927,12 +935,12 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 #### FR-013: HTML ビューア生成
 
 - **対応 UR**: [UR-006](10_URD.md#ur-006)
-- **概要**: フェーズ4 で `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成した中心成果物）を入力として HTML ビューアを生成する。
+- **概要**: フェーズ4 で `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成した中心データ）を入力として HTML ビューアを生成する。
 **入力**:
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | FR-009 出力の中心成果物 |
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | FR-009 出力の中心データ |
 
 **出力**:
 
@@ -942,21 +950,19 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 **説明**:
 
-  - **前提条件**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が正常終了した場合のみ実行する。[FR-009](#fr-009-sotaリスト突合match_status-判定) が異常終了（不備フラグが true）した場合、本 FR は実行をスキップし、HTML は生成しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
-  - **GeoJSON メタデータ**: `merged_summit.geojson` のトップレベルの `metadata` オブジェクト（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成）:
-    - `summitslist_date`: `ref/summitslist.csv` 1行目（`SOTA Summits List (Date=DD/MM/YYYY)` 形式）からパースした日付文字列
-    - `generated_at`: [FR-009](#fr-009-sotaリスト突合match_status-判定) 実行時の ISO 8601 形式の日時文字列（パイプライン最終実行日時）
-    - `attribution`: `"地理院タイル（標高タイル）を加工して作成。出典: 国土地理院"` （固定文字列。[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
-    - `source_url`: `"https://maps.gsi.go.jp/development/ichiran.html"` （固定文字列）
-    - `license_url`: `"https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html"` （固定文字列）
-    - 不備フラグ群（`is_unmatched_summit` 等。詳細は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)）
+  - **前提条件**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が正常終了した場合のみ実行する。[FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートとして異常終了した場合、本 FR は実行をスキップし、HTML は生成しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）
+  - **GeoJSON メタデータ**: `merged_summit.geojson` のトップレベルの `metadata` オブジェクトの定義は [FR-009](#fr-009-sotaリスト突合match_status-判定) を参照（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する）。本 FR がビューア上で使用するキーは以下のとおり:
+    - `summitslist_date`: SOTA サミットリスト基準日（表示用）
+    - `generated_at`: パイプライン最終実行日時（表示用・localStorage キーに使用）
+    - `gsi_tile_latest_date`: 地理院タイル更新日（UTC）（表示用。[ADR-SRS-032](decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md)）
+    - `attribution` / `source_url` / `license_url`: 出典情報（[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
   - **フィーチャ構成**（match_status 別）:
 
 | match_status | フィーチャ |
 |---|---|
 | matched | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
 | new | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル） |
-| dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
+| dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット）※ 既存 SOTA サミット Point とピーク → SOTA サミット LineString は、当該 delete判定ゾーンに含まれる削除候補サミットの数だけ生成される（複数可） |
 
 ##### 各フィーチャのプロパティ
 
@@ -973,7 +979,8 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `prominence` | プロミネンス（m） |
 | `stability` | confirmed / unstable |
 | `key_col_resolved` | コル確定フラグ（true=確定 / false=未確定） |
-| `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出 |
+| `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出。出力プロパティ名は `points`（FR-009 内部変数 `peak_points` とは別） |
+| `is_band_change_candidate` | Points バンド遷移フラグ（bool）。matched のみ。`points ≠ sota_points` の場合 true（変更申請対象）。new / dominant は空欄 |
 | `rationale` | 申請書根拠テキスト（new / dominant は ※2 フォーマット、`is_band_change_candidate=true` の matched は ※5 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched（バンド変更なし）は空文字）。HTML ビューアで編集可能 |
 
 **Point: コル**
@@ -982,7 +989,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | プロパティ名 | 説明 |
 |---|---|
-| `feature_type` | "col" |
+| `feature_type` | "key_col" |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `col_elev` | コル標高（m） |
 | `points` | 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出） |
@@ -1090,7 +1097,7 @@ matched / dominant のみ。
 **説明**:
 
   - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
-  - フェーズ4（[FR-013](#fr-013-html-ビューア生成)）で `merged.geojson` の GeoJSON データが JavaScript 変数として埋め込まれた `$DATA_DIR/results/merged_viewer.html` を生成する。本 FR はその HTML をブラウザで開いた際に提供される機能を定義する
+  - フェーズ4（[FR-013](#fr-013-html-ビューア生成)）で `merged_summit.geojson` の GeoJSON データが JavaScript 変数として埋め込まれた `$DATA_DIR/results/merged_viewer.html` を生成する。本 FR はその HTML をブラウザで開いた際に提供される機能を定義する
   - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）・JSZip（ZIP 生成）
   - 背景タイル切り替え機能（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-SRS-006](decisions/ADR-SRS-006-viewer-background-tile-selection.md)）。OSM は等高線なしのため、後述の等高線オーバーレイで補完できる（[ADR-SRS-015](decisions/ADR-SRS-015-contour-overlay.md)）
@@ -1175,7 +1182,7 @@ matched / dominant のみ。
 #### FR-012: サミット一覧（申請内容反映版）生成
 
 - **対応 UR**: [UR-005](10_URD.md#ur-005), [UR-011](10_URD.md#ur-011)
-- **概要**: `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心成果物）から、[FR-019](#fr-019-html-ビューア機能仕様) でユーザーが編集した山岳名・rationale を反映したサミット一覧（申請内容反映版）を **HTML ビューア（[FR-019](#fr-019-html-ビューア機能仕様)）内でブラウザ生成**する。生成した XLSX は申請エビデンス ZIP（[FR-021](#fr-021-申請エビデンス-zip-生成)）に同梱してダウンロードする（[UR-005](10_URD.md#ur-005) 対応）。
+- **概要**: `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心データ）から、[FR-019](#fr-019-html-ビューア機能仕様) でユーザーが編集した山岳名・rationale を反映したサミット一覧（申請内容反映版）を **HTML ビューア（[FR-019](#fr-019-html-ビューア機能仕様)）内でブラウザ生成**する。生成した XLSX は申請エビデンス ZIP（[FR-021](#fr-021-申請エビデンス-zip-生成)）に同梱してダウンロードする（[UR-005](10_URD.md#ur-005) 対応）。
 
 **入力**:
 
@@ -1200,7 +1207,7 @@ matched / dominant のみ。
 
 | カラム | 説明 |
 |---|---|
-| match_status | SOTAリスト突合結果（matched/new/dominant） |
+| match_status | SOTAリスト突合結果（ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched） |
 | stability | 解析品質（confirmed/unstable/-） |
 | summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A00）または ZZ/ZZ-A00（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
@@ -1223,6 +1230,7 @@ matched / dominant のみ。
 | sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched・dominant のみ。new は空欄 |
 | is_band_change_candidate | Points バンド遷移フラグ（bool）。`points ≠ sota_points` の場合 true（変更申請対象）。matched のみ。それ以外は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
+| area_complete | アクティベーションゾーンが解析範囲内で完結しているか（true=完結 / false=途切れ）。ピーク行のみ。既存サミット行は空欄 |
 | dominant_peak_code | 従属ピークコード（dominant のみ） |
 | dominant_peak_dist_m | 主ピークから削除候補サミット座標までの距離 m（Haversine 公式）。dominant のみ |
 
@@ -1258,7 +1266,7 @@ matched / dominant のみ。
 | `changed.geojson` | ポイントバンド変更候補 | peak の `match_status="matched"` かつ `is_band_change_candidate=true` ＋ 対応する summit フィーチャ |
 | `unchanged.geojson` | 変更なし既存サミット | peak の `match_status="matched"` かつ `is_band_change_candidate=false` ＋ 対応する summit フィーチャ |
 
-  - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。詳細は [FR-013 メタデータ定義](#fr-013-html-ビューア生成) を参照）
+  - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）
   - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
   - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
@@ -1384,22 +1392,22 @@ matched / dominant のみ。
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `$DATA_DIR/results/merged_summit.xlsx` |
-| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` と同時に生成） |
-| 用途 | バッチ生成時点（ユーザー編集前）のサミット一覧を確認するための XLSX。[サミット一覧（申請内容反映版）](#64-出力-サミット一覧申請内容反映版) はユーザー編集内容を反映した版 |
+| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` と**同時に必ず生成**。不備ゲート（データ品質による意図的な異常終了）発動時も出力保証。ハードクラッシュ時は保証なし。[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)） |
+| 用途 | バッチ生成時点（ユーザー編集前）のサミット一覧を確認するための XLSX。不備ゲート発動時の不備調査にも使用（`match_status=unmatched` 行・`area_complete=false` 行・`key_col_resolved=false` 行を per-row で確認）。[サミット一覧（申請内容反映版）](#64-出力-サミット一覧申請内容反映版) はユーザー編集内容を反映した版 |
 | フォーマット | XLSX（単一シート・データ表） |
 | 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
 | カラム | [FR-012 参照](#fr-012-サミット一覧申請内容反映版生成)（カラム構成は同一） |
 
 ### 6.6 出力: GeoJSON・作業用 HTML ビューア
 
-**突合済み統合 GeoJSON**（中心成果物）
+**突合済み統合 GeoJSON**（中心データ）
 
 | 項目 | 仕様 |
 |---|---|
-| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心成果物。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#65-出力-サミット一覧突合後)）も生成） |
+| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心データ。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#65-出力-サミット一覧突合後)）も生成） |
 | ファイル | `$DATA_DIR/results/merged_summit.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
-| メタデータ | トップレベルに `metadata` オブジェクト（`summitslist_date`: サミットリスト基準日、`generated_at`: パイプライン実行日時 ISO 8601 形式、例: `"2026-05-13T14:30:00+09:00"`、不備フラグ群）を付与 |
+| メタデータ | トップレベルに `metadata` オブジェクトを付与。定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（`summitslist_date` / `generated_at` / `gsi_tile_latest_date` / `attribution` / `source_url` / `license_url`） |
 | フィーチャ構成 | [FR-013 参照](#fr-013-html-ビューア生成)（Point / Polygon / LineString 全フィーチャ含む） |
 | `rationale` プロパティ | new / dominant ピーク Point に ※2 フォーマット、match_status=delete サミット Point に ※4 フォーマット、`is_band_change_candidate=true` の matched ピーク Point に ※5 フォーマットで付与。HTML ビューアで編集可能。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定) |
 
@@ -1490,7 +1498,7 @@ matched / dominant のみ。
 | `changed.geojson` | バンド変更候補（`match_status="matched"` かつ `is_band_change_candidate=true` のピーク + 対応サミット） | [6.6](#66-出力-geojson作業用-html-ビューア) より抽出 |
 | `unchanged.geojson` | 変更なし既存サミット（`match_status="matched"` かつ `is_band_change_candidate=false` のピーク + 対応サミット） | [6.6](#66-出力-geojson作業用-html-ビューア) より抽出 |
 
-各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（詳細は [FR-021](#fr-021-申請エビデンス-zip-生成)）。
+各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）。
 
 ---
 

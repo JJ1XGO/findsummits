@@ -32,7 +32,7 @@ FR-009（SOTA リスト突合・match_status 判定）の出力を `merged_summi
 
 | ファイル | 新しい役割 |
 |---|---|
-| `merged_summit.geojson` | **フェーズ3 末尾の中心成果物**（全 Point + 全 Polygon + rationale + 不備フラグを含む） |
+| `merged_summit.geojson` | **フェーズ3 末尾の中心データ**（全 Point + 全 Polygon + rationale + 不備フラグを含む） |
 | `merged.csv` | `merged_summit.geojson` から派生する**エビデンス CSV**（UR-005 対応）。`rationale` 列は含めない |
 | `merged_peak.geojson` | per-mesh activation 統合の**内部中間ファイル**（デバッグ・差分検査用）。物理出力は残す |
 | `merged_viewer.html` | フェーズ4 で `merged_summit.geojson` のみを入力に生成（責務縮小） |
@@ -102,6 +102,7 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 
 - **ADR-SRS-011**（delete-zone-polygon）: Consequences の「不備フラグ列は merged.csv に追加」記述を「不備フラグは `merged_summit.geojson` のフィーチャプロパティ（metadata）に格納し、merged.csv（派生エビデンス）には含めない」に補足追記
 - **ADR-SRS-030**（rename-central-geojson-merged-summit）: 本 ADR 決定時のファイル名 `merged.geojson` を `merged_summit.geojson`（和名「突合済み統合 GeoJSON」）へリネームした。本 ADR の本文は最新名に更新済み
+- **ADR-SRS-033**（defect-confirmation-via-xlsx）: 本 ADR で決定した「不備フラグを `merged_summit.geojson` metadata に格納する」設計を改訂。top-level boolean 不備フラグは metadata から削除し、不備確認の責務を `merged_summit.xlsx`（per-row 表示）へ移行する。per-feature プロパティ（`key_col_resolved`・`area_complete`）は維持する。
 - **ADR-SRS-004 / ADR-SRS-010**: 影響なし（per-mesh 段階の出力フォーマットは変更不要）
 
 ### 関連 ISSUE への影響
