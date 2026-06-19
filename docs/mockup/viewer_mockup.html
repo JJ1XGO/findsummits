@@ -353,28 +353,22 @@ function pointsToColor(pts) {
   return map[pts] || "#888";
 }
 
-const WHITE_OUTLINE = "text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff";
-const CIRCLE_PX = 16;   // fa-circle はフル描画なのでそのまま
-const TRIANGLE_PX = 24; // fa-caret は余白が多いので大きめにして視覚サイズを揃える
+// 地理院シンボルアイコン（pt → symbols番号）。本番(mesh_analyze.c/merge.py)では config.ini で上書き可能にする予定
+const GSI_SYMBOL_URL = n => `https://maps.gsi.go.jp/portal/sys/v4/symbols/${n}.png`;
+const ICON_SYMBOLS = {
+  peak:   { 1:'398', 2:'077', 4:'400', 6:'078', 8:'079', 10:'076' },
+  col:    { 1:'697', 2:'093', 4:'699', 6:'094', 8:'095', 10:'092' },
+  summit: { 1:'826', 2:'102', 4:'828', 6:'103', 8:'104', 10:'101' },
+};
+const ICON_PX = 24;
 
-function peakIcon(color) {
-  return L.divIcon({
-    html: `<i class="fa-solid fa-caret-up" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:bottom center;${WHITE_OUTLINE};"></i>`,
-    iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, TRIANGLE_PX], className: ""
-  });
+function gsiIcon(kind, pts) {
+  const num = ICON_SYMBOLS[kind][pts] || ICON_SYMBOLS[kind][10];
+  return L.icon({ iconUrl: GSI_SYMBOL_URL(num), iconSize: [ICON_PX, ICON_PX], iconAnchor: [ICON_PX / 2, ICON_PX / 2] });
 }
-function colIcon(color) {
-  return L.divIcon({
-    html: `<i class="fa-solid fa-caret-down" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:top center;${WHITE_OUTLINE};"></i>`,
-    iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, 0], className: ""
-  });
-}
-function sotaIcon(color) {
-  return L.divIcon({
-    html: `<i class="fa-solid fa-circle" style="color:${color};font-size:${CIRCLE_PX}px;line-height:1;${WHITE_OUTLINE};"></i>`,
-    iconSize: [CIRCLE_PX, CIRCLE_PX], iconAnchor: [CIRCLE_PX / 2, CIRCLE_PX / 2], className: ""
-  });
-}
+function peakIcon(pts)  { return gsiIcon('peak', pts); }
+function colIcon(pts)   { return gsiIcon('col', pts); }
+function sotaIcon(pts)  { return gsiIcon('summit', pts); }
 
 // ---- 地図初期化 ----
 const map = L.map("map", { zoomControl: false }).setView([35.33, 138.72], 10);
@@ -965,7 +959,7 @@ function renderFeatures() {
       const coordKey = p.summit_code;
       const cat = peakCategory[coordKey];
       const saved = savedInputs[coordKey] || {};
-      const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(color) });
+      const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(p.points) });
 
       const pkLat = geom.coordinates[1].toFixed(5);
       const pkLon = geom.coordinates[0].toFixed(5);
@@ -1066,7 +1060,7 @@ function renderFeatures() {
       const colParentPeak = peakByCode[p.summit_code];
       const colPeakCode = p.summit_code;
       const colCodeLabel = colParentPeak?.properties.match_status === "new" ? "仮コード" : "コード";
-      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(color) })
+      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(p.points) })
         .bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
           ${colPeakCode ? `<div class="popup-row"><label>${colCodeLabel}</label>${colPeakCode}</div>` : ""}
@@ -1109,7 +1103,7 @@ function renderFeatures() {
           <div class="popup-row"><label>ポイント</label>${p.sota_points}pt</div>
         `;
       }
-      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(sotaColor) })
+      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(p.sota_points) })
         .bindPopup(summitPopupHtml)
         .addTo(filterGroups[cat]);
     }

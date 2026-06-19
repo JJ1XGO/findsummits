@@ -44,6 +44,31 @@
   - FR-009 の point-in-polygon 処理を `feature_type ∈ {activation_zone, delete_zone}` のポリゴンに絞るフィルタを追加
   - 仕様詳細: `docs/decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md`
 
+- [ ] **(HLD フェーズ・元 ISSUE-106 派生) 地理院シンボル18番号体系の HLD 色スキーム規定**
+  - HLD の色スキームセクションに下記マッピングを記載する（`viewer_mockup.html` では JS 定数として先行実装済み）
+  - | pt | ピーク | コル | サミット |
+    |---|---|---|---|
+    | 1pt  | 398 | 697 | 826 |
+    | 2pt  | 077 | 093 | 102 |
+    | 4pt  | 400 | 699 | 828 |
+    | 6pt  | 078 | 094 | 103 |
+    | 8pt  | 079 | 095 | 104 |
+    | 10pt | 076 | 092 | 101 |
+  - URL: `https://maps.gsi.go.jp/portal/sys/v4/symbols/{番号}.png`（3桁ゼロパディング必須）
+
+- [ ] **(HLD フェーズ・元 ISSUE-106 派生) 中間 GeoJSON の標高ベース色スキームを HLD で規定**
+  - 中間 GeoJSON（merged_peak.geojson 等）は SOTA ポイント未割当のため pt ベース番号が使えない
+  - ADR-SRS-026 L50-51 の「標高ベース等の代替スキームは HLD で規定」に基づき、HLD で番号体系を別途確定する
+
+- [ ] **(HLD フェーズ・元 ISSUE-106 派生) ADR-SRS-026 L49 の記述整理**
+  - L49「▲▽の厳密再現は地理院地図では保証しない（FontAwesome 非対応）」を、地理院シンボル統一方針（実装済み）に合わせて書き換える
+  - 対象: `docs/decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md`
+
+- [ ] **(HLD フェーズ・元 ISSUE-106 派生) 本番コードへの地理院シンボル反映と config.ini 化**
+  - `mesh_analyze.c`・`merge.py`・`output_geojson.py` に 18番号体系を適用
+  - `params/config.ini` に `[icons]` セクションを追加してシンボル番号を上書き可能にする（ADR-SRS-031 の前例に倣う）
+  - モックアップ（`viewer_mockup.html`）の `ICON_SYMBOLS` 定数と同一番号を初期値として設定
+
 - [ ] **(元 ISSUE-079) scripts/preprocess_pref_boundaries.py を FR-017 改訂版仕様に追従**
   - ZIP 自動検出方式（`$DATA_DIR/ref/` を `N03-(\d{8})_GML\.zip` で走査、YYYYMMDD 最大を採用）
   - ZIP 内市区町村版 GeoJSON のみを一時ディレクトリに展開して処理、処理後削除
