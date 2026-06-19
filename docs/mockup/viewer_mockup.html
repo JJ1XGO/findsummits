@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>findsummits viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: sans-serif; font-size: 13px; display: flex; flex-direction: column; height: 100vh; }
@@ -99,6 +99,18 @@
       padding: 3px 4px; font-size: 11px; font-family: sans-serif;
       border: 1px solid #aaa; border-radius: 2px; resize: vertical; box-sizing: border-box;
     }
+
+    .popup-raw { margin-top: 8px; border-top: 1px solid #ddd; padding-top: 4px; }
+    .popup-raw summary { font-size: 11px; color: #888; cursor: pointer; user-select: none; }
+    .popup-raw summary:hover { color: #333; }
+    .popup-raw-row { font-size: 11px; font-family: monospace; color: #555; margin: 1px 0; }
+    .popup-raw-row span { color: #333; font-weight: bold; }
+
+    .popup-jump {
+      margin-top: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+      border: 1px solid #4D7A20; background: #f0f7e6; border-radius: 2px; width: 100%;
+    }
+    .popup-jump:hover { background: #dff0c8; }
 
     /* Leaflet コントロールアイコン幅統一（30×30px）*/
     .leaflet-bar a {
@@ -234,6 +246,8 @@
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+<script src="summits_data.js"></script>
 <script>
 // ---- ダミーデータ（実物では merged_summit.geojson の内容が埋め込まれる） ----
 // points は merge.py が peak_elev / sota_alt_m から標高バンドで算出してセットする
@@ -247,60 +261,60 @@ const GEOJSON_DATA = {
   features: [
     // ── new: 新規ピーク候補（1521m → 10pt）────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-001",
+      properties: { feature_type: "peak", match_status: "new", summit_code: "ZZ/ZZ-A00",
                     peak_elev: 1521, prominence: 210, stability: "confirmed", key_col_resolved: true,
                     points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/NEW-001", area_complete: true, points: 10 } },
+      properties: { feature_type: "activation_zone", summit_code: "ZZ/ZZ-A00", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.71, 35.33] },
-      properties: { feature_type: "col", summit_code: "JA/NEW-001", col_elev: 1311, points: 10 } },
+      properties: { feature_type: "col", summit_code: "ZZ/ZZ-A00", col_elev: 1311, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.695,35.315],[138.725,35.315],[138.725,35.345],[138.695,35.345],[138.695,35.315]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/NEW-001" } },
+      properties: { feature_type: "delete_zone", summit_code: "ZZ/ZZ-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.71,35.33]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/NEW-001" } },
+      properties: { feature_type: "prominence_range", summit_code: "ZZ/ZZ-A00" } },
 
     // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.68, 35.31] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-002",
+      properties: { feature_type: "peak", match_status: "new", summit_code: "ZZ/ZZ-A01",
                     peak_elev: 580, prominence: 165, stability: "confirmed", key_col_resolved: true,
                     points: 2 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.670,35.300],[138.690,35.300],[138.690,35.320],[138.670,35.320],[138.670,35.300]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/NEW-002", area_complete: true, points: 2 } },
+      properties: { feature_type: "activation_zone", summit_code: "ZZ/ZZ-A01", area_complete: true, points: 2 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.66, 35.29] },
-      properties: { feature_type: "col", summit_code: "JA/NEW-002", col_elev: 415, points: 2 } },
+      properties: { feature_type: "col", summit_code: "ZZ/ZZ-A01", col_elev: 415, points: 2 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.650,35.278],[138.672,35.278],[138.672,35.302],[138.650,35.302],[138.650,35.278]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/NEW-002" } },
+      properties: { feature_type: "delete_zone", summit_code: "ZZ/ZZ-A01" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/NEW-002" } },
+      properties: { feature_type: "prominence_range", summit_code: "ZZ/ZZ-A01" } },
 
     // ── new: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
     // is_island=true → 島嶼部最高峰。col・prominence_range は含めない（SRS 仕様）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/NEW-004",
+      properties: { feature_type: "peak", match_status: "new", summit_code: "ZZ/ZZ-A02",
                     peak_elev: 820, prominence: 820, stability: "unstable",
                     key_col_resolved: false, is_island: true, points: 6 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.910,35.210],[138.930,35.210],[138.930,35.230],[138.910,35.230],[138.910,35.210]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/NEW-004", area_complete: true, points: 6 } },
+      properties: { feature_type: "activation_zone", summit_code: "ZZ/ZZ-A02", area_complete: true, points: 6 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/NEW-004" } },
+      properties: { feature_type: "delete_zone", summit_code: "ZZ/ZZ-A02" } },
 
     // ── matched: 陸地最高峰・既存サミットと一致（3776m → 10pt）──────────────
     // 富士山: 日本本土最高峰のため Key コル未定義（key_col_resolved=false, is_island=false）
     // col・prominence_range は含めない（SRS 仕様）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
       properties: { feature_type: "peak", match_status: "matched",
-                    summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
+                    summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     peak_elev: 3776, prominence: 3776, stability: "unstable",
                     key_col_resolved: false, is_island: false,
                     is_band_change_candidate: false, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/YN-001", area_complete: true, points: 10 } },
+      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-D01", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
       properties: { feature_type: "summit", match_status: "matched",
-                    summit_code: "JA/YN-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
+                    summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     sota_alt_m: 3776, sota_points: 10 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
-      properties: { feature_type: "coord_diff", summit_code: "JA/YN-001", match_status: "matched" } },
+      properties: { feature_type: "coord_diff", summit_code: "JA/ZZ-D01", match_status: "matched" } },
 
     // ── matched: 変更候補（is_band_change_candidate=true・2100m/8pt・SOTAは1950m/6pt）──
     { type: "Feature", geometry: { type: "Point", coordinates: [138.85, 35.50] },
@@ -335,7 +349,7 @@ const GEOJSON_DATA = {
       properties: { feature_type: "col", summit_code: "JA/YN-A00", col_elev: 730, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
       properties: { feature_type: "summit", match_status: "delete",
-                    summit_code: "JA/YN-099", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
+                    summit_code: "JA/ZZ-D02", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
                     sota_alt_m: 880, sota_points: 6,
                     dominant_peak_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
@@ -347,31 +361,68 @@ const GEOJSON_DATA = {
   ]
 };
 
+// 既存SOTAサミット全件（geojson_v31 由来・summits_data.js）を「変更なし」サミットとしてマージ
+// _ref=true 印: 大量の変更なしサミットは軽量な Canvas 丸で描く（解析結果の peak/col/summit は divIcon ▲▼●）
+if (window.ALL_SUMMITS && Array.isArray(window.ALL_SUMMITS.features)) {
+  window.ALL_SUMMITS.features.forEach(f => { f.properties._ref = true; });
+  GEOJSON_DATA.features.push(...window.ALL_SUMMITS.features);
+}
+
 // ---- points → 色 ----
 function pointsToColor(pts) {
   const map = { 1: "#4D7A20", 2: "#6DA536", 4: "#AEA727", 6: "#EFA818", 8: "#DC5D04", 10: "#C8101E" };
   return map[pts] || "#888";
 }
 
-// 地理院シンボルアイコン（pt → symbols番号）。本番(mesh_analyze.c/merge.py)では config.ini で上書き可能にする予定
-const GSI_SYMBOL_URL = n => `https://maps.gsi.go.jp/portal/sys/v4/symbols/${n}.png`;
-const ICON_SYMBOLS = {
-  peak:   { 1:'398', 2:'077', 4:'400', 6:'078', 8:'079', 10:'076' },
-  col:    { 1:'697', 2:'093', 4:'699', 6:'094', 8:'095', 10:'092' },
-  summit: { 1:'826', 2:'102', 4:'828', 6:'103', 8:'104', 10:'101' },
-};
-const ICON_PX = 24;
+// FontAwesome divIcon（pt → pointsToColor で色決定）。pt 引数・kind+pts でメモ化
+const WHITE_OUTLINE = "text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff";
+const CIRCLE_PX = 16;   // fa-circle はフル描画なのでそのまま
+const TRIANGLE_PX = 24; // fa-caret は余白が多いので大きめにして視覚サイズを揃える
 
-function gsiIcon(kind, pts) {
-  const num = ICON_SYMBOLS[kind][pts] || ICON_SYMBOLS[kind][10];
-  return L.icon({ iconUrl: GSI_SYMBOL_URL(num), iconSize: [ICON_PX, ICON_PX], iconAnchor: [ICON_PX / 2, ICON_PX / 2] });
+const _iconCache = {};
+function peakIcon(pts) {
+  const key = "peak" + pts;
+  if (!_iconCache[key]) {
+    const color = pointsToColor(pts);
+    _iconCache[key] = L.divIcon({
+      html: `<i class="fa-solid fa-caret-up" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:bottom center;${WHITE_OUTLINE};"></i>`,
+      iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, TRIANGLE_PX], className: ""
+    });
+  }
+  return _iconCache[key];
 }
-function peakIcon(pts)  { return gsiIcon('peak', pts); }
-function colIcon(pts)   { return gsiIcon('col', pts); }
-function sotaIcon(pts)  { return gsiIcon('summit', pts); }
+function colIcon(pts) {
+  const key = "col" + pts;
+  if (!_iconCache[key]) {
+    const color = pointsToColor(pts);
+    _iconCache[key] = L.divIcon({
+      html: `<i class="fa-solid fa-caret-down" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:top center;${WHITE_OUTLINE};"></i>`,
+      iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, 0], className: ""
+    });
+  }
+  return _iconCache[key];
+}
+function sotaIcon(pts) {
+  const key = "summit" + pts;
+  if (!_iconCache[key]) {
+    const color = pointsToColor(pts);
+    _iconCache[key] = L.divIcon({
+      html: `<i class="fa-solid fa-circle" style="color:${color};font-size:${CIRCLE_PX}px;line-height:1;${WHITE_OUTLINE};"></i>`,
+      iconSize: [CIRCLE_PX, CIRCLE_PX], iconAnchor: [CIRCLE_PX / 2, CIRCLE_PX / 2], className: ""
+    });
+  }
+  return _iconCache[key];
+}
 
 // ---- 地図初期化 ----
-const map = L.map("map", { zoomControl: false }).setView([35.33, 138.72], 10);
+const map = L.map("map", {
+  preferCanvas: true,
+  zoomControl: false,
+  zoomSnap: 1, zoomDelta: 1,
+  wheelDebounceTime: 100, wheelPxPerZoomLevel: 120,
+  maxBounds: [[-85, -45], [85, 315]],
+  maxBoundsViscosity: 1.0
+}).setView([35.33, 138.72], 10);
 L.control.scale({ position: "bottomleft", imperial: false, maxWidth: 150 }).addTo(map);
 
 const baseLayers = {
@@ -398,6 +449,16 @@ baseLayers["地理院（標準）"].addTo(map);
 map.createPane('contourPane');
 map.getPane('contourPane').style.zIndex = '250';
 map.getPane('contourPane').style.pointerEvents = 'none';
+
+// ---- azPane（AZ を delete判定ゾーンより上に: overlayPane 400 と markerPane 600 の間）----
+map.createPane('azPane');
+map.getPane('azPane').style.zIndex = '450';
+
+// ---- summitPane（変更なしサミットの Canvas 丸: AZ(450)より上・マーカー層(600)より下）----
+// マーカー層(divIcon)より下にすることで、解析結果アイコンのクリックを Canvas が奪わない
+map.createPane('summitPane');
+map.getPane('summitPane').style.zIndex = '550';
+const summitRenderer = L.canvas({ pane: 'summitPane' });
 
 // GeoJSON・等高線データはいずれも地理院標高タイル由来 → 基図によらず常時表示
 map.attributionControl.addAttribution(
@@ -893,6 +954,25 @@ function categorize(matchStatus) {
   return "unchanged";
 }
 
+function rawPropsHtml(props) {
+  const rows = Object.entries(props)
+    .map(([k, v]) => `<div class="popup-raw-row"><span>${k}</span>: ${v}</div>`).join('');
+  return `<details class="popup-raw"><summary>全データ ▶</summary>${rows}</details>`;
+}
+
+const markerByCode = { peak: {}, col: {} };
+window.jumpTo = function(kind, code) {
+  const m = markerByCode[kind][code];
+  if (!m) return;
+  map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 13));
+  map.once('moveend', () => m.openPopup());
+};
+
+// 変更なし既存サミット（Canvas 円）のズーム連動サイズ
+const _refMarkers = [];
+function summitRadius() { const z = map.getZoom(); return z <= 6 ? 4 : z <= 9 ? 6 : z <= 12 ? 9 : 12; }
+map.on('zoomend', () => { const r = summitRadius(); _refMarkers.forEach(m => m.setRadius(r)); });
+
 // フィーチャをカテゴリに振り分けて描画
 function renderFeatures() {
   Object.values(filterGroups).forEach(g => g.clearLayers());
@@ -908,11 +988,13 @@ function renderFeatures() {
   const peakByCode = {};
   const colByCode = {};
   const summitByCode = {};
+  const azByCode = {};
   GEOJSON_DATA.features.forEach(f => {
     const ft = f.properties.feature_type;
-    if (ft === "peak")   peakByCode[f.properties.summit_code]   = f;
-    if (ft === "col")    colByCode[f.properties.summit_code]     = f;
-    if (ft === "summit") summitByCode[f.properties.summit_code]  = f;
+    if (ft === "peak")            peakByCode[f.properties.summit_code]   = f;
+    if (ft === "col")             colByCode[f.properties.summit_code]    = f;
+    if (ft === "summit")          summitByCode[f.properties.summit_code] = f;
+    if (ft === "activation_zone") azByCode[f.properties.summit_code]     = f;
   });
 
   GEOJSON_DATA.features.forEach(f => {
@@ -927,31 +1009,36 @@ function renderFeatures() {
     if (p.feature_type === "activation_zone") {
       const cat = catByCode(p.summit_code);
       L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
-        color, fillColor: color, fillOpacity: 0.1, weight: 1
+        pane: "azPane", fillColor: "#4D7A20", fillOpacity: 0.1, stroke: false, interactive: false
       }).addTo(filterGroups[cat]);
       return;
     }
 
     if (p.feature_type === "delete_zone") {
       const cat = catByCode(p.summit_code);
-      const pkColor = pointsToColor(peakByCode[p.summit_code]?.properties.points);
-      L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
-        color: pkColor, fillColor: pkColor, fillOpacity: 0.15, weight: 1.5, dashArray: "4,3"
-      }).addTo(filterGroups[cat]);
+      const style = { fillColor: "#C8101E", fillOpacity: 0.15, stroke: false, interactive: false };
+      // 対応する AZ と重なる部分を除外し、重なっていない部分だけ赤く描く（turf で差分）
+      let drawData = f;
+      const azF = azByCode[p.summit_code];
+      if (azF && window.turf) {
+        try { const diff = turf.difference(f, azF); if (diff) drawData = diff; }
+        catch (e) { /* 差分失敗時は元の delete_zone を描く */ }
+      }
+      L.geoJSON(drawData, { style }).addTo(filterGroups[cat]);
       return;
     }
 
     if (p.feature_type === "prominence_range") {
       const cat = catByCode(p.summit_code);
       L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
-        { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(filterGroups[cat]);
+        { color: "#777", weight: 3, dashArray: "4,3" }).bindPopup(rawPropsHtml(p)).addTo(filterGroups[cat]);
       return;
     }
 
     if (p.feature_type === "coord_diff") {
       const cat = catByCode(p.summit_code);
       L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
-        { color: "#aaa", weight: 1.5, dashArray: "4,3" }).addTo(filterGroups[cat]);
+        { color: "#777", weight: 3, dashArray: "4,3" }).bindPopup(rawPropsHtml(p)).addTo(filterGroups[cat]);
       return;
     }
 
@@ -960,6 +1047,7 @@ function renderFeatures() {
       const cat = peakCategory[coordKey];
       const saved = savedInputs[coordKey] || {};
       const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(p.points) });
+      markerByCode.peak[coordKey] = marker;
 
       const pkLat = geom.coordinates[1].toFixed(5);
       const pkLon = geom.coordinates[0].toFixed(5);
@@ -970,6 +1058,9 @@ function renderFeatures() {
         : '';
       const colRow = domLabel
         ? `<div class="popup-row"><label>Keyコル</label><span style="color:#888">未定義（${domLabel}）</span></div>`
+        : '';
+      const jumpColBtn = p.key_col_resolved
+        ? `<button class="popup-jump" onclick="jumpTo('col','${coordKey}')">Keyコルへ移動 ▼</button>`
         : '';
 
       if (p.match_status === "new") {
@@ -991,6 +1082,7 @@ function renderFeatures() {
           <textarea class="popup-textarea" id="notes_${coordKey}">${saved.notes || initNotes}</textarea>
           <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
           <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
+          ${jumpColBtn}${rawPropsHtml(p)}
         `);
       } else if (p.match_status === "matched") {
         if (p.is_band_change_candidate) {
@@ -1012,6 +1104,7 @@ function renderFeatures() {
             <textarea class="popup-textarea" id="notes_${coordKey}">${saved.notes || initNotes}</textarea>
             <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
             <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
+            ${jumpColBtn}${rawPropsHtml(p)}
           `);
         } else {
           marker.bindPopup(`
@@ -1026,6 +1119,7 @@ function renderFeatures() {
             ${colRow}
             <div class="popup-notes-label">変更の根拠</div>
             <div style="color:#888;font-size:11px">—（変更なし）</div>
+            ${jumpColBtn}${rawPropsHtml(p)}
           `);
         }
       } else {
@@ -1047,6 +1141,7 @@ function renderFeatures() {
           <textarea class="popup-textarea" id="notes_${coordKey}">${saved.notes || initNotes}</textarea>
           <button class="popup-save" onclick="saveInput('${coordKey}')">保存</button>
           <div class="popup-hint">入力内容はブラウザに自動保存されます</div>
+          ${jumpColBtn}${rawPropsHtml(p)}
         `);
       }
       marker.addTo(filterGroups[cat]);
@@ -1060,13 +1155,16 @@ function renderFeatures() {
       const colParentPeak = peakByCode[p.summit_code];
       const colPeakCode = p.summit_code;
       const colCodeLabel = colParentPeak?.properties.match_status === "new" ? "仮コード" : "コード";
-      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(p.points) })
-        .bindPopup(`
+      const colMarker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(p.points) });
+      markerByCode.col[p.summit_code] = colMarker;
+      colMarker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
           ${colPeakCode ? `<div class="popup-row"><label>${colCodeLabel}</label>${colPeakCode}</div>` : ""}
           <div class="popup-row"><label>緯度</label>${colLat}</div>
           <div class="popup-row"><label>経度</label>${colLon}</div>
           <div class="popup-row"><label>標高</label>${p.col_elev}m</div>
+          <button class="popup-jump" onclick="jumpTo('peak','${p.summit_code}')">ピークへ移動 ▲</button>
+          ${rawPropsHtml(p)}
         `)
         .addTo(filterGroups[cat]);
       return;
@@ -1092,6 +1190,7 @@ function renderFeatures() {
           <div class="popup-notes-label">変更の根拠</div>
           <textarea id="notes_${p.summit_code}" class="popup-textarea">${savedNotes}</textarea>
           <button onclick="saveInput('${p.summit_code}')" style="margin-top:4px;width:100%;font-size:11px;">保存</button>
+          ${rawPropsHtml(p)}
         `;
       } else {
         summitPopupHtml = `
@@ -1101,11 +1200,22 @@ function renderFeatures() {
           <div class="popup-row"><label>経度</label>${sotaLon}</div>
           <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
           <div class="popup-row"><label>ポイント</label>${p.sota_points}pt</div>
+          ${rawPropsHtml(p)}
         `;
       }
-      L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(p.sota_points) })
-        .bindPopup(summitPopupHtml)
-        .addTo(filterGroups[cat]);
+      if (p._ref) {
+        // 変更なし既存サミット（大量）→ 軽量な Canvas 丸
+        const m = L.circleMarker([geom.coordinates[1], geom.coordinates[0]], {
+          renderer: summitRenderer, radius: summitRadius(), color: "#fff", fillColor: sotaColor, fillOpacity: 1, weight: 1.5
+        });
+        m.bindPopup(summitPopupHtml).addTo(filterGroups[cat]);
+        _refMarkers.push(m);
+      } else {
+        // 解析結果サミット（少数）→ divIcon ●
+        L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(p.sota_points) })
+          .bindPopup(summitPopupHtml)
+          .addTo(filterGroups[cat]);
+      }
     }
   });
 }
@@ -1170,7 +1280,16 @@ new ExportControl().addTo(map);
   const searchInput = document.getElementById("search");
   const suggest    = document.getElementById("suggest");
 
-  const peaks = GEOJSON_DATA.features.filter(f => f.properties.feature_type === "peak");
+  // 検索対象: peak + summit を summit_code でユニーク化（peak 優先＝解析ピーク座標へ飛ばす）
+  const _si = {};
+  GEOJSON_DATA.features.forEach(f => {
+    const ft = f.properties.feature_type;
+    if (ft !== "peak" && ft !== "summit") return;
+    const code = f.properties.summit_code;
+    if (!code) return;
+    if (!_si[code] || ft === "peak") _si[code] = f;
+  });
+  const peaks = Object.values(_si);
   const LAT_LON_RE = /^\s*([+-]?\d+\.?\d*)\s*[,\s]\s*([+-]?\d+\.?\d*)\s*$/;
   let activeIdx = -1;
 
@@ -1202,7 +1321,7 @@ new ExportControl().addTo(map);
       div.className = "suggest-item";
       div.innerHTML = `<span class="suggest-code">${hlCode}</span>`
                     + `<span class="suggest-name">${hlName}</span>`
-                    + `<span class="suggest-elev">${p.peak_elev}m</span>`;
+                    + `<span class="suggest-elev">${p.feature_type === "summit" ? p.sota_alt_m : p.peak_elev}m</span>`;
       div.addEventListener("mousedown", e => { e.preventDefault(); selectFeature(feature); });
       suggest.appendChild(div);
     });
@@ -1253,8 +1372,8 @@ new ExportControl().addTo(map);
     clearSuggest();
     searchInput.value = p.summit_name_jp || p.summit_name || p.summit_code || "";
 
-    // フィルターで非表示なら ON にする
-    const cat = peakCategory[p.summit_code];
+    // フィルターで非表示なら ON にする（summit は peakCategory に無いため renderFeatures と同じロジックで解決）
+    const cat = peakCategory[p.summit_code] ?? (p.match_status === "delete" ? "dominant" : "unchanged");
     if (cat && !map.hasLayer(filterGroups[cat])) {
       filterGroups[cat].addTo(map);
       const cb = document.querySelector(`#filters input[data-cat="${cat}"]`);

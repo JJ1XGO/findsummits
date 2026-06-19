@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-19",
-    "counter": 118
+    "counter": 119
   },
   "issues": [
     {
@@ -3788,6 +3788,26 @@
           "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
         }
       ]
+    },
+    {
+      "id": "ISSUE-119",
+      "title": "地理院シンボルアイコンを中間GeoJSON・公開用ダウンロードGeoJSONに適用する",
+      "description": "モックビューア(FR-013)ではアイコンをFontAwesome(▲ピーク/▼コル/●サミット)に決定し、地理院シンボル画像(L.icon)は不採用とした(7067件のDOM描画が重く、変更なしサミットはCanvas円、解析結果はFontAwesomeで軽量化・形状区別を優先)。ただし地理院シンボルアイコンは捨てず、(1)中間GeoJSON(mesh_analyze.c/merge.py出力)と(2)公開用HTMLビューアからダウンロードするGeoJSONでの利用を予定する。これらは地理院地図等で開く前提のため地理院シンボルが適する。",
+      "type": "設計",
+      "priority": "中",
+      "category": "GeoJSON出力",
+      "reporter": "Opus",
+      "created_date": "2026-06-19",
+      "stage": null,
+      "planned_stage": "HLD",
+      "status": "未対応",
+      "assignee": "Opus",
+      "resolution": null,
+      "notes": "中間GeoJSONはSOTAポイント未割当のためpt別アイコン(18番号体系)が使えず、標高ベース等の代替スキームをHLDで規定する必要がある(ADR-SRS-026関連)。既存todo.mdの『地理院シンボル18番号体系のHLD色スキーム規定』『中間GeoJSONの標高ベース色スキームをHLDで規定』と連動。モック側はFontAwesome採用済みのため、本番出力(中間/公開用GeoJSON)とモックでアイコン方式が分岐する点を設計時に明記すること。",
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "799f32c3-b79f-42d8-b0b3-2acee57c6162",
+      "history": []
     }
   ]
 }
