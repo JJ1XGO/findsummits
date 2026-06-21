@@ -4,17 +4,19 @@
 
 ### Issue（課題）
 
-**プロジェクトの仕様・設計・調査・新機能に関するもの**を登録する。
+**プロジェクトの仕様・設計・調査に関するもの**を登録する。
 文書（URD / SRS / HLD / LLD / ADR / GLOSSARY 等）と紐づく議論を伴うものが対象。
 
-`type` の使い分け:
+`type` の使い分け（3 種のみ・「機能追加」は廃止済み → ISSUE-120）:
 
 | type | 意味 | 例 |
 |---|---|---|
-| 機能追加 | 新規 FR や新規スクリプトの追加 | FR-XXX 新設、新コマンドの追加 |
 | 改善 | 既存仕様の変更・拡張・整理 | SRS の章立て見直し、既存 FR の挙動変更 |
 | 調査 | 何かを決めるための情報収集・分析 | UR 対応漏れ調査、データ分布の実測 |
 | 設計 | 実装方針・アーキテクチャの判断 | フェーズ配置、アルゴリズム選定 |
+
+> ⚠️ **「機能追加」type は廃止。再追加禁止。**
+> SRS 確定済み FR の実装タスクは issue ではなく `mgmt/todo.md` で管理する（ISSUE-120 参照）。
 
 ### Bug（バグ）
 
@@ -134,7 +136,7 @@ venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-001
 
 # 登録前チェック: 残作業に文書・仕様の議論が必要か？ No なら mgmt/todo.md へ（冒頭の『登録すべきでない例』参照）
 # 課題を登録（非対話）
-venv/bin/python3 mgmt/tracker/track.py issue add --title "..." --priority 高 --type 機能追加 \
+venv/bin/python3 mgmt/tracker/track.py issue add --title "..." --priority 高 --type 改善 \
   --stage COD --category merge.py \
   --description "詳細説明" --resolution "対応方針"
 
@@ -181,7 +183,7 @@ venv/bin/python3 mgmt/tracker/track.py issue export --if-changed
 | status | 未対応, 対応中, 対応完了, 解決済, 却下 |
 | severity (Bug) | 高, 中, 低 |
 | priority (Issue) | 高, 中, 低 |
-| type (Issue) | 機能追加, 改善, 調査, 設計 |
+| type (Issue) | 改善, 調査, 設計（「機能追加」は廃止済み → ISSUE-120） |
 | stage | URD, SRS, HLD, LLD, COD, UT, IT, ST, OPS |
 | category | 解析エンジン, merge.py, GeoJSON出力, prefetch, 設定, その他 |
 

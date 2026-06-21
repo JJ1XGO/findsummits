@@ -21,7 +21,7 @@ track.py - バグ・課題 統合管理CLI
   python3 track.py bug add --title "..." --severity 高 --stage COD
   python3 track.py bug close BUG-001 --actor "Claude" --comment "修正完了"
   python3 track.py issue list --open
-  python3 track.py issue add --title "..." --priority 高 --type 機能追加
+  python3 track.py issue add --title "..." --priority 高 --type 改善
   python3 track.py issue close ISSUE-001 --actor "Claude" --comment "実装完了"
 """
 
@@ -40,7 +40,7 @@ ISSUE_REPORT  = os.path.join(BASE_DIR, "reports", "issues_export.xlsx")
 VALID_STATUSES   = ["未対応", "対応中", "対応完了", "解決済", "却下"]
 VALID_SEVERITIES = ["高", "中", "低"]
 VALID_PRIORITIES = ["高", "中", "低"]
-VALID_TYPES      = ["機能追加", "改善", "調査", "設計"]
+VALID_TYPES      = ["改善", "調査", "設計"]  # 「機能追加」は廃止（FR確定済み実装は todo.md へ）。再追加禁止
 VALID_CATEGORIES = ["解析エンジン", "merge.py", "GeoJSON出力", "prefetch", "設定", "その他"]
 VALID_STAGES     = ["URD", "SRS", "HLD", "LLD", "COD", "UT", "IT", "ST", "OPS"]
 
@@ -76,20 +76,39 @@ def next_id(data, prefix):
     data["meta"]["counter"] += 1
     return f"{prefix}-{data['meta']['counter']:03d}"
 
-def ask_interactive(prompt, required=True, choices=None, default=None):
-    hint = f" [{'/'.join(choices)}]" if choices else ""
-    hint += f" (default: {default})" if default else ""
-    while True:
-        val = input(f"  {prompt}{hint}: ").strip()
-        if not val and default:
-            return default
-        if not val and required:
-            print("  ※ 必須項目です")
-            continue
-        if choices and val not in choices:
-            print(f"  ※ 次のいずれかを入力してください: {', '.join(choices)}")
-            continue
-        return val or None
+def ask_interactive(prompt, required=True, choices=None, default=None, guide=None):
+    if guide:
+        print(f"  {DIM}{guide}{RESET}")
+    if choices:
+        print(f"  {prompt}:")
+        for i, c in enumerate(choices, 1):
+            marker = " ←default" if c == default else ""
+            print(f"    {i}) {c}{marker}")
+        hint = f"番号または文字列{f' (default: {default})' if default else ''}"
+        while True:
+            val = input(f"  選択 [{hint}]: ").strip()
+            if not val and default:
+                return default
+            if not val and required:
+                print("  ※ 必須項目です")
+                continue
+            if not val:
+                return None
+            if val.isdigit() and 1 <= int(val) <= len(choices):
+                return choices[int(val) - 1]
+            if val in choices:
+                return val
+            print(f"  ※ 番号（1〜{len(choices)}）または {', '.join(choices)} を入力してください")
+    else:
+        hint = f" (default: {default})" if default else ""
+        while True:
+            val = input(f"  {prompt}{hint}: ").strip()
+            if not val and default:
+                return default
+            if not val and required:
+                print("  ※ 必須項目です")
+                continue
+            return val or None
 
 def current_session_id():
     return os.environ.get("CLAUDE_CODE_SESSION_ID", "")
@@ -356,19 +375,41 @@ def bug_add(args):
     print(f"  ID: {colored(bug_id, BOLD)}\n")
     bug = new_bug(bug_id)
     bug.update({
-        "title":       ask_interactive("タイトル"),
-        "description": ask_interactive("説明",           required=False),
-        "reporter":    ask_interactive("報告者",         required=False),
-        "found_stage": ask_interactive("発生ステージ",   choices=VALID_STAGES,     required=False),
-        "category":    ask_interactive("カテゴリ",       choices=VALID_CATEGORIES, required=False),
-        "found_in":    ask_interactive("発生プログラム", required=False),
-        "repro":       ask_interactive("再現性",         required=False),
-        "severity":    ask_interactive("重大度",         choices=VALID_SEVERITIES, default="中"),
-        "status":      ask_interactive("ステータス",     choices=VALID_STATUSES,   default="未対応"),
+        "title":       ask_interactive("タイトル",
+                           guide="バグの主題を一行で。例: merge.py: 削除候補の件数が0件になる"),
+        "description": ask_interactive("説明",
+                           required=False,
+                           guide="期待する動作・実際の動作・再現手順を記述"),
+        "reporter":    ask_interactive("報告者",
+                           required=False,
+                           guide="人名 または モデル名（Opus / Sonnet 等）。Claude が登録する場合はモデル名"),
+        "found_stage": ask_interactive("発生ステージ",
+                           choices=VALID_STAGES, required=False,
+                           guide="バグが発見されたフェーズ（テスト中なら UT/IT/ST、実装中なら COD 等）"),
+        "category":    ask_interactive("カテゴリ",
+                           choices=VALID_CATEGORIES, required=False,
+                           guide="どのモジュール・機能に関係するか"),
+        "found_in":    ask_interactive("発生プログラム",
+                           required=False,
+                           guide="バグが現れるファイル。例: scripts/merge.py"),
+        "repro":       ask_interactive("再現性",
+                           required=False,
+                           guide="毎回 / 条件付き / たまに"),
+        "severity":    ask_interactive("重大度",
+                           choices=VALID_SEVERITIES, default="中",
+                           guide="高=結果が信用できない/完走しない、中=効率・使い勝手に支障、低=ログ・命名等の品質"),
+        "status":      ask_interactive("ステータス",
+                           choices=VALID_STATUSES, default="未対応"),
         "assignee":    ask_interactive("担当者",         required=False),
-        "stage":       ask_interactive("発生源ステージ", choices=VALID_STAGES,     required=False),
-        "cause":       ask_interactive("原因プログラム", required=False),
-        "resolution":  ask_interactive("対応方針",       required=False),
+        "stage":       ask_interactive("発生源ステージ",
+                           choices=VALID_STAGES, required=False,
+                           guide="バグの原因が埋め込まれたフェーズ（仕様ミスなら SRS、実装ミスなら COD 等）"),
+        "cause":       ask_interactive("原因プログラム",
+                           required=False,
+                           guide="バグの根本原因があるファイル。例: src/analyze.c"),
+        "resolution":  ask_interactive("対応方針",
+                           required=False,
+                           guide="修正方針。例: analyze.c の境界条件チェックを追加する"),
         "notes":       ask_interactive("備考",           required=False),
     })
     data["bugs"].append(bug)
@@ -672,16 +713,32 @@ def issue_add(args):
     print(f"  ID: {colored(issue_id, BOLD)}\n")
     issue = new_issue(issue_id)
     issue.update({
-        "title":       ask_interactive("タイトル"),
-        "description": ask_interactive("説明",         required=False),
-        "type":        ask_interactive("種別",         choices=VALID_TYPES,      required=False),
-        "priority":    ask_interactive("優先度",       choices=VALID_PRIORITIES, default="中"),
-        "category":    ask_interactive("カテゴリ",     choices=VALID_CATEGORIES, required=False),
-        "reporter":    ask_interactive("報告者",       required=False),
-        "stage":       ask_interactive("発生ステージ", choices=VALID_STAGES,     required=False),
-        "status":      ask_interactive("ステータス",   choices=VALID_STATUSES,   default="未対応"),
+        "title":       ask_interactive("タイトル",
+                           guide="主題を一行で。例: SRS: RTM の追加 / merge.py: 削除候補判定の改修"),
+        "description": ask_interactive("説明",
+                           required=False,
+                           guide="課題（問い）の背景・現状・困りごとを記述。例: 現在 XX の動作が YY になっており…"),
+        "type":        ask_interactive("種別",
+                           choices=VALID_TYPES, required=False,
+                           guide="改善=既存仕様の変更/整理、調査=方針を決めるための情報収集、設計=実装方針・アーキの判断"),
+        "priority":    ask_interactive("優先度",
+                           choices=VALID_PRIORITIES, default="中",
+                           guide="高=今すぐ対処が必要、中=近い将来対処、低=余裕のある時に対処"),
+        "category":    ask_interactive("カテゴリ",
+                           choices=VALID_CATEGORIES, required=False,
+                           guide="どのモジュール・機能に関係するか"),
+        "reporter":    ask_interactive("報告者",
+                           required=False,
+                           guide="人名 または モデル名（Opus / Sonnet 等）。Claude が登録する場合はモデル名"),
+        "stage":       ask_interactive("発生ステージ",
+                           choices=VALID_STAGES, required=False,
+                           guide="課題が発生したフェーズ。URD=要求/SRS=要件/HLD=基本設計/LLD=詳細設計/COD=実装"),
+        "status":      ask_interactive("ステータス",
+                           choices=VALID_STATUSES, default="未対応"),
         "assignee":    ask_interactive("担当者",       required=False),
-        "resolution":  ask_interactive("対応方針",     required=False),
+        "resolution":  ask_interactive("対応方針",
+                           required=False,
+                           guide="仕様検討の決着・対応方針。まだ未定なら空欄でも可"),
         "notes":       ask_interactive("備考",         required=False),
     })
     data["issues"].append(issue)

@@ -89,7 +89,16 @@
   - `scripts/merge.py:50` の DEFAULT_OUTPUT → `merged_peak.csv`
   - `scripts/output_geojson.py:34` の DEFAULT_INPUT → `merged_peak.csv`
   - FR-009 に `merged_summit.xlsx` 出力ロジック追加（カラム構成は FR-012 と同じ）
-  - 注: FR-012 実装（`merged_summit_revised.xlsx`）は ISSUE-062 として分離管理
+
+- [ ] **(元 ISSUE-062) FR-012 実装: merged_summit_revised.xlsx 生成スクリプト新規開発**
+  - SRS FR-012（サミット一覧（申請内容反映版）生成）の実装
+  - merged.geojson の Point フィーチャから FR-019 でのユーザー編集内容を反映した merged_summit_revised.xlsx を生成するスクリプトを新規開発する
+  - HTML ビューアの「エクスポート」ボタン（FR-019 経由）との連携も必要
+  - 仕様詳細: `docs/20_SRS.md` FR-012
+
+- [ ] **(元 ISSUE-063) FR-021 実装: 申請エビデンス ZIP 生成（ブラウザ内）**
+  - SRS FR-021 の実装
+  - 仕様詳細: `docs/20_SRS.md` FR-021
 
 - [ ] **(元 ISSUE-064) gsi_tile_latest_date を merged.geojson の metadata に格納**
   - ローカルキャッシュタイルの mtime 最大値を集計し、YYYY-MM-DD 形式（UTC）で格納
@@ -97,6 +106,10 @@
   - 仕様: SRS FR-019（ビューア表示時は末尾に `(UTC)` を付記）
 
 ### 中
+
+- [ ] **(元 ISSUE-066) FR-019 検索機能実装: 実 GeoJSON データでの動作確認と本実装**
+  - モックアップで実装した検索機能（サミットコード/山岳名(和英)/緯度経度の部分一致検索・サジェスト・flyTo+ポップアップ）を、本実装フェーズで実 GeoJSON データに対して再現・検証する
+  - 仕様詳細: `docs/20_SRS.md` FR-019
 
 - [ ] **(元 ISSUE-013) prefetch_tiles.py 取得範囲を各メッシュの最小範囲に修正**
   - `enumerate_jobs()` の隣接メッシュ拡張ロジック（`nb not in mesh_set` の分岐）を削除

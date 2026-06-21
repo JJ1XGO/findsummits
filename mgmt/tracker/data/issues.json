@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-19",
-    "counter": 119
+    "last_updated": "2026-06-21",
+    "counter": 120
   },
   "issues": [
     {
@@ -231,7 +231,7 @@
       "id": "ISSUE-009",
       "title": "新規サミット仮コードへの地域コード自動付与",
       "description": "現在は仮コードが ZZ/ZZ-001 形式の連番。座標から都道府県を判定し、SOTA JA のアソシエーション/リージョンコード（北海道・本州・四国・九州）を仮コードに反映できるか実装を検討する。",
-      "type": "機能追加",
+      "type": "調査",
       "priority": "低",
       "category": "merge.py",
       "reporter": "JJ1XGO",
@@ -1072,7 +1072,7 @@
       "id": "ISSUE-032",
       "title": "SRS: 要求トレーサビリティ・マトリックス（RTM）の追加",
       "description": "ユーザー指摘: SRS 末尾に要求トレーサビリティ・マトリックスを追加する。\n仕様:\n(1) 縦軸: UR-001 〜 UR-010（要件 ID + 要件タイトル）\n(2) 横軸: FR-001 〜 FR-018 + NFR-001 〜 NFR-008（各機能 / 非機能 ID + 概要タイトル）\n(3) セル: 該当する場合 ◯、しない場合は空欄\n(4) 判定基準: 当該 FR/NFR が当該 UR の達成に寄与する場合に ◯\n(5) 行末 / 列末に対応数の合計を入れて網羅性を視覚化\n依存: 他全 issue の完了。FR/NFR 内容が確定した状態で RTM を構築する。",
-      "type": "機能追加",
+      "type": "改善",
       "priority": "高",
       "category": "その他",
       "reporter": null,
@@ -1315,7 +1315,7 @@
       "id": "ISSUE-040",
       "title": "ADR-SRS-010 Phase 4: FR-016 アクティベーションゾーン計算（C++/OpenCV 新規実装）",
       "description": "ADR-SRS-010 Phase 4: FR-016（ピーク域ポリゴン計算）を C++ + OpenCV で新規実装する。AZ ポリゴンと delete判定ゾーンポリゴン（ADR-SRS-011）の 2 種類を per-mesh GeoJSON に出力する。詳細は notes 欄参照。",
-      "type": "機能追加",
+      "type": "設計",
       "priority": "高",
       "category": "解析エンジン",
       "reporter": "JJ1XGO",
@@ -1399,7 +1399,7 @@
       "id": "ISSUE-044",
       "title": "output_geojson.py: delete判定ゾーン対応 + merged_viewer.html 実装",
       "description": "ADR-SRS-011 採用に伴う output_geojson.py の改修と、SRS FR-013 で要求済みだが未実装の merged_viewer.html 出力を追加する。",
-      "type": "機能追加",
+      "type": "設計",
       "priority": "高",
       "category": "GeoJSON出力",
       "reporter": "JJ1XGO",
@@ -2012,13 +2012,22 @@
       "created_date": "2026-05-29",
       "stage": "SRS",
       "planned_stage": "HLD",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "新規スクリプト scripts/export_summit_revised.py 等を作成し、merged.geojson + HTML ビューア編集内容を入力として merged_summit_revised.xlsx を出力するロジックを実装。FR-013 HTML ビューア改修（エクスポートトリガー連携）も別途必要。",
       "notes": "【スコープ更新（2026-05-31）】FR-012 はブラウザ内（HTML ビューア）で生成する方針に確定（SRS 修正済み・FR-012 出力先を /results/ からブラウザダウンロードに変更）。生成した merged_summit_revised.xlsx は申請エビデンス ZIP（FR-021）に同梱。Python バッチでの生成は行わない。FR-021 の実装（ISSUE-063）と統合して対応する。",
-      "resolved_date": null,
+      "resolved_date": "2026-06-21",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-21T13:13:41",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "todo.md に移行（type機能追加廃止に伴う）",
+          "session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7"
+        }
+      ]
     },
     {
       "id": "ISSUE-063",
@@ -2031,13 +2040,22 @@
       "created_date": "2026-05-31",
       "stage": "SRS",
       "planned_stage": "HLD",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "HTML ビューアの「申請エビデンス」ボタンで JSZip を使い申請エビデンス ZIP をブラウザダウンロードする。同梱内容: merged_summit_revised.xlsx（FR-012）+ new/dominant/changed/unchanged の 4 GeoJSON。ISSUE-062（FR-012 XLSX 生成）と統合実装。SRS FR-021 で仕様確定済み。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-21",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-21T13:13:41",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "todo.md に移行（type機能追加廃止に伴う）",
+          "session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7"
+        }
+      ]
     },
     {
       "id": "ISSUE-064",
@@ -2104,13 +2122,22 @@
       "created_date": "2026-05-31",
       "stage": "SRS",
       "planned_stage": "HLD",
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "SRS FR-019 に検索機能要件を記載済み（2026-05-31）。検索対象プロパティ: summit_code / summit_name_jp / summit_name。モックアップ実装はdocs/mockup/viewer_mockup.html を参照",
-      "resolved_date": null,
+      "resolved_date": "2026-06-21",
       "verified_date": null,
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-21T13:13:41",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "todo.md に移行（type機能追加廃止に伴う）",
+          "session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7"
+        }
+      ]
     },
     {
       "id": "ISSUE-067",
@@ -2232,7 +2259,7 @@
       "id": "ISSUE-070",
       "title": "等高線レイヤー描画パラメータ確定（HLD）",
       "description": null,
-      "type": "機能追加",
+      "type": "設計",
       "priority": "高",
       "category": null,
       "reporter": null,
@@ -2251,7 +2278,7 @@
       "id": "ISSUE-071",
       "title": "標高タイル選択・フォールバック実装方針（HLD）",
       "description": null,
-      "type": "機能追加",
+      "type": "設計",
       "priority": "高",
       "category": null,
       "reporter": null,
@@ -3807,6 +3834,26 @@
       "resolved_date": null,
       "verified_date": null,
       "created_session_id": "799f32c3-b79f-42d8-b0b3-2acee57c6162",
+      "history": []
+    },
+    {
+      "id": "ISSUE-120",
+      "title": "課題 type『機能追加』廃止 — 実装タスクの todo 化を防ぐ",
+      "description": "issue の type『機能追加』が SRS 確定済み FR の実装タスクと本物の設計課題を両方飲み込み、issue が todo 的に使われる温床になっていた。VALID_TYPES から『機能追加』を廃止し、実装タスクは todo.md で管理する運用に移行した。対話入力 UI の番号選択メニュー化・フィールドガイド表示もあわせて実施。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-21",
+      "stage": null,
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "VALID_TYPES から廃止（track.py:43）＋argparse choices 自動更新。未解決9件（062/063/066→todo降格、070/071/040/044→type=設計、032→type=改善、009→type=調査）を再分類。対話入力を番号選択メニュー＋ガイド表示に改修。mgmt/tracker/CLAUDE.md・CLAUDE.md 更新。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7",
       "history": []
     }
   ]
