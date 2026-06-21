@@ -33,9 +33,15 @@
 - 欠陥/課題フロー: 指摘は全件洗い出し後にまとめて提示、登録はユーザー承認後
 - 自動 spawn 禁止: 既定はインライン実施
 
+## 作業3: コンテキストウィンドウ使用率をステータスラインに表示（完了）
+
+`~/.claude/settings.json` に `statusLine` フィールドを追加。グローバル設定のため Git 管理外。
+表示例: `[Sonnet] コンテキスト 25%`
+
 ## 検証
 - `/spec-panel FR-013` 等で動作確認（4視点の指摘一覧が出力され tracker 自動登録が起きないこと）
 - コミット: `.claude/commands/spec-panel.md` をコミット（`git add -A` → Conventional Commits）
+- statusLine: jq モック入力テスト・JSON 妥当性確認 → 完了
 
 ## やらないこと（スコープ外）
 - SuperClaude 本体・MCP サーバのインストール

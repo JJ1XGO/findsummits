@@ -118,6 +118,7 @@ venv が存在しない場合は先に `make venv` を実行する:
 
 ```bash
 make venv                                                          # 初回セットアップ・requirements.txt 変更時
+make venv-rebuild                                                  # venv をクリーン再構築（孤立パッケージ除去・定期/整合確認用）
 venv/bin/python3 scripts/prefetch_tiles.py ...                    # タイル取得
 venv/bin/python3 scripts/merge.py ...                             # CSV 統合・出力
 venv/bin/python3 scripts/preprocess_pref_boundaries.py ...        # 都道府県境界前処理
@@ -125,3 +126,11 @@ venv/bin/python3 mgmt/tracker/track.py issue list                 # 課題管理
 ```
 
 venv は `/workspace/venv/`（ホストマウント下）に作られるためコンテナリビルド後も消えない。
+
+### パッケージ依存の整合ルール（ズレ防止）
+
+`requirements.txt` を唯一の正とし、venv と常に一致させる:
+
+- **新しいサードパーティ製パッケージを import したら、同じコミット内で `requirements.txt` に追記する。** `pip install` だけで済ませない（venv にあるが requirements.txt に無い、というズレを防ぐ）
+- `requirements.txt` からパッケージを外したら `make venv-rebuild` で venv をクリーン再構築し、孤立パッケージを除去する
+- 定期的に `make venv-rebuild` を実行して venv == requirements.txt を担保する

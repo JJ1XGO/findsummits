@@ -47,4 +47,10 @@ venv/.installed: requirements.txt
 	venv/bin/pip install -r requirements.txt
 	@touch venv/.installed
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze venv
+# venv をクリーン再構築（孤立パッケージを除去し requirements.txt と完全一致させる）
+# 定期実行・requirements.txt から外したパッケージの除去に使う
+venv-rebuild:
+	rm -rf venv
+	$(MAKE) venv
+
+.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild
