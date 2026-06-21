@@ -362,7 +362,7 @@ const GEOJSON_DATA = {
 };
 
 // 既存SOTAサミット全件（geojson_v31 由来・summits_data.js）を「変更なし」サミットとしてマージ
-// _ref=true 印: 大量の変更なしサミットは軽量な Canvas 丸で描く（解析結果の peak/col/summit は divIcon ▲▼●）
+// _ref=true 印: 既存サミットは Canvas 丸（summitRenderer）。解析結果（peak/col/summit）も同一 Canvas で描く
 if (window.ALL_SUMMITS && Array.isArray(window.ALL_SUMMITS.features)) {
   window.ALL_SUMMITS.features.forEach(f => { f.properties._ref = true; });
   GEOJSON_DATA.features.push(...window.ALL_SUMMITS.features);
@@ -374,45 +374,27 @@ function pointsToColor(pts) {
   return map[pts] || "#888";
 }
 
-// FontAwesome divIcon（pt → pointsToColor で色決定）。pt 引数・kind+pts でメモ化
-const WHITE_OUTLINE = "text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff";
-const CIRCLE_PX = 16;   // fa-circle はフル描画なのでそのまま
-const TRIANGLE_PX = 24; // fa-caret は余白が多いので大きめにして視覚サイズを揃える
-
-const _iconCache = {};
-function peakIcon(pts) {
-  const key = "peak" + pts;
-  if (!_iconCache[key]) {
-    const color = pointsToColor(pts);
-    _iconCache[key] = L.divIcon({
-      html: `<i class="fa-solid fa-caret-up" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:bottom center;${WHITE_OUTLINE};"></i>`,
-      iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, TRIANGLE_PX], className: ""
-    });
+// Canvas 三角形マーカー（CircleMarker を継承し描画のみ差し替え。当たり判定・ポップアップ・ズーム連動は親クラス流用）
+const CanvasTriangle = L.CircleMarker.extend({
+  options: { dir: 'up' },   // 'up' = ▲(peak) / 'down' = ▼(col)
+  _updatePath: function () {
+    const r = this._renderer;
+    if (!r._drawing || this._empty()) return;
+    const p = this._point, ctx = r._ctx, rad = this._radius;
+    ctx.beginPath();
+    if (this.options.dir === 'down') {
+      ctx.moveTo(p.x,       p.y + rad);
+      ctx.lineTo(p.x - rad, p.y - rad);
+      ctx.lineTo(p.x + rad, p.y - rad);
+    } else {
+      ctx.moveTo(p.x,       p.y - rad);
+      ctx.lineTo(p.x - rad, p.y + rad);
+      ctx.lineTo(p.x + rad, p.y + rad);
+    }
+    ctx.closePath();
+    r._fillStroke(ctx, this);
   }
-  return _iconCache[key];
-}
-function colIcon(pts) {
-  const key = "col" + pts;
-  if (!_iconCache[key]) {
-    const color = pointsToColor(pts);
-    _iconCache[key] = L.divIcon({
-      html: `<i class="fa-solid fa-caret-down" style="color:${color};font-size:${TRIANGLE_PX}px;line-height:1;display:inline-block;transform:scaleY(1.5);transform-origin:top center;${WHITE_OUTLINE};"></i>`,
-      iconSize: [TRIANGLE_PX, TRIANGLE_PX], iconAnchor: [TRIANGLE_PX / 2, 0], className: ""
-    });
-  }
-  return _iconCache[key];
-}
-function sotaIcon(pts) {
-  const key = "summit" + pts;
-  if (!_iconCache[key]) {
-    const color = pointsToColor(pts);
-    _iconCache[key] = L.divIcon({
-      html: `<i class="fa-solid fa-circle" style="color:${color};font-size:${CIRCLE_PX}px;line-height:1;${WHITE_OUTLINE};"></i>`,
-      iconSize: [CIRCLE_PX, CIRCLE_PX], iconAnchor: [CIRCLE_PX / 2, CIRCLE_PX / 2], className: ""
-    });
-  }
-  return _iconCache[key];
-}
+});
 
 // ---- 地図初期化 ----
 const map = L.map("map", {
@@ -968,10 +950,16 @@ window.jumpTo = function(kind, code) {
   map.once('moveend', () => m.openPopup());
 };
 
-// 変更なし既存サミット（Canvas 円）のズーム連動サイズ
+// Canvas マーカーのズーム連動サイズ（既存サミット丸 + 解析結果 ▲▼●）
 const _refMarkers = [];
+const _sampleMarkers = [];
 function summitRadius() { const z = map.getZoom(); return z <= 6 ? 4 : z <= 9 ? 6 : z <= 12 ? 9 : 12; }
-map.on('zoomend', () => { const r = summitRadius(); _refMarkers.forEach(m => m.setRadius(r)); });
+function triRadius()    { const z = map.getZoom(); return z <= 6 ? 5 : z <= 9 ? 8 : z <= 12 ? 12 : 16; }
+map.on('zoomend', () => {
+  const r = summitRadius(), tr = triRadius();
+  _refMarkers.forEach(m => m.setRadius(r));
+  _sampleMarkers.forEach(m => m.setRadius(tr));
+});
 
 // フィーチャをカテゴリに振り分けて描画
 function renderFeatures() {
@@ -1046,7 +1034,8 @@ function renderFeatures() {
       const coordKey = p.summit_code;
       const cat = peakCategory[coordKey];
       const saved = savedInputs[coordKey] || {};
-      const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: peakIcon(p.points) });
+      const marker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'up', radius: triRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
+      _sampleMarkers.push(marker);
       markerByCode.peak[coordKey] = marker;
 
       const pkLat = geom.coordinates[1].toFixed(5);
@@ -1155,7 +1144,8 @@ function renderFeatures() {
       const colParentPeak = peakByCode[p.summit_code];
       const colPeakCode = p.summit_code;
       const colCodeLabel = colParentPeak?.properties.match_status === "new" ? "仮コード" : "コード";
-      const colMarker = L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: colIcon(p.points) });
+      const colMarker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'down', radius: triRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
+      _sampleMarkers.push(colMarker);
       markerByCode.col[p.summit_code] = colMarker;
       colMarker.bindPopup(`
           <div class="popup-title"><i class="fa-solid fa-caret-down" style="color:${color}"></i> Keyコル</div>
@@ -1211,13 +1201,15 @@ function renderFeatures() {
         m.bindPopup(summitPopupHtml).addTo(filterGroups[cat]);
         _refMarkers.push(m);
       } else {
-        // 解析結果サミット（少数）→ divIcon ●
-        L.marker([geom.coordinates[1], geom.coordinates[0]], { icon: sotaIcon(p.sota_points) })
-          .bindPopup(summitPopupHtml)
-          .addTo(filterGroups[cat]);
+        // 解析結果サミット（少数）→ Canvas 丸（既存サミットと同形・triRadius でやや大きく）
+        const sm = L.circleMarker([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, radius: triRadius(), color: '#fff', fillColor: sotaColor, fillOpacity: 1, weight: 1.5 });
+        sm.bindPopup(summitPopupHtml).addTo(filterGroups[cat]);
+        _sampleMarkers.push(sm);
       }
     }
   });
+  // 解析結果マーカーを前面に（_ref 既存サミットより後に登録されるため bringToFront で逆転）
+  _sampleMarkers.forEach(m => m.bringToFront());
 }
 
 renderFeatures();
