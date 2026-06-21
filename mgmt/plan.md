@@ -1,47 +1,43 @@
-# モックアップ 既存サミットを Canvas 描画へ（sotlas 風・軽量化）
+# SuperClaude の良いアイデアを取り入れる
 
-## Context
+## Context（なぜやるか）
 
-divIcon に戻しても、変更なし既存サミット7067件が「1個ずつの DOM 要素」のままで重い。sotlas は同じデータをベクター/Canvas に直接描画して DOM 要素を作らないため軽い。これに倣い、**変更なし既存サミット7067件を Canvas 描画（`L.circleMarker` + `preferCanvas`）に切り替え**、軽量化する。形状（●）・pt 色・ズーム連動サイズは保つ。解析結果（peak▲/col▽/sample summit●）は件数が少なく形状区別が重要なので **divIcon のまま維持**（ハイブリッド）。ユーザーは実機で見て最終判断したい意向。
+ユーザーは SuperClaude_Framework の導入を検討したが、調査の結果、**本体（pipx install）導入は非推奨**と結論。
+理由: 本フレームワークは「Claude Code に読み込ませる .md 指示ファイル群＋MCP」であり、その主要機能（plan/task/knowledge ドキュメント、記憶、課題管理、思考深度、要件深掘り）は、本プロジェクトが既に `mgmt/plan.md`・`todo.md`・`lessons.md`・`tracker/track.py`・handover・`memory/`・CLAUDE.md 運用として**自前でより厳密に**保持している。本体導入は二重管理・指示衝突を招き、過去に挙動不安定の原因となった外部コマンド群（`commands_disabled/` へ退避済み）と同じ轍になる。
 
-## 方式（ユーザー向けの言い方: 「sotlas と同じ軽い描き方」）
+そこで「考え方」だけを軽量に取り入れる。ユーザー選択により対象は次の2点に確定:
 
-| 対象 | 描き方 | 理由 |
-|---|---|---|
-| 変更なし既存サミット 7067件（`ALL_SUMMITS` 由来・`match_status="matched"`） | **Canvas 円**（pt色・ズーム連動サイズ） | DOM を作らず軽い。元々●なので見た目はほぼ同じ |
-| 解析結果（new/dominant/changed/delete の peak/col/summit） | **現状 divIcon（▲▽●）維持** | 少数・形状区別が申請確認に重要 |
+1. **Evidence-based（根拠主義）原則** — 明文化されていない開発規律を追加
+2. **多視点パネルレビュー** — 仕様レビューが重い本PJ向けの自前 skill を新設
 
-## 実装（`docs/mockup/viewer_mockup.html`）
+不採用（参考）: Token-Efficiency（出力圧縮）は素人ユーザー向けの明快な日本語説明と相反するため見送り。reflect/introspect は既存 handover/lessons ルーティンで代替済み。
 
-1. **Canvas 描画を有効化**: `L.map` の options に `preferCanvas: true` を追加（L415付近）。
-2. **参照データ印を付ける**: `ALL_SUMMITS` をマージする箇所（`GEOJSON_DATA.features.push` 付近）で、各 feature の properties に `_ref = true` を付与してから push。
-   ```js
-   window.ALL_SUMMITS.features.forEach(f => f.properties._ref = true);
-   GEOJSON_DATA.features.push(...window.ALL_SUMMITS.features);
-   ```
-3. **renderFeatures の summit 分岐を分岐**（L1107付近）:
-   - `p._ref === true`（変更なし既存サミット）→ `L.circleMarker([lat,lon], { radius: summitRadius(), color: sotaColor, fillColor: sotaColor, fillOpacity: 0.85, weight: 1 })` で描画。popup は現状の参照サミット用（コード/読み/標高/エリア＋全データ）。`_refMarkers` 配列に push（ズーム連動用）。
-   - それ以外（解析結果サミット）→ 現状の `L.marker` + `sotaIcon`（divIcon）を維持。
-4. **ズーム連動サイズ**:
-   ```js
-   const _refMarkers = [];
-   function summitRadius(){ const z=map.getZoom(); return z<=6?2 : z<=9?3 : z<=12?4 : 5; }
-   map.on('zoomend', () => { const r=summitRadius(); _refMarkers.forEach(m=>m.setRadius(r)); });
-   ```
-5. circleMarker も `filterGroups[cat]`（unchanged）に追加し、既存のフィルター・検索（ユニーク化済み）と整合させる。
+## 作業1: Evidence-based 原則の追記（完了）
 
-## 継続（触らない）
+`/home/node/.claude/CLAUDE.md` の「## コア原則」に原則6として追記済み。
+グローバルファイルのため Git 管理外。
 
-地図中心=明石・線太く・検索拡張・仮コード `ZZ/ZZ-*`・ピーク↔コルジャンプ・全データ折りたたみ・AZ緑/delete赤一律・AZを上に（azPane）。
+## 作業2: 多視点パネルレビュー skill の新設（完了）
 
-## 検証（ブラウザで `docs/mockup/viewer_mockup.html` を開く）
+`/workspace/.claude/commands/spec-panel.md` を新規作成済み。
+プロジェクトローカルに置くことで Git 管理・GitHub レビュー可能。
 
-- **軽さ**: 変更なしサミット表示時のパン・ズームが体感で軽いか（最重要・実機判断）。
-- 変更なしサミットが●（pt色）で表示され、ズームアウトで小さく・ズームインで大きくなる。
-- 解析結果は ▲▽● のまま。クリックで両方とも popup が出る。
-- 検索で変更なしサミット（北岳等）が選択でき、対象へ飛ぶ。
+### 4つの視点（本PJの関心事に直結）
+- アーキテクト: モジュール分担・ADR 整合・設計の一貫性・拡張性
+- 仕様レビュアー: URD↔SRS↔HLD↔LLD トレーサビリティ・曖昧さ・抜け漏れ・矛盾
+- データ/アルゴリズム: 境界条件・NODATA・サンプル代表性・性能/メモリ
+- 申請者/エンドユーザー: SOTA 申請 O/P 要件・エビデンス妥当性
 
-## 補足
+### 本PJのルール遵守（skill 本文に明記済み）
+- 仕様優先原則: コードを正として参照しない
+- 欠陥/課題フロー: 指摘は全件洗い出し後にまとめて提示、登録はユーザー承認後
+- 自動 spawn 禁止: 既定はインライン実施
 
-- 効果が想定通りなら、この方式を SRS の FR-013 ビューア表示仕様（描画方式・ズーム連動）として反映する候補。
-- circleMarker（円）以外の形（▲▽）も Canvas で描けるが、まず最小実装（既存サミット=円）で軽さを確認し、必要なら拡張。
+## 検証
+- `/spec-panel FR-013` 等で動作確認（4視点の指摘一覧が出力され tracker 自動登録が起きないこと）
+- コミット: `.claude/commands/spec-panel.md` をコミット（`git add -A` → Conventional Commits）
+
+## やらないこと（スコープ外）
+- SuperClaude 本体・MCP サーバのインストール
+- Token-Efficiency / 思考深度フラグ / reflect の導入
+- 既存 tracker・handover・lessons の改変
