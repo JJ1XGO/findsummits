@@ -1,49 +1,96 @@
-# SuperClaude の良いアイデアを取り入れる
+# 計画: 課題 type「機能追加」廃止 + 対話入力UI改善
 
-## Context（なぜやるか）
+## Context
 
-ユーザーは SuperClaude_Framework の導入を検討したが、調査の結果、**本体（pipx install）導入は非推奨**と結論。
-理由: 本フレームワークは「Claude Code に読み込ませる .md 指示ファイル群＋MCP」であり、その主要機能（plan/task/knowledge ドキュメント、記憶、課題管理、思考深度、要件深掘り）は、本プロジェクトが既に `mgmt/plan.md`・`todo.md`・`lessons.md`・`tracker/track.py`・handover・`memory/`・CLAUDE.md 運用として**自前でより厳密に**保持している。本体導入は二重管理・指示衝突を招き、過去に挙動不安定の原因となった外部コマンド群（`commands_disabled/` へ退避済み）と同じ轍になる。
+`mgmt/tracker/track.py` の課題 type「機能追加」が「実装タスク（SRS確定済みFRの実装）」と
+「本物の設計課題」の両方を飲み込み、issue が todo 的に使われる温床になっている。
+2026-06-19 にユーザー承認済みの方針（type 廃止 + 再分類 + 対話UI改善）を実装する。
+あわせて、ユーザー自身が課題管理 CLI を使えていない（選択肢を覚えられない・各フィールドに
+何を書くか分からない）問題を、対話入力の番号選択メニュー化＋フィールドガイドで解消する。
 
-そこで「考え方」だけを軽量に取り入れる。ユーザー選択により対象は次の2点に確定:
+検証で判明した前提補正:
+- handover 記載の `normalize_type()`/`TYPE_ALIASES` は**存在しない** → エイリアス廃止作業は不要
+- 未解決の `type=機能追加` は **9件**（元計画の6件＋032/040/044）。全件再分類する（ユーザー承認済み）
 
-1. **Evidence-based（根拠主義）原則** — 明文化されていない開発規律を追加
-2. **多視点パネルレビュー** — 仕様レビューが重い本PJ向けの自前 skill を新設
+## 作業 A: type「機能追加」廃止（コード）
 
-不採用（参考）: Token-Efficiency（出力圧縮）は素人ユーザー向けの明快な日本語説明と相反するため見送り。reflect/introspect は既存 handover/lessons ルーティンで代替済み。
+対象: `mgmt/tracker/track.py`
 
-## 作業1: Evidence-based 原則の追記（完了）
+1. `VALID_TYPES`（43行）: `["機能追加", "改善", "調査", "設計"]` → `["改善", "調査", "設計"]`
+   - 廃止理由＋再追加禁止をコメントで明記
+2. ヘルプ文（24行付近）の `--type 機能追加` 例を `--type 改善` 等に差し替え
+3. 既存データ表示互換: summary（763, 857行）・export（832行）は `VALID_TYPES` をループするだけなので、
+   廃止後は「機能追加」を集計表に出さない。再分類で全件 valid な type に移すため宙に浮くデータは残らない
+   （万一の歴史データは show コマンドで生の値をそのまま表示＝fallback で互換維持。要コード確認）
+- argparse の `--type` choices（911, 912行）は `VALID_TYPES` 参照のため自動で「機能追加」が外れ、
+  `--type 機能追加` は argparse エラーになる（追加実装不要）
 
-`/home/node/.claude/CLAUDE.md` の「## コア原則」に原則6として追記済み。
-グローバルファイルのため Git 管理外。
+対象: `mgmt/tracker/CLAUDE.md`
+- type 表から「機能追加」行を削除、廃止理由＋再追加禁止を明記
+- 「有効な値」表の `type (Issue)` を `改善, 調査, 設計` に更新
+- コマンド例の `--type 機能追加` を更新
 
-## 作業2: 多視点パネルレビュー skill の新設（完了）
+対象: `/workspace/CLAUDE.md`
+- 「課題管理ルール」に1行追記: 「FR確定済みの実装は todo、issue type は 改善/調査/設計 の3種」
 
-`/workspace/.claude/commands/spec-panel.md` を新規作成済み。
-プロジェクトローカルに置くことで Git 管理・GitHub レビュー可能。
+## 作業 B: 対話入力モードの改善（番号選択＋ガイド）
 
-### 4つの視点（本PJの関心事に直結）
-- アーキテクト: モジュール分担・ADR 整合・設計の一貫性・拡張性
-- 仕様レビュアー: URD↔SRS↔HLD↔LLD トレーサビリティ・曖昧さ・抜け漏れ・矛盾
-- データ/アルゴリズム: 境界条件・NODATA・サンプル代表性・性能/メモリ
-- 申請者/エンドユーザー: SOTA 申請 O/P 要件・エビデンス妥当性
+対象: `mgmt/tracker/track.py` の `ask_interactive`（79-92行）
 
-### 本PJのルール遵守（skill 本文に明記済み）
-- 仕様優先原則: コードを正として参照しない
-- 欠陥/課題フロー: 指摘は全件洗い出し後にまとめて提示、登録はユーザー承認後
-- 自動 spawn 禁止: 既定はインライン実施
+1. シグネチャに `guide=None` を追加
+2. `guide` があればプロンプト前にグレー表示で「書く内容の説明＋記入例」を出す
+3. `choices` がある場合は番号メニュー表示（例: `1) 改善  2) 調査  3) 設計`）。
+   入力は**番号・文字列の両方を受理**し、`default` も従来通り反映。標準ライブラリのみ（依存追加なし）
+   - questionary 等の矢印キーTUIは環境依存のため不採用（コンテナで確実に動く方式）
 
-## 作業3: コンテキストウィンドウ使用率をステータスラインに表示（完了）
+対象: `issue_add`（671-689行）/ `bug_add`（同等の対話ブロック）の各 `ask_interactive` 呼び出し
+- 主要フィールドに `guide` を付与。文面の方針:
+  - title: 「主題を一行で。例: SRS: RTM の追加」
+  - description: 「課題（問い）の背景・現状・困りごと」
+  - type: 「改善=既存仕様の変更/整理、調査=決めるための情報収集、設計=実装方針の判断」
+  - resolution: 「仕様検討の決着・対応方針」
+  - priority/stage/category 等にも一行ガイド
 
-`~/.claude/settings.json` に `statusLine` フィールドを追加。グローバル設定のため Git 管理外。
-表示例: `[Sonnet] コンテキスト 25%`
+## 作業 C: 既存 issue 再分類（9件・ユーザー承認済み）
+
+| ISSUE | 操作 |
+|---|---|
+| 062 / 063 / 066 | `issue close` 理由「todo.md に移行（type機能追加廃止に伴う）」→ `mgmt/todo.md` 高/中へ転記 |
+| 070 / 071 / 040 / 044 | `issue update --type 設計 --actor Opus --comment "type機能追加廃止に伴う再分類"` |
+| 032 | `issue update --type 改善 --actor Opus --comment "同上"` |
+| 009 | `issue update --type 調査 --actor Opus --comment "同上"` |
+
+- 解決済/却下の歴史データ（002/003/004/014/015/048/049/050/055/091/102 等）は**据え置き**（生値で表示互換）
+
+## 作業 D: 運用変更を issue 1件で記録
+
+```
+issue add --type 設計 --priority 中 --actor Opus \
+  --title "課題 type『機能追加』廃止 — 実装タスクの todo 化を防ぐ" \
+  --description "..." --resolution "VALID_TYPES から廃止＋対話UI改善＋既存9件再分類"
+```
+- 採番された ISSUE 番号を、A/B/C の文書注記（mgmt/tracker/CLAUDE.md 等）の根拠として記載
 
 ## 検証
-- `/spec-panel FR-013` 等で動作確認（4視点の指摘一覧が出力され tracker 自動登録が起きないこと）
-- コミット: `.claude/commands/spec-panel.md` をコミット（`git add -A` → Conventional Commits）
-- statusLine: jq モック入力テスト・JSON 妥当性確認 → 完了
 
-## やらないこと（スコープ外）
-- SuperClaude 本体・MCP サーバのインストール
-- Token-Efficiency / 思考深度フラグ / reflect の導入
-- 既存 tracker・handover・lessons の改変
+1. `venv/bin/python3 mgmt/tracker/track.py issue add --type 機能追加 --title x` → argparse エラーで弾かれる
+2. `issue summary` → 種別別に「機能追加」が出ない／3種のみ
+3. `issue show ISSUE-070` → type=設計、`ISSUE-009` → type=調査
+4. 引数なし `issue add`（対話）→ 番号メニュー＋ガイドが表示され、番号で type 選択できる（Ctrl-C で中断）
+5. `python3 -c "import json; json.load(open('mgmt/tracker/data/issues.json'))"` で JSON 妥当性
+6. `mgmt/todo.md` に 062/063/066 が転記済み・文書3ファイル（track.py コメント / tracker CLAUDE.md / project CLAUDE.md）の整合を目視
+
+## コミット
+
+作業完了後にまとめて1コミット（Conventional Commits・本文日本語）:
+`chore(tracker): 課題 type「機能追加」を廃止し対話入力を番号選択+ガイド化`
+- ドキュメント（CLAUDE.md 2ファイル）も同コミットに含める
+
+## モデル推奨
+
+設計判断は対話で確定済み、残りはファイル編集中心（guide 文面・todo 転記文程度）のため **Sonnet 推奨**。
+
+## 注記
+
+- ToolSearch は本環境で壊れているため**使用禁止**。本作業は Read/Edit/Bash/Write のみで完結し deferred tool 不要
+- 再分類の `--actor` はモデル名（Opus）を記入（impersonation 禁止ルール）
