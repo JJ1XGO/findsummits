@@ -1102,6 +1102,7 @@ matched / dominant のみ。
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）・JSZip（ZIP 生成）
   - 背景タイル切り替え機能（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-SRS-006](decisions/ADR-SRS-006-viewer-background-tile-selection.md)）。OSM は等高線なしのため、後述の等高線オーバーレイで補完できる（[ADR-SRS-015](decisions/ADR-SRS-015-contour-overlay.md)）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
+  - 各マーカーは `feature_type` に応じた形状で区別する: **summit=●（円）/ peak=▲（上向き三角）/ col=▼（下向き三角）**。形状の具体的描画方式（Canvas 等）は HLD に委ねる
   - 未確定フラグ付きのアクティベーションゾーンは警告色で表示する
   - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
@@ -1118,6 +1119,7 @@ matched / dominant のみ。
     - 解析実行日時（`generated_at`）
   - **等高線オーバーレイ**: 地理院標高タイル（dem5a/dem5b/dem5c/dem10b）をブラウザからリアルタイム取得し、Canvas でピクセル単位に等高線を描画するオーバーレイレイヤーを設ける。主用途は OSM 選択時の等高線欠落の補完。レイヤーコントロールから ON/OFF 可能（デフォルト OFF）。描画は基図より上・GeoJSON より下の独立レイヤーとして表示する（重ね順の詳細は HLD、ズーム別描画パラメータは HLD に委ねる）
   - 地図帰属表示: peak/col/summit/AZ/delete_zone 等の GeoJSON データは地理院標高タイル解析由来であるため、**基図の選択に関わらず** `© 国土地理院`（リンク先: `https://maps.gsi.go.jp/`）を常時表示する。等高線レイヤー ON/OFF 状態によらず同 attribution を維持する。OSM 選択時は加えて `© OpenStreetMap contributors`、OpenTopoMap 選択時は `© OpenTopoMap contributors` を表示する
+  - **ピーク popup の情報表示**: ピークの popup には標高・プロミネンスに加え、プロミネンスの根拠となる **Keyコル標高（`col_elev`）** を表示する。Keyコル未確定（`key_col_resolved=false`、陸地最高峰・島嶼部最高峰）の場合は「未定義（陸地最高峰／島嶼部最高峰）」と表示する
   - **山岳名入力 UI**:
     - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」「山岳名EN」入力フィールドを表示
     - matched（既存）ピーク: 入力フィールド不要（名称変更は申請対象外。`is_band_change_candidate=true` の場合は申請書エクスポート時に自動的に「変更」行を出力する）
