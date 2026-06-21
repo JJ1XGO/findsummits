@@ -954,11 +954,12 @@ window.jumpTo = function(kind, code) {
 const _refMarkers = [];
 const _sampleMarkers = [];
 function summitRadius() { const z = map.getZoom(); return z <= 6 ? 4 : z <= 9 ? 6 : z <= 12 ? 9 : 12; }
-function triRadius()    { const z = map.getZoom(); return z <= 6 ? 5 : z <= 9 ? 8 : z <= 12 ? 12 : 16; }
+function triRadius()    { const z = map.getZoom(); return z <= 6 ? 5 : z <= 9 ? 7 : z <= 12 ? 11 : 14; }
 map.on('zoomend', () => {
   const r = summitRadius(), tr = triRadius();
   _refMarkers.forEach(m => m.setRadius(r));
-  _sampleMarkers.forEach(m => m.setRadius(tr));
+  // ▲▼(CanvasTriangle)は triRadius、サンプル●(circleMarker)は既存サミットと同じ summitRadius
+  _sampleMarkers.forEach(m => m.setRadius(m instanceof CanvasTriangle ? tr : r));
 });
 
 // フィーチャをカテゴリに振り分けて描画
@@ -1201,8 +1202,8 @@ function renderFeatures() {
         m.bindPopup(summitPopupHtml).addTo(filterGroups[cat]);
         _refMarkers.push(m);
       } else {
-        // 解析結果サミット（少数）→ Canvas 丸（既存サミットと同形・triRadius でやや大きく）
-        const sm = L.circleMarker([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, radius: triRadius(), color: '#fff', fillColor: sotaColor, fillOpacity: 1, weight: 1.5 });
+        // 解析結果サミット（少数）→ Canvas 丸（既存サミットと完全同サイズ summitRadius）
+        const sm = L.circleMarker([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, radius: summitRadius(), color: '#fff', fillColor: sotaColor, fillOpacity: 1, weight: 1.5 });
         sm.bindPopup(summitPopupHtml).addTo(filterGroups[cat]);
         _sampleMarkers.push(sm);
       }
