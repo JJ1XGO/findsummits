@@ -77,6 +77,20 @@
 
 ---
 
+## 国土地理院 基準点タイル（データソース）
+
+| 項目 | 内容 |
+|---|---|
+| 提供元 | 国土地理院 |
+| データ種別 | 基準点（電子基準点・一等／二等／三等三角点）。ベクトルタイル（GeoJSON 形式） |
+| 取得 URL | `https://cyberjapandata.gsi.go.jp/xyz/cp/{z}/{x}/{y}.geojson` |
+| 参照 URL | https://maps.gsi.go.jp/development/ichiran.html |
+| 利用規約 | 国土地理院コンテンツ利用規約（https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html） |
+| 帰属表示義務 | 利用成果物に「国土地理院」の帰属表示が必要 |
+| 本プロジェクトでの利用形態 | HTML ビューアの「基準点」参照レイヤー（デフォルト OFF）で、表示範囲のタイルをブラウザから実行時取得して描画する。タイルデータはリポジトリに含めない。レイヤー ON 時にビューアの帰属表示へ基準点データの出典として `国土地理院` を併記する。採用経緯: [ADR-SRS-034](../docs/decisions/ADR-SRS-034-viewer-reference-layers.md) |
+
+---
+
 ## 参照文書（ファイル未格納）
 
 ### SOTA日本支部 参照マニュアル（標高バンド・ポイント算出ルール）
