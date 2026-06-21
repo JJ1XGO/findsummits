@@ -50,123 +50,6 @@ make clean              # build/ ディレクトリごと削除
 
 依存: `libpng`, `libm`, `pthread`（GCC / C99）
 
-## Python スクリプトの実行
-
-**Python スクリプトは必ず `venv/bin/python3` で呼び出すこと（`python3` は不可）。**
-`python3` はコンテナのシステム Python であり、パッケージが入っていない。
-
-venv が存在しない場合は先に `make venv` を実行する:
-
-```bash
-make venv                                                          # 初回セットアップ・requirements.txt 変更時
-venv/bin/python3 scripts/prefetch_tiles.py ...                    # タイル取得
-venv/bin/python3 scripts/merge.py ...                             # CSV 統合・出力
-venv/bin/python3 scripts/preprocess_pref_boundaries.py ...        # 都道府県境界前処理
-venv/bin/python3 mgmt/tracker/track.py issue list                          # 課題管理
-```
-
-venv は `/workspace/venv/`（ホストマウント下）に作られるためコンテナリビルド後も消えない。
-
-## アーキテクチャ
-
-### データフロー
-
-```
-（事前準備）
-prefetch_tiles.py でタイルを $DATA_DIR/tiles/ へ取得済み
-  ↓
-入力: 1次メッシュコード（例: 4929）またはメッシュリストファイル
-  ↓
-mesh_analyze() [mesh_analyze.c]
-  ├─ 中心メッシュ + 隣接メッシュ（最大3×3）の結合範囲を計算 [mesh.c]
-  ├─ ローカルキャッシュ済みタイルを読み込み [elevation.c]
-  │   （ローカルキャッシュ未取得時はエラー終了）
-  └─ 全タイルを1枚の大画像に結合
-  ↓
-標高地形図 PNG 出力 [mesh_analyze.c]
-  └─ $DATA_DIR/images/<meshcode>_terrain.png（長辺6000px縮小）
-  ↓
-Union-Find アルゴリズムでピーク・コルを検出 [unionfind.c]
-  ↓
-比高 >= 130m でフィルタ（最終 150m 判定は merge.py で実施）
-  ↓
-出力: $DATA_DIR/results/csv/<meshcode>.csv
-```
-
-### 主要モジュール
-
-| モジュール | 役割 |
-|---|---|
-| `mesh.c/h` | 1次メッシュコード ↔ タイル座標変換（ズーム15 Web Mercator）、隣接メッシュ計算・MeshSet |
-| `elevation.c/h` | PNG タイルデコード（RGB→標高）、8方向オーバーラップ対応、ローカルキャッシュ参照のみ |
-| `unionfind.c/h` | Union-Find（経路圧縮・rank による union）でピークグループ管理 |
-| `analyze.c/h` | タイル単体のピーク候補検出・比高計算、`col_margin_px` 算出 |
-| `mesh_analyze.c/h` | メッシュ全体のオーケストレーション・標高地形図 PNG 出力・CSV 出力 |
-| `scripts/prefetch_tiles.py` | タイル事前取得（If-Modified-Since 条件付き GET・並列4・429/503 backoff） |
-| `scripts/preprocess_pref_boundaries.py` | N03 行政区域 GeoJSON を都道府県/振興局レベルに dissolve して軽量化（初回のみ実行） |
-
-### 重要な実装詳細
-
-- **標高デコード**: `elev = (R*65536 + G*256 + B) / 100.0` 、無効値 `(R=128,G=0,B=0)` → `-9999.0f`
-- **境界処理**: メッシュ外周に 0m（海面）の 1px ボーダーを追加して、メッシュ端を海岸線とみなす
-- **タイルサイズ**: 実画像は 256×256 px だが、隣接タイルとの境界を正確に処理するため 257×257 px（1px オーバーラップ）で管理
-- **DEM フォールバック**: DEM5 が存在しないタイルは DEM10 で代替
-- **無効標高のセンチネル**: `-9999.0f`
-- **標高地形図 PNG**: `findsummits` 実行時に解析範囲を人間が視認しやすい配色で標高を色分けした PNG として出力。長辺 6000px に縮小して保存
-
-### アーキテクチャ方針（ハイブリッド構成）
-
-- **C エンジン** (`src/`): 標高デコード・Union-Find によるピーク/コル検出・標高地形図 PNG 出力・per-mesh CSV 出力（タイル取得は行わない）
-- **Python スクリプト** (`scripts/`): タイル事前取得（prefetch_tiles.py）、N03 行政区域前処理（preprocess_pref_boundaries.py・初回のみ）、複数 CSV の統合、SOTA リスト突合、XLSX/GeoJSON 生成
-
-C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummits4sotaja`（Python）に出力生成コードが既存するため、この分担を採用。性能が必要な計算は C、申請用出力は Python。
-
-### ディレクトリ構成
-
-```
-src/          # ソースファイル（main.c, *.c, *.h）
-scripts/      # 本番パイプライン用スクリプト
-  prefetch_tiles.py             # タイル事前取得（params/fetch_config.ini を参照）
-  preprocess_pref_boundaries.py # N03行政区域前処理（初回のみ: $DATA_DIR/ref/N03-2026_regions.geojson 生成）
-  merge.py                      # 複数CSV統合・SOTA突合・都道府県ベース仮コード割り振り
-  run_all.sh                    # 全メッシュ一括解析ラッパー
-analysis/     # 検証・解析用スクリプト（本番パイプライン外）
-  analyze_keycol_distance.py    # Keyコル距離分析
-params/       # パラメータファイル
-  mesh_list_japan.txt           # 解析対象メッシュコードリスト
-  config.ini.example            # DATA_DIR 設定テンプレート（コミット済み）
-  config.ini                    # 実設定（gitignore）: DATA_DIR を記入
-  fetch_config.ini.example      # UA・並列数設定のテンプレート（コミット済み）
-  fetch_config.ini              # 実設定（gitignore・メールアドレス記入）
-docs/         # 設計ドキュメント（git管理・devel/main 両ブランチ）
-  00_GLOSSARY.md                           # 用語集
-  01_environment.md                        # 環境定義
-  10_URD.md                                # ユーザー要件定義書
-  20_SRS.md                                # ソフトウェア要件仕様書
-  decisions/                               # アーキテクチャ決定記録（ADR）
-    research/                              # ADR 決定前の設計調査資料
-ref/          # 参照データ（git管理）
-  summitslist.csv                          # SOTAの山岳リスト（全サミット）
-  SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
-  SOURCES.md                               # 参照資料の出典一覧
-tests/        # テスト用プログラム（test_*.c）
-mgmt/          # 管理ドキュメント（lessons.md, plan.md, tracker/）※ devel ブランチのみ・main には含めない
-.claude-container  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
-
-# 以下のパスは params/config.ini の DATA_DIR で設定する
-# - claude-container 使用時: DATA_DIR = /data（コンテナ内パス）
-# - 非コンテナ時: DATA_DIR = /path/to/your/data（ホストのデータパス）
-$DATA_DIR/images/       # 標高地形図 PNG（findsummits が自動出力: <meshcode>_terrain.png）
-$DATA_DIR/results/      # 最終O/Pのxlsx,geojson,csv
-$DATA_DIR/results/csv/  # 一時csv（findsummits が出力するper-mesh CSV）
-$DATA_DIR/tiles/        # ダウンロード済みタイルのローカルキャッシュ
-  └─ {サービス名}/  # dem5a_png / dem5b_png / dem5c_png / dem_png（タイル URL の命名規則と同様）
-     └─ {z}/
-        └─ {x}
-           └─ {y}.png
-$DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
-```
-
 ## 開発ドキュメント管理
 
 docs/ 配下を編集するときは採番・フォーマット・ADR ルールを `docs/CLAUDE.md` で確認すること。
@@ -187,45 +70,20 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 ## 課題管理ルール
 
 **課題管理（`mgmt/tracker/` issue）はプロジェクトの仕様・設計・調査・新機能に特化する。**
-文書（URD / SRS / HLD / LLD / ADR / GLOSSARY 等）と紐づく議論を伴うものだけを `issue` に登録する。
-それ以外の作業リスト（実装タスク・ファイル名追従・ログ整備・運用作業等）は `mgmt/todo.md` で管理する（後述「ToDo リスト運用ルール」）。
-バグ（欠陥）は `track.py bug`、課題は `track.py issue` と使い分けること。
 
-**判定基準: 残作業に文書・仕様の議論が必要か？**
-- Yes → `issue`（例: SRS の FR 追加、ADR 作成、SRS と実装の乖離調査）
-- No  → `todo.md`（例: 関数名のリネーム、ログ書式の統一、設定ファイルの追従、コメント修正）
+**判定基準: 残作業に文書・仕様の議論が必要か？（出自ではなく残作業で判定）**
+- Yes → `issue`（SRS の FR 追加、ADR 作成、SRS と実装の乖離調査 等）
+- No  → `todo.md`（関数名リネーム、ログ書式統一、コメント修正、実装追従 等）
 
-**重要: 判定は「出自」ではなく「残作業」で行う。**
-レビューで仕様が確定済みで、残りが実装追従（コメント修正・命名追従・機械的変換等）だけなら、
-そのレビュー由来でも `todo.md`。複数件をまとめて登録するときも 1 件ずつ判定すること。
+**守るべき原則:**
+- **1 項目 1 課題**: 複数の課題を1件に詰め込まない
+- **出自でなく残作業で判定**: レビュー由来でも残りが実装追従だけなら `todo.md`
+- **issue のスコープ**: 「問い＋決着（決定＋ADR/SRS への記録）」まで。記録完了 = 対応完了
+- **impersonation 禁止**: AI が登録・判断した課題・バグは `報告者`・`--actor` ともにモデル名（Sonnet/Opus 等）を記入。ユーザー名を充ててはならない
 
-**載せるのは「課題そのもの」であって「作業」ではない。**
-issue に登録するのは、仕様検討・設計判断を行う必要のある**未解決の問い**のみ。
-判断を文書へ反映する作業（SRS/ADR への反映・記述整理・注記追加・リンク化等）は
-仕様判断を伴っていても課題ではなく `todo.md`。
+登録フロー: `issue add` → 作業開始時 `issue update --status 対応中` → `issue close` → ユーザーが `issue verify`
 
-**回顧テスト**: 「解決後に振り返っても、これは課題だと思えるか？」で確認する。
-完了後に TODO に見えるものは最初から TODO（issue ではない）。
-
-**レビューの扱い**: 「FR-XX をレビューする／レビュー反映する」は作業 → `todo.md`。
-レビューで出た各設計論点（判断が要るもの）を **1 論点 1 課題**で個別に issue 登録する。
-
-**1 項目 1 課題**: 1 つの登録項目に複数の課題を詰め込まない。課題が複数あれば数だけ個別登録する。
-
-**issue のスコープとクローズ**: issue は「問い＋その決着（決定＋ADR/SRS への記録）」まで。
-記録完了 = `対応完了`（Claude 視点のクローズ）。下流の機械作業（実装追従・命名・リンク化等）は別 `todo.md`。
-
-1. 登録前に上記判定基準を適用する。No と判定したら `mgmt/todo.md` へ追記して終了（`issue add` しない）
-2. Yes と判定した課題を `venv/bin/python3 mgmt/tracker/track.py issue add` で登録する
-3. 作業開始時は `issue update --status 対応中` でステータスを更新する
-4. 実装完了後は `issue close` コマンドでステータスを「対応完了」にする
-5. ユーザーが確認完了後、`issue verify` コマンドでステータスを「解決済」にする
-6. `stage` フィールドは次ステージ移行の判断材料として活用する
-
-詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
-
-トラッカーで担当者（`--actor`）にモデル名を記入する場合はバージョン番号なしで「Sonnet」「Opus」「Fable」とだけ書く（バージョンアップ追従の手間を避けるため）。
-AI（Claude / 各モデル）が登録・判断した課題・バグは、`報告者`・`--actor` ともにモデル名を記入する。ユーザー名（JJ1XGO 等）を充ててはならない（ユーザーが報告・判断したと偽る impersonation になるため）。
+詳細な運用手順・判定基準・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
 
 ## ToDo リスト運用ルール
 
