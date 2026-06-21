@@ -954,12 +954,10 @@ window.jumpTo = function(kind, code) {
 const _refMarkers = [];
 const _sampleMarkers = [];
 function summitRadius() { const z = map.getZoom(); return z <= 6 ? 4 : z <= 9 ? 6 : z <= 12 ? 9 : 12; }
-function triRadius()    { const z = map.getZoom(); return z <= 6 ? 5 : z <= 9 ? 7 : z <= 12 ? 11 : 14; }
 map.on('zoomend', () => {
-  const r = summitRadius(), tr = triRadius();
+  const r = summitRadius();
   _refMarkers.forEach(m => m.setRadius(r));
-  // ▲▼(CanvasTriangle)は triRadius、サンプル●(circleMarker)は既存サミットと同じ summitRadius
-  _sampleMarkers.forEach(m => m.setRadius(m instanceof CanvasTriangle ? tr : r));
+  _sampleMarkers.forEach(m => m.setRadius(r));   // ▲▼● 全てサミットと同サイズ
 });
 
 // フィーチャをカテゴリに振り分けて描画
@@ -1035,7 +1033,7 @@ function renderFeatures() {
       const coordKey = p.summit_code;
       const cat = peakCategory[coordKey];
       const saved = savedInputs[coordKey] || {};
-      const marker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'up', radius: triRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
+      const marker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'up', radius: summitRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
       _sampleMarkers.push(marker);
       markerByCode.peak[coordKey] = marker;
 
@@ -1046,15 +1044,15 @@ function renderFeatures() {
       const domBadge = domLabel
         ? `<span class="popup-badge" style="background:#7B2FBE">${domLabel}</span>`
         : '';
+      const colF = colByCode[p.summit_code];
       const colRow = domLabel
-        ? `<div class="popup-row"><label>Keyコル</label><span style="color:#888">未定義（${domLabel}）</span></div>`
-        : '';
+        ? `<div class="popup-row"><label>Keyコル標高</label><span style="color:#888">未定義（${domLabel}）</span></div>`
+        : (colF ? `<div class="popup-row"><label>Keyコル標高</label>${colF.properties.col_elev}m</div>` : '');
       const jumpColBtn = p.key_col_resolved
         ? `<button class="popup-jump" onclick="jumpTo('col','${coordKey}')">Keyコルへ移動 ▼</button>`
         : '';
 
       if (p.match_status === "new") {
-        const colF = colByCode[p.summit_code];
         const colElevStr = colF ? `${colF.properties.col_elev}m` : '（陸地最高峰のため未定義）';
         const initNotes = `国土地理院標高タイルで解析\n${pkLat},${pkLon}\n所在地：\nコル標高：${colElevStr}\nプロミネンス：${p.prominence}m`;
         marker.bindPopup(`
@@ -1113,7 +1111,6 @@ function renderFeatures() {
           `);
         }
       } else {
-        const colF = colByCode[p.summit_code];
         const colElevStr = colF ? `${colF.properties.col_elev}m` : '（陸地最高峰のため未定義）';
         const initNotes = `国土地理院標高タイルで解析\n${pkLat},${pkLon}\n所在地：\nコル標高：${colElevStr}\nプロミネンス：${p.prominence}m`;
         marker.bindPopup(`
@@ -1145,7 +1142,7 @@ function renderFeatures() {
       const colParentPeak = peakByCode[p.summit_code];
       const colPeakCode = p.summit_code;
       const colCodeLabel = colParentPeak?.properties.match_status === "new" ? "仮コード" : "コード";
-      const colMarker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'down', radius: triRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
+      const colMarker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'down', radius: summitRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
       _sampleMarkers.push(colMarker);
       markerByCode.col[p.summit_code] = colMarker;
       colMarker.bindPopup(`
