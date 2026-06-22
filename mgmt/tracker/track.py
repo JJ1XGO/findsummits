@@ -27,6 +27,7 @@ track.py - バグ・課題 統合管理CLI
 
 import json
 import argparse
+import re
 import sys
 import os
 from datetime import datetime, date
@@ -75,6 +76,15 @@ def save(path, data):
 def next_id(data, prefix):
     data["meta"]["counter"] += 1
     return f"{prefix}-{data['meta']['counter']:03d}"
+
+def normalize_id(raw, kind):
+    prefix = {"bug": "BUG", "issue": "ISSUE"}.get(kind)
+    if prefix is None or raw is None:
+        return raw
+    m = re.search(r'(\d+)\s*$', str(raw).strip())
+    if not m:
+        return raw
+    return f"{prefix}-{int(m.group(1)):03d}"
 
 def ask_interactive(prompt, required=True, choices=None, default=None, guide=None):
     if guide:
@@ -993,6 +1003,8 @@ def main():
 
     fn = args.dispatch.get(args.cmd)
     if fn:
+        if getattr(args, "id", None) is not None:
+            args.id = normalize_id(args.id, args.kind)
         fn(args)
     else:
         args.parser.print_help()

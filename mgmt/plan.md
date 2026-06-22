@@ -1,91 +1,89 @@
-# 計画: FR-013レビュー由来 課題6件＋TODO3件の対応
+# track.py: ID 引数を「数字だけ」でも受け付ける
 
-## Context
+## Context（なぜやるか）
 
-2026-06-21 の `/spec-panel FR-013` レビューで洗い出した指摘を tracker 登録した（ISSUE-121〜126 + todo.md 3件）。
-本セッションでその9件を対応する。**全件 SRS 文書（`docs/20_SRS.md`）の記述整理であり、コード変更は伴わない**（仕様優先原則）。
-根因は「viewer が消費する `merged_summit.geojson` のスキーマ正本が、生成者 FR-009 ではなく消費者 FR-013 に置かれている」こと。これが metadata/プロパティの重複・不一致・死に仕様の温床になっている。
+課題管理は「1課題1登録」に整理した結果、日常操作は `show / update / close / verify` に
+ID を渡す場面が多い。現状は `ISSUE-121` / `BUG-007` のようにプレフィックス＋3桁ゼロ埋めの
+完全形を毎回タイプする必要があり、`121` や `7` で済ませたいというのが要望。
+bug 側も同様。
 
-## 対象9件の分類
+ゴール: `track.py issue show 121` で `ISSUE-121` を、`track.py bug close 7` で `BUG-007` を
+引けるようにする（完全形 `ISSUE-121` / `BUG-7` も従来どおり受け付ける＝後方互換）。
 
-| ID | 種別 | 内容 | 検討要否 |
-|---|---|---|---|
-| ISSUE-121 | 設計/高 | スキーマ正本を FR-013 → FR-009 へ移設 | 方向は明確（推奨で実施） |
-| ISSUE-122 | 改善/中 | FR-013(生成)↔FR-019(ブラウザ機能) 役割境界整理 | 推奨で実施 |
-| ISSUE-123 | 改善/中 | viewer 使用 metadata キー列挙の重複解消 | 推奨で実施 |
-| ISSUE-124 | 改善/中 | AZ `area_complete=false` 死に仕様の明確化 | 推奨で実施 |
-| ISSUE-125 | 設計/中 | `key_col_resolved=false` 時の prominence 値表現 | **要決定** |
-| ISSUE-126 | 設計/中 | dominant 複数削除候補の対応識別プロパティ | **要決定（ADR要否含む）** |
-| TODO 1 | 低 | summit_name_jp 取得元記述修正 | 機械的 |
-| TODO 2 | 低 | feature_type 用語ゆれ統一（col→key_col） | 機械的 |
-| TODO 3 | 低 | FR-013概要に「作業用のみ生成」明記 | 機械的 |
+## 現状の把握（調査済み）
 
-## 推奨する役割分担（121/122/123 の核）
+- ID 生成: `next_id()`（track.py:75-77）が `f"{prefix}-{counter:03d}"`。prefix は `BUG` / `ISSUE`、3桁ゼロ埋め
+- ID 照合: `show/update/close/verify` の各関数が `next((x for x in data[...] if x["id"] == args.id), None)` で
+  生文字列一致（bug: track.py:312,421,468 ほか / issue: 654,750,795 ほか）
+- どのコマンドが bug か issue かは `args.kind`（`"bug"` / `"issue"`）で判別可能（main: track.py:983-985）
+- ID を位置引数 `id` で取るのは `show / update / close / verify` の4コマンド（list/add/summary/export は対象外）
 
-3者の責務を以下に再整理する：
+## 方針
 
-- **FR-009（生成者・スキーマ正本）**: `merged_summit.geojson` の全フィーチャ構成（match_status 別）＋各フィーチャのプロパティ表＋metadata 定義を保持。現状 FR-013 L959-1045 にある表を FR-009 説明セクション（L917 metadata 付近）へ移設。
-- **FR-013（生成手順）**: 入力=merged_summit.geojson / 出力=merged_viewer.html。テンプレート同梱・JS変数埋め込み・出力パスの「生成機構」記述（現状 FR-019 L1099-1100）をこちらへ移す。スキーマは FR-009 を参照。
-- **FR-019（ブラウザ提供機能）**: 表示・編集・検索・エクスポート。スキーマは FR-009 参照。viewer が表示に使う metadata キー一覧はここに一本化（FR-013 L954-958 の重複リストは削除し FR-009 参照に）。
+照合箇所を個別に直さず、**`main()` で `args.id` を一度だけ正規化**する。注入点が1つで済み、
+既存関数群（約12箇所の `args.id` 参照）には一切手を入れない。
 
-## 各件の対応方針
+### 変更1: 正規化ヘルパー追加（`next_id` の近く、track.py:77 直後あたり）
 
-### ISSUE-121（移設・要注意の大作業）
-- FR-013 L959-1045 の「フィーチャ構成」表＋「各フィーチャのプロパティ」全表を FR-009 へ移設。
-- FR-013 側は「生成するフィーチャ／プロパティの定義は FR-009 を参照」に置換。
-- **他8件はこの移設後の位置（FR-009内）に対して適用する**ため、121 を最初に実施。
+```python
+def normalize_id(raw, kind):
+    """ID引数を正規形に整える。'121'→'ISSUE-121'、'BUG-7'→'BUG-007' など。
+    解釈できない入力はそのまま返し、後段の『見つかりません』処理に委ねる。"""
+    prefix = {"bug": "BUG", "issue": "ISSUE"}.get(kind)
+    if prefix is None or raw is None:
+        return raw
+    s = str(raw).strip()
+    # 末尾の数字部分を取り出す（'ISSUE-121' / 'issue 121' / '121' いずれも 121 を得る）
+    m = re.search(r'(\d+)\s*$', s)
+    if not m:
+        return raw
+    return f"{prefix}-{int(m.group(1)):03d}"
+```
 
-### ISSUE-122
-- FR-019 L1099-1100 の生成機構記述を FR-013 へ移動。FR-019 は「FR-013 が生成した HTML をブラウザで開いた際の機能を定義」に集約。
+- `import re` が未 import なら冒頭（`import argparse` 付近, track.py:29）に追加
+- 完全形 `BUG-7` を渡しても `BUG-007` に正規化されるので、桁ズレ入力も救える副次効果あり
 
-### ISSUE-123
-- metadata キー列挙の正本は FR-009（L917-923）。FR-013 L954-958 の6キー列挙を削除し FR-009 参照に。
-- 「viewer が表示に使うキー」一覧は FR-019 L1123-1126 に一本化（summitslist_date / gsi_tile_latest_date / generated_at）。
+### 変更2: `main()` で適用（track.py:994 の dispatch 呼び出し直前）
 
-### ISSUE-124
-- FR-009 移設後のスキーマで `area_complete` は true/false 両値を定義（FR-009 は不備ゲートで false を検査するため意味を持つ）。
-- FR-013/FR-019 側に「viewer 到達 geojson では常に true（false は上流 FR-009 で停止し非到達）」と注記。死に仕様ではなく文脈差として明確化。
+```python
+    fn = args.dispatch.get(args.cmd)
+    if fn:
+        if getattr(args, "id", None) is not None:
+            args.id = normalize_id(args.id, args.kind)
+        fn(args)
+```
 
-### ISSUE-125（決定済み: null）
-- peak Point の `prominence` プロパティは `key_col_resolved=false` 時に **`null`** とする（キーは常に存在・値のみ null）。
-- FR-009 移設後のスキーマ（peak Point プロパティ表 `prominence` 行）に「`key_col_resolved=false` 時は `null`」と明記。
-- FR-019 表示「未定義」と整合（JS は `prominence ?? '未定義'` で処理可能）。
+- `args.id` を持つのは ID 系4コマンドのみ。それ以外は `getattr` がデフォルトで素通り
+- `args.kind` は `bug` / `issue` のどちらか（ここに来る時点で確定済み）
 
-### ISSUE-126（決定済み: 現状維持＋明記）
-- 新プロパティは追加しない（実害限定的・地図描画は幾何で成立）。ADR 不要・FR-009/019/012/021 への波及なし。
-- FR-009 の dominant 説明（または移設後の coord_diff プロパティ表）に「dominant で削除候補が複数の場合、各線は同一の `summit_code`（ピーク仮コード）を持ち、線の属性では個別の削除候補を識別しない。対応は幾何（線の終点座標）で成立する」と明記して決着。
+## 対象ファイル
 
-### TODO 1
-- `summit_name_jp`（FR-013 L977・L1005）の「geojson_v{N} から取得」を「FR-009 が geojson_v{N} から取得し格納」と読める表現へ。移設後は FR-009 内で「本 FR が取得し格納」と表現。
+- `mgmt/tracker/track.py`（唯一の変更対象。ヘルパー追加 + main 2行 + 必要なら import 1行）
+- `mgmt/tracker/CLAUDE.md`（任意）: コマンド例に「ID は数字だけでも可（`issue show 121`）」の一文を追記
 
-### TODO 2
-- FR-019 L1106 `col=▼` → `key_col=▼`、L1133「Keyコル（col）popup」→「Keyコル（key_col）popup」。feature_type 値の正（key_col）に統一。
+## 検証手順
 
-### TODO 3
-- FR-013 概要 L938 に「作業用ビューアのみ生成。公開用は FR-020 が別途生成」を1行明記。
+実データ（issues.json に ISSUE-121 等が実在）で読み取り系を使い、JSON を壊さず確認する。
 
-## 決定事項（確定）
+```bash
+# 数字だけ → 正規形に解決されること
+venv/bin/python3 mgmt/tracker/track.py issue show 121      # ISSUE-121 が表示される
+venv/bin/python3 mgmt/tracker/track.py bug show 1          # BUG-001 が表示される（存在すれば）
 
-- **ISSUE-125**: prominence 未確定時は `null`（キーは残す）
-- **ISSUE-126**: 新プロパティ追加せず。現状維持を SRS に明記して決着（ADR 不要）
+# 完全形が従来どおり動くこと（後方互換）
+venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-121
 
-## 実装順序
+# 桁省略の完全形も救えること
+venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-121   # = issue show issue-121 と同結果
 
-1. ISSUE-121（スキーマ移設）← 最初。他はこの位置に適用
-2. TODO 1/2/3（機械的文言修正）
-3. ISSUE-122/123（役割境界・重複解消）
-4. ISSUE-124（注記）
-5. ISSUE-125（Q1 決定反映）
-6. ISSUE-126（Q2 決定反映。ADR 作成する場合はここで）
+# 存在しないIDで従来どおり『見つかりません』になること
+venv/bin/python3 mgmt/tracker/track.py issue show 99999
+```
 
-## 検証
+`update/close/verify` は JSON を書き換えるため、検証は `show` で代表させる
+（照合ロジックは4コマンド共通で `args.id` 一致のため、show が通れば他も同じ経路）。
 
-- `docs/20_SRS.md` 内 grep で旧記述残存ゼロを確認（`col=▼`、FR-013 内のプロパティ表重複、metadata 6キー重複）
-- FR-009/FR-013/FR-019 の相互リンクが切れていないこと（アンカー確認）
-- tracker: ISSUE-121〜126 を `issue close`、todo.md 3件を削除
-- ドキュメント更新後、作業ターン内に commit（push は別途）
+## 補足
 
-## 注記（モデル）
-
-- 大半は文書編集。ただし 121 の移設は参照整合に注意が必要、125/126 は設計判断を含む。
-- ExitPlanMode 承認後にモデル推奨を提示する。
+- 後方互換のため既存の handover / CLAUDE.md 内の `ISSUE-001` 形式の記述は修正不要（そのまま動く）
+- 仕様議論を伴わない単独ファイルのオプション改善のため、issue 登録ではなく todo/直接実装の範疇
