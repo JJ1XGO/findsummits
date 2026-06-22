@@ -169,15 +169,6 @@
 
 - [ ] **(元 ISSUE-065) モックアップ「変更あり」フィルターを is_band_change_cand に変更**
 
-- [ ] **(spec-panel FR-013) summit_name_jp/summit_name の取得元記述を修正**
-  - FR-013 のプロパティ表(SRS L977・L1005)が「geojson_v{N} から取得」と記すが、FR-013 の入力は merged_summit.geojson のみ。取得は FR-009 の責務
-  - 「FR-009 が geojson_v{N} から取得し格納」と読める表現に修正（文言修正のみ・議論不要）
-
-- [ ] **(spec-panel FR-013) feature_type 用語ゆれ統一（col→key_col）**
-  - FR-013 の feature_type 値は `key_col`(SRS L992) だが FR-019(L1106) のマーカー説明は `col`。表記を key_col に統一
-
-- [ ] **(spec-panel FR-013) FR-013 概要に「作業用のみ生成・公開用は FR-020」を明記**
-  - 概要(SRS L938)が「HTML ビューアを生成」と単数で、UR-006 の2種(作業用/公開用)のうち作業用のみ生成する点が読み取りにくい。1行明記する
 
 ### FR-013レビュー決着の機械反映（finding 3/4/6/7・用語変更）
 

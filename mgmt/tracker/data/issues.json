@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-21",
+    "last_updated": "2026-06-22",
     "counter": 126
   },
   "issues": [
@@ -3867,14 +3867,31 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "スキーマ正本を FR-009（または 7.2 内部データ）へ移設し、FR-013/FR-019 は参照に統一する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-22",
       "verified_date": null,
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-22T14:59:17",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "b949a136-40a9-4f05-b77e-5450d262be7c"
+        },
+        {
+          "date": "2026-06-22T15:11:04",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "FR-013 のフィーチャ構成表＋各フィーチャのプロパティ全表を生成者 FR-009 末尾へ移設（スキーマ正本を FR-009 に一本化）。FR-013 は参照に置換、6.6 のフィーチャ構成参照も FR-013→FR-009 へ更新。grep で重複ゼロを確認",
+          "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        }
+      ]
     },
     {
       "id": "ISSUE-122",
@@ -3887,14 +3904,23 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "生成手順=FR-013、ブラウザ提供機能=FR-019 に責務を整理する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-22",
       "verified_date": null,
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-22T15:16:09",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
+          "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        }
+      ]
     },
     {
       "id": "ISSUE-123",
@@ -3907,14 +3933,23 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "一方へ集約し他方は参照にする。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-22",
       "verified_date": null,
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-22T15:16:09",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
+          "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        }
+      ]
     },
     {
       "id": "ISSUE-124",
@@ -3927,14 +3962,23 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "merged_summit.geojson 文脈では常に true である旨を注記、または中間データ専用と明確化する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-22",
       "verified_date": null,
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-22T15:16:09",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
+          "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        }
+      ]
     },
     {
       "id": "ISSUE-125",
@@ -3947,14 +3991,23 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "未確定時の prominence 値の表現（空文字/省略 等）を SRS に規定する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-22",
       "verified_date": null,
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-22T15:16:09",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
+          "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        }
+      ]
     },
     {
       "id": "ISSUE-126",
@@ -3967,14 +4020,23 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "推奨方向（非拘束）: 対応づけを summit_code で明示する既存方針に整合させ、線に相手サミットのSOTAコード、サミット点に親ピーク仮コードを新プロパティとして追加。ただし新プロパティ名・付与範囲・FR-009生成ロジック/FR-019(相互ジャンプ)/FR-012/FR-021 への波及を確認のうえ本issue着手時に決定（今は決めない）。必要なら ADR 化。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-22",
       "verified_date": null,
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-22T15:16:09",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
+          "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        }
+      ]
     }
   ]
 }

@@ -927,36 +927,8 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - `sota_points = band(sota_alt_m)`: `sota_alt_m` は整数 m なので丸め不要
     - `is_band_change_candidate = (peak_points ≠ sota_points)`: true の場合、申請書エクスポートで「変更」行として自動出力
     - バンド定義は [`00_GLOSSARY.md` 標高バンド（Points 算出表）](00_GLOSSARY.md#標高バンドpoints-算出表) を参照
-
----
-
-### 4.6 可視化生成コンポーネント
-
-#### FR-013: HTML ビューア生成
-
-- **対応 UR**: [UR-006](10_URD.md#ur-006)
-- **概要**: フェーズ4 で `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成した中心データ）を入力として HTML ビューアを生成する。
-**入力**:
-
-| データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
-|---|---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | FR-009 出力の中心データ |
-
-**出力**:
-
-| データ名 | 種別 | 形式 | 備考 |
-|---|---|---|---|
-| 作業用 HTML ビューア（`merged_viewer.html`） | 内部データ | 静的 HTML | — |
-
-**説明**:
-
-  - **前提条件**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が正常終了した場合のみ実行する。[FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートとして異常終了した場合、本 FR は実行をスキップし、HTML は生成しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）
-  - **GeoJSON メタデータ**: `merged_summit.geojson` のトップレベルの `metadata` オブジェクトの定義は [FR-009](#fr-009-sotaリスト突合match_status-判定) を参照（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する）。本 FR がビューア上で使用するキーは以下のとおり:
-    - `summitslist_date`: SOTA サミットリスト基準日（表示用）
-    - `generated_at`: パイプライン最終実行日時（表示用・localStorage キーに使用）
-    - `gsi_tile_latest_date`: 地理院タイル更新日（UTC）（表示用。[ADR-SRS-032](decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md)）
-    - `attribution` / `source_url` / `license_url`: 出典情報（[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
-  - **フィーチャ構成**（match_status 別）:
+  - **`merged_summit.geojson` のフィーチャ構成とプロパティ**（本 FR が生成する中心データの構造定義＝スキーマ正本。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) 準拠。消費側の [FR-013](#fr-013-html-ビューア生成)・[FR-019](#fr-019-html-ビューア機能仕様) はこの定義を参照する）:
+    - **フィーチャ構成**（match_status 別）:
 
 | match_status | フィーチャ |
 |---|---|
@@ -974,9 +946,9 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `match_status` | matched / new / dominant |
 | `summit_code` | サミットコード（matched のみ）または仮サミットコード（new / dominant。`JAx/XX-A00` 形式） |
 | `summit_name` | サミット名（matched / dominant のみ・英語/ローマ字） |
-| `summit_name_jp` | 日本語山岳名（matched / dominant のみ・geojson_v{N} から取得。未取得時は空文字） |
+| `summit_name_jp` | 日本語山岳名（matched / dominant のみ・本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
 | `peak_elev` | 検出標高（m） |
-| `prominence` | プロミネンス（m） |
+| `prominence` | プロミネンス（m）。`key_col_resolved=false`（Key コル未確定）の場合は `null`（キーは常に存在し値のみ null）。ビューア表示は `prominence ?? '未定義'` で対応可能 |
 | `stability` | confirmed / unstable |
 | `key_col_resolved` | コル確定フラグ（true=確定 / false=未確定） |
 | `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出。出力プロパティ名は `points`（FR-009 内部変数 `peak_points` とは別） |
@@ -1002,7 +974,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `match_status` | matched / delete |
 | `summit_code` | SOTA サミットコード |
 | `summit_name` | サミット名（summitslist.csv の SummitName、英語/ローマ字） |
-| `summit_name_jp` | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
+| `summit_name_jp` | 日本語山岳名（本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
 | `sota_alt_m` | SOTA 登録標高（m） |
 | `sota_points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出 |
 | `rationale` | 申請書根拠テキスト（match_status=delete は ※4 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched は空文字）。HTML ビューアで編集可能 |
@@ -1013,7 +985,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 |---|---|
 | `feature_type` | "activation_zone" |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
-| `area_complete` | true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false） |
+| `area_complete` | true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false）。FR-009 の不備ゲート（`is_area_incomplete`）が false を検査するため両値に意味を持つ。viewer（FR-013/FR-019）到達時は常に true（false の場合は FR-009 が停止し HTML 生成に至らない） |
 | `points` | 対応ピークの `points` と同値（ビューアでの色付け用） |
 
 **Polygon: delete判定ゾーン**
@@ -1043,6 +1015,35 @@ matched / dominant のみ。
 | `feature_type` | "coord_diff" |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `match_status` | matched / dominant |
+
+dominant で削除候補サミットが複数の場合、各 `coord_diff` LineString は同一の `summit_code`（ピーク仮コード）を持ち、属性では個別の削除候補を識別しない。対応は各 LineString の終点座標（削除候補サミット座標）で成立する。削除候補ごとの個別識別プロパティは追加しない（実害限定的・地図描画は幾何で完結するため）。
+
+---
+
+### 4.6 可視化生成コンポーネント
+
+#### FR-013: HTML ビューア生成
+
+- **対応 UR**: [UR-006](10_URD.md#ur-006)
+- **概要**: フェーズ4 で `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成した中心データ）を入力として HTML ビューアを生成する。生成するのは**作業用ビューア（`merged_viewer.html`）のみ**。公開用 HTML は [FR-020](#fr-020-公開用-html-ビューア生成) が別途生成する。
+**入力**:
+
+| データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
+|---|---|---|---|---|
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | FR-009 出力の中心データ |
+
+**出力**:
+
+| データ名 | 種別 | 形式 | 備考 |
+|---|---|---|---|
+| 作業用 HTML ビューア（`merged_viewer.html`） | 内部データ | 静的 HTML | — |
+
+**説明**:
+
+  - **前提条件**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が正常終了した場合のみ実行する。[FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートとして異常終了した場合、本 FR は実行をスキップし、HTML は生成しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）
+  - **生成機構**: HTML テンプレートファイル（詳細は HLD）をソースコードに同梱し、`merged_summit.geojson` の GeoJSON データを JavaScript 変数として HTML に埋め込み、`$DATA_DIR/results/merged_viewer.html` として出力する。`file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
+  - **GeoJSON メタデータ**: `merged_summit.geojson` のトップレベルの `metadata` オブジェクトの定義は [FR-009](#fr-009-sotaリスト突合match_status-判定) を参照（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する）。本 FR は metadata を含む GeoJSON データをそのまま HTML に埋め込む。ビューアが表示に使うキーの一覧は [FR-019](#fr-019-html-ビューア機能仕様) を参照
+  - **生成するフィーチャ構成・各フィーチャのプロパティの定義**: `merged_summit.geojson` が含むフィーチャ構成（match_status 別）と各フィーチャのプロパティ定義は、生成者である [FR-009](#fr-009-sotaリスト突合match_status-判定) が保持する（スキーマ正本は FR-009。本 FR はその定義に従って生成された GeoJSON を入力として受け取るのみ。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)）
 
 #### FR-020: 公開用 HTML ビューア生成
 
@@ -1096,14 +1097,12 @@ matched / dominant のみ。
 
 **説明**:
 
-  - HTML テンプレートファイル（詳細は HLD）をソースコードに同梱する
-  - フェーズ4（[FR-013](#fr-013-html-ビューア生成)）で `merged_summit.geojson` の GeoJSON データが JavaScript 変数として埋め込まれた `$DATA_DIR/results/merged_viewer.html` を生成する。本 FR はその HTML をブラウザで開いた際に提供される機能を定義する
-  - 埋め込み方式を採用する理由: `file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
+  - 本 FR は [FR-013](#fr-013-html-ビューア生成) が生成した `merged_viewer.html` をブラウザで開いた際に提供される機能（マップ表示・編集 UI・localStorage・エクスポート機能）を定義する。HTML テンプレートの同梱・GeoJSON の JS 変数埋め込みといった生成機構は [FR-013](#fr-013-html-ビューア生成) を参照
   - **使用ライブラリ（CDN 経由）**: Leaflet（地図）・SheetJS/xlsx.js（XLSX エクスポート）・JSZip（ZIP 生成）
   - 背景タイル切り替え機能（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-SRS-006](decisions/ADR-SRS-006-viewer-background-tile-selection.md)）。OSM は等高線なしのため、後述の等高線オーバーレイで補完できる（[ADR-SRS-015](decisions/ADR-SRS-015-contour-overlay.md)）
   - **地図操作・表示範囲**: 日本を中心に配置した世界地図表示とし、パン範囲を制限する。ズームは 1 段ずつ行う。左下にメートル単位のスケールバーを表示する（`maxBounds` の具体値・`zoomSnap`・ホイール感度等のパラメータは HLD に委ねる）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
-  - 各マーカーは `feature_type` に応じた形状で区別する: **summit=●（円）/ peak=▲（上向き三角）/ col=▼（下向き三角）**。形状の具体的描画方式（Canvas 等）は HLD に委ねる
+  - 各マーカーは `feature_type` に応じた形状で区別する: **summit=●（円）/ peak=▲（上向き三角）/ key_col=▼（下向き三角）**。形状の具体的描画方式（Canvas 等）は HLD に委ねる
   - 各マーカーはズームレベルに応じてサイズを変える（ズームアウト時は小さく、ズームイン時は大きく。具体的なサイズ段階は HLD に委ねる）
   - アクティベーションゾーン（AZ）は半透明の塗りで表示する（外枠線なし・クリック不可）。なお `area_complete=false`（解析範囲内で完結しなかった AZ）を持つピークは上流（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグ）で処理が停止し viewer には到達しないため、viewer 側に不完全 AZ の警告表示の責務は持たない
   - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
@@ -1130,7 +1129,7 @@ matched / dominant のみ。
     - **基準点レイヤー**: 国土地理院の基準点（電子基準点・一等／二等／三等三角点）を表示する。種別ごとに配色し、点名・基準点種別・基準点コードを popup 表示する。データは地理院基準点タイル（`https://cyberjapandata.gsi.go.jp/xyz/cp/{z}/{x}/{y}.geojson`）をブラウザから実行時取得する（出典・利用形態は [SOURCES.md](../ref/SOURCES.md) 参照。採用経緯: [ADR-SRS-034](decisions/ADR-SRS-034-viewer-reference-layers.md)）
   - 地図帰属表示: peak/col/summit/AZ/delete_zone 等の GeoJSON データは地理院標高タイル解析由来であるため、**基図の選択に関わらず** `© 国土地理院`（リンク先: `https://maps.gsi.go.jp/`）を常時表示する。等高線レイヤー ON/OFF 状態によらず同 attribution を維持する。OSM 選択時は加えて `© OpenStreetMap contributors`、OpenTopoMap 選択時は `© OpenTopoMap contributors` を表示する。基準点レイヤー ON 時は基準点データの出典として `国土地理院` を併記する（地理院由来のため提供元は上記 `© 国土地理院` と同一）
   - **ピーク popup の情報表示**: ピークの popup には標高・プロミネンスに加え、プロミネンスの根拠となる **Keyコル標高（`col_elev`）** を表示する。Keyコル未確定（`key_col_resolved=false`、陸地最高峰・島嶼部最高峰）の場合は「未定義（陸地最高峰／島嶼部最高峰）」と表示する
-  - **Keyコル（col）popup の表示**: Keyコルのマーカー popup には、Keyコル標高・対応するピークのコード（new の場合は仮コード）・緯度経度を表示する
+  - **Keyコル（key_col）popup の表示**: Keyコルのマーカー popup には、Keyコル標高・対応するピークのコード（new の場合は仮コード）・緯度経度を表示する
   - **ピーク↔Keyコル相互ジャンプ**: ピーク popup に「Keyコルへ移動」ボタン（`key_col_resolved=true` のときのみ）、Keyコル popup に「ピークへ移動」ボタンを設け、押下で対応するフィーチャへ地図移動して popup を開く
   - **山岳名入力 UI**:
     - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」「山岳名EN」入力フィールドを表示
@@ -1225,7 +1224,7 @@ matched / dominant のみ。
 | stability | 解析品質（confirmed/unstable/-） |
 | summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A00）または ZZ/ZZ-A00（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
-| summit_name_jp | 日本語山岳名（geojson_v{N} から取得。未取得時は空文字） |
+| summit_name_jp | 日本語山岳名（本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
 | peak_lat | ピーク緯度 |
 | peak_lon | ピーク経度 |
 | peak_elev | ピーク標高（m） |
@@ -1422,7 +1421,7 @@ matched / dominant のみ。
 | ファイル | `$DATA_DIR/results/merged_summit.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
 | メタデータ | トップレベルに `metadata` オブジェクトを付与。定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（`summitslist_date` / `generated_at` / `gsi_tile_latest_date` / `attribution` / `source_url` / `license_url`） |
-| フィーチャ構成 | [FR-013 参照](#fr-013-html-ビューア生成)（Point / Polygon / LineString 全フィーチャ含む） |
+| フィーチャ構成 | [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（Point / Polygon / LineString 全フィーチャ含む） |
 | `rationale` プロパティ | new / dominant ピーク Point に ※2 フォーマット、match_status=delete サミット Point に ※4 フォーマット、`is_band_change_candidate=true` の matched ピーク Point に ※5 フォーマットで付与。HTML ビューアで編集可能。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定) |
 
 **作業用 HTML ビューア**（`merged_viewer.html`）

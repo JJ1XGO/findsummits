@@ -1,96 +1,91 @@
-# 計画: 課題 type「機能追加」廃止 + 対話入力UI改善
+# 計画: FR-013レビュー由来 課題6件＋TODO3件の対応
 
 ## Context
 
-`mgmt/tracker/track.py` の課題 type「機能追加」が「実装タスク（SRS確定済みFRの実装）」と
-「本物の設計課題」の両方を飲み込み、issue が todo 的に使われる温床になっている。
-2026-06-19 にユーザー承認済みの方針（type 廃止 + 再分類 + 対話UI改善）を実装する。
-あわせて、ユーザー自身が課題管理 CLI を使えていない（選択肢を覚えられない・各フィールドに
-何を書くか分からない）問題を、対話入力の番号選択メニュー化＋フィールドガイドで解消する。
+2026-06-21 の `/spec-panel FR-013` レビューで洗い出した指摘を tracker 登録した（ISSUE-121〜126 + todo.md 3件）。
+本セッションでその9件を対応する。**全件 SRS 文書（`docs/20_SRS.md`）の記述整理であり、コード変更は伴わない**（仕様優先原則）。
+根因は「viewer が消費する `merged_summit.geojson` のスキーマ正本が、生成者 FR-009 ではなく消費者 FR-013 に置かれている」こと。これが metadata/プロパティの重複・不一致・死に仕様の温床になっている。
 
-検証で判明した前提補正:
-- handover 記載の `normalize_type()`/`TYPE_ALIASES` は**存在しない** → エイリアス廃止作業は不要
-- 未解決の `type=機能追加` は **9件**（元計画の6件＋032/040/044）。全件再分類する（ユーザー承認済み）
+## 対象9件の分類
 
-## 作業 A: type「機能追加」廃止（コード）
+| ID | 種別 | 内容 | 検討要否 |
+|---|---|---|---|
+| ISSUE-121 | 設計/高 | スキーマ正本を FR-013 → FR-009 へ移設 | 方向は明確（推奨で実施） |
+| ISSUE-122 | 改善/中 | FR-013(生成)↔FR-019(ブラウザ機能) 役割境界整理 | 推奨で実施 |
+| ISSUE-123 | 改善/中 | viewer 使用 metadata キー列挙の重複解消 | 推奨で実施 |
+| ISSUE-124 | 改善/中 | AZ `area_complete=false` 死に仕様の明確化 | 推奨で実施 |
+| ISSUE-125 | 設計/中 | `key_col_resolved=false` 時の prominence 値表現 | **要決定** |
+| ISSUE-126 | 設計/中 | dominant 複数削除候補の対応識別プロパティ | **要決定（ADR要否含む）** |
+| TODO 1 | 低 | summit_name_jp 取得元記述修正 | 機械的 |
+| TODO 2 | 低 | feature_type 用語ゆれ統一（col→key_col） | 機械的 |
+| TODO 3 | 低 | FR-013概要に「作業用のみ生成」明記 | 機械的 |
 
-対象: `mgmt/tracker/track.py`
+## 推奨する役割分担（121/122/123 の核）
 
-1. `VALID_TYPES`（43行）: `["機能追加", "改善", "調査", "設計"]` → `["改善", "調査", "設計"]`
-   - 廃止理由＋再追加禁止をコメントで明記
-2. ヘルプ文（24行付近）の `--type 機能追加` 例を `--type 改善` 等に差し替え
-3. 既存データ表示互換: summary（763, 857行）・export（832行）は `VALID_TYPES` をループするだけなので、
-   廃止後は「機能追加」を集計表に出さない。再分類で全件 valid な type に移すため宙に浮くデータは残らない
-   （万一の歴史データは show コマンドで生の値をそのまま表示＝fallback で互換維持。要コード確認）
-- argparse の `--type` choices（911, 912行）は `VALID_TYPES` 参照のため自動で「機能追加」が外れ、
-  `--type 機能追加` は argparse エラーになる（追加実装不要）
+3者の責務を以下に再整理する：
 
-対象: `mgmt/tracker/CLAUDE.md`
-- type 表から「機能追加」行を削除、廃止理由＋再追加禁止を明記
-- 「有効な値」表の `type (Issue)` を `改善, 調査, 設計` に更新
-- コマンド例の `--type 機能追加` を更新
+- **FR-009（生成者・スキーマ正本）**: `merged_summit.geojson` の全フィーチャ構成（match_status 別）＋各フィーチャのプロパティ表＋metadata 定義を保持。現状 FR-013 L959-1045 にある表を FR-009 説明セクション（L917 metadata 付近）へ移設。
+- **FR-013（生成手順）**: 入力=merged_summit.geojson / 出力=merged_viewer.html。テンプレート同梱・JS変数埋め込み・出力パスの「生成機構」記述（現状 FR-019 L1099-1100）をこちらへ移す。スキーマは FR-009 を参照。
+- **FR-019（ブラウザ提供機能）**: 表示・編集・検索・エクスポート。スキーマは FR-009 参照。viewer が表示に使う metadata キー一覧はここに一本化（FR-013 L954-958 の重複リストは削除し FR-009 参照に）。
 
-対象: `/workspace/CLAUDE.md`
-- 「課題管理ルール」に1行追記: 「FR確定済みの実装は todo、issue type は 改善/調査/設計 の3種」
+## 各件の対応方針
 
-## 作業 B: 対話入力モードの改善（番号選択＋ガイド）
+### ISSUE-121（移設・要注意の大作業）
+- FR-013 L959-1045 の「フィーチャ構成」表＋「各フィーチャのプロパティ」全表を FR-009 へ移設。
+- FR-013 側は「生成するフィーチャ／プロパティの定義は FR-009 を参照」に置換。
+- **他8件はこの移設後の位置（FR-009内）に対して適用する**ため、121 を最初に実施。
 
-対象: `mgmt/tracker/track.py` の `ask_interactive`（79-92行）
+### ISSUE-122
+- FR-019 L1099-1100 の生成機構記述を FR-013 へ移動。FR-019 は「FR-013 が生成した HTML をブラウザで開いた際の機能を定義」に集約。
 
-1. シグネチャに `guide=None` を追加
-2. `guide` があればプロンプト前にグレー表示で「書く内容の説明＋記入例」を出す
-3. `choices` がある場合は番号メニュー表示（例: `1) 改善  2) 調査  3) 設計`）。
-   入力は**番号・文字列の両方を受理**し、`default` も従来通り反映。標準ライブラリのみ（依存追加なし）
-   - questionary 等の矢印キーTUIは環境依存のため不採用（コンテナで確実に動く方式）
+### ISSUE-123
+- metadata キー列挙の正本は FR-009（L917-923）。FR-013 L954-958 の6キー列挙を削除し FR-009 参照に。
+- 「viewer が表示に使うキー」一覧は FR-019 L1123-1126 に一本化（summitslist_date / gsi_tile_latest_date / generated_at）。
 
-対象: `issue_add`（671-689行）/ `bug_add`（同等の対話ブロック）の各 `ask_interactive` 呼び出し
-- 主要フィールドに `guide` を付与。文面の方針:
-  - title: 「主題を一行で。例: SRS: RTM の追加」
-  - description: 「課題（問い）の背景・現状・困りごと」
-  - type: 「改善=既存仕様の変更/整理、調査=決めるための情報収集、設計=実装方針の判断」
-  - resolution: 「仕様検討の決着・対応方針」
-  - priority/stage/category 等にも一行ガイド
+### ISSUE-124
+- FR-009 移設後のスキーマで `area_complete` は true/false 両値を定義（FR-009 は不備ゲートで false を検査するため意味を持つ）。
+- FR-013/FR-019 側に「viewer 到達 geojson では常に true（false は上流 FR-009 で停止し非到達）」と注記。死に仕様ではなく文脈差として明確化。
 
-## 作業 C: 既存 issue 再分類（9件・ユーザー承認済み）
+### ISSUE-125（決定済み: null）
+- peak Point の `prominence` プロパティは `key_col_resolved=false` 時に **`null`** とする（キーは常に存在・値のみ null）。
+- FR-009 移設後のスキーマ（peak Point プロパティ表 `prominence` 行）に「`key_col_resolved=false` 時は `null`」と明記。
+- FR-019 表示「未定義」と整合（JS は `prominence ?? '未定義'` で処理可能）。
 
-| ISSUE | 操作 |
-|---|---|
-| 062 / 063 / 066 | `issue close` 理由「todo.md に移行（type機能追加廃止に伴う）」→ `mgmt/todo.md` 高/中へ転記 |
-| 070 / 071 / 040 / 044 | `issue update --type 設計 --actor Opus --comment "type機能追加廃止に伴う再分類"` |
-| 032 | `issue update --type 改善 --actor Opus --comment "同上"` |
-| 009 | `issue update --type 調査 --actor Opus --comment "同上"` |
+### ISSUE-126（決定済み: 現状維持＋明記）
+- 新プロパティは追加しない（実害限定的・地図描画は幾何で成立）。ADR 不要・FR-009/019/012/021 への波及なし。
+- FR-009 の dominant 説明（または移設後の coord_diff プロパティ表）に「dominant で削除候補が複数の場合、各線は同一の `summit_code`（ピーク仮コード）を持ち、線の属性では個別の削除候補を識別しない。対応は幾何（線の終点座標）で成立する」と明記して決着。
 
-- 解決済/却下の歴史データ（002/003/004/014/015/048/049/050/055/091/102 等）は**据え置き**（生値で表示互換）
+### TODO 1
+- `summit_name_jp`（FR-013 L977・L1005）の「geojson_v{N} から取得」を「FR-009 が geojson_v{N} から取得し格納」と読める表現へ。移設後は FR-009 内で「本 FR が取得し格納」と表現。
 
-## 作業 D: 運用変更を issue 1件で記録
+### TODO 2
+- FR-019 L1106 `col=▼` → `key_col=▼`、L1133「Keyコル（col）popup」→「Keyコル（key_col）popup」。feature_type 値の正（key_col）に統一。
 
-```
-issue add --type 設計 --priority 中 --actor Opus \
-  --title "課題 type『機能追加』廃止 — 実装タスクの todo 化を防ぐ" \
-  --description "..." --resolution "VALID_TYPES から廃止＋対話UI改善＋既存9件再分類"
-```
-- 採番された ISSUE 番号を、A/B/C の文書注記（mgmt/tracker/CLAUDE.md 等）の根拠として記載
+### TODO 3
+- FR-013 概要 L938 に「作業用ビューアのみ生成。公開用は FR-020 が別途生成」を1行明記。
+
+## 決定事項（確定）
+
+- **ISSUE-125**: prominence 未確定時は `null`（キーは残す）
+- **ISSUE-126**: 新プロパティ追加せず。現状維持を SRS に明記して決着（ADR 不要）
+
+## 実装順序
+
+1. ISSUE-121（スキーマ移設）← 最初。他はこの位置に適用
+2. TODO 1/2/3（機械的文言修正）
+3. ISSUE-122/123（役割境界・重複解消）
+4. ISSUE-124（注記）
+5. ISSUE-125（Q1 決定反映）
+6. ISSUE-126（Q2 決定反映。ADR 作成する場合はここで）
 
 ## 検証
 
-1. `venv/bin/python3 mgmt/tracker/track.py issue add --type 機能追加 --title x` → argparse エラーで弾かれる
-2. `issue summary` → 種別別に「機能追加」が出ない／3種のみ
-3. `issue show ISSUE-070` → type=設計、`ISSUE-009` → type=調査
-4. 引数なし `issue add`（対話）→ 番号メニュー＋ガイドが表示され、番号で type 選択できる（Ctrl-C で中断）
-5. `python3 -c "import json; json.load(open('mgmt/tracker/data/issues.json'))"` で JSON 妥当性
-6. `mgmt/todo.md` に 062/063/066 が転記済み・文書3ファイル（track.py コメント / tracker CLAUDE.md / project CLAUDE.md）の整合を目視
+- `docs/20_SRS.md` 内 grep で旧記述残存ゼロを確認（`col=▼`、FR-013 内のプロパティ表重複、metadata 6キー重複）
+- FR-009/FR-013/FR-019 の相互リンクが切れていないこと（アンカー確認）
+- tracker: ISSUE-121〜126 を `issue close`、todo.md 3件を削除
+- ドキュメント更新後、作業ターン内に commit（push は別途）
 
-## コミット
+## 注記（モデル）
 
-作業完了後にまとめて1コミット（Conventional Commits・本文日本語）:
-`chore(tracker): 課題 type「機能追加」を廃止し対話入力を番号選択+ガイド化`
-- ドキュメント（CLAUDE.md 2ファイル）も同コミットに含める
-
-## モデル推奨
-
-設計判断は対話で確定済み、残りはファイル編集中心（guide 文面・todo 転記文程度）のため **Sonnet 推奨**。
-
-## 注記
-
-- ToolSearch は本環境で壊れているため**使用禁止**。本作業は Read/Edit/Bash/Write のみで完結し deferred tool 不要
-- 再分類の `--actor` はモデル名（Opus）を記入（impersonation 禁止ルール）
+- 大半は文書編集。ただし 121 の移設は参照整合に注意が必要、125/126 は設計判断を含む。
+- ExitPlanMode 承認後にモデル推奨を提示する。
