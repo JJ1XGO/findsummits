@@ -87,4 +87,5 @@ mgmt/bug-system/reports/bug_tracker.xlsx
 .claude/sessions/
 .claude/skills/.cache/
 .claude/handovers/
+.claude/incidents/
 .claude/bash_history
