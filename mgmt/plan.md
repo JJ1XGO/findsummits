@@ -1,89 +1,72 @@
-# track.py: ID 引数を「数字だけ」でも受け付ける
+# handover の体裁修正 ＋ Obsidian でサッと閲覧（symlink方式・MCPなし）
 
 ## Context（なぜやるか）
+handover 文書はローカル専用の markdown 群で（`/workspace/.gitignore:89` で除外＝GitHub には載らない）、
+Obsidian で閲覧・全文検索・`[[ ]]` バックリンクを効かせたい。目的は「自分が見られればいい」
+（MCP・プラグインで Claude に能動操作させる用途は今回スコープ外）。
+あわせて、緊急時に手作業で代理作成され **markdown 文法が崩れている handover** が混在しているため、
+体裁を整える（Obsidian でまともに表示させるための前提整備でもある）。
 
-課題管理は「1課題1登録」に整理した結果、日常操作は `show / update / close / verify` に
-ID を渡す場面が多い。現状は `ISSUE-121` / `BUG-007` のようにプレフィックス＋3桁ゼロ埋めの
-完全形を毎回タイプする必要があり、`121` や `7` で済ませたいというのが要望。
-bug 側も同様。
+### 環境・調査の確定事実
+- `/workspace`・`/home/node/.claude` は**ホストの実ディスク（nvme0n1p5）を bind mount したもの**。
+  ホストの Obsidian から直接読める。MCP は閲覧目的には不要。
+- handover 正本の保存先は `/workspace/.claude/handovers/`（`~/.claude/commands/handover.md` の規約、174件）。
+- vault はコンテナにマウントされていない → **symlink 作成はホスト側でユーザーが実行**する必要がある。
+- 文法崩れの handover は**2件のみ**（横断スキャンで確定。未閉フェンス無し、`2026-04-26_2300.md`の罫線は正規の遷移図で対象外）。
 
-ゴール: `track.py issue show 121` で `ISSUE-121` を、`track.py bug close 7` で `BUG-007` を
-引けるようにする（完全形 `ISSUE-121` / `BUG-7` も従来どおり受け付ける＝後方互換）。
+---
 
-## 現状の把握（調査済み）
+## Part 1: 崩れている handover の体裁修正（Claude が実施）
 
-- ID 生成: `next_id()`（track.py:75-77）が `f"{prefix}-{counter:03d}"`。prefix は `BUG` / `ISSUE`、3桁ゼロ埋め
-- ID 照合: `show/update/close/verify` の各関数が `next((x for x in data[...] if x["id"] == args.id), None)` で
-  生文字列一致（bug: track.py:312,421,468 ほか / issue: 654,750,795 ほか）
-- どのコマンドが bug か issue かは `args.kind`（`"bug"` / `"issue"`）で判別可能（main: track.py:983-985）
-- ID を位置引数 `id` で取るのは `show / update / close / verify` の4コマンド（list/add/summary/export は対象外）
+### 対象ファイル（2件）
+1. `/workspace/.claude/handovers/2026-06-13-1632.md`
+   - 崩れ: 全行が4スペース字下げ＝コードブロック化／見出し皆無／「作業:」「再開時の手順:」等が地の文。
+2. `/workspace/.claude/handovers/2026-06-19_2033.md`
+   - 崩れ: タイトルが `#` 無し／表が**罫線文字（┌─┬─┐）のASCIIアート**で markdown 表でない／全体字下げ／見出しが地の文。
 
-## 方針
+### 修正方針（厳守）
+- **本文の文言・意味は一字一句保持**。handover は歴史的記録なので内容は変えない。直すのは**書式のみ**。
+- 具体的に行う変換:
+  - 先頭の一律字下げを除去（コードブロック化の解除）。
+  - 文書タイトルを `# Handover: YYYY-MM-DD_HHMM` 形式の H1 に。
+  - 「作業」「確定した結論」「実装すべき内容」「検証」「次にやること」等の地の文ラベルを `##`/`###` 見出しに。
+  - ASCII罫線表（`2026-06-19_2033.md` の2か所: ステータス表・既存issue再分類表）を**markdownパイプ表**に変換。セル文言は原文のまま。
+  - 折り返しで分断された文（例: 「grep\n で…」）は意味単位で1行に再結合（語句は不変）。
+  - 既存の番号付き手順（1./2./…）は正しいリスト記法に整える。
+- 1ファイルずつ Edit し、変換後に整形結果を目視（見出し階層・表の列ズレ・本文欠落の有無）で検証。
+- ファイル名 `2026-06-13-1632.md` のハイフン区切りはリネームしない（履歴の同一性を壊さない。本文H1のみ整形）。
 
-照合箇所を個別に直さず、**`main()` で `args.id` を一度だけ正規化**する。注入点が1つで済み、
-既存関数群（約12箇所の `args.id` 参照）には一切手を入れない。
+---
 
-### 変更1: 正規化ヘルパー追加（`next_id` の近く、track.py:77 直後あたり）
+## Part 2: 分家フォルダの集約（Claude が実施）
+- `/home/node/.claude/handovers/`（5件・6/16〜6/19）が正本に存在するか `diff`/`md5sum` で照合。
+- 正本に**無いものだけ**を `/workspace/.claude/handovers/` へコピー。重複は何もしない。
+- 移送後、`~/.claude/handovers/` の扱い（残置 or 撤去）はユーザー確認のうえ決定。勝手に削除しない。
+- ねらい: symlink 1本で全 handover を網羅できる状態にする。
 
-```python
-def normalize_id(raw, kind):
-    """ID引数を正規形に整える。'121'→'ISSUE-121'、'BUG-7'→'BUG-007' など。
-    解釈できない入力はそのまま返し、後段の『見つかりません』処理に委ねる。"""
-    prefix = {"bug": "BUG", "issue": "ISSUE"}.get(kind)
-    if prefix is None or raw is None:
-        return raw
-    s = str(raw).strip()
-    # 末尾の数字部分を取り出す（'ISSUE-121' / 'issue 121' / '121' いずれも 121 を得る）
-    m = re.search(r'(\d+)\s*$', s)
-    if not m:
-        return raw
-    return f"{prefix}-{int(m.group(1)):03d}"
+---
+
+## Part 3: Obsidian 閲覧（symlink方式・ユーザーが実行）
+ホストの実パスは Claude から不可視のため、ユーザーが2つのパスを埋めて実行する。
+- `<HOST_PROJECT>` = ホスト上の `/workspace` 相当パス
+- `<VAULT>` = デフォルト vault のフォルダ
+
+```sh
+ln -s "<HOST_PROJECT>/.claude/handovers" "<VAULT>/Handovers"
 ```
+- vault 内の symlink 名 `Handovers` は**ドット始まりにしない**（Obsidian が索引するため）。
+- 任意拡張: `memory/`・`docs/` も同様に張ると `[[ ]]` リンク込みの知識ベースになる。
 
-- `import re` が未 import なら冒頭（`import argparse` 付近, track.py:29）に追加
-- 完全形 `BUG-7` を渡しても `BUG-007` に正規化されるので、桁ズレ入力も救える副次効果あり
+---
 
-### 変更2: `main()` で適用（track.py:994 の dispatch 呼び出し直前）
+## 検証
+- Part 1: 修正後、`grep -c '^#' <file>` で見出しが入ったこと、字下げ過多が解消したこと、表が `|...|` 形式になったことを確認。原文との意味差分が無いことを目視。
+- Part 2: `ls /workspace/.claude/handovers/ | wc -l` で件数を確認。
+- Part 3（ユーザー）: Obsidian に `Handovers/` が出現し、修正済み2件を含め整形表示・全文検索・`[[ ]]`リンクが効く。
 
-```python
-    fn = args.dispatch.get(args.cmd)
-    if fn:
-        if getattr(args, "id", None) is not None:
-            args.id = normalize_id(args.id, args.kind)
-        fn(args)
-```
+## 注意・既知の制約
+- **Obsidian Sync 利用時**: 同期は symlink 先の外部実体を辿らないことがある。複数端末同期が要件なら別途検討（今回は単一PC閲覧前提）。
+- MCP は今回不採用。将来 Claude に Obsidian を能動操作させたくなったら「Local REST API プラグイン + mcp-obsidian」で後付け可（ホストゲートウェイ `169.254.1.2` 到達済）。
 
-- `args.id` を持つのは ID 系4コマンドのみ。それ以外は `getattr` がデフォルトで素通り
-- `args.kind` は `bug` / `issue` のどちらか（ここに来る時点で確定済み）
-
-## 対象ファイル
-
-- `mgmt/tracker/track.py`（唯一の変更対象。ヘルパー追加 + main 2行 + 必要なら import 1行）
-- `mgmt/tracker/CLAUDE.md`（任意）: コマンド例に「ID は数字だけでも可（`issue show 121`）」の一文を追記
-
-## 検証手順
-
-実データ（issues.json に ISSUE-121 等が実在）で読み取り系を使い、JSON を壊さず確認する。
-
-```bash
-# 数字だけ → 正規形に解決されること
-venv/bin/python3 mgmt/tracker/track.py issue show 121      # ISSUE-121 が表示される
-venv/bin/python3 mgmt/tracker/track.py bug show 1          # BUG-001 が表示される（存在すれば）
-
-# 完全形が従来どおり動くこと（後方互換）
-venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-121
-
-# 桁省略の完全形も救えること
-venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-121   # = issue show issue-121 と同結果
-
-# 存在しないIDで従来どおり『見つかりません』になること
-venv/bin/python3 mgmt/tracker/track.py issue show 99999
-```
-
-`update/close/verify` は JSON を書き換えるため、検証は `show` で代表させる
-（照合ロジックは4コマンド共通で `args.id` 一致のため、show が通れば他も同じ経路）。
-
-## 補足
-
-- 後方互換のため既存の handover / CLAUDE.md 内の `ISSUE-001` 形式の記述は修正不要（そのまま動く）
-- 仕様議論を伴わない単独ファイルのオプション改善のため、issue 登録ではなく todo/直接実装の範疇
+## モデル運用メモ
+Part 1 は ASCII表→markdown表の逐語転記に多少の注意を要するが全体は機械的な書式変換、Part 2/3 は単純作業のため、承認後は **Sonnet** を推奨。
