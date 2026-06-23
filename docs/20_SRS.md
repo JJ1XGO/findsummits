@@ -424,6 +424,7 @@
   </table>
 
   上が北・右が東。5140 はリスト外（海域）のため解析対象メッシュではないが、解析範囲（下記）には含まれ、タイル未取得のため NODATA として解析される
+
   - **解析範囲の決定**: 解析対象メッシュ全体を囲む最小の矩形（bounding box）を解析範囲とする。解析範囲の四隅の緯度経度を求め（[メッシュコード → 緯度経度変換](00_GLOSSARY.md#mesh-to-latlon) 参照）、その緯度経度をもとに標高タイルのタイル番号を特定する（[緯度経度 → XYZ タイル番号変換](00_GLOSSARY.md#latlon-to-tile) 参照）
   - **使用タイルズームレベル**: ズームレベル15
   - **解析範囲標高グリッドの生成**: 特定したタイルから解析範囲標高グリッドを生成する。各ピクセルの標高値は、同座標における各 DEM 階層タイルの RGB から [FR-002](#fr-002-dem-階層フォールバック) で DEM 階層を選択し、[FR-003](#fr-003-標高デコードnodata-処理) でデコードして得る。タイルとメッシュの境界は一致しないため、解析範囲標高グリッドはメッシュ境界より数十 m はみ出す
@@ -890,6 +891,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - **rationale プロパティ生成**（各フィーチャの `rationale` プロパティに格納する申請書根拠テキスト。HTML ビューアで編集可能・[FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に転記）:
     - **対象フィーチャ**: match_status が `new` / `dominant` のピーク Point、`matched_band_change`（`is_band_change_candidate=true`）の matched ピーク Point、match_status が `delete` の既存 SOTA サミット Point
     - **※2 追加根拠フォーマット**（new / dominant ピーク Point に付与）:
+
       ```
       国土地理院標高タイルで解析
       {peak_lat},{peak_lon}
@@ -897,15 +899,20 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
       コル標高：{col_elev}m
       プロミネンス：{prominence}m
       ```
+
     - **※4 削除根拠フォーマット**（match_status=delete の既存 SOTA サミット Point に付与）:
+
       ```
       国土地理院標高タイルを解析し、{dominant_peak_code}に従属している事を確認
       ```
+
     - **※5 変更根拠フォーマット**（is_band_change_candidate=true の matched ピーク Point に付与）:
+
       ```
       国土地理院 DEM 解析による標高再測定: {sota_alt_m}m ({sota_points}pt) → {floor(peak_elev)}m ({peak_points}pt)
       座標: {peak_lat},{peak_lon}（{都道府県または振興局名} {市区町村名}）
       ```
+
     - `key_col_resolved=false` のピークは `col_elev`・`prominence` が確定していないため、※2 の該当箇所を「未確定」と表示する
     - rationale はビューア上の textarea で**編集可能**。編集後の値が [FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に反映される（編集前は上記フォーマットの自動生成値が初期値）。永続化方式・編集値マージロジックの詳細は HLD 範疇
   - **不備ゲートと異常終了制御**（[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）: 本 FR は**全サミット評価完了後**に以下の不備条件を検査し、いずれかに該当する場合は**不備ゲート**として**意図的に異常終了**する（即時停止ではなく全判定後にまとめて検査。入力欠落・例外によるハードクラッシュとは区別する）:
@@ -1379,7 +1386,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `ref/summitslist.csv` |
-| 取得元 | https://www.sotadata.org.uk/summitslist.csv |
+| 取得元 | <https://www.sotadata.org.uk/summitslist.csv> |
 | 対象レコード | SummitCode が `JA` で始まるもの |
 | 使用カラム | SummitCode, SummitName, AltM, Latitude, Longitude（その他は無視） |
 

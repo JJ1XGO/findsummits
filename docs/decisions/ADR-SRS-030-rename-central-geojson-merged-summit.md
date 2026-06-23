@@ -51,6 +51,7 @@
 ### 関連 ADR への影響
 
 `merged.geojson` を参照する以下の ADR 本文を `merged_summit.geojson` へ更新する:
+
 - [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)（中心成果物定義元・リネーム経緯を追記）
 - [ADR-SRS-026](ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)
 - [ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)

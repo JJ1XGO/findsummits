@@ -11,12 +11,14 @@ UR-013（[ADR-URD-016](ADR-URD-016-observability-intermediate-visualization-ur.m
 「ピーク・コルの対応関係の精密な可視化（コル位置の地図表示）は保証範囲外」と明示し、本 ADR に委ねていた（ISSUE-106）。
 
 現行の中間 GeoJSON（ADR-SRS-022 の join 方式）は以下のフィーチャのみを持つ:
+
 - Polygon: activation_zone / delete_zone（ゾーンの形状）
 - properties: `peak_lat`/`peak_lon`/`feature_type`/`area_complete`（join キー 4 フィールド）
 
 コル座標・ピーク位置・接続線を持たないため、地図に表示しても**どのピークとどのコルが対応するかが判別できない**。
 
 UR-013 が要求する可視化の具体的な内容（ユーザー確認済み）:
+
 - **FR-016 出力（per-mesh）**: FR-007 で検出したピーク位置・（コル確定済みの場合）コル位置・ゾーンポリゴン
 - **FR-018 出力（統合）**: merged_peak.csv のピーク位置・（col_lat/col_lon があれば）コル位置・ゾーンポリゴン
 - 確認方法: 地理院地図へのドラッグ&ドロップ（NFR-009 方式を維持）

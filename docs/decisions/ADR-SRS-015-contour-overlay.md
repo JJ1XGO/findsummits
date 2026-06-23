@@ -10,14 +10,16 @@ HTML ビューア（[FR-013](../20_SRS.md#fr-013-html-ビューア生成)）の�
 地理院標準・地理院淡色・OpenTopoMap はいずれも等高線入りであるため、OSM 選択時のみ等高線情報が失われる。この欠落を補う手段として等高線オーバーレイの追加を検討した。
 
 参考実装:
-- frogcat 氏の手法（等高線ピクセル描画）: https://qiita.com/frogcat/items/1224c4c8f1bc308c4b42
-- タイル境界の解消手法: https://www.openstreetmap.org/user/a2021/diary/405245
+
+- frogcat 氏の手法（等高線ピクセル描画）: <https://qiita.com/frogcat/items/1224c4c8f1bc308c4b42>
+- タイル境界の解消手法: <https://www.openstreetmap.org/user/a2021/diary/405245>
 
 ## Decision
 
 **地理院標高タイルを Canvas でピクセル処理する独自等高線オーバーレイ**を HTML ビューアに追加する。
 
 主な仕様：
+
 - データソース: 地理院標高タイル（dem5a_png/dem5b_png/dem5c_png/dem_png）をブラウザから直接 fetch（プロジェクトの prefetch ローカルキャッシュには依存せず、ブラウザ HTTP キャッシュに任せる）
 - ズーム別タイル選択: マップズーム ≤14 は `dem_png`（z=14）/ ズーム 15 は `dem5a_png`（z=15、404時 dem5b→dem5c→dem_png z=14 縮小補完）/ ズーム ≥16 は z=15 タイルを Leaflet `maxNativeZoom` 機能で拡大表示
 - dem1a（z=17、1m メッシュ）はカバレッジが限定的なため現時点では採用しない。HLD で改めて評価する
@@ -26,9 +28,10 @@ HTML ビューア（[FR-013](../20_SRS.md#fr-013-html-ビューア生成)）の�
 - 主用途は OSM 選択時の補完だが、独立 overlay として他の基図との同時 ON も可能（等高線入り基図との組み合わせでは二重表示になる）
 - 帰属表示: GeoJSON データ自体も地理院標高タイル由来であるため、基図選択に関わらず `© 国土地理院`（`https://maps.gsi.go.jp/`）を常時表示するよう変更する
 
-タイル境界での等高線の途切れ解消: 主タイル・右隣・下隣の3タイルを並列取得して 257×257 の拡張グリッドを構築し、境界ピクセルの比較を可能にする（参考: https://www.openstreetmap.org/user/a2021/diary/405245）。同一 URL は Map キャッシュ（上限 300 件）で管理し重複 fetch を防ぐ。
+タイル境界での等高線の途切れ解消: 主タイル・右隣・下隣の3タイルを並列取得して 257×257 の拡張グリッドを構築し、境界ピクセルの比較を可能にする（参考: <https://www.openstreetmap.org/user/a2021/diary/405245>）。同一 URL は Map キャッシュ（上限 300 件）で管理し重複 fetch を防ぐ。
 
 描画パラメータの HLD 向け暫定値（`docs/mockup/viewer_mockup.html` で確認済み）:
+
 - 色: 計曲線 `#a04020` (alpha=120) / 主曲線 `#c87850` (alpha=70)
 - 間隔: z≤11: 500m/100m、z≤13: 200m/50m、z≤14: 100m/20m、z≥15: 50m/10m
 - 最終値は HLD で確定する（ISSUE-070）

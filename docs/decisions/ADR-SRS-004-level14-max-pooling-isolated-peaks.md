@@ -8,7 +8,7 @@
 | 調査資料 | [`research/outliers_3x3_parent_connection.geojson`](research/outliers_3x3_parent_connection.geojson) |
 
 > ※ **FR-022 が「エスカレーション制御」「陸地最高峰海面確定」を担う**とした本 ADR Decision の §FR-022 の箇所は、[ADR-SRS-027](ADR-SRS-027-fr022-purification-fr023-pipeline-control.md)（2026-06-18）によって supersede された。エスカレーション制御は新設 FR-023 が担い、陸地最高峰海面確定は FR-008 が担う。
-
+>
 > ※ ADR-SRS-011（2026-05-21）により Decision／Consequences の一部を改訂済（広域モードのポリゴン生成廃止・`area_complete=false` トリガー対象外化）
 
 ---

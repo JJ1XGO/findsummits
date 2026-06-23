@@ -16,6 +16,7 @@
 ## Decision
 
 標高取得の優先順位:
+
 1. **DEM5a** (5m 解像度) — 最優先
 2. **DEM5b** — DEM5a が NODATA の場合
 3. **DEM5c** — DEM5b も NODATA の場合

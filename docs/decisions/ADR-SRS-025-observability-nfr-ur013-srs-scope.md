@@ -17,6 +17,7 @@ UR-013 が要求する内容は性質の異なる2つの要求に分解できる
    現行 GeoJSON はコル座標を持たない。[ADR-SRS-022](ADR-SRS-022-per-mesh-geojson-property-design.md) の join 方式）
 
 ① の出力実体は既に SRS に存在する:
+
 - [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) が per-mesh ピーク候補 GeoJSON を物理ファイルとして出力する
 - [FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合) が統合ピーク候補 GeoJSON `merged_peak.geojson` を世代ごとに上書き再生成する
 - `merged_peak.geojson` はデバッグ・差分検査用に物理出力を残す仕様になっている
@@ -40,6 +41,7 @@ NFR として扱う根拠: ① は「特定のフィーチャを追加する」�
 
 ①の出力実体（per-mesh GeoJSON・merged_peak.geojson の物理出力）は既存 FR で充足済み。
 機能を追加する必要はなく、根拠付けと相互リンクのみで対応できる。
+
 - FR-018 の「再入可能性」説明に NFR-009 / UR-013 への参照を追加
 
 **(c) ピーク↔コル対応の可視化（②）はスコープ分割し ISSUE-106 で管理**

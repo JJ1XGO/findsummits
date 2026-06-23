@@ -19,7 +19,7 @@
 ## コンテナ環境
 
 ホスト環境マシン上のコンテナ（リソース制限なし）。コンテナリビルドによりパッケージ類は常に最新化される。  
-コンテナ実装: https://github.com/JJ1XGO/claude-container
+コンテナ実装: <https://github.com/JJ1XGO/claude-container>
 
 | 項目 | 値 |
 |---|---|

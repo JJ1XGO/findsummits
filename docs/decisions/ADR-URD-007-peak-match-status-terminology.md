@@ -47,6 +47,7 @@
 | unmatched | — | AZ にも delete判定ゾーンにも該当しない（エラー、処理中止。[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md) 参照） |
 
 **申請書生成への影響**:
+
 - `追加` 行: peak.match_status ∈ {new, dominant} のピーク（仮サミットコードを使用）
 - `削除` 行: summit.match_status="delete" のサミット（SummitCode を使用）
 - `変更` 行: ユーザーが HTML ビューアで名称修正した matched ピーク

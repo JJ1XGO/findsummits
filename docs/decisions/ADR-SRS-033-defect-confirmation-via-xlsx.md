@@ -32,6 +32,7 @@ SRS L914 は「`merged_summit.geojson` は不備フィーチャも含めて必�
 ### 1. geojson metadata から top-level boolean 不備フラグを削除
 
 `merged_summit.geojson` の `metadata` から以下を削除する:
+
 - `is_unmatched_summit`
 - `is_area_incomplete`
 - `is_key_col_unresolved`
@@ -43,9 +44,11 @@ per-feature プロパティ（`key_col_resolved`・`area_complete`）は維持�
 `merged_summit.xlsx` を「不備を含む全サミットの完全な確認表」として完成させる:
 
 **列の追加**:
+
 - `area_complete`（bool）: activation zone が解析範囲内で完結しているか。FR-016 出力の `area_complete` を per-row で格納
 
 **match_status 値域の拡張**:
+
 - `delete`: 既存サミットが削除候補（`summit.match_status="delete"`）の行を含める
 - `unmatched`: 既存サミットがどのゾーンにも含まれない（`summit.match_status="unmatched"`）の行を含める
 
