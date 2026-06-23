@@ -39,7 +39,7 @@ FR-009（SOTA リスト突合・match_status 判定）の出力を `merged_summi
 
 ### merged_summit.geojson のフィーチャ構成
 
-```
+```text
 merged_summit.geojson
 ├ Point: peak（new/dominant/matched_band_change に rationale プロパティ付与）
 ├ Point: col

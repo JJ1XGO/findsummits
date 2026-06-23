@@ -39,7 +39,7 @@
 
 確定値の算出:
 
-```
+```text
 delete_zone_max_drop = 150 + ceil(max_abs_diff / 50) * 50
                      = 150 + ceil(52.26 / 50) * 50
                      = 150 + 100 = 250

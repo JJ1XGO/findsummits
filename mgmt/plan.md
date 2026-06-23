@@ -1,72 +1,52 @@
-# handover の体裁修正 ＋ Obsidian でサッと閲覧（symlink方式・MCPなし）
+# docs/ markdown lint 残件（MD040/MD041・13件）の修正
 
-## Context（なぜやるか）
-handover 文書はローカル専用の markdown 群で（`/workspace/.gitignore:89` で除外＝GitHub には載らない）、
-Obsidian で閲覧・全文検索・`[[ ]]` バックリンクを効かせたい。目的は「自分が見られればいい」
-（MCP・プラグインで Claude に能動操作させる用途は今回スコープ外）。
-あわせて、緊急時に手作業で代理作成され **markdown 文法が崩れている handover** が混在しているため、
-体裁を整える（Obsidian でまともに表示させるための前提整備でもある）。
+## Context（なぜ / 何を解決するか）
+前タスクで markdown 構造系 55 件（MD031/MD032/MD034/MD028）を修正・コミット済み（`ff8ec24`）。
+`make lint-md` の残違反は MD040（11件）と MD041（2件）の計 13 件のみ。これらは「言語名・先頭見出し」に
+判断を要するため構造系とは分けて後回しにしていた。本タスクで全件を解消し `make lint-md` を exit 0 にする。
 
-### 環境・調査の確定事実
-- `/workspace`・`/home/node/.claude` は**ホストの実ディスク（nvme0n1p5）を bind mount したもの**。
-  ホストの Obsidian から直接読める。MCP は閲覧目的には不要。
-- handover 正本の保存先は `/workspace/.claude/handovers/`（`~/.claude/commands/handover.md` の規約、174件）。
-- vault はコンテナにマウントされていない → **symlink 作成はホスト側でユーザーが実行**する必要がある。
-- 文法崩れの handover は**2件のみ**（横断スキャンで確定。未閉フェンス無し、`2026-04-26_2300.md`の罫線は正規の遷移図で対象外）。
+中身の調査結果:
+- **MD040（言語名なしコードブロック・11件）**: 中身はすべてシンタックスハイライト不要なもの
+  （処理フロー俯瞰図・グリッド図・ツリー構造図などの ASCIIアート、計算式、申請書の書式テンプレート、テーブル例示）。
+- **MD041（先頭が見出しでない・2件）**: `ADR-SRS-012` と `ADR-SRS-018` だけ、先頭の
+  `# ADR-SRS-NNN: タイトル`（H1）が欠落し、いきなり `| 状態 | … |` テーブルから始まっている。
+  他の ADR（例: `ADR-SRS-013`/`ADR-SRS-015`）は全て H1 タイトルで始まる。書式統一の観点でも補完が妥当。
 
----
+## 実装内容
 
-## Part 1: 崩れている handover の体裁修正（Claude が実施）
+### 1. MD040: コードブロックに ` ```text ` を付与（11件）
+言語名を一律 `text` に統一する（中身がいずれも図・式・テンプレートで、ハイライト対象言語がないため）。
+各箇所、開きフェンス ` ``` ` を ` ```text ` に変更する（インデント付きフェンスはインデントを保持）。
 
-### 対象ファイル（2件）
-1. `/workspace/.claude/handovers/2026-06-13-1632.md`
-   - 崩れ: 全行が4スペース字下げ＝コードブロック化／見出し皆無／「作業:」「再開時の手順:」等が地の文。
-2. `/workspace/.claude/handovers/2026-06-19_2033.md`
-   - 崩れ: タイトルが `#` 無し／表が**罫線文字（┌─┬─┐）のASCIIアート**で markdown 表でない／全体字下げ／見出しが地の文。
+対象（ファイル:行）:
+- `docs/20_SRS.md`: 198（フェーズ別処理フロー図）, 436（オーケストレーション順序図）,
+  895 / 905 / 911（申請書 rationale 書式テンプレート）
+- `docs/CLAUDE.md`: 84（ヘッダーテーブルの例示）
+- `docs/decisions/ADR-SRS-004-…`: 83（コーナー配置表）
+- `docs/decisions/ADR-SRS-011-…`: 42（delete_zone_max_drop 計算式）
+- `docs/decisions/ADR-SRS-013-…`: 42（merged_summit.geojson ツリー構造図）
+- `docs/decisions/ADR-SRS-014-…`: 45（FR 記述構造テンプレート）
+- `docs/decisions/research/3x3-mesh-analysis-study.md`: 97（グリッド境界図）
 
-### 修正方針（厳守）
-- **本文の文言・意味は一字一句保持**。handover は歴史的記録なので内容は変えない。直すのは**書式のみ**。
-- 具体的に行う変換:
-  - 先頭の一律字下げを除去（コードブロック化の解除）。
-  - 文書タイトルを `# Handover: YYYY-MM-DD_HHMM` 形式の H1 に。
-  - 「作業」「確定した結論」「実装すべき内容」「検証」「次にやること」等の地の文ラベルを `##`/`###` 見出しに。
-  - ASCII罫線表（`2026-06-19_2033.md` の2か所: ステータス表・既存issue再分類表）を**markdownパイプ表**に変換。セル文言は原文のまま。
-  - 折り返しで分断された文（例: 「grep\n で…」）は意味単位で1行に再結合（語句は不変）。
-  - 既存の番号付き手順（1./2./…）は正しいリスト記法に整える。
-- 1ファイルずつ Edit し、変換後に整形結果を目視（見出し階層・表の列ズレ・本文欠落の有無）で検証。
-- ファイル名 `2026-06-13-1632.md` のハイフン区切りはリネームしない（履歴の同一性を壊さない。本文H1のみ整形）。
+※ `CLAUDE.md:84` と `ADR-SRS-014:45` は markdown テーブルを含むため意味的には ` ```markdown ` も可だが、
+  説明文混在のテンプレートであり、全体の統一性を優先して `text` で揃える。
 
----
+### 2. MD041: 欠落している H1 タイトルを補完（2件）
+正常 ADR と同じ `# ADR-SRS-NNN: タイトル` + 空行 を先頭に挿入する。タイトルは Context の内容と
+ファイル名に基づく:
+- `docs/decisions/ADR-SRS-012-terrain-image-downscaling-method.md`
+  → 先頭に `# ADR-SRS-012: 標高地形図の縮小方式` を追加
+- `docs/decisions/ADR-SRS-018-northern-territories-skip-at-tile-fetch.md`
+  → 先頭に `# ADR-SRS-018: 北方領土除外のタイル取得段階での実施` を追加
 
-## Part 2: 分家フォルダの集約（Claude が実施）
-- `/home/node/.claude/handovers/`（5件・6/16〜6/19）が正本に存在するか `diff`/`md5sum` で照合。
-- 正本に**無いものだけ**を `/workspace/.claude/handovers/` へコピー。重複は何もしない。
-- 移送後、`~/.claude/handovers/` の扱い（残置 or 撤去）はユーザー確認のうえ決定。勝手に削除しない。
-- ねらい: symlink 1本で全 handover を網羅できる状態にする。
-
----
-
-## Part 3: Obsidian 閲覧（symlink方式・ユーザーが実行）
-ホストの実パスは Claude から不可視のため、ユーザーが2つのパスを埋めて実行する。
-- `<HOST_PROJECT>` = ホスト上の `/workspace` 相当パス
-- `<VAULT>` = デフォルト vault のフォルダ
-
-```sh
-ln -s "<HOST_PROJECT>/.claude/handovers" "<VAULT>/Handovers"
-```
-- vault 内の symlink 名 `Handovers` は**ドット始まりにしない**（Obsidian が索引するため）。
-- 任意拡張: `memory/`・`docs/` も同様に張ると `[[ ]]` リンク込みの知識ベースになる。
-
----
+### 3. コミット
+`docs/` 配下の変更を Conventional Commits・本文日本語でコミット（push は別途指示まで不要）。
+例: `style(docs): markdown lint 残件を解消（MD040 言語名付与・MD041 ADR見出し補完）`
 
 ## 検証
-- Part 1: 修正後、`grep -c '^#' <file>` で見出しが入ったこと、字下げ過多が解消したこと、表が `|...|` 形式になったことを確認。原文との意味差分が無いことを目視。
-- Part 2: `ls /workspace/.claude/handovers/ | wc -l` で件数を確認。
-- Part 3（ユーザー）: Obsidian に `Handovers/` が出現し、修正済み2件を含め整形表示・全文検索・`[[ ]]`リンクが効く。
-
-## 注意・既知の制約
-- **Obsidian Sync 利用時**: 同期は symlink 先の外部実体を辿らないことがある。複数端末同期が要件なら別途検討（今回は単一PC閲覧前提）。
-- MCP は今回不採用。将来 Claude に Obsidian を能動操作させたくなったら「Local REST API プラグイン + mcp-obsidian」で後付け可（ホストゲートウェイ `169.254.1.2` 到達済）。
+1. `make lint-md` を実行し、**exit 0（違反0件）** になることを確認する。
+2. `git diff` で、MD040 はフェンス行のみ変更・MD041 は先頭2行追加のみ（本文無改変）であることを目視確認する。
 
 ## モデル運用メモ
-Part 1 は ASCII表→markdown表の逐語転記に多少の注意を要するが全体は機械的な書式変換、Part 2/3 は単純作業のため、承認後は **Sonnet** を推奨。
+本実装はファイル編集中心の単純作業（フェンス書き換え11箇所＋見出し追加2箇所）。
+ExitPlanMode 承認後は **Sonnet** での実施を推奨する。
