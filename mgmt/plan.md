@@ -1,52 +1,51 @@
-# docs/ markdown lint 残件（MD040/MD041・13件）の修正
+# docs リンク切れ・レイアウト崩れの検出自動化＋実害3件の修正
 
 ## Context（なぜ / 何を解決するか）
-前タスクで markdown 構造系 55 件（MD031/MD032/MD034/MD028）を修正・コミット済み（`ff8ec24`）。
-`make lint-md` の残違反は MD040（11件）と MD041（2件）の計 13 件のみ。これらは「言語名・先頭見出し」に
-判断を要するため構造系とは分けて後回しにしていた。本タスクで全件を解消し `make lint-md` を exit 0 にする。
+ユーザーが kate（Marksman LSP）で 2 種類の不整合に気づいた:
+1. **リンク切れ**: 存在しないファイルへの相対リンク（例: `ADR-SRS-004:180` が古い番号 `ADR-SRS-014-land-summit-highest-peak-handling.md` を参照。実体は番号が振り直され `ADR-SRS-019-land-summit-highest-peak-handling.md` に。014 番は別内容へ再利用済み）。
+2. **レイアウト崩れ**: 箇条書き `- **概要**: …` の直後に空行なしで `**入力**:` が続き、`**入力**:` が概要項目に吸収されて同列に見える（FR-013=SRS:1036、FR-009=SRS:834 の 2 件）。
 
-中身の調査結果:
-- **MD040（言語名なしコードブロック・11件）**: 中身はすべてシンタックスハイライト不要なもの
-  （処理フロー俯瞰図・グリッド図・ツリー構造図などの ASCIIアート、計算式、申請書の書式テンプレート、テーブル例示）。
-- **MD041（先頭が見出しでない・2件）**: `ADR-SRS-012` と `ADR-SRS-018` だけ、先頭の
-  `# ADR-SRS-NNN: タイトル`（H1）が欠落し、いきなり `| 状態 | … |` テーブルから始まっている。
-  他の ADR（例: `ADR-SRS-013`/`ADR-SRS-015`）は全て H1 タイトルで始まる。書式統一の観点でも補完が妥当。
+調査の結果、**どちらも PyMarkdown の標準ルールでは検出不可**（リンク実在検証ルールが無く、レイアウト崩れは markdown 構文上は正しいため）。Marksman を入れてもリンク切れしか拾えない。一方、軽量な自作 Python チェッカーで両方とも検出できることを実証済み（実際に計 3 件を検出）。ユーザー選択により **Marksman は導入せず、自作チェッカーを既存 `make lint-md`／PostToolUse フックに統合**する。
 
 ## 実装内容
 
-### 1. MD040: コードブロックに ` ```text ` を付与（11件）
-言語名を一律 `text` に統一する（中身がいずれも図・式・テンプレートで、ハイライト対象言語がないため）。
-各箇所、開きフェンス ` ``` ` を ` ```text ` に変更する（インデント付きフェンスはインデントを保持）。
+### 1. 自作チェッカー `scripts/lint_docs.py` を新規作成
+PyMarkdown を補完する 2 検査を行う read-only スクリプト。引数にファイル/ディレクトリを取り、違反を `path:line: 種別: メッセージ` 形式（PyMarkdown 風）で出力。違反ありで exit 1。
 
-対象（ファイル:行）:
-- `docs/20_SRS.md`: 198（フェーズ別処理フロー図）, 436（オーケストレーション順序図）,
-  895 / 905 / 911（申請書 rationale 書式テンプレート）
-- `docs/CLAUDE.md`: 84（ヘッダーテーブルの例示）
-- `docs/decisions/ADR-SRS-004-…`: 83（コーナー配置表）
-- `docs/decisions/ADR-SRS-011-…`: 42（delete_zone_max_drop 計算式）
-- `docs/decisions/ADR-SRS-013-…`: 42（merged_summit.geojson ツリー構造図）
-- `docs/decisions/ADR-SRS-014-…`: 45（FR 記述構造テンプレート）
-- `docs/decisions/research/3x3-mesh-analysis-study.md`: 97（グリッド境界図）
+- **検査A（リンク実在）**: 各 `.md` 内の相対リンク `](xxx.md)` / `](xxx.md#frag)` を正規表現で抽出し、`http(s)` を除外、`os.path.normpath` で実在確認。存在しなければ違反。
+- **検査B（レイアウト崩れ）**: `**入力**:` `**出力**:` `**説明**:` 等の太字ラベル単独行で、直前行が空行でない（＝箇条書き項目に吸収される）箇所を違反として報告。誤検出を避けるため「太字ラベル＋コロンのみの行」かつ「直前が非空行」に限定（今回の検証で誤検出 0・実害 2 件のみヒット）。
+- 単一ファイル引数も受け付ける（フックから 1 ファイル検査するため）。
 
-※ `CLAUDE.md:84` と `ADR-SRS-014:45` は markdown テーブルを含むため意味的には ` ```markdown ` も可だが、
-  説明文混在のテンプレートであり、全体の統一性を優先して `text` で揃える。
+置き場所は `scripts/lint_docs.py`（開発支援ツール。本番パイプラインからは独立）。
 
-### 2. MD041: 欠落している H1 タイトルを補完（2件）
-正常 ADR と同じ `# ADR-SRS-NNN: タイトル` + 空行 を先頭に挿入する。タイトルは Context の内容と
-ファイル名に基づく:
-- `docs/decisions/ADR-SRS-012-terrain-image-downscaling-method.md`
-  → 先頭に `# ADR-SRS-012: 標高地形図の縮小方式` を追加
-- `docs/decisions/ADR-SRS-018-northern-territories-skip-at-tile-fetch.md`
-  → 先頭に `# ADR-SRS-018: 北方領土除外のタイル取得段階での実施` を追加
+### 2. `Makefile` の `lint-md` ターゲットを拡張
+PyMarkdown と自作チェッカーの**両方**を実行し、いずれかが違反なら非ゼロ終了する。PyMarkdown が違反で止まっても自作チェッカーが走るよう、各 exit code を退避して最大値で終了:
+```makefile
+lint-md: venv
+	@venv/bin/python3 -m pymarkdown -c .pymarkdown scan -r $(LINT_MD_PATHS); s1=$$?; \
+	venv/bin/python3 scripts/lint_docs.py $(LINT_MD_PATHS); s2=$$?; \
+	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
+```
 
-### 3. コミット
-`docs/` 配下の変更を Conventional Commits・本文日本語でコミット（push は別途指示まで不要）。
-例: `style(docs): markdown lint 残件を解消（MD040 言語名付与・MD041 ADR見出し補完）`
+### 3. PostToolUse フック（`.claude/settings.local.json`）に自作チェッカーを追加
+既存の `pymarkdown scan` に続けて `lint_docs.py <編集ファイル>` も実行し、両方の違反を `additionalContext` に結合して注入する。`.md` 以外は従来どおりスキップ。
+
+### 4. 実害3件の修正（検出ロジックの妥当性確認も兼ねる）
+- `docs/20_SRS.md`:1035→1036 間に空行挿入（FR-013 概要と入力を分離）
+- `docs/20_SRS.md`:833→834 間に空行挿入（FR-009 概要と入力を分離）
+- `docs/decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md`:180 のリンクを
+  `[ADR-SRS-014](ADR-SRS-014-land-summit-highest-peak-handling.md)`
+  → `[ADR-SRS-019](ADR-SRS-019-land-summit-highest-peak-handling.md)` に修正
+
+### 5. コミット
+`scripts/lint_docs.py`・`Makefile`・`docs/` 変更を Conventional Commits・本文日本語でコミット。
+`.claude/settings.local.json` は gitignore 対象のため対象外。
 
 ## 検証
-1. `make lint-md` を実行し、**exit 0（違反0件）** になることを確認する。
-2. `git diff` で、MD040 はフェンス行のみ変更・MD041 は先頭2行追加のみ（本文無改変）であることを目視確認する。
+1. `make lint-md` を実行 → PyMarkdown 0 件・自作チェッカー 0 件で **exit 0** を確認。
+2. 修正前後で `scripts/lint_docs.py docs/` を単独実行し、修正前は 3 件検出・修正後は 0 件になることを確認。
+3. フック動作確認: 既存の `.md` を 1 つ編集し、自作チェッカーの違反が（仕込んだ場合に）注入されることを確認。
+4. `git diff` で実害3件が意図どおり（空行追加2・リンク番号1）であることを目視確認。
 
 ## モデル運用メモ
-本実装はファイル編集中心の単純作業（フェンス書き換え11箇所＋見出し追加2箇所）。
-ExitPlanMode 承認後は **Sonnet** での実施を推奨する。
+スクリプトの検出ロジックは調査で確定済み。実装はその Python 化＋ Makefile/フックへの組み込み＋3件修正で、ファイル編集中心。ExitPlanMode 承認後は **Sonnet** を推奨（フックのシェル組み込みのみ多少注意が必要）。

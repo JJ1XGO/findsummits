@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-22",
+    "last_updated": "2026-06-23",
     "counter": 126
   },
   "issues": [
@@ -2012,12 +2012,12 @@
       "created_date": "2026-05-29",
       "stage": "SRS",
       "planned_stage": "HLD",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "新規スクリプト scripts/export_summit_revised.py 等を作成し、merged.geojson + HTML ビューア編集内容を入力として merged_summit_revised.xlsx を出力するロジックを実装。FR-013 HTML ビューア改修（エクスポートトリガー連携）も別途必要。",
       "notes": "【スコープ更新（2026-05-31）】FR-012 はブラウザ内（HTML ビューア）で生成する方針に確定（SRS 修正済み・FR-012 出力先を /results/ からブラウザダウンロードに変更）。生成した merged_summit_revised.xlsx は申請エビデンス ZIP（FR-021）に同梱。Python バッチでの生成は行わない。FR-021 の実装（ISSUE-063）と統合して対応する。",
       "resolved_date": "2026-06-21",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "history": [
         {
           "date": "2026-06-21T13:13:41",
@@ -2026,6 +2026,14 @@
           "to": "対応完了",
           "comment": "todo.md に移行（type機能追加廃止に伴う）",
           "session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7"
+        },
+        {
+          "date": "2026-06-23T19:26:40",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -2040,12 +2048,12 @@
       "created_date": "2026-05-31",
       "stage": "SRS",
       "planned_stage": "HLD",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "HTML ビューアの「申請エビデンス」ボタンで JSZip を使い申請エビデンス ZIP をブラウザダウンロードする。同梱内容: merged_summit_revised.xlsx（FR-012）+ new/dominant/changed/unchanged の 4 GeoJSON。ISSUE-062（FR-012 XLSX 生成）と統合実装。SRS FR-021 で仕様確定済み。",
       "notes": null,
       "resolved_date": "2026-06-21",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "history": [
         {
           "date": "2026-06-21T13:13:41",
@@ -2054,6 +2062,14 @@
           "to": "対応完了",
           "comment": "todo.md に移行（type機能追加廃止に伴う）",
           "session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7"
+        },
+        {
+          "date": "2026-06-23T19:26:40",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -2122,12 +2138,12 @@
       "created_date": "2026-05-31",
       "stage": "SRS",
       "planned_stage": "HLD",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "SRS FR-019 に検索機能要件を記載済み（2026-05-31）。検索対象プロパティ: summit_code / summit_name_jp / summit_name。モックアップ実装はdocs/mockup/viewer_mockup.html を参照",
       "resolved_date": "2026-06-21",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "history": [
         {
           "date": "2026-06-21T13:13:41",
@@ -2136,6 +2152,14 @@
           "to": "対応完了",
           "comment": "todo.md に移行（type機能追加廃止に伴う）",
           "session_id": "2ae35f8e-f7f9-4411-87d2-7629ed275ca7"
+        },
+        {
+          "date": "2026-06-23T19:26:42",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3529,12 +3553,12 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-SRS-027・SRS §4.3 新設FR-023・FR-022大幅縮小・FR-014入力変更として反映完了（2026-06-18）。コード追従はtodo.md管理。",
       "notes": null,
       "resolved_date": "2026-06-18",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "a0cc3911-9d82-4bed-9451-11356666b54d",
       "history": [
         {
@@ -3544,6 +3568,14 @@
           "to": "対応完了",
           "comment": "SRS・ADR 編集完了（2026-06-18）。ADR-SRS-027新設・SRS §4.3 FR-023新設・FR-022縮小・FR-014/FR-008入力更新・フェーズ表記統一。",
           "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        },
+        {
+          "date": "2026-06-23T19:26:40",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3558,12 +3590,12 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-SRS-027・ADR-SRS-019改訂・SRS FR-008入力追加・7.1.4削除・7.2追加として反映完了（2026-06-18）。コード追従はtodo.md管理。",
       "notes": null,
       "resolved_date": "2026-06-18",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "a0cc3911-9d82-4bed-9451-11356666b54d",
       "history": [
         {
@@ -3573,6 +3605,14 @@
           "to": "対応完了",
           "comment": "SRS・ADR 編集完了（2026-06-18）。ADR-SRS-027・ADR-SRS-019改訂・FR-008入力追加・7.1.4削除・7.2追加。",
           "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        },
+        {
+          "date": "2026-06-23T19:26:40",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3587,12 +3627,12 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "SRS全体のフェーズ表記を統一。旧フェーズ2-1→フェーズ2、旧フェーズ2-2→フェーズ3、旧フェーズ3（統合）→統合時(FR-008)。反映完了（2026-06-18）。",
       "notes": null,
       "resolved_date": "2026-06-18",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "a0cc3911-9d82-4bed-9451-11356666b54d",
       "history": [
         {
@@ -3602,6 +3642,14 @@
           "to": "対応完了",
           "comment": "SRS全フェーズ表記統一完了（2026-06-18）。",
           "session_id": "a0cc3911-9d82-4bed-9451-11356666b54d"
+        },
+        {
+          "date": "2026-06-23T19:26:42",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3616,14 +3664,23 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": "全国一括突合を運用前提に確定（ADR-SRS-028）。FR-010 削除・FR-009 メッシュリスト入力削除・is_out_of_range_summit/is_dem_invalid_summit 削除を SRS に反映。残る不備フラグは is_unmatched_summit/is_area_incomplete/is_key_col_unresolved の 3 つに限定。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-23T19:26:42",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
+        }
+      ]
     },
     {
       "id": "ISSUE-112",
@@ -3636,14 +3693,23 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": "全サミット評価完了後に不備フラグを一括検査し、いずれか true なら必ず出力してから停止する方式に統一。SRS FR-009 の異常終了制御セクションを更新済み。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
+        }
+      ]
     },
     {
       "id": "ISSUE-113",
@@ -3656,14 +3722,23 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Opus",
       "resolution": "per-mesh: 3-<meshcode>_activation.geojson → 3-<meshcode>.geojson、merged: merged_activation.geojson → merged_peak.geojson。和名も更新（per-mesh アクティベーションゾーン GeoJSON → per-mesh ピーク候補 GeoJSON、統合済みピーク域 GeoJSON → 統合ピーク候補 GeoJSON）。feature_type 値（activation_zone/delete_zone）は据え置き（ADR-SRS-029）。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
+        }
+      ]
     },
     {
       "id": "ISSUE-114",
@@ -3676,14 +3751,23 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "ファイル名をmerged_summit.geojsonに変更（merged_summit.xlsxとペア）。和名を「突合済み統合 GeoJSON」に統一。ADR-SRS-030作成・SRS本文反映・関連ADR整合更新で対応。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
+        }
+      ]
     },
     {
       "id": "ISSUE-115",
@@ -3696,14 +3780,23 @@
       "created_date": "2026-06-18",
       "stage": "SRS",
       "planned_stage": "SRS",
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "2.2.1設定可能項目に「仮サミットコード連番上限」を追加（デフォルトA・許容A〜Z）。連番を01始まり→00始まりへ変更。フォーマット例をA01→A00へ全更新。ADR-SRS-031作成・SRS本文反映で対応。",
       "notes": null,
       "resolved_date": null,
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
+        }
+      ]
     },
     {
       "id": "ISSUE-116",
@@ -3716,12 +3809,12 @@
       "created_date": "2026-06-19",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "①FR-009 の説明に metadata 全キー（データ由来＋固定定数）の生成責務を明記。②ADR-URD-014 §3 の GeoJSON metadata キーを license → license_url に修正。③SRS L1261/L1493 の参照先を FR-009 に変更。④FR-013 の metadata 一覧は消費側として参照のみに修正。ADR-URD-014 改訂。",
       "notes": null,
       "resolved_date": "2026-06-19",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2",
       "history": [
         {
@@ -3739,6 +3832,14 @@
           "to": "対応完了",
           "comment": "ADR-URD-014 の license→license_url 統一。FR-009 に metadata 付与セクション新設（全キーの生成責務を集約）。FR-013 を消費側参照のみに修正。SRS L1261/L1493 の参照先を FR-009 に変更。",
           "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        },
+        {
+          "date": "2026-06-23T19:26:40",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3753,12 +3854,12 @@
       "created_date": "2026-06-19",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "①FR-001 の説明に「HTTP Last-Modified をキャッシュファイルの mtime に設定する（os.utime）」を追記。②FR-009 の説明に「パイプライン末尾でキャッシュ全体の mtime 最大を取得し gsi_tile_latest_date として metadata に格納」を追記。③FR-013 の metadata 一覧に gsi_tile_latest_date を追加（上流生成・表示用・部分解析時は過大評価の可能性あり旨を注記）。ADR 新規作成（SRS）。",
       "notes": null,
       "resolved_date": "2026-06-19",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2",
       "history": [
         {
@@ -3776,6 +3877,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-032 新規作成。FR-001 に Last-Modified mtime 焼き込みを追記。FR-009 の metadata 付与セクションに gsi_tile_latest_date 格納を追記。FR-013 の metadata 利用一覧に gsi_tile_latest_date を追加。",
           "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        },
+        {
+          "date": "2026-06-23T19:26:40",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3790,12 +3899,12 @@
       "created_date": "2026-06-19",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": "Sonnet",
       "resolution": "①geojson metadata から top-level boolean 不備フラグを削除（per-feature の key_col_resolved/area_complete は残す）。②xlsx の列に area_complete を追加、match_status 値域に delete/unmatched を追加。③FR-009 L914 を書き換え「不備ゲート発動時は xlsx+geojson をセット出力してから停止」と明記（ハードクラッシュとは区別）。ADR-SRS-011/013 改訂。",
       "notes": null,
       "resolved_date": "2026-06-19",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2",
       "history": [
         {
@@ -3813,6 +3922,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-033 新規作成。ADR-SRS-011/013 に補足追記。FR-009 の不備フラグ定義を不備ゲート方式に書き換え（xlsx セット出力保証・ハードクラッシュ区別）。FR-012 に area_complete 列追加・match_status 値域拡張。6.5 の出力保証・用途を更新。6.6 の metadata 記述を FR-009 参照に修正。",
           "session_id": "a25c81a7-c865-4d1a-bc52-c9c08d3374b2"
+        },
+        {
+          "date": "2026-06-23T19:26:41",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3867,12 +3984,12 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "スキーマ正本を FR-009（または 7.2 内部データ）へ移設し、FR-013/FR-019 は参照に統一する。",
       "notes": null,
       "resolved_date": "2026-06-22",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
       "history": [
         {
@@ -3890,6 +4007,14 @@
           "to": "対応完了",
           "comment": "FR-013 のフィーチャ構成表＋各フィーチャのプロパティ全表を生成者 FR-009 末尾へ移設（スキーマ正本を FR-009 に一本化）。FR-013 は参照に置換、6.6 のフィーチャ構成参照も FR-013→FR-009 へ更新。grep で重複ゼロを確認",
           "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        },
+        {
+          "date": "2026-06-23T19:26:41",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3904,12 +4029,12 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "生成手順=FR-013、ブラウザ提供機能=FR-019 に責務を整理する。",
       "notes": null,
       "resolved_date": "2026-06-22",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
       "history": [
         {
@@ -3919,6 +4044,14 @@
           "to": "対応完了",
           "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
           "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        },
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3933,12 +4066,12 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "一方へ集約し他方は参照にする。",
       "notes": null,
       "resolved_date": "2026-06-22",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
       "history": [
         {
@@ -3948,6 +4081,14 @@
           "to": "対応完了",
           "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
           "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        },
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3962,12 +4103,12 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "merged_summit.geojson 文脈では常に true である旨を注記、または中間データ専用と明確化する。",
       "notes": null,
       "resolved_date": "2026-06-22",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
       "history": [
         {
@@ -3977,6 +4118,14 @@
           "to": "対応完了",
           "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
           "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        },
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -3991,12 +4140,12 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "未確定時の prominence 値の表現（空文字/省略 等）を SRS に規定する。",
       "notes": null,
       "resolved_date": "2026-06-22",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
       "history": [
         {
@@ -4006,6 +4155,14 @@
           "to": "対応完了",
           "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
           "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        },
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     },
@@ -4020,12 +4177,12 @@
       "created_date": "2026-06-21",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "推奨方向（非拘束）: 対応づけを summit_code で明示する既存方針に整合させ、線に相手サミットのSOTAコード、サミット点に親ピーク仮コードを新プロパティとして追加。ただし新プロパティ名・付与範囲・FR-009生成ロジック/FR-019(相互ジャンプ)/FR-012/FR-021 への波及を確認のうえ本issue着手時に決定（今は決めない）。必要なら ADR 化。",
       "notes": null,
       "resolved_date": "2026-06-22",
-      "verified_date": null,
+      "verified_date": "2026-06-23",
       "created_session_id": "69b979d4-e196-4157-a25d-4a000c2955fd",
       "history": [
         {
@@ -4035,6 +4192,14 @@
           "to": "対応完了",
           "comment": "FR-013レビュー由来の指摘を docs/20_SRS.md に反映（スキーマ移設後の状態に対して適用）",
           "session_id": "81b5f8d9-ded5-4284-a67e-bc29e9fca477"
+        },
+        {
+          "date": "2026-06-23T19:26:44",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
         }
       ]
     }
