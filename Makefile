@@ -57,6 +57,8 @@ venv-rebuild:
 # -r でサブディレクトリ（docs/decisions/ の ADR 等）まで再帰的に走査する
 LINT_MD_PATHS ?= docs/
 lint-md: venv
-	venv/bin/python3 -m pymarkdown -c .pymarkdown scan -r $(LINT_MD_PATHS)
+	@venv/bin/python3 -m pymarkdown -c .pymarkdown scan -r $(LINT_MD_PATHS); s1=$$?; \
+	venv/bin/python3 scripts/lint_docs.py $(LINT_MD_PATHS); s2=$$?; \
+	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
 
 .PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md

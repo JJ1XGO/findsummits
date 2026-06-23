@@ -831,6 +831,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 - **対応 UR**: [UR-003](10_URD.md#ur-003)
 - **概要**: merged_peak.csv（ピーク中心の内部 work CSV）と SOTA サミットリストを point-in-polygon 突合し（ポリゴン形状はピーク候補 GeoJSON `merged_peak.geojson` から取得、その他の属性は merged_peak.csv から join; [ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）、全 Point/Polygon/LineString フィーチャ・rationale プロパティを含む `merged_summit.geojson`（中心データ）と `merged_summit.xlsx`（サミット中心の確認用 XLSX）を出力する。本 FR はデータ概念が「ピーク中心 → サミット中心」へ切り替わる節目である。
+
 **入力**:
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
@@ -1033,6 +1034,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 - **対応 UR**: [UR-006](10_URD.md#ur-006)
 - **概要**: フェーズ4 で `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成した中心データ）を入力として HTML ビューアを生成する。生成するのは**作業用ビューア（`merged_viewer.html`）のみ**。公開用 HTML は [FR-020](#fr-020-公開用-html-ビューア生成) が別途生成する。
+
 **入力**:
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |

@@ -177,7 +177,7 @@ max pooling を選んだ理由: プロミネンス計算目的では山頂を保
    - **FR-015（標高地形図出力）・FR-005/FR-006/FR-007（per-mesh パイプライン）**: FR-004 と FR-014 の両方から呼び出される共通サブ処理（FR-015 は広域でも出力し、解析範囲の目視確認を可能にする）
    - **FR-022（コル充足判定）**:
      - `merged_peak.csv` から `key_col_resolved=false` の対象ピーク座標を抽出
-     - 陸地最高峰リスト一致ピークを広域対象から除外し、`key_col_resolved=true`（Key コル=海面 0m）に更新（[ADR-SRS-014](ADR-SRS-014-land-summit-highest-peak-handling.md) 参照）
+     - 陸地最高峰リスト一致ピークを広域対象から除外し、`key_col_resolved=true`（Key コル=海面 0m）に更新（[ADR-SRS-019](ADR-SRS-019-land-summit-highest-peak-handling.md) 参照）
      - 残った未確定ピークを `key_col_unresolved_peaks-<N>.csv` として出力し、次段の N+1 と共に FR-014 へ渡す（エスカレーションループ）
      - 各 N 試行後に FR-008 を再実行して `merged_peak.csv` を再生成し、未確定ピークが残るかを再判定
      - 全充足ならフェーズ4 へ、N=6 でも未充足ならそのままフェーズ4 へ（FR-009 の `is_key_col_unresolved` 不備フラグで異常終了）
