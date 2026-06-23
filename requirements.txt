@@ -3,3 +3,7 @@ openpyxl
 shapely
 numpy
 pillow
+
+# lint（開発ツール: markdown チェック用。ランタイム import はしない。
+# 再構築でルール挙動が変わらないようバージョン固定）
+pymarkdownlnt==0.9.38

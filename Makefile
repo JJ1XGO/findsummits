@@ -53,4 +53,9 @@ venv-rebuild:
 	rm -rf venv
 	$(MAKE) venv
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild
+# Markdown lint（チェックのみ・ファイルは書き換えない）。対象は LINT_MD_PATHS（既定: docs/）
+LINT_MD_PATHS ?= docs/
+lint-md: venv
+	venv/bin/python3 -m pymarkdown -c .pymarkdown scan $(LINT_MD_PATHS)
+
+.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md
