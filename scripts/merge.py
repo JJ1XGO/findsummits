@@ -21,7 +21,6 @@ import math
 import os
 from pathlib import Path
 
-
 _PROJECT_DIR = Path(__file__).parent.parent
 _CONFIG_PATH = _PROJECT_DIR / "params/fetch_config.ini"
 _MAIN_CONFIG_PATH = _PROJECT_DIR / "params/config.ini"
@@ -150,7 +149,7 @@ def merge_duplicates(peaks, mesh_set):
         groups[key].append(p)
 
     merged = []
-    for key, group in groups.items():
+    for _key, group in groups.items():
         # col_elev 最小のレコードを代表にする（is_tile_top=1 は col_elev=-9999 なので最小になりがち）
         # is_tile_top=0 のものを優先するため、(is_tile_top, col_elev) でソートして最小を選ぶ
         def sort_key(r):
@@ -209,7 +208,7 @@ def load_regions(path):
     try:
         from shapely.geometry import shape
     except ImportError:
-        raise SystemExit("--regions-file を使うには shapely が必要です: pip install shapely")
+        raise SystemExit("--regions-file を使うには shapely が必要です: pip install shapely") from None
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     regions = []
@@ -366,7 +365,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--tolerance",    type=int, default=DEFAULT_TOLERANCE,
-                        help=f"SOTAリスト突合の許容距離（ズーム15ピクセル、チェビシェフ距離）デフォルト: {DEFAULT_TOLERANCE} (params/fetch_config.ini の merge.tolerance_px)")
+                        help=(f"SOTAリスト突合の許容距離（ズーム15ピクセル、チェビシェフ距離）"
+                              f"デフォルト: {DEFAULT_TOLERANCE} (params/fetch_config.ini の merge.tolerance_px)"))
     parser.add_argument("--mesh-list",    type=Path, default=None,
                         help="メッシュコードリスト（期待解析回数計算に使用）")
     parser.add_argument("--csv-dir",      type=Path, default=DEFAULT_CSV_DIR)

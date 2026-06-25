@@ -3,11 +3,11 @@
 AZ 内 / AZ 外 50m ゾーン内 / ゾーン外 を分類する。
 """
 
+import csv
+import heapq
 import math
 import os
 import re
-import heapq
-import csv
 
 import numpy as np
 from PIL import Image
@@ -171,7 +171,7 @@ def main():
 
         # 座標 → タイル座標（整数）
         n = 2 ** ZOOM
-        def to_tile_int(lat, lon):
+        def to_tile_int(lat, lon, n=n):
             tx = int((lon + 180) / 360 * n)
             lat_rad = math.radians(lat)
             ty = int((1 - math.log(math.tan(lat_rad) + 1 / math.cos(lat_rad)) / math.pi) / 2 * n)
@@ -242,8 +242,12 @@ def main():
         w.writeheader()
         w.writerows(results)
 
-    print(f"\n=== サマリー ===")
-    print(f"{'削除ID':<16} {'統合先ID':<16} {'del_elev':>8} {'mrg_elev':>8} {'col_H':>8} {'mrg-H':>7} {'del-H':>7} {'main_Δ':>8}  {'分類'}")
+    print("\n=== サマリー ===")
+    header = (
+        f"{'削除ID':<16} {'統合先ID':<16} {'del_elev':>8} {'mrg_elev':>8}"
+        f" {'col_H':>8} {'mrg-H':>7} {'del-H':>7} {'main_Δ':>8}  {'分類'}"
+    )
+    print(header)
     print("-" * 100)
     for r in results:
         if r["col_H"] is None:

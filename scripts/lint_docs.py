@@ -24,7 +24,7 @@ def check_file(filepath):
     try:
         with open(filepath, encoding='utf-8') as f:
             lines = f.readlines()
-    except (IOError, UnicodeDecodeError):
+    except (OSError, UnicodeDecodeError):
         return violations
 
     for i, raw in enumerate(lines):

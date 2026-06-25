@@ -1,68 +1,127 @@
-# 計画: markdown lint の全カバー化・既存違反の一括掃除・恒久ルール化
+# Python 静的解析（Ruff）導入計画
 
-## Context（なぜ）
+## Context（背景・目的）
 
-ユーザー要望「markdown lint で見つかった違反は全て修正する様にしたい」。現状の課題:
+本リポジトリには Python が 12 ファイル・約 3,845 行ある（`mgmt/tracker/track.py` 1,013 行、
+`scripts/` 本番系、`analysis/` 検証系）が、機械的チェックは Markdown（`make lint` → `lint-md`）
+のみで **Python 用の静的解析はゼロ**。型ヒントも部分的で品質がばらついている。
 
-- `make lint-md` の対象は `docs/` のみ。docs/ はクリーンだが、それ以外（mgmt/・ref/・README.md・CLAUDE.md・.claude/）に違反が残る
-- `pymarkdown fix` の自動修正は MD012 等ごく一部のみ。頻出の MD022/MD032/MD034 は未対応（公式に MD032 は「v1.0.0 後対応予定」と確認）。よって手作業で直すしかない
+コア原則 #7（機械的チェックの警告ゼロ）を Python にも適用するため、Python リンタを `make lint`
+に組み込み、未使用 import・未定義名・import 順序・バグパターン等を恒常的に検出できるようにする。
 
-ゴール: (1) lint 対象を現用 markdown 全体へ拡張、(2) 既存違反を一括掃除、(3)「md 編集時は lint を通してからコミット」を CLAUDE.md に明文化して再発防止。
+**ツール選定: Ruff**（Astral 製・Rust 製の高速リンタ）。根拠:
+pip 1 パッケージで既存 venv 運用に乗る／flake8・pyflakes・isort・pyupgrade 等を1本に統合／
+段階導入（rule select・per-file-ignores）が容易／`ruff server` でエディタ LSP も兼ねる／
+`target-version = py313` 対応。型チェックは Ruff の対象外のため**別軸として今回はスコープ外**。
 
-## スコープ決定（ユーザー確認済み）
+## 確定した方針（ユーザー合意済み）
 
-- lint 対象 = リポジトリ内の全 tracked `.md`。ただし **`mgmt/archive/` は除外**（凍結された過去スナップショット。約101件の違反はここに集中するが、履歴文書を今更整形しない方針）
-- enforcement = **CLAUDE.md ルール**（pre-commit フックは作らない）
+- **導入範囲: リント（`ruff check`）のみ**。`ruff format`（自動整形）は今回入れない（初回の大差分回避）
+- **ルール強度: 標準セット** = `F, E, W, I, B, UP`
+  （pyflakes / pycodestyle / isort / flake8-bugbear / pyupgrade）
+- **型チェック（mypy / pyright / ty）は別途あとで判断**（今回スコープ外）
 
-## 対象ファイルと変更内容
+## 変更対象ファイル
 
-### 1. lint 対象の拡張（Makefile）
+### 1. `requirements.txt` — Ruff を追加（バージョン固定）
 
-`Makefile` の `lint-md` ターゲットを `docs/` 固定から「archive を除く全 tracked md」へ変更する。
+末尾の lint セクションに、pymarkdownlnt と同じ「バージョン固定」方針で 1 行追加する。
 
-- 既定対象を `git ls-files '*.md' ':!:mgmt/archive/**'` から得る（新規 md も自動対象化・gitignore 尊重・archive 除外）
-- pymarkdown と自作 `scripts/lint_docs.py` の双方へ同じファイル列を渡す
-- 先頭コメントと `LINT_MD_PATHS` 既定値を更新（明示指定時は従来どおり上書き可）
+```text
+# lint（開発ツール: python 静的解析用。ランタイム import はしない。
+# 再構築でルール挙動が変わらないようバージョン固定）
+ruff==<実装時の最新安定版を pin>
+```
 
-### 2. 既存違反の掃除（現用ドキュメント 計41件）
+> 実装時に `venv/bin/pip install ruff` で入る版を確認して固定する（pymarkdownlnt の前例に倣う）。
 
-判断系は本計画で方針確定済みのため、全て機械的なテキスト編集として適用できる。
+### 2. `ruff.toml`（リポジトリ root 新規作成）
 
-機械的修正（空行・タブ・URL）:
+`pyproject.toml` が存在しないため、独立した `ruff.toml` を新規作成する（最小・明示的）。
 
-- `ref/SOURCES.md`（MD034 ×11）: 裸 URL を `<...>` で囲む
-- `mgmt/tracker/CLAUDE.md`（MD032 ×4: L26/L33/L39/L84）: リスト前後に空行
-- `README.md`（MD022 ×2: L5/L70 / MD032 ×1: L6）: 見出し下・リスト前後に空行
-- `mgmt/todo.md`（MD012 ×1: L172 / MD022 ×1: L173）: 連続空行の解消・見出し周りの空行
-- `mgmt/lessons.md`（MD022 ×1: L55 `## Patterns to Avoid` 直後）: 見出し下に空行
+```toml
+# Ruff 設定。対象は本プロジェクトの Python 3.13。
+target-version = "py313"
+line-length = 100          # track.py 等の対話 UI を踏まえ E501 は緩めに（要実装時調整）
 
-判断確定済み（Sonnet が機械適用可）:
+[lint]
+select = ["F", "E", "W", "I", "B", "UP"]
+# 既存コードの実情に応じて、ゼロ化が過大な規則のみ per-file-ignores / ignore で個別緩和する
+# （黙って消さず、緩和は理由をコメントで明示。恒久判断が要るものは ADR 化を検討）
 
-- `.claude/rules/architecture.md`
-  - MD041（L12）: 先頭見出しが H1 でない → 見出しを1段昇格する。`## アーキテクチャ` を `# アーキテクチャ` にし、配下の全 `### X` を `## X` へ（7件）
-  - MD040（L16 データフロー図・L68 ディレクトリツリー）: 言語 `text` を付与
-- `mgmt/tracker/CLAUDE.md`
-  - MD040（L48 ディレクトリツリー・L62 ステータス遷移図）: 言語 `text` を付与
+[lint.per-file-ignores]
+# 例: 必要に応じて analysis/ や track.py に限定的な緩和を置く（実装時に違反実測後に確定）
+```
 
-### 3. mgmt/plan.md の置換
+### 3. `Makefile` — `lint-py` ターゲット追加 & `lint` 集約へ連結
 
-本計画は承認後 `mgmt/plan.md` へ移動し旧内容を置換する（プロジェクト規約）。これにより現 `mgmt/plan.md` の違反（MD022/MD031/MD010 計15件）と壊れリンクは同時に解消する。
+`lint-md`（`Makefile:63-68`）と同じ構造で `lint-py` を追加し、`lint:`（`Makefile:57`）の依存に足す。
+`.PHONY`（`Makefile:70`）にも `lint-py` を追記。
 
-### 4. 恒久ルールの明文化（/workspace/CLAUDE.md）
+```makefile
+lint: lint-md lint-py
 
-「ドキュメント更新時のルール」付近へ簡潔に追記する。
+# Python lint（チェックのみ・ファイルは書き換えない）。
+# 既定対象: git 管理下の全 .py。LINT_PY_PATHS 指定時はそのパスを対象にする（override）。
+LINT_PY_PATHS ?=
+lint-py: venv
+    @if [ -n "$(LINT_PY_PATHS)" ]; then targets="$(LINT_PY_PATHS)"; \
+    else targets=$$(git ls-files '*.py' ':!:mgmt/archive/**'); fi; \
+    venv/bin/python3 -m ruff check $$targets
+```
 
-- markdown を編集したら、コミット前に `make lint-md` を実行し、検出された違反は編集対象外でも全て修正してからコミットする
-- lint 対象は archive を除く現用 md 全体（`mgmt/archive/` は凍結のため除外）
+> `ruff check` は設定を `ruff.toml` から自動参照する。出力既定は `full`。
+> CI 連携が将来必要なら `--output-format github` を検討（今回は不要）。
 
-## モデル運用
+### 4. `.claude/settings.local.json` — PostToolUse hook を `.py` にも拡張（任意・推奨）
 
-判断要素は本計画で解決済み。実行は全て機械的なテキスト編集のため **Sonnet 推奨**。
+現状 hook（`settings.local.json:26`）は `.md` 限定。`.md` は従来どおり、`.py` 編集時は
+`ruff check` を走らせて違反を Claude に提示する分岐を追加する（Markdown と同じ即時フィードバック体験）。
+※ 既存 `.md` 分岐の挙動は壊さないこと。実装時に拡張子で分岐する形へ書き換える。
+
+### 5. 文書更新（実装と同一作業ターン内で更新・コミット）
+
+ドキュメント・実装整合性原則に従い、ツール構成変更を文書に反映する。
+
+- **`CLAUDE.md`（プロジェクト, 「機械的チェック」節）**:
+  「現在の構成: lint-md（pymarkdown + scripts/lint_docs.py、mgmt/archive/ 除外）」を
+  **lint-md + lint-py（ruff、mgmt/archive/ 除外）** に追記更新する（既存運用＝ lint 構成は ADR でなく
+  本節へインライン記録、に倣う）。
+- **`docs/01_environment.md`（「Python パッケージ」表）**:
+  `ruff`（用途: python 静的解析 / `make lint`）の行追加を検討。
+  ※ 現在この表は requests/openpyxl/shapely/numpy の4行のみで、**既存の pillow・pymarkdownlnt が未掲載**
+  （runtime 中心で dev ツール未記載という既存の不整合）。実装時にユーザーへ「dev ツール（pymarkdownlnt
+  含む）も表に載せる方針か」を確認し、方針に合わせて ruff（＋必要なら pymarkdownlnt/pillow）を追記する。
+- **ADR は作成しない**: lint ツール構成は本プロジェクトでは CLAUDE.md にインライン記録する運用のため。
+  Ruff は事実上の標準で重い設計判断を伴わない。
+- **`mgmt/lessons.md`**: 事前更新不要。実装中に学び（規則の誤検知・緩和判断等）が出たら追記する。
+
+## 実装手順（承認後）
+
+1. `venv/bin/pip install ruff` → 入った版を確認し `requirements.txt` に pin、`ruff.toml` を作成
+2. `venv/bin/python3 -m ruff check $(git ls-files '*.py')` で **現状の違反を実測**
+   - `--statistics` で規則別の件数を集計し、件数・内訳をユーザーに一覧提示する
+3. 自動修正可能なもの（主に `I`/`UP`/一部 `E`）は `ruff check --fix` で解消、
+   手修正分は内容を確認しながら対応。**警告ゼロまで**持っていく（コア原則 #7）
+   - ゼロ化が過大／意図的に残す規則があれば、`ignore`・`per-file-ignores` に理由コメント付きで設定。
+     恒久的な設計判断を伴う緩和は ADR 化を検討（docs/CLAUDE.md 準拠）
+4. `Makefile` に `lint-py` を追加し `lint` へ連結、`.PHONY` 更新
+5. PostToolUse hook を `.py` 対応に拡張
+6. **文書更新**: `CLAUDE.md`「機械的チェック」節を更新、`docs/01_environment.md` の Python パッケージ表に
+   ruff を追記（dev ツール掲載方針をユーザー確認のうえ）。`make lint` 警告ゼロを確認し、
+   コード・設定・文書をまとめてコミット（ドキュメント更新後は即時 commit のルール準拠）
+7. 違反件数が多く一度に潰しきれない場合は、ユーザーと相談のうえスコープ分割
+   （`select` を `F, E9` から段階拡張する等）を再検討
 
 ## 検証
 
-1. `make lint-md` が exit 0（pymarkdown と自作 lint の両方が通る）
-2. `git ls-files '*.md' ':!:mgmt/archive/**'` の各ファイルを scan し違反ゼロを確認
-3. 主要編集ファイルの `git diff` を目視し、整形で本文が壊れていないか確認
-4. `/claude-md-panel`（引数なし）で /workspace/CLAUDE.md の新ルールを確認
-5. Conventional Commits 形式・本文日本語でコミット（ドキュメント更新即コミット規約に従う）
+- `make lint` が **lint-md と lint-py の両方を実行**し、警告ゼロで `exit 0` になること
+- 故意に違反（未使用 import 等）を入れたファイルで `make lint` が非ゼロ終了することを確認
+- `.py` を Edit/Write したとき PostToolUse hook が違反を提示し、`.md` 編集時の従来挙動が不変であること
+- `make venv-rebuild` 後も `ruff` が requirements.txt から復元され `make lint` が通ること
+
+## 留意点
+
+- 標準セットは初回修正がやや多め。手順 2 の実測で件数を見てから本格修正に入る（無理なら段階導入へ）
+- `ruff format` と型チェッカ（pyright / mypy / ty）は今回スコープ外。必要になれば別計画で追加
+- バージョン固定運用・新規パッケージは同コミットで requirements.txt 追記（既存ルール踏襲）

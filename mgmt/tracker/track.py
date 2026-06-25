@@ -25,12 +25,12 @@ track.py - バグ・課題 統合管理CLI
   python3 track.py issue close ISSUE-001 --actor "Claude" --comment "実装完了"
 """
 
-import json
 import argparse
+import json
+import os
 import re
 import sys
-import os
-from datetime import datetime, date
+from datetime import date, datetime
 
 BASE_DIR      = os.path.dirname(__file__)
 BUG_DATA      = os.path.join(BASE_DIR, "data", "bugs.json")
@@ -137,7 +137,7 @@ def append_history(item, actor, from_s, to_s, comment=""):
 # ── Excel エクスポート共通ヘルパー ────────────────────────────────────────
 
 def make_excel_helpers():
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     thin   = Side(style='thin', color='BFBFBF')
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
@@ -161,7 +161,7 @@ def make_excel_helpers():
         return c
 
     def section_header(ws, row, col, text, span=2):
-        from openpyxl.styles import Font, PatternFill, Alignment, Border
+        from openpyxl.styles import Alignment, Font, PatternFill
         c = ws.cell(row=row, column=col, value=text)
         c.font      = Font(bold=True, color="FFFFFF", name="Arial", size=10)
         c.fill      = PatternFill("solid", fgColor="2E5D9E")
@@ -173,7 +173,7 @@ def make_excel_helpers():
             nc.border = border
 
     def summary_row(ws, row, label, value):
-        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.styles import Alignment, Font, PatternFill
         lc = ws.cell(row=row, column=1, value=label)
         lc.font      = Font(name="Arial", size=9, bold=True)
         lc.fill      = PatternFill("solid", fgColor="F5F5F5")
@@ -204,10 +204,11 @@ def make_excel_helpers():
 
 def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
     """収束グラフ用シートを書き込む（Bug/Issue 共通）"""
-    from openpyxl.styles import Font, PatternFill, Alignment
-    from openpyxl.chart import LineChart, Series, Reference
-    from openpyxl.chart.data_source import AxDataSource, StrRef
     from datetime import timedelta as td
+
+    from openpyxl.chart import LineChart, Reference, Series
+    from openpyxl.chart.data_source import AxDataSource, StrRef
+    from openpyxl.styles import Alignment, Font, PatternFill
 
     all_dates = [x[date_field] for x in items if x.get(date_field)]
     if not all_dates:
@@ -253,7 +254,7 @@ def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
 
     cats = Reference(ws, min_col=1, min_row=2, max_row=len(dates) + 1)
     cats_src = AxDataSource(strRef=StrRef(f=str(cats)))
-    for label, col, color in [("累計登録", 2, "FF0000"), ("対応累計", 3, "4472C4"), ("確認累計", 4, "70AD47")]:
+    for _label, col, color in [("累計登録", 2, "FF0000"), ("対応累計", 3, "4472C4"), ("確認累計", 4, "70AD47")]:
         yvals = Reference(ws, min_col=col, min_row=1, max_row=len(dates) + 1)
         s = Series(yvals, title_from_data=True)
         s.graphicalProperties.line.solidFill = color

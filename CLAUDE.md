@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## プロジェクト概要
 
 国土地理院の標高タイル（DEM5/DEM10b）を解析し、SOTA 日本支部のサミットリスト更新申請に必要な成果物を生成する支援ツール。
@@ -25,9 +23,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **仕様を決めてからコードを書く**。SRS/HLD/LLD レビュー中は実装に手を入れない
 - この原則は HLD/LLD フェーズでも同様に適用する
 
-Claude へ: SRS/HLD/LLD の記述を確認・レビューするときに「でも実装ではこうなっている」という視点でコードを参照してはならない。仕様書の内容が正であり、コードは後で仕様に合わせて書き直す。
-
 ## ドキュメント・実装整合性原則
+
+※仕様策定フェーズ（HLD/LLD 完成前）は仕様優先原則が優先する。
 
 仕様書・設計書（URD/SRS/HLD/LLD/ADR）の内容とプログラムの実装は常に整合させること。
 
@@ -92,14 +90,8 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 **作業リスト（仕様議論を伴わない実装タスク等）は `mgmt/todo.md` で管理する。**
 
 - **用途**: 文書・仕様の議論を伴わない作業の保管庫（実装タスク・ファイル名追従・ログ整備・運用作業・チェックリスト等）
-- **粒度**: 数行で書ける作業単位。実装ステップは箇条書きでチェックボックス化可
 - **管理方法**: 完了したものは消す（履歴は git で追える）。長期保留中のものは「保留」セクションへ
 - **新規発生時**: 「文書・仕様の議論を伴うか？」で判定し、No なら todo.md へ追記（issue 登録不要）
-
-handover との関係:
-
-- todo.md と issue は **原本**（永続的な作業リスト）
-- handover はセッション終了時点の **スナップショット**。todo.md と issue の未対応分を抜粋して載せる
 
 Issue から todo.md への降格判定:
 
@@ -130,8 +122,7 @@ Issue から todo.md への降格判定:
 
 ### B. handover ファイル作成
 
-1. 構成は `~/.claude/commands/handover.md` に従う。
-2. 末尾に「未対応バグ・課題サマリー」を追記する。件数は `track.py bug/issue list --open`、todo.md 残件は `mgmt/todo.md` を直接カウント。
+`/handover` スキルに従う。
 
 ### C. 後始末（フォールバック）
 
@@ -161,9 +152,11 @@ Issue から todo.md への降格判定:
 
 ## 機械的チェック（lint / LSP 等）
 
-機械的チェックは `make lint` に集約する。コード・ドキュメントを編集したら、コミット前に `make lint` を実行し警告ゼロにする（グローバル コア原則 #7）。
+`make lint` で全警告ゼロを保つ（グローバル原則 #7）。
 
-- 現在の構成: `lint-md`（pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外）
+- 現在の構成:
+  - `lint-md`: pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外（対象: `*.md`）
+  - `lint-py`: ruff（設定: `ruff.toml`）、`mgmt/archive/` 除外（対象: `*.py`）
 - チェック対象を追加するとき（LSP の CLI チェック・C コンパイラ警告・Python 型チェック等）は、CLAUDE.md に個別ルールを増やさず `make lint` の依存へ target を足す
 - 編集時は PostToolUse hook が該当ファイルの違反を自動提示する。提示された違反はそのターン内で解消する
 

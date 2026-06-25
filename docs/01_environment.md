@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-05-17 |
+| 最終更新日 | 2026-06-25 |
 | ステータス | ドラフト |
 
 ## ホスト環境
@@ -58,9 +58,19 @@ venv/bin/python3 mgmt/tracker/track.py ...
 
 ## Python パッケージ（`requirements.txt` で管理）
 
+**ランタイム依存**（本番パイプラインで import するもの）:
+
 | パッケージ | 用途 |
 |---|---|
 | requests | タイル取得（prefetch_tiles.py） |
 | openpyxl | XLSX 出力 |
 | shapely | 都道府県/振興局 point-in-polygon 判定（merge.py, preprocess_pref_boundaries.py） |
 | numpy | Keyコル距離分析（analysis/analyze_keycol_distance.py） |
+| pillow | PNG タイルデコード（analysis/ スクリプト群） |
+
+**開発ツール**（ランタイムで import しない、バージョン固定）:
+
+| パッケージ | 用途 |
+|---|---|
+| pymarkdownlnt | Markdown lint（`make lint` → `lint-md`） |
+| ruff | Python 静的解析（`make lint` → `lint-py`） |

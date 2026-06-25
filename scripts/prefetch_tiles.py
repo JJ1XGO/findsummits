@@ -13,10 +13,11 @@ import datetime
 import email.utils
 import math
 import os
-import sys
-import time
-import threading
 import queue
+import sys
+import threading
+import time
+
 import requests
 
 GSI_DEM5_URL  = "https://cyberjapandata.gsi.go.jp/xyz/dem5{dem}_png/15/{x}/{y}.png"
@@ -204,7 +205,8 @@ def fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_in
 
 PROGRESS_INTERVAL = 1000
 
-def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initial, lock, counters, start_time, total_jobs):
+def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initial,
+           lock, counters, start_time, total_jobs):
     while True:
         try:
             job = job_queue.get_nowait()
@@ -258,8 +260,9 @@ def _print_progress_if_needed(counters, start_time, total_jobs):
         else:
             time_str = ""
         pct = done / total_jobs * 100 if total_jobs > 0 else 0
-        print(f"  進捗: {done}/{total_jobs} ({pct:.1f}%) | 取得:{ok} 変更なし:{s304} 存在なし:{s404} エラー:{err}{time_str}",
-              flush=True)
+        msg = (f"  進捗: {done}/{total_jobs} ({pct:.1f}%)"
+               f" | 取得:{ok} 変更なし:{s304} 存在なし:{s404} エラー:{err}{time_str}")
+        print(msg, flush=True)
 
 
 # ---- サマリー生成 ----
@@ -321,7 +324,7 @@ def build_summary(start_dt, end_dt, mesh_set, jobs, counters, user_agent, max_pa
         f"{total_all:>{col_w}}"
     )
     lines.append("=" * 60)
-    lines.append(f"※ dem5b/c の行はフォールバック試行分（dem5a/b が 404 だった座標のみ）")
+    lines.append("※ dem5b/c の行はフォールバック試行分（dem5a/b が 404 だった座標のみ）")
     return "\n".join(lines)
 
 
@@ -369,7 +372,8 @@ def main():
     for _ in range(max_parallel):
         t = threading.Thread(
             target=worker,
-            args=(job_queue, None, args.tile_dir, user_agent, interval_ms, backoff_init, lock, counters, start_time, total_jobs),
+            args=(job_queue, None, args.tile_dir, user_agent, interval_ms, backoff_init,
+                  lock, counters, start_time, total_jobs),
             daemon=True,
         )
         t.start()

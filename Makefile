@@ -54,7 +54,7 @@ venv-rebuild:
 	$(MAKE) venv
 
 # 機械的チェックの集約エントリ。ツール追加時はここに依存を足す（例: lint: lint-md lint-c lint-py）
-lint: lint-md
+lint: lint-md lint-py
 
 # Markdown lint（チェックのみ・ファイルは書き換えない）。
 # 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
@@ -67,4 +67,13 @@ lint-md: venv
 	venv/bin/python3 scripts/lint_docs.py $$targets; s2=$$?; \
 	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md
+# Python lint（チェックのみ・ファイルは書き換えない）。
+# 既定対象: git 管理下の全 .py（mgmt/archive/ は凍結スナップショットのため除外）。
+# LINT_PY_PATHS を指定した場合はそのパスを対象にする（override）。
+LINT_PY_PATHS ?=
+lint-py: venv
+	@if [ -n "$(LINT_PY_PATHS)" ]; then targets="$(LINT_PY_PATHS)"; \
+	else targets=$$(git ls-files '*.py' ':!:mgmt/archive/**'); fi; \
+	venv/bin/python3 -m ruff check $$targets
+
+.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md lint-py

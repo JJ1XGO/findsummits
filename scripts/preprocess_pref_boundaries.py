@@ -19,10 +19,10 @@ from collections import defaultdict
 from pathlib import Path
 
 try:
-    from shapely.geometry import shape, mapping
+    from shapely.geometry import mapping, shape
     from shapely.ops import unary_union
 except ImportError:
-    raise SystemExit("shapely が必要です: pip install shapely")
+    raise SystemExit("shapely が必要です: pip install shapely") from None
 
 _PROJECT_DIR = Path(__file__).parent.parent
 _MAIN_CONFIG_PATH = _PROJECT_DIR / "params/config.ini"
@@ -174,7 +174,8 @@ def main():
 
     out_features = []
     for (assoc, code), grp in sorted(groups.items()):
-        print(f"  dissolve: {assoc}/{code} ({grp['region_name']}, {len(grp['geoms'])} ポリゴン) ...", end="", flush=True)
+        print(f"  dissolve: {assoc}/{code} ({grp['region_name']}, {len(grp['geoms'])} ポリゴン) ...",
+              end="", flush=True)
         dissolved = unary_union(grp["geoms"])
         print(" 完了")
         out_features.append({

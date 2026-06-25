@@ -8,7 +8,6 @@ import glob
 import json
 import os
 import re
-import sys
 
 GEOJSON_GLOB = os.path.join(os.path.dirname(__file__), "../ref/geojson_v31/ja*_v31.geojson")
 OUTPUT_JS = os.path.join(os.path.dirname(__file__), "../docs/mockup/summits_data.js")

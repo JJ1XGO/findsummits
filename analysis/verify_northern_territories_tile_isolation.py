@@ -24,7 +24,6 @@ from pathlib import Path
 try:
     from shapely.geometry import box, mapping, shape
     from shapely.ops import unary_union
-    from shapely.strtree import STRtree
 except ImportError:
     sys.exit("shapely が必要です: pip install shapely")
 

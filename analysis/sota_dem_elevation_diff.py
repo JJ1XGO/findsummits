@@ -239,7 +239,8 @@ def main():
     repo_root = Path(__file__).parent.parent
     config_path = repo_root / "params" / "config.ini"
     if not config_path.exists():
-        print(f"エラー: {config_path} が見つかりません。config.ini.example をコピーして設定してください。", file=sys.stderr)
+        print(f"エラー: {config_path} が見つかりません。"
+              "config.ini.example をコピーして設定してください。", file=sys.stderr)
         sys.exit(1)
 
     config = configparser.ConfigParser()
@@ -376,7 +377,10 @@ def main():
         print("-" * 68)
         for r in top20:
             name = r["SummitName"][:22]
-            print(f"{r['SummitCode']:<16} {name:<24} {r['AltM']:>6.0f} {r['DEM_AltM']:>6.1f} {r['abs_diff']:>7.2f}  {r['dem_source']}")
+            print(
+                f"{r['SummitCode']:<16} {name:<24} {r['AltM']:>6.0f} {r['DEM_AltM']:>6.1f}"
+                f" {r['abs_diff']:>7.2f}  {r['dem_source']}"
+            )
 
     print("=" * 60)
 
