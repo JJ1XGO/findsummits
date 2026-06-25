@@ -62,6 +62,7 @@
    - [NFR-007: ログ出力](#nfr-007-ログ出力)
    - [NFR-008: UI レスポンス](#nfr-008-ui-レスポンス)
    - [NFR-009: 観測可能性（中間成果物の可視化）](#nfr-009-観測可能性中間成果物の可視化)
+   - [NFR-010: 描画応答性・連続操作の滑らかさ](#nfr-010-描画応答性連続操作の滑らかさ)
 6. [外部インターフェース仕様](#6-外部インターフェース仕様)
    - [6.1 入力: 地理院標高タイル](#61-入力-地理院標高タイル)
    - [6.2 入力: SOTA サミットリスト CSV](#62-入力-sota-サミットリスト-csv)
@@ -1111,7 +1112,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - 背景タイル切り替え機能（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap）を持つ（選定経緯: [ADR-SRS-006](decisions/ADR-SRS-006-viewer-background-tile-selection.md)）。OSM は等高線なしのため、後述の等高線オーバーレイで補完できる（[ADR-SRS-015](decisions/ADR-SRS-015-contour-overlay.md)）
   - **地図操作・表示範囲**: 日本を中心に配置した世界地図表示とし、パン範囲を制限する。ズームは 1 段ずつ行う。左下にメートル単位のスケールバーを表示する（`maxBounds` の具体値・`zoomSnap`・ホイール感度等のパラメータは HLD に委ねる）
   - 各マーカーの色は `points` プロパティに基づく標高バンド色（1pt=濃緑〜10pt=赤）を使用する
-  - 各マーカーは `feature_type` に応じた形状で区別する: **summit=●（円）/ peak=▲（上向き三角）/ key_col=▼（下向き三角）**。形状の具体的描画方式（Canvas 等）は HLD に委ねる
+  - 各マーカーは `feature_type` に応じた形状で区別する: **summit=●（円）/ peak=▲（上向き三角）/ key_col=▼（下向き三角）**。形状の具体的描画方式（Canvas 等）は HLD に委ねる（根拠: [ADR-URD-017](decisions/ADR-URD-017-viewer-marker-rendering-performance.md)）
+  - マーカーはクライアント側（ブラウザ内）で描画し、外部サーバ（地理院等）のアイコン画像取得に依存しない（[NFR-010](#nfr-010-描画応答性連続操作の滑らかさ) 参照）
   - 各マーカーはズームレベルに応じてサイズを変える（ズームアウト時は小さく、ズームイン時は大きく。具体的なサイズ段階は HLD に委ねる）
   - アクティベーションゾーン（AZ）は半透明の塗りで表示する（外枠線なし・クリック不可）。なお `area_complete=false`（解析範囲内で完結しなかった AZ）を持つピークは上流（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグ）で処理が停止し viewer には到達しないため、viewer 側に不完全 AZ の警告表示の責務は持たない
   - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
@@ -1367,6 +1369,15 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 - 中間 GeoJSON は申請エビデンス（[UR-006](10_URD.md#ur-006)）ではなく、開発・テスト・運用時の妥当性検証を目的とする。デバッグ・差分検査のため物理出力を残す（[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) の `merged_peak.geojson` は世代ごとに上書き再生成）
 - 各中間 GeoJSON にはゾーンポリゴンに加え、ピーク Point（`feature_type="peak"`）・コル Point（`feature_type="key_col"`・コル確定済みのみ）・peak→col 接続線（`feature_type="peak_col_link"`）を同梱する。地理院地図スタイル属性を付与し、ドラッグ&ドロップ 1 回で全フィーチャを確認できる（凡例規約は [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) を踏襲。設計詳細: [ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）
 - 本 NFR の設計判断詳細: [ADR-SRS-025](decisions/ADR-SRS-025-observability-nfr-ur013-srs-scope.md)
+
+### NFR-010: 描画応答性・連続操作の滑らかさ
+
+- **対応 UR**: [UR-014](10_URD.md#ur-014)
+- 本 NFR は HTML ビューア（[FR-013](#fr-013-html-ビューア生成)）のマーカー描画に適用する。[NFR-008](#nfr-008-ui-レスポンス)（単発 UI 応答 1 秒）を補完し、連続操作のフレームレートを規定する
+- パン・ズーム等の連続操作中は **60fps（フレーム ≤16ms）** を目標とする（RAIL "Animation"）
+- マーカークリック・レイヤー表示切替等の個別入力に対し、入力処理 **≤50ms**・可視応答 **≤100ms** を目標とする（RAIL "Response"。現行 Core Web Vitals INP "good" ≤200ms とも整合）
+- 根拠・設計判断: [ADR-URD-017](decisions/ADR-URD-017-viewer-marker-rendering-performance.md)
+- 出典: [Measure performance with the RAIL model - web.dev](https://web.dev/articles/rail)
 
 ---
 
