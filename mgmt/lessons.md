@@ -42,6 +42,8 @@
 
 - **plan.mdを常に最新に保つ**: プロジェクトは plan.md を基準に進める。実装変更・設計変更があった場合は todo.md だけでなく plan.md も必ず更新する。plan.mdが古くなると「設計と実装の乖離」が生じ、次セッション以降の判断が狂う。
 
+- **PyMarkdown の front-matter 拡張は既定オフ**: YAML frontmatter（`---`）付きの .md（command ファイル等）を lint すると、終端の `---` が setext 見出しの下線と誤読され MD041/MD003/MD022 が誤検出される。これは PyMarkdown のバグではなく front-matter 拡張が既定無効なだけ。`.pymarkdown` に `extensions.front-matter.enabled: true` を足せば解消する。「lint がバグっている」と感じたらまず設定（拡張の有効/無効）を疑う。（2026-06-25: 前セッションで「known false-positive・修正不可」と誤認していたが、実証したら設定1行で解消できた）
+
 ## 設計・仕様
 
 - **出力列に複数の概念を混在させない**: merge.py の旧 status 列は「突合結果」（matched/new/deleted）と「解析品質」（confirmed/unstable）が混在していた。申請書作成時に判別できなくなるため、概念ごとに列を分ける（match_status / stability）。
