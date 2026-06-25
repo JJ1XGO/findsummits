@@ -74,3 +74,5 @@ venv/bin/python3 mgmt/tracker/track.py ...
 |---|---|
 | pymarkdownlnt | Markdown lint（`make lint` → `lint-md`） |
 | ruff | Python 静的解析（`make lint` → `lint-py`） |
+| geojson-validator | GeoJSON 構造・ジオメトリ検証（`make lint` → `lint-geojson`） |
+| djlint | HTML 構文チェック（`make lint` → `lint-html`） |

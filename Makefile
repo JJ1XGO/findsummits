@@ -54,7 +54,7 @@ venv-rebuild:
 	$(MAKE) venv
 
 # 機械的チェックの集約エントリ。ツール追加時はここに依存を足す（例: lint: lint-md lint-c lint-py）
-lint: lint-md lint-py
+lint: lint-md lint-py lint-geojson lint-html
 
 # Markdown lint（チェックのみ・ファイルは書き換えない）。
 # 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
@@ -76,4 +76,22 @@ lint-py: venv
 	else targets=$$(git ls-files '*.py' ':!:mgmt/archive/**'); fi; \
 	venv/bin/python3 -m ruff check $$targets
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md lint-py
+# GeoJSON lint（チェックのみ・ファイルは書き換えない）。
+# 既定対象: git 管理下の全 .geojson（mgmt/archive/ は凍結スナップショットのため除外）。
+# LINT_GEOJSON_PATHS を指定した場合はそのパスを対象にする（override）。
+LINT_GEOJSON_PATHS ?=
+lint-geojson: venv
+	@if [ -n "$(LINT_GEOJSON_PATHS)" ]; then targets="$(LINT_GEOJSON_PATHS)"; \
+	else targets=$$(git ls-files '*.geojson' ':!:mgmt/archive/**'); fi; \
+	venv/bin/python3 scripts/lint_geojson.py $$targets
+
+# HTML lint（チェックのみ・ファイルは書き換えない）。
+# 既定対象: git 管理下の全 .html（mgmt/archive/ は凍結スナップショットのため除外）。
+# LINT_HTML_PATHS を指定した場合はそのパスを対象にする（override）。
+LINT_HTML_PATHS ?=
+lint-html: venv
+	@if [ -n "$(LINT_HTML_PATHS)" ]; then targets="$(LINT_HTML_PATHS)"; \
+	else targets=$$(git ls-files '*.html' ':!:mgmt/archive/**'); fi; \
+	venv/bin/djlint $$targets --lint --profile html
+
+.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md lint-py lint-geojson lint-html

@@ -1,127 +1,78 @@
-# Python 静的解析（Ruff）導入計画
+# GeoJSON / HTML の lint 導入
 
-## Context（背景・目的）
+## Context（なぜ行うか）
 
-本リポジトリには Python が 12 ファイル・約 3,845 行ある（`mgmt/tracker/track.py` 1,013 行、
-`scripts/` 本番系、`analysis/` 検証系）が、機械的チェックは Markdown（`make lint` → `lint-md`）
-のみで **Python 用の静的解析はゼロ**。型ヒントも部分的で品質がばらついている。
+コア原則 #7（機械的チェックの警告ゼロ）を Markdown・Python に続き **GeoJSON・HTML** へ広げる。
+現状 `make lint` は `lint-md`・`lint-py` のみで、リポジトリ内の GeoJSON（13ファイル）と
+HTML（2ファイル）は機械チェックの対象外。手編集・生成スクリプト出力の構造崩れを未然に検出したい。
 
-コア原則 #7（機械的チェックの警告ゼロ）を Python にも適用するため、Python リンタを `make lint`
-に組み込み、未使用 import・未定義名・import 順序・バグパターン等を恒常的に検出できるようにする。
+ツール選定は前々回セッション（b9ffa0ba）で一度合意しかけたが、ツール不調で混乱したため仕切り直す。
+本計画で現状を実地確認した結果は以下:
 
-**ツール選定: Ruff**（Astral 製・Rust 製の高速リンタ）。根拠:
-pip 1 パッケージで既存 venv 運用に乗る／flake8・pyflakes・isort・pyupgrade 等を1本に統合／
-段階導入（rule select・per-file-ignores）が容易／`ruff server` でエディタ LSP も兼ねる／
-`target-version = py313` 対応。型チェックは Ruff の対象外のため**別軸として今回はスコープ外**。
+- **Java は未インストール**（vnu を使うなら JRE 追加＝コンテナ再ビルドが必要）
+- **HTML 対象は2ファイルのみ**（`docs/mockup/viewer_mockup.html`・`docs/decisions/research/dem_colormap.html`）
+- GeoJSON 対象は git 管理下13ファイル（`ref/geojson_v31/` 10・`analysis/` 1・`docs/decisions/research/` 2）
 
-## 確定した方針（ユーザー合意済み）
+## 確定方針
 
-- **導入範囲: リント（`ruff check`）のみ**。`ruff format`（自動整形）は今回入れない（初回の大差分回避）
-- **ルール強度: 標準セット** = `F, E, W, I, B, UP`
-  （pyflakes / pycodestyle / isort / flake8-bugbear / pyupgrade）
-- **型チェック（mypy / pyright / ty）は別途あとで判断**（今回スコープ外）
+- **GeoJSON = `geojson-validator` 0.6.0**（Pure Python・追加ランタイム不要）。
+  CLI が無い（Web版のみ）ため、`lint_docs.py` に倣ったラッパー `scripts/lint_geojson.py` を新規作成する。
+  API: `validate_structure()`（RFC7946 構造）+ `validate_geometries()`（未閉合・巻き順・座標範囲外・自己交差等）。
+  依存の shapely 系は既存 `requirements.txt` にあり。
+- **HTML = 実データ検証してから最終決定**（ユーザー選択）。候補は `djlint` 1.39.4（Pure Python・`--lint`）。
+  対象2ファイルのために Java JRE を足すコスト感が論点。検証結果次第で「djlint 採用 / vnu(Java) へ切替 / 見送り」を決める。
 
-## 変更対象ファイル
+## 実装の段取り（2フェーズ）
 
-### 1. `requirements.txt` — Ruff を追加（バージョン固定）
+### フェーズ1: 実データ検証（ExitPlanMode 承認後に最初に実行）
 
-末尾の lint セクションに、pymarkdownlnt と同じ「バージョン固定」方針で 1 行追加する。
+1. venv に試験インストール: `geojson-validator` と `djlint`（この時点では requirements.txt に固定しない）
+2. **GeoJSON**: ラッパーの試作で全13ファイルを検証。
+   - 特に `ref/geojson_v31/*.geojson`（SOTA 公式・外部由来＝自分で直せない）に違反が出るかを確認。
+   - 違反ゼロ → 全13を対象に含める。違反が出る → 外部由来分を対象から除外する方針に切替（範囲を最終決定）。
+3. **HTML**: `djlint --lint --profile html` で2ファイルを検証し、インライン `<style>`/`<script>` 由来の
+   誤検知の量・種類を観察（H006/H021/H030 等）。
+4. 検証結果（誤検知の実態・抑制で実用になるか）をユーザーに提示し、**AskUserQuestion で HTML ツールを最終決定**。
+   - djlint で実用十分 → djlint 採用（`--ignore` / `pyproject.toml` で誤検知抑制）
+   - 誤検知過多で抑制困難 → vnu(Java) へ切替（`docs/01_environment.md`・packages.txt に JRE 追加を別途相談）
+   - 価値に見合わない → HTML lint は見送り（GeoJSON のみ導入）
 
-```text
-# lint（開発ツール: python 静的解析用。ランタイム import はしない。
-# 再構築でルール挙動が変わらないようバージョン固定）
-ruff==<実装時の最新安定版を pin>
-```
+### フェーズ2: 本実装（HTML ツール確定後）
 
-> 実装時に `venv/bin/pip install ruff` で入る版を確認して固定する（pymarkdownlnt の前例に倣う）。
+既存の `lint-md`/`lint-py` と同一パターンで統合する。
 
-### 2. `ruff.toml`（リポジトリ root 新規作成）
+1. **`requirements.txt`**: `geojson-validator==0.6.0`（＋ HTML 採用時 `djlint==1.39.4`）をバージョン固定で追記。
+2. **`scripts/lint_geojson.py` 新規作成**: `scripts/lint_docs.py` の構造（argv でファイル受領・違反を stdout・
+   exit 0/1）を踏襲。`validate_structure` + `validate_geometries` を呼び、違反を `path:行: 種別: 内容` 形式で出力。
+3. **`Makefile`**:
+   - `lint:` 依存に `lint-geojson`（＋採用時 `lint-html`）を追加。
+   - `LINT_GEOJSON_PATHS ?=` / `lint-geojson:` ターゲットを `lint-md` と同形で定義
+     （未指定時は `git ls-files '*.geojson' ':!:mgmt/archive/**'`、override 対応）。
+   - HTML 採用時は `lint-html:` も同形で追加（`djlint --lint`）。
+   - `.PHONY` に追記。
+4. **`.claude/settings.local.json` の PostToolUse hook**: 現行 `case` 文に `*.geojson)` /（採用時）`*.html)`
+   分岐を追加し、編集時に該当 linter を自動実行。
+5. **既存違反ゼロ化**: `make lint` を実行し、検出された違反を修正 or（外部由来等で妥当なら）対象除外・抑制ルール化。
+6. **ドキュメント・コミット**:
+   - `docs/01_environment.md`（パッケージ表に追記、vnu 採用時のみ JRE）
+   - `CLAUDE.md`「機械的チェック」節に `lint-geojson`（採用時 `lint-html`）を記載
+   - Conventional Commits・本文日本語で一括コミット（docs はターン内 commit ルールに従う）
 
-`pyproject.toml` が存在しないため、独立した `ruff.toml` を新規作成する（最小・明示的）。
+## 対象ファイル
 
-```toml
-# Ruff 設定。対象は本プロジェクトの Python 3.13。
-target-version = "py313"
-line-length = 100          # track.py 等の対話 UI を踏まえ E501 は緩めに（要実装時調整）
-
-[lint]
-select = ["F", "E", "W", "I", "B", "UP"]
-# 既存コードの実情に応じて、ゼロ化が過大な規則のみ per-file-ignores / ignore で個別緩和する
-# （黙って消さず、緩和は理由をコメントで明示。恒久判断が要るものは ADR 化を検討）
-
-[lint.per-file-ignores]
-# 例: 必要に応じて analysis/ や track.py に限定的な緩和を置く（実装時に違反実測後に確定）
-```
-
-### 3. `Makefile` — `lint-py` ターゲット追加 & `lint` 集約へ連結
-
-`lint-md`（`Makefile:63-68`）と同じ構造で `lint-py` を追加し、`lint:`（`Makefile:57`）の依存に足す。
-`.PHONY`（`Makefile:70`）にも `lint-py` を追記。
-
-```makefile
-lint: lint-md lint-py
-
-# Python lint（チェックのみ・ファイルは書き換えない）。
-# 既定対象: git 管理下の全 .py。LINT_PY_PATHS 指定時はそのパスを対象にする（override）。
-LINT_PY_PATHS ?=
-lint-py: venv
-    @if [ -n "$(LINT_PY_PATHS)" ]; then targets="$(LINT_PY_PATHS)"; \
-    else targets=$$(git ls-files '*.py' ':!:mgmt/archive/**'); fi; \
-    venv/bin/python3 -m ruff check $$targets
-```
-
-> `ruff check` は設定を `ruff.toml` から自動参照する。出力既定は `full`。
-> CI 連携が将来必要なら `--output-format github` を検討（今回は不要）。
-
-### 4. `.claude/settings.local.json` — PostToolUse hook を `.py` にも拡張（任意・推奨）
-
-現状 hook（`settings.local.json:26`）は `.md` 限定。`.md` は従来どおり、`.py` 編集時は
-`ruff check` を走らせて違反を Claude に提示する分岐を追加する（Markdown と同じ即時フィードバック体験）。
-※ 既存 `.md` 分岐の挙動は壊さないこと。実装時に拡張子で分岐する形へ書き換える。
-
-### 5. 文書更新（実装と同一作業ターン内で更新・コミット）
-
-ドキュメント・実装整合性原則に従い、ツール構成変更を文書に反映する。
-
-- **`CLAUDE.md`（プロジェクト, 「機械的チェック」節）**:
-  「現在の構成: lint-md（pymarkdown + scripts/lint_docs.py、mgmt/archive/ 除外）」を
-  **lint-md + lint-py（ruff、mgmt/archive/ 除外）** に追記更新する（既存運用＝ lint 構成は ADR でなく
-  本節へインライン記録、に倣う）。
-- **`docs/01_environment.md`（「Python パッケージ」表）**:
-  `ruff`（用途: python 静的解析 / `make lint`）の行追加を検討。
-  ※ 現在この表は requests/openpyxl/shapely/numpy の4行のみで、**既存の pillow・pymarkdownlnt が未掲載**
-  （runtime 中心で dev ツール未記載という既存の不整合）。実装時にユーザーへ「dev ツール（pymarkdownlnt
-  含む）も表に載せる方針か」を確認し、方針に合わせて ruff（＋必要なら pymarkdownlnt/pillow）を追記する。
-- **ADR は作成しない**: lint ツール構成は本プロジェクトでは CLAUDE.md にインライン記録する運用のため。
-  Ruff は事実上の標準で重い設計判断を伴わない。
-- **`mgmt/lessons.md`**: 事前更新不要。実装中に学び（規則の誤検知・緩和判断等）が出たら追記する。
-
-## 実装手順（承認後）
-
-1. `venv/bin/pip install ruff` → 入った版を確認し `requirements.txt` に pin、`ruff.toml` を作成
-2. `venv/bin/python3 -m ruff check $(git ls-files '*.py')` で **現状の違反を実測**
-   - `--statistics` で規則別の件数を集計し、件数・内訳をユーザーに一覧提示する
-3. 自動修正可能なもの（主に `I`/`UP`/一部 `E`）は `ruff check --fix` で解消、
-   手修正分は内容を確認しながら対応。**警告ゼロまで**持っていく（コア原則 #7）
-   - ゼロ化が過大／意図的に残す規則があれば、`ignore`・`per-file-ignores` に理由コメント付きで設定。
-     恒久的な設計判断を伴う緩和は ADR 化を検討（docs/CLAUDE.md 準拠）
-4. `Makefile` に `lint-py` を追加し `lint` へ連結、`.PHONY` 更新
-5. PostToolUse hook を `.py` 対応に拡張
-6. **文書更新**: `CLAUDE.md`「機械的チェック」節を更新、`docs/01_environment.md` の Python パッケージ表に
-   ruff を追記（dev ツール掲載方針をユーザー確認のうえ）。`make lint` 警告ゼロを確認し、
-   コード・設定・文書をまとめてコミット（ドキュメント更新後は即時 commit のルール準拠）
-7. 違反件数が多く一度に潰しきれない場合は、ユーザーと相談のうえスコープ分割
-   （`select` を `F, E9` から段階拡張する等）を再検討
+- 新規: `scripts/lint_geojson.py`
+- 変更: `requirements.txt`・`Makefile`・`.claude/settings.local.json`・`docs/01_environment.md`・`CLAUDE.md`
+- 参考（流用元パターン）: `scripts/lint_docs.py`（自前チェッカー雛形）、`Makefile` の `lint-md`/`lint-py`
 
 ## 検証
 
-- `make lint` が **lint-md と lint-py の両方を実行**し、警告ゼロで `exit 0` になること
-- 故意に違反（未使用 import 等）を入れたファイルで `make lint` が非ゼロ終了することを確認
-- `.py` を Edit/Write したとき PostToolUse hook が違反を提示し、`.md` 編集時の従来挙動が不変であること
-- `make venv-rebuild` 後も `ruff` が requirements.txt から復元され `make lint` が通ること
+1. `make lint`（または `make lint-geojson` / `make lint-html` 単体）が警告ゼロで終了（exit 0）。
+2. 意図的に壊した GeoJSON / HTML を一時作成 → 各 linter が違反を検出し exit 1 になることを確認（検出力の確認）。
+3. PostToolUse hook: `.geojson`/`.html` を編集して違反が自動提示されることを確認。
+4. `make venv-rebuild` で venv == requirements.txt の一致を担保。
 
-## 留意点
+## 補足
 
-- 標準セットは初回修正がやや多め。手順 2 の実測で件数を見てから本格修正に入る（無理なら段階導入へ）
-- `ruff format` と型チェッカ（pyright / mypy / ty）は今回スコープ外。必要になれば別計画で追加
-- バージョン固定運用・新規パッケージは同コミットで requirements.txt 追記（既存ルール踏襲）
+- 実装フェーズはファイル編集中心（ラッパー＋Makefile＋hook＋docs）で設計判断は本計画でほぼ完了 → **Sonnet 推奨**。
+  ただしフェーズ1の誤検知判断・HTML 最終決定はユーザーと相談しながら進める。
+- `.claude/settings.local.json` はプロジェクトローカル設定。グローバル設定には触れない。

@@ -157,6 +157,8 @@ Issue から todo.md への降格判定:
 - 現在の構成:
   - `lint-md`: pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外（対象: `*.md`）
   - `lint-py`: ruff（設定: `ruff.toml`）、`mgmt/archive/` 除外（対象: `*.py`）
+  - `lint-geojson`: `scripts/lint_geojson.py`（geojson-validator ラッパー）、`mgmt/archive/` 除外（対象: `*.geojson`）
+  - `lint-html`: djlint（設定: `.djlintrc`）、`mgmt/archive/` 除外（対象: `*.html`）
 - チェック対象を追加するとき（LSP の CLI チェック・C コンパイラ警告・Python 型チェック等）は、CLAUDE.md に個別ルールを増やさず `make lint` の依存へ target を足す
 - 編集時は PostToolUse hook が該当ファイルの違反を自動提示する。提示された違反はそのターン内で解消する
 
