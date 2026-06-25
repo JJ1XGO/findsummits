@@ -1,51 +1,68 @@
-# docs リンク切れ・レイアウト崩れの検出自動化＋実害3件の修正
+# 計画: markdown lint の全カバー化・既存違反の一括掃除・恒久ルール化
 
-## Context（なぜ / 何を解決するか）
-ユーザーが kate（Marksman LSP）で 2 種類の不整合に気づいた:
-1. **リンク切れ**: 存在しないファイルへの相対リンク（例: `ADR-SRS-004:180` が古い番号 `ADR-SRS-014-land-summit-highest-peak-handling.md` を参照。実体は番号が振り直され `ADR-SRS-019-land-summit-highest-peak-handling.md` に。014 番は別内容へ再利用済み）。
-2. **レイアウト崩れ**: 箇条書き `- **概要**: …` の直後に空行なしで `**入力**:` が続き、`**入力**:` が概要項目に吸収されて同列に見える（FR-013=SRS:1036、FR-009=SRS:834 の 2 件）。
+## Context（なぜ）
 
-調査の結果、**どちらも PyMarkdown の標準ルールでは検出不可**（リンク実在検証ルールが無く、レイアウト崩れは markdown 構文上は正しいため）。Marksman を入れてもリンク切れしか拾えない。一方、軽量な自作 Python チェッカーで両方とも検出できることを実証済み（実際に計 3 件を検出）。ユーザー選択により **Marksman は導入せず、自作チェッカーを既存 `make lint-md`／PostToolUse フックに統合**する。
+ユーザー要望「markdown lint で見つかった違反は全て修正する様にしたい」。現状の課題:
 
-## 実装内容
+- `make lint-md` の対象は `docs/` のみ。docs/ はクリーンだが、それ以外（mgmt/・ref/・README.md・CLAUDE.md・.claude/）に違反が残る
+- `pymarkdown fix` の自動修正は MD012 等ごく一部のみ。頻出の MD022/MD032/MD034 は未対応（公式に MD032 は「v1.0.0 後対応予定」と確認）。よって手作業で直すしかない
 
-### 1. 自作チェッカー `scripts/lint_docs.py` を新規作成
-PyMarkdown を補完する 2 検査を行う read-only スクリプト。引数にファイル/ディレクトリを取り、違反を `path:line: 種別: メッセージ` 形式（PyMarkdown 風）で出力。違反ありで exit 1。
+ゴール: (1) lint 対象を現用 markdown 全体へ拡張、(2) 既存違反を一括掃除、(3)「md 編集時は lint を通してからコミット」を CLAUDE.md に明文化して再発防止。
 
-- **検査A（リンク実在）**: 各 `.md` 内の相対リンク `](xxx.md)` / `](xxx.md#frag)` を正規表現で抽出し、`http(s)` を除外、`os.path.normpath` で実在確認。存在しなければ違反。
-- **検査B（レイアウト崩れ）**: `**入力**:` `**出力**:` `**説明**:` 等の太字ラベル単独行で、直前行が空行でない（＝箇条書き項目に吸収される）箇所を違反として報告。誤検出を避けるため「太字ラベル＋コロンのみの行」かつ「直前が非空行」に限定（今回の検証で誤検出 0・実害 2 件のみヒット）。
-- 単一ファイル引数も受け付ける（フックから 1 ファイル検査するため）。
+## スコープ決定（ユーザー確認済み）
 
-置き場所は `scripts/lint_docs.py`（開発支援ツール。本番パイプラインからは独立）。
+- lint 対象 = リポジトリ内の全 tracked `.md`。ただし **`mgmt/archive/` は除外**（凍結された過去スナップショット。約101件の違反はここに集中するが、履歴文書を今更整形しない方針）
+- enforcement = **CLAUDE.md ルール**（pre-commit フックは作らない）
 
-### 2. `Makefile` の `lint-md` ターゲットを拡張
-PyMarkdown と自作チェッカーの**両方**を実行し、いずれかが違反なら非ゼロ終了する。PyMarkdown が違反で止まっても自作チェッカーが走るよう、各 exit code を退避して最大値で終了:
-```makefile
-lint-md: venv
-	@venv/bin/python3 -m pymarkdown -c .pymarkdown scan -r $(LINT_MD_PATHS); s1=$$?; \
-	venv/bin/python3 scripts/lint_docs.py $(LINT_MD_PATHS); s2=$$?; \
-	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
-```
+## 対象ファイルと変更内容
 
-### 3. PostToolUse フック（`.claude/settings.local.json`）に自作チェッカーを追加
-既存の `pymarkdown scan` に続けて `lint_docs.py <編集ファイル>` も実行し、両方の違反を `additionalContext` に結合して注入する。`.md` 以外は従来どおりスキップ。
+### 1. lint 対象の拡張（Makefile）
 
-### 4. 実害3件の修正（検出ロジックの妥当性確認も兼ねる）
-- `docs/20_SRS.md`:1035→1036 間に空行挿入（FR-013 概要と入力を分離）
-- `docs/20_SRS.md`:833→834 間に空行挿入（FR-009 概要と入力を分離）
-- `docs/decisions/ADR-SRS-004-level14-max-pooling-isolated-peaks.md`:180 のリンクを
-  `[ADR-SRS-014](ADR-SRS-014-land-summit-highest-peak-handling.md)`
-  → `[ADR-SRS-019](ADR-SRS-019-land-summit-highest-peak-handling.md)` に修正
+`Makefile` の `lint-md` ターゲットを `docs/` 固定から「archive を除く全 tracked md」へ変更する。
 
-### 5. コミット
-`scripts/lint_docs.py`・`Makefile`・`docs/` 変更を Conventional Commits・本文日本語でコミット。
-`.claude/settings.local.json` は gitignore 対象のため対象外。
+- 既定対象を `git ls-files '*.md' ':!:mgmt/archive/**'` から得る（新規 md も自動対象化・gitignore 尊重・archive 除外）
+- pymarkdown と自作 `scripts/lint_docs.py` の双方へ同じファイル列を渡す
+- 先頭コメントと `LINT_MD_PATHS` 既定値を更新（明示指定時は従来どおり上書き可）
+
+### 2. 既存違反の掃除（現用ドキュメント 計41件）
+
+判断系は本計画で方針確定済みのため、全て機械的なテキスト編集として適用できる。
+
+機械的修正（空行・タブ・URL）:
+
+- `ref/SOURCES.md`（MD034 ×11）: 裸 URL を `<...>` で囲む
+- `mgmt/tracker/CLAUDE.md`（MD032 ×4: L26/L33/L39/L84）: リスト前後に空行
+- `README.md`（MD022 ×2: L5/L70 / MD032 ×1: L6）: 見出し下・リスト前後に空行
+- `mgmt/todo.md`（MD012 ×1: L172 / MD022 ×1: L173）: 連続空行の解消・見出し周りの空行
+- `mgmt/lessons.md`（MD022 ×1: L55 `## Patterns to Avoid` 直後）: 見出し下に空行
+
+判断確定済み（Sonnet が機械適用可）:
+
+- `.claude/rules/architecture.md`
+  - MD041（L12）: 先頭見出しが H1 でない → 見出しを1段昇格する。`## アーキテクチャ` を `# アーキテクチャ` にし、配下の全 `### X` を `## X` へ（7件）
+  - MD040（L16 データフロー図・L68 ディレクトリツリー）: 言語 `text` を付与
+- `mgmt/tracker/CLAUDE.md`
+  - MD040（L48 ディレクトリツリー・L62 ステータス遷移図）: 言語 `text` を付与
+
+### 3. mgmt/plan.md の置換
+
+本計画は承認後 `mgmt/plan.md` へ移動し旧内容を置換する（プロジェクト規約）。これにより現 `mgmt/plan.md` の違反（MD022/MD031/MD010 計15件）と壊れリンクは同時に解消する。
+
+### 4. 恒久ルールの明文化（/workspace/CLAUDE.md）
+
+「ドキュメント更新時のルール」付近へ簡潔に追記する。
+
+- markdown を編集したら、コミット前に `make lint-md` を実行し、検出された違反は編集対象外でも全て修正してからコミットする
+- lint 対象は archive を除く現用 md 全体（`mgmt/archive/` は凍結のため除外）
+
+## モデル運用
+
+判断要素は本計画で解決済み。実行は全て機械的なテキスト編集のため **Sonnet 推奨**。
 
 ## 検証
-1. `make lint-md` を実行 → PyMarkdown 0 件・自作チェッカー 0 件で **exit 0** を確認。
-2. 修正前後で `scripts/lint_docs.py docs/` を単独実行し、修正前は 3 件検出・修正後は 0 件になることを確認。
-3. フック動作確認: 既存の `.md` を 1 つ編集し、自作チェッカーの違反が（仕込んだ場合に）注入されることを確認。
-4. `git diff` で実害3件が意図どおり（空行追加2・リンク番号1）であることを目視確認。
 
-## モデル運用メモ
-スクリプトの検出ロジックは調査で確定済み。実装はその Python 化＋ Makefile/フックへの組み込み＋3件修正で、ファイル編集中心。ExitPlanMode 承認後は **Sonnet** を推奨（フックのシェル組み込みのみ多少注意が必要）。
+1. `make lint-md` が exit 0（pymarkdown と自作 lint の両方が通る）
+2. `git ls-files '*.md' ':!:mgmt/archive/**'` の各ファイルを scan し違反ゼロを確認
+3. 主要編集ファイルの `git diff` を目視し、整形で本文が壊れていないか確認
+4. `/claude-md-panel`（引数なし）で /workspace/CLAUDE.md の新ルールを確認
+5. Conventional Commits 形式・本文日本語でコミット（ドキュメント更新即コミット規約に従う）

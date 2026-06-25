@@ -53,12 +53,15 @@ venv-rebuild:
 	rm -rf venv
 	$(MAKE) venv
 
-# Markdown lint（チェックのみ・ファイルは書き換えない）。対象は LINT_MD_PATHS（既定: docs/）
-# -r でサブディレクトリ（docs/decisions/ の ADR 等）まで再帰的に走査する
-LINT_MD_PATHS ?= docs/
+# Markdown lint（チェックのみ・ファイルは書き換えない）。
+# 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
+# LINT_MD_PATHS を指定した場合はそのパスを再帰走査する（override）。
+LINT_MD_PATHS ?=
 lint-md: venv
-	@venv/bin/python3 -m pymarkdown -c .pymarkdown scan -r $(LINT_MD_PATHS); s1=$$?; \
-	venv/bin/python3 scripts/lint_docs.py $(LINT_MD_PATHS); s2=$$?; \
+	@if [ -n "$(LINT_MD_PATHS)" ]; then targets="$(LINT_MD_PATHS)"; ropt="-r"; \
+	else targets=$$(git ls-files '*.md' ':!:mgmt/archive/**'); ropt=""; fi; \
+	venv/bin/python3 -m pymarkdown -c .pymarkdown scan $$ropt $$targets; s1=$$?; \
+	venv/bin/python3 scripts/lint_docs.py $$targets; s2=$$?; \
 	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
 
 .PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md

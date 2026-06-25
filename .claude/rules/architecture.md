@@ -9,11 +9,11 @@ paths:
   - "**/*.py"
 ---
 
-## アーキテクチャ
+# アーキテクチャ
 
-### データフロー
+## データフロー
 
-```
+```text
 （事前準備）
 prefetch_tiles.py でタイルを $DATA_DIR/tiles/ へ取得済み
   ↓
@@ -35,7 +35,7 @@ Union-Find アルゴリズムでピーク・コルを検出 [unionfind.c]
 出力: $DATA_DIR/results/csv/<meshcode>.csv
 ```
 
-### 主要モジュール
+## 主要モジュール
 
 | モジュール | 役割 |
 |---|---|
@@ -47,7 +47,7 @@ Union-Find アルゴリズムでピーク・コルを検出 [unionfind.c]
 | `scripts/prefetch_tiles.py` | タイル事前取得（If-Modified-Since 条件付き GET・並列4・429/503 backoff） |
 | `scripts/preprocess_pref_boundaries.py` | N03 行政区域 GeoJSON を都道府県/振興局レベルに dissolve して軽量化（初回のみ実行） |
 
-### 重要な実装詳細
+## 重要な実装詳細
 
 - **標高デコード**: `elev = (R*65536 + G*256 + B) / 100.0` 、無効値 `(R=128,G=0,B=0)` → `-9999.0f`
 - **境界処理**: メッシュ外周に 0m（海面）の 1px ボーダーを追加して、メッシュ端を海岸線とみなす
@@ -56,16 +56,16 @@ Union-Find アルゴリズムでピーク・コルを検出 [unionfind.c]
 - **無効標高のセンチネル**: `-9999.0f`
 - **標高地形図 PNG**: `findsummits` 実行時に解析範囲を人間が視認しやすい配色で標高を色分けした PNG として出力。長辺 6000px に縮小して保存
 
-### アーキテクチャ方針（ハイブリッド構成）
+## アーキテクチャ方針（ハイブリッド構成）
 
 - **C エンジン** (`src/`): 標高デコード・Union-Find によるピーク/コル検出・標高地形図 PNG 出力・per-mesh CSV 出力（タイル取得は行わない）
 - **Python スクリプト** (`scripts/`): タイル事前取得（prefetch_tiles.py）、N03 行政区域前処理（preprocess_pref_boundaries.py・初回のみ）、複数 CSV の統合、SOTA リスト突合、XLSX/GeoJSON 生成
 
 C に XLSX/GeoJSON ライブラリを持ち込むコストが高く、`findsummits4sotaja`（Python）に出力生成コードが既存するため、この分担を採用。性能が必要な計算は C、申請用出力は Python。
 
-### ディレクトリ構成
+## ディレクトリ構成
 
-```
+```text
 src/          # ソースファイル（main.c, *.c, *.h）
 scripts/      # 本番パイプライン用スクリプト
   prefetch_tiles.py             # タイル事前取得（params/fetch_config.ini を参照）
@@ -109,7 +109,7 @@ $DATA_DIR/tiles/        # ダウンロード済みタイルのローカルキャ
 $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
 ```
 
-### Python スクリプトの実行
+## Python スクリプトの実行
 
 **Python スクリプトは必ず `venv/bin/python3` で呼び出すこと（`python3` は不可）。**
 `python3` はコンテナのシステム Python であり、パッケージが入っていない。
@@ -127,7 +127,7 @@ venv/bin/python3 mgmt/tracker/track.py issue list                 # 課題管理
 
 venv は `/workspace/venv/`（ホストマウント下）に作られるためコンテナリビルド後も消えない。
 
-### パッケージ依存の整合ルール（ズレ防止）
+## パッケージ依存の整合ルール（ズレ防止）
 
 `requirements.txt` を唯一の正とし、venv と常に一致させる:
 
