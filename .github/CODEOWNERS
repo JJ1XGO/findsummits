@@ -1,0 +1,22 @@
+# CODEOWNERS
+#
+# AI エージェント（Claude Code）が自動で読む / 自動実行する高リスクファイル。
+# これらの変更には Code Owner のレビューを要求する（Indirect Prompt Injection 緩和）。
+#
+# 注意: このファイルは GitHub の branch protection で
+#       "Require review from Code Owners" を有効化して初めて強制力を持つ。
+#       詳細手順は調査時のセキュリティ報告（チャット）を参照。
+
+# AI コンテキストへ注入される指示・ガイドライン
+/CLAUDE.md               @JJ1XGO
+/docs/CLAUDE.md          @JJ1XGO
+/mgmt/lessons.md         @JJ1XGO
+
+# AI 関連の自動実行設定・フック・ルール
+/.claude/                @JJ1XGO
+
+# CI / ワークフロー（任意コード実行の経路）
+/.github/                @JJ1XGO
+
+# 解析・取得スクリプト（外部データを扱う）
+/scripts/                @JJ1XGO
