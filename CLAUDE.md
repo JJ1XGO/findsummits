@@ -127,6 +127,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
   - `lint-html`: djlint（設定: `.djlintrc`）、`mgmt/archive/` 除外（対象: `*.html`）
 - チェック対象を追加するとき（LSP の CLI チェック・C コンパイラ警告・Python 型チェック等）は、CLAUDE.md に個別ルールを増やさず `make lint` の依存へ target を足す
 - 編集時は PostToolUse hook が該当ファイルの違反を自動提示する。提示された違反はそのターン内で解消する
+- lint ツールのバージョンは `requirements.txt` で固定（ローカルの再現性維持）。最新版での通過確認は `make lint-latest`（手動）と GitHub Actions（月1自動・main の workflow）で監視する
 
 ## ブランチ運用ルール
 

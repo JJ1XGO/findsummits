@@ -76,3 +76,12 @@ venv/bin/python3 mgmt/tracker/track.py ...
 | ruff | Python 静的解析（`make lint` → `lint-py`） |
 | geojson-validator | GeoJSON 構造・ジオメトリ検証（`make lint` → `lint-geojson`） |
 | djlint | HTML 構文チェック（`make lint` → `lint-html`） |
+
+`requirements.txt` のバージョンは固定（ローカルの再現性維持）。最新版での通過確認は以下で行う:
+
+```bash
+make lint-latest       # lint ツールを最新版へ上げてから make lint を実行（手動確認用）
+                       # 実行後は make venv-rebuild で venv を固定版へ復元すること
+```
+
+GitHub Actions（`.github/workflows/lint-latest.yml`）が月1（毎月1日 00:00 UTC）と手動ボタン（workflow_dispatch）で `make lint-latest` を実行し、最新版でのチェック結果を通知する（main ブランチの workflow のみ有効）。
