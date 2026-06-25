@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-23",
-    "counter": 126
+    "last_updated": "2026-06-25",
+    "counter": 130
   },
   "issues": [
     {
@@ -4200,6 +4200,122 @@
           "to": "解決済",
           "comment": "[解決確認]",
           "session_id": "e2d00898-ca07-43cb-9815-0e13d112ad2c"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-127",
+      "title": "FR-020 公開用HTMLに UR-011 帰属表示を反映",
+      "description": "公開用HTML(FR-020)は唯一の外部公開成果物だが対応URがUR-006のみで、6.13にattribution記載が無い。FR-019の帰属表示は作業用ビューア向けで別テンプレートの公開用に引き継がれる保証が無い。",
+      "type": "改善",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "Opus",
+      "created_date": "2026-06-25",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "FR-020対応URにUR-011追加。6.13にattribution行(© 国土地理院常時＋OSM/OpenTopoMap各表示＋『加工して作成』)明記。UR紐付けのADR要否を判断。",
+      "notes": null,
+      "resolved_date": "2026-06-25",
+      "verified_date": null,
+      "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
+      "history": [
+        {
+          "date": "2026-06-25T19:46:00",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS FR-020 対応URに UR-011 追加・6.13 と FR-020 説明に帰属表示(© 国土地理院常時＋OSM/OpenTopoMap併記＋加工して作成)を明記。UR紐付けはトレーサビリティ修正のためADR不要と決定。",
+          "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-128",
+      "title": "公開用HTMLの提供機能・公開情報範囲の定義",
+      "description": "公開用は除外項目(編集UI/XLSX/localStorage)のみ明示で、FR-019の閲覧系機能(背景切替/検索/フィルター/各レイヤー/全データpopup/相互ジャンプ/metadata基準日表示)のどれを含めるか未定義。全データpopupでの内部フラグ・仮コードの外部露出可否も未決(要1論点ずつ相談)。",
+      "type": "設計",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "Opus",
+      "created_date": "2026-06-25",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "公開用に含める閲覧機能の包含規則をFR-020/6.13に明記。内部値露出ポリシー・metadata基準日表示の要否を順に確定(露出判断はADR候補)。",
+      "notes": null,
+      "resolved_date": "2026-06-25",
+      "verified_date": null,
+      "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
+      "history": [
+        {
+          "date": "2026-06-25T19:46:00",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "公開用は『FR-019の閲覧系機能のうち編集UI・エクスポート・localStorageを除く全て』と包含規則で定義(2a)。内部値露出は作業用と同じ全データpopupを許容(2b)。metadataは引き継ぎ・画面表示(2c)。SRS FR-020/6.13 に明記。",
+          "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-129",
+      "title": "公開用エクスポート時の localStorage マージ仕様の明確化",
+      "description": "FR-020はlocalStorageをマージするとあるが、generated_at不一致(前回実行分)時にどの状態(現在のビューア表示状態 vs localStorage生データ)をマージするか未定義。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": "Opus",
+      "created_date": "2026-06-25",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "マージ元を『現在のビューア表示状態のスナップショット』と明記する。",
+      "notes": null,
+      "resolved_date": "2026-06-25",
+      "verified_date": null,
+      "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
+      "history": [
+        {
+          "date": "2026-06-25T19:46:00",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "マージ対象を『エクスポート時点のビューア表示状態のスナップショット(localStorage直読みではなくFR-019引き継ぎ確認後の現在の編集状態)』と SRS FR-020 説明に明記。",
+          "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-130",
+      "title": "公開用 別テンプレート採用の設計判断記録(ADR要否)",
+      "description": "作業用テンプレートを条件分岐させず別ファイルにする設計判断の根拠が未記録。HLDで扱うかADR-SRS化するか未定。",
+      "type": "設計",
+      "priority": "低",
+      "category": "その他",
+      "reporter": "Opus",
+      "created_date": "2026-06-25",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "HLD所掌か ADR-SRS 化かを判断し、ADR化なら作成。",
+      "notes": null,
+      "resolved_date": "2026-06-25",
+      "verified_date": null,
+      "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
+      "history": [
+        {
+          "date": "2026-06-25T19:46:00",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "別テンプレート分離は実装詳細としてHLD所掌、SRS段階のADRは不要と決定。FR-020 は『別テンプレートをソースコードに同梱(詳細はHLD)』の記述を維持。",
+          "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
         }
       ]
     }
