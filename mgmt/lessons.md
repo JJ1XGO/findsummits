@@ -52,6 +52,8 @@
 
 - **パスはプロジェクトディレクトリからの相対で**: DATA_DIR（環境依存）配下にソースコード付属のデータ（ref/summitslist.csv）を置く設定は誤り。`Path(__file__).parent.parent` でプロジェクトルートを参照する。
 
+- **Sonnet 推奨後に Opus で実装を始めることは禁止（機械的ゲート設定済み）**: ExitPlanMode 承認後にユーザーへ Sonnet 切替を促した場合、同一レスポンス内で実装ファイル（`.c/.h/.py`）を編集してはならない。口頭指示（CLAUDE.md）のみでは遵守できなかった実績が2回あり、PreToolUse hook による機械的ゲートを `/workspace/.claude/settings.local.json` に設置した（2026-06-25）。Opus 継続が正当な場合は推奨せず最初から「Opus 継続」を理由付きで申し出る。
+
 ## Patterns to Avoid
 
 *避けるべきパターンを記述すること。ファイルの中身を勝手に消さない。

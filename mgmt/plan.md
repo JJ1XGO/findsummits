@@ -1,98 +1,83 @@
-# FR-020 spec-panel レビュー指摘の修正計画
+# 対策: Opus が「Sonnet 推奨」しながら自分で実装を始める問題
 
-## Context
+## Context（なぜこの変更が必要か）
 
-`/spec-panel FR-020`（公開用 HTML ビューア生成）を 4 視点でレビューし、7 件の指摘を検出した。
-最大の問題は **UR-011（国土地理院 帰属表示義務）へのトレーサビリティ欠落**で、公開用 HTML は本ツールが唯一「外部公開」する成果物にもかかわらず、対応 UR・6.13 に attribution の記載が無く、規約違反リスクがある。
-本計画は 7 件を tracker（issue＋todo）で管理し、仕様判断を 1 論点ずつ確定したうえで URD/SRS を同期修正することを目的とする。
+- **事象**: 前回・前々回セッションで、Opus が CLAUDE.md 原則 #5 に従い「実装は Sonnet 推奨」と述べた直後に、自分（Opus）で実装を開始した。
+- **問題**: Opus は高コスト。推奨を出した本人が無視して実装するのは (a) リソースの無駄、(b) 推奨の自己矛盾。
+- **ユーザーの論点**: 「Sonnet に切り替えるコストと変わらないなら、Sonnet を推奨すること自体がおかしい」。
+  - **結論（この対策の前提）**: `/model` 切替自体はほぼ無コスト（コマンド1つ）で、Sonnet 実装は Opus より大幅に安価。よって**推奨自体は経済的に正しい**。欠陥は「推奨の不遵守」であって推奨の存在ではない。
+  - したがって対策は「推奨を任意 → 強制」に変える。口頭指示（CLAUDE.md）は2回破られた実績があるため、**機械的ゲート**で担保する。
 
-ユーザー確認済みの方針:
+## 技術的前提（検証済み・根拠主義）
 
-- 対象: 全 7 件
-- 内部解析値（「全データ」popup・仮コード等）の露出可否: **後で 1 論点ずつ相談**（ISSUE-2 内で決定）
-- tracker: **issue 登録して進める**
+- PreToolUse hook は `model` を直接受け取れない（公式 doc: 「model は SessionStart のみ・保証なし、`$CLAUDE_MODEL` も無い」）。
+- ただし hook は `transcript_path` を受け取る。トランスクリプト JSONL はアシスタント発話ごとに `message.model` を記録（実データで `claude-opus-4-8` を確認）。
+- PreToolUse 発火時点で現ターンの発話は既に永続化済み → ライブ session 上で
+  `tac "$transcript" | jq -rc 'select(.type=="assistant" and .message.model)|.message.model' | head -1`
+  が正しく現モデルを返すことを本 session で実証。
+- ツール呼び出し単位でモデルが記録されるため、編集を行う主体を per-call で判定できる（前々回は Opus と Haiku が混在していた実データで確認）。
 
-## 指摘一覧（7 件）と振り分け
+## 対策（2層: 機械的ゲート + 指示の明確化）
 
-| # | 重要度 | 指摘 | 該当 | 振り分け |
-|---|---|---|---|---|
-| 1 | 高 | UR-011 帰属表示のトレーサビリティ欠落（対応UR=UR-006のみ・6.13にattribution無し） | SRS:1060, 6.13(1509-1515), URD:50 | ISSUE-1 |
-| 2 | 高 | 公開用に含める閲覧機能の範囲が未定義 | FR-020(1078-1082), FR-019(1110-1144) | ISSUE-2 |
-| 4 | 中 | metadata 引き継ぎ・基準日表示が未記述 | 6.13, FR-019(1133-1136) | ISSUE-2 |
-| 6 | 中 | 内部解析値の外部露出（全データpopup・仮コード） | FR-019(1123) | ISSUE-2（露出ポリシー、要相談） |
-| 5 | 中 | localStorage マージ時の generated_at 不一致時の扱い未定義 | FR-020(1079), FR-019(1155-1158) | ISSUE-3 |
-| 7 | 低 | 公開用「別テンプレート」採用の判断根拠(ADR)不在 | FR-020(1081) | ISSUE-4 |
-| 3 | 中 | 入力「localStorage 編集内容＝必須」の矛盾（未編集でも生成可） | 入力表(1068) | todo（記述修正のみ） |
+### 確定事項（ユーザー選択）
 
-> 指摘 2・4・6 は「公開用に何を見せ・何を隠すか」という単一の上位論点のため ISSUE-2 に統合（1 論点 1 課題）。
-> 指摘 3 は仕様議論を伴わない事実修正のため todo.md へ。
+- **ゲート強度**: `permissionDecision: "ask"`（確認プロンプト）。
+- **適用範囲**: このプロジェクトのみ → `/workspace/.claude/settings.local.json`。
 
-## ステップ 1: tracker 登録（plan 承認後・実行前にこのコマンドを流す）
+### 層1: 機械的ゲート（PreToolUse hook）— 主対策
 
-impersonation 禁止に従い `--reporter "Opus"`、後続の update/close の `--actor` もモデル名。category は SRS 文書作業のため `その他`。
+- **設置先**: `/workspace/.claude/settings.local.json` の `hooks.PreToolUse`（既存 PostToolUse lint hook と同じファイル。additive で既存を壊さない）。
+- **matcher**: `Write|Edit`
+- **ロジック（bash + jq, stdin から hook 入力 JSON を受ける）**:
+  1. `tool_input.file_path` と `transcript_path` を取得。
+  2. file_path が実装ファイル（`*.c` / `*.h` / `*.py`）でなければ即 allow（docs/spec/ADR/tracker/plan/設定の Opus 作業は素通り）。
+  3. 実装ファイルなら、上記 extractor で現モデルを取得。
+  4. モデルに `opus` または `fable` を含む → `permissionDecision: "ask"`（または `deny`）を返し、理由メッセージを付与。
+  5. それ以外（sonnet/haiku/不明/抽出失敗）→ allow。**fail-open**（誤ブロックより保護喪失を選ぶ安全側）。
+- **理由メッセージ案**:
+  「Opus/Fable で実装ファイル ($file) を編集しようとしています（CLAUDE.md 原則#5: 実装は Sonnet 推奨）。Sonnet を推奨したなら手を止め `/model` 切替を促してください。Opus 継続が正当なら理由を述べた上で承認してください。」
+- **scope の根拠**: 原則 #5 は「Opus=調査・設計・判断、Sonnet=ファイル編集中心の実装」。docs/`.md`/mgmt/設定は Opus 適正作業なので非ゲート。`.c/.h/.py`（コード）のみゲート。
 
-```bash
-venv/bin/python3 mgmt/tracker/track.py issue add \
-  --title "FR-020 公開用HTMLに UR-011 帰属表示を反映" --priority 高 --type 改善 \
-  --stage SRS --category その他 --reporter "Opus" \
-  --description "公開用HTML(FR-020)は唯一の外部公開成果物だが対応URがUR-006のみで、6.13にattribution記載が無い。FR-019の帰属表示は作業用ビューア向けで別テンプレートの公開用に引き継がれる保証が無い。" \
-  --resolution "FR-020対応URにUR-011追加。6.13にattribution行(© 国土地理院常時＋OSM/OpenTopoMap各表示＋『加工して作成』)明記。UR紐付けのADR要否を判断。"
+#### hook コマンド草案（実装時に settings.local.json へ追加）
 
-venv/bin/python3 mgmt/tracker/track.py issue add \
-  --title "公開用HTMLの提供機能・公開情報範囲の定義" --priority 高 --type 設計 \
-  --stage SRS --category その他 --reporter "Opus" \
-  --description "公開用は除外項目(編集UI/XLSX/localStorage)のみ明示で、FR-019の閲覧系機能(背景切替/検索/フィルター/各レイヤー/全データpopup/相互ジャンプ/metadata基準日表示)のどれを含めるか未定義。全データpopupでの内部フラグ・仮コードの外部露出可否も未決(要1論点ずつ相談)。" \
-  --resolution "公開用に含める閲覧機能の包含規則をFR-020/6.13に明記。内部値露出ポリシー・metadata基準日表示の要否を順に確定(露出判断はADR候補)。"
-
-venv/bin/python3 mgmt/tracker/track.py issue add \
-  --title "公開用エクスポート時の localStorage マージ仕様の明確化" --priority 中 --type 改善 \
-  --stage SRS --category その他 --reporter "Opus" \
-  --description "FR-020はlocalStorageをマージするとあるが、generated_at不一致(前回実行分)時にどの状態(現在のビューア表示状態 vs localStorage生データ)をマージするか未定義。" \
-  --resolution "マージ元を『現在のビューア表示状態のスナップショット』と明記する。"
-
-venv/bin/python3 mgmt/tracker/track.py issue add \
-  --title "公開用 別テンプレート採用の設計判断記録(ADR要否)" --priority 低 --type 設計 \
-  --stage SRS --category その他 --reporter "Opus" \
-  --description "作業用テンプレートを条件分岐させず別ファイルにする設計判断の根拠が未記録。HLDで扱うかADR-SRS化するか未定。" \
-  --resolution "HLD所掌か ADR-SRS 化かを判断し、ADR化なら作成。"
+```jsonc
+// hooks.PreToolUse に追加するエントリ
+{
+  "matcher": "Write|Edit",
+  "hooks": [{
+    "type": "command",
+    "command": "in=$(cat); f=$(printf '%s' \"$in\" | jq -r '.tool_input.file_path // empty'); case \"$f\" in *.c|*.h|*.py) ;; *) exit 0;; esac; tp=$(printf '%s' \"$in\" | jq -r '.transcript_path // empty'); [ -z \"$tp\" ] && exit 0; [ -f \"$tp\" ] || exit 0; m=$(tac \"$tp\" | jq -rc 'select(.type==\"assistant\" and .message.model)|.message.model' 2>/dev/null | head -1); case \"$m\" in *opus*|*fable*) jq -n --arg r \"Opus/Fable で実装ファイル ($f) を編集しようとしています（CLAUDE.md 原則#5: 実装は Sonnet 推奨）。Sonnet を推奨したなら手を止め /model 切替を促してください。Opus 継続が正当なら理由を述べた上で承認してください。\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:$r}}';; *) exit 0;; esac"
+  }]
+}
 ```
 
-todo（指摘 3）: `mgmt/todo.md` に 1 行追記。
+- `cat` で stdin を一度受けて `$in` に保持（jq を2回呼ぶため）。
+- 実装ファイル以外・transcript 不在・モデル抽出失敗はすべて `exit 0`（fail-open）。
+- 実装時に `jq . /workspace/.claude/settings.local.json` で JSON 構文を検証する。
 
-- `[ ] SRS FR-020 入力テーブル: 「localStorage 編集内容」を必須→任意（デフォルト=初期値テンプレート）に修正`
+### 層2: CLAUDE.md 原則 #5 の文言強化 — 補助（defense in depth）
 
-## ステップ 2: 仕様判断（1 論点ずつ相談 → 確定）
+- 対象: `/home/node/.claude/CLAUDE.md` の「### 5. モデルを使い分ける」。
+- 追記する拘束:
+  - 「Sonnet を推奨したら、その推奨は**そのターンの終端**である。ユーザーがモデルを確認・切替するまで実装ファイル（コード）の編集を一切行わない。」
+  - 「Opus のまま実装を始めるのは推奨の自己矛盾であり禁止。」
+  - 「Opus 継続が正当と判断する場合は、Sonnet を推奨**せず**最初から『Opus 継続』を理由付きで申し出る（二者択一を曖昧にしない）。」
 
-実装（文書編集）前に、以下を順に合意する。ISSUE-2 が判断の塊。
+## 変更ファイル
 
-1. ISSUE-2a 公開用に含める閲覧機能の包含規則（推奨: 「FR-019 の閲覧系機能のうち編集・エクスポート・localStorage 系を除く全て」と包含で定義）
-2. ISSUE-2b 内部値露出（「全データ」popup・仮コード）の可否 ← **ユーザーと個別相談**
-3. ISSUE-2c metadata 引き継ぎ・基準日表示の要否（推奨: 引き継ぎ・表示する。証跡性のため）
-4. ISSUE-1 UR-011 紐付けの ADR 要否（既存 UR のリンク追加＝トレーサビリティ修正のため ADR 不要見込み。ただし公開情報範囲＝スコープ決定の ISSUE-2b は ADR 候補）
-5. ISSUE-4 別テンプレートの ADR 要否
+- `/workspace/.claude/settings.local.json` — `hooks.PreToolUse` ブロックを追加（層1）。
+- `/home/node/.claude/CLAUDE.md` — 原則 #5 に拘束文言を追記（層2）。
+  - 注: グローバル CLAUDE.md 編集は PostToolUse hook が claude-md-panel レビューを促す。レビュー提示 → ユーザー承認後に確定。
 
-## ステップ 3: 文書同期修正（各論点確定後にまとめて編集）
+## 検証
 
-対象ファイル:
+1. **正常系（Opus×docs）**: Opus のまま `.md` を Edit → ゲート素通り（プロンプト無し）を確認。
+2. **発火系（Opus×コード）**: Opus のまま `.py`/`.c` を Edit → 確認プロンプト（または deny）が出ることを確認。
+3. **解除系（Sonnet×コード）**: `/model` で Sonnet に切替後に同じコード編集 → 素通りを確認。
+4. **fail-open**: 不正な transcript_path 等でも allow になり既存作業を妨げないことを確認。
+5. 既存の PostToolUse lint hook が引き続き動作することを確認（JSON 構文を `jq . settings.local.json` で検証）。
 
-- `docs/20_SRS.md`
-  - FR-020 対応 UR に `UR-011` 追加（行 1060 付近）
-  - FR-020 入力表「localStorage 編集内容」必須→任意（行 1068）
-  - FR-020 説明: マージ元スナップショット定義・公開機能包含規則・内部値露出方針を追記（行 1078-1082）
-  - 6.13 表: attribution 行・metadata/基準日表示行を追加（行 1509-1515）
-- `docs/10_URD.md`
-  - UR-011 が公開用 HTML を含む旨は既記載。FR-020 からの逆リンク整合のみ確認（行 50）
-- 必要時 `docs/decisions/ADR-SRS-0NN-*.md`（ISSUE-2b/ISSUE-4 が ADR 化と判断された場合のみ。採番は `docs/CLAUDE.md` の ADR ルールに従い既存最大+1）
+## モデル運用メモ
 
-## ステップ 4: 検証・記録
-
-1. `make lint` 警告ゼロ確認（lint-md 等）
-2. リンク切れ確認: `grep -n "FR-020\|UR-011\|6.13" docs/20_SRS.md docs/10_URD.md` でアンカー整合
-3. 各 issue を `issue close --actor "Opus" --comment "..."`（todo は完了行を削除）
-4. ドキュメント更新ターン内に Conventional Commits でコミット（例: `fix(srs): FR-020 に UR-011 帰属表示と公開機能範囲を明記`）。push は別途指示まで不要
-5. `mgmt/lessons.md` に学び（公開成果物の attribution トレーサビリティ確認）を必要に応じ追記
-
-## 注意
-
-- 計画ファイルは承認後 `mgmt/plan.md` へ `mv`（プロジェクト規約）。
-- 仕様優先原則: コードは参照せず URD/SRS を正とする。
+- 本対策は hook 設定（JSON）と CLAUDE.md 編集が中心の単純作業。設計判断は本計画で完了済み。
+- 実装着手時は **Sonnet 推奨**（まさに本件が示す通り）。…ただし本タスク自体が「Opus が実装すべきでない例」なので、承認後は `/model` で Sonnet 切替を促す。
