@@ -21,11 +21,10 @@
 - **URD/SRS/HLD/LLD が目標状態**。コードはその暫定的な副産物に過ぎない
 - **コードと URD/SRS の乖離は意図的かつ正常**。コードを正にしてはならない
 - **仕様を決めてからコードを書く**。SRS/HLD/LLD レビュー中は実装に手を入れない
-- この原則は HLD/LLD フェーズでも同様に適用する
+
+※ この原則が有効なフェーズ: HLD/LLD 完成まで（完成後は「ドキュメント・実装整合性原則」が主となる）。
 
 ## ドキュメント・実装整合性原則
-
-※仕様策定フェーズ（HLD/LLD 完成前）は仕様優先原則が優先する。
 
 仕様書・設計書（URD/SRS/HLD/LLD/ADR）の内容とプログラムの実装は常に整合させること。
 
@@ -59,12 +58,9 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する
 2. ユーザーに確認を取ってから `venv/bin/python3 mgmt/tracker/track.py bug add` で登録する
-3. 原因がわかっている場合は `--resolution` に対応方針まで記入してから登録する
-4. 登録完了後、修正作業の承認を得てから着手する
-5. 修正完了後は `bug close` コマンドでステータスを「対応完了」にする（解決済にしない）
-6. ユーザーが確認完了後、`bug verify` コマンドでステータスを「解決済」にする
+3. 登録完了後、修正作業の承認を得てから着手する
 
-詳細な運用手順・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
+詳細な運用手順・コマンド一覧（close/verify 等）は `mgmt/tracker/CLAUDE.md` を参照。
 
 ## 課題管理ルール
 
@@ -93,40 +89,16 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 - **管理方法**: 完了したものは消す（履歴は git で追える）。長期保留中のものは「保留」セクションへ
 - **新規発生時**: 「文書・仕様の議論を伴うか？」で判定し、No なら todo.md へ追記（issue 登録不要）
 
-Issue から todo.md への降格判定:
-
-- 文書・仕様の議論が不要 / 単独のファイル修正で完結 / 純粋な実装タスクのみ → todo.md へ移行可
-- 移行時は `issue close` の理由欄に「todo.md に移行」と記載し、todo.md 側に転記する
+issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.md に移行」と記載し、todo.md 側に転記する。
 
 ## 計画ファイル・handover の扱い
 
-- **plan.md の置き場**: プロジェクトの `mgmt/plan.md` とする。`/plan` コマンドはシステムの都合でグローバルの `.claude/plans/` に自動生成するため、plan モードが終わっていれば直ちに所定の場所に移動する事。
+- **plan.md の置き場**: プロジェクトの `mgmt/plan.md` とする。`/plan` コマンドはシステムの都合でグローバルの `.claude/plans/` に自動生成するため、ExitPlanMode 承認後・ファイル編集を始める前に `mv` で移動する。
 - **handover ファイル名の日時**: ファイル名に使う日時は必ず `date '+%Y-%m-%d_%H%M'` コマンドで実時刻を取得すること。会話履歴や記憶から日付を推測してはならない（同日別セッションとの衝突を防ぐため）。
 
 ## handover 実行時のルール
 
-`/handover` を実行するとき（または手動で handover ドキュメントを作成するとき）は、
-**A → B → C の順**で実行する。コミットを先に済ませ、git をクリーンにしてから handover を書く。
-
-### A. handover ファイル作成前: それまでの作業をコミット
-
-1. Excel レポートの条件付き更新:
-
-   ```bash
-   venv/bin/python3 mgmt/tracker/track.py bug export --if-changed
-   venv/bin/python3 mgmt/tracker/track.py issue export --if-changed
-   ```
-
-2. Conventional Commits 形式・本文日本語でコミットし、`git status` がクリーンになったことを確認する。
-   ※ `.claude/handovers/` は `.gitignore` 済みのため、handover ファイル自体はここでもコミットされない。
-
-### B. handover ファイル作成
-
-`/handover` スキルに従う。
-
-### C. 後始末（フォールバック）
-
-1. `git status` を確認し、管理対象の差分が残っていればコミットしてクリーンにする。
+handover を書く前に git をクリーンにする（コミットを先に済ませる）。詳細手順は `/handover` スキル参照。
 
 ## ドキュメント更新時のルール
 
@@ -140,19 +112,13 @@ Issue から todo.md への降格判定:
 - `ref/SOURCES.md` などの参照資料
 - `mgmt/plan.md`・`mgmt/lessons.md`（devel ブランチ運用ファイル）
 
-手順:
+更新が完了したターン内に: ① `make lint` 警告ゼロを確認 → ② 意図した変更ファイルを個別に `git add`（全対象を確認済みなら `git add -A` 可）→ ③ Conventional Commits でコミット → ④ push は別途指示まで行わない。
 
-1. 更新作業が一段落したら `git status` で対象を確認
-2. `make lint` を実行し警告ゼロにする（→ 機械的チェック節）
-3. `git status` で想定外の野良ファイルがないことを確認のうえ `git add -A`（意図しない変更が見える場合のみ個別指定）
-4. Conventional Commits 形式・本文日本語でコミット
-5. push は別途指示があるまで行わない（ユーザーが任意のタイミングで push する）
-
-例外: 同一作業内でコードと一緒に更新したドキュメントは、コードのコミットに含めて構わない（ドキュメント単独でのコミット分割は不要）。
+例外: 同一作業内でコードと一緒に更新したドキュメントは、コードのコミットに含めて構わない。
 
 ## 機械的チェック（lint / LSP 等）
 
-`make lint` で全警告ゼロを保つ（グローバル原則 #7）。
+`make lint` で全警告ゼロを保つ（グローバル CLAUDE.md の原則 #7）。
 
 - 現在の構成:
   - `lint-md`: pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外（対象: `*.md`）
