@@ -53,6 +53,9 @@ venv-rebuild:
 	rm -rf venv
 	$(MAKE) venv
 
+# 機械的チェックの集約エントリ。ツール追加時はここに依存を足す（例: lint: lint-md lint-c lint-py）
+lint: lint-md
+
 # Markdown lint（チェックのみ・ファイルは書き換えない）。
 # 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
 # LINT_MD_PATHS を指定した場合はそのパスを再帰走査する（override）。
