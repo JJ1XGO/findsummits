@@ -32,8 +32,6 @@ Claude へ: SRS/HLD/LLD の記述を確認・レビューするときに「で�
 - 実装が仕様と乖離した場合は、仕様優先原則に基づき仕様を正としてコードを修正する
 - 乖離が意図的で許容される場合は ADR として記録する
 
-（補足: 本原則は元々 UR-009 として URD に記載されていたが、ユーザー要件ではなく開発プロセス品質目標であるため CLAUDE.md に移動した。ISSUE-029）
-
 ## ビルド・テスト
 
 ```bash
@@ -58,7 +56,7 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 **バグ・欠陥を発見しても、すぐに修正を始めてはならない。必ず以下のフローを守ること。**
 
-1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する（1件見つけるたびに都度登録しない）
+1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する
 2. ユーザーに確認を取ってから `venv/bin/python3 mgmt/tracker/track.py bug add` で登録する
 3. 原因がわかっている場合は `--resolution` に対応方針まで記入してから登録する
 4. 登録完了後、修正作業の承認を得てから着手する
@@ -74,14 +72,13 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 - **issue type は 改善・調査・設計 の 3 種のみ**。「機能追加」は廃止済み（ISSUE-120）。FR 確定済みの実装タスクは `todo.md` で管理する
 
 **判定基準: 残作業に文書・仕様の議論が必要か？（出自ではなく残作業で判定）**
+
 - Yes → `issue`（SRS の FR 追加、ADR 作成、SRS と実装の乖離調査 等）
 - No  → `todo.md`（関数名リネーム、ログ書式統一、コメント修正、実装追従 等）
 
-**守るべき原則:**
 - **1 項目 1 課題**: 複数の課題を1件に詰め込まない
-- **出自でなく残作業で判定**: レビュー由来でも残りが実装追従だけなら `todo.md`
 - **issue のスコープ**: 「問い＋決着（決定＋ADR/SRS への記録）」まで。記録完了 = 対応完了
-- **impersonation 禁止**: AI が登録・判断した課題・バグは `報告者`・`--actor` ともにモデル名（Sonnet/Opus 等）を記入。ユーザー名を充ててはならない
+- **impersonation 禁止**: AI 登録の課題・バグは `報告者`・`--actor` ともにモデル名（Sonnet/Opus 等）。ユーザー名を充ててはならない
 
 登録フロー: `issue add` → 作業開始時 `issue update --status 対応中` → `issue close` → ユーザーが `issue verify`
 
@@ -97,10 +94,12 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 - **新規発生時**: 「文書・仕様の議論を伴うか？」で判定し、No なら todo.md へ追記（issue 登録不要）
 
 handover との関係:
+
 - todo.md と issue は **原本**（永続的な作業リスト）
 - handover はセッション終了時点の **スナップショット**。todo.md と issue の未対応分を抜粋して載せる
 
 Issue から todo.md への降格判定:
+
 - 文書・仕様の議論が不要 / 単独のファイル修正で完結 / 純粋な実装タスクのみ → todo.md へ移行可
 - 移行時は `issue close` の理由欄に「todo.md に移行」と記載し、todo.md 側に転記する
 
@@ -112,60 +111,28 @@ Issue から todo.md への降格判定:
 ## handover 実行時のルール
 
 `/handover` を実行するとき（または手動で handover ドキュメントを作成するとき）は、
-以下の手順を **A → B → C の順** で実行する。
-**コミットは handover ファイル作成より「前」に済ませ、git をクリーンにしてから handover を書く。**
+**A → B → C の順**で実行する。コミットを先に済ませ、git をクリーンにしてから handover を書く。
 
 ### A. handover ファイル作成前: それまでの作業をコミット
 
 1. Excel レポートの条件付き更新:
+
    ```bash
    venv/bin/python3 mgmt/tracker/track.py bug export --if-changed
    venv/bin/python3 mgmt/tracker/track.py issue export --if-changed
    ```
-   `mgmt/tracker/data/` 配下の JSON が xlsx より新しい場合のみ再生成。変更がなければスキップ。
 
-2. 作業のコミット漏れ確認・コミット:
-   - `git status` で未コミットの変更を確認する
-   - 変更がなければスキップ
-   - 変更がある場合:
-     - `git status` で未追跡ファイルに想定外のものがないことを確認（機密は `.gitignore` 除外済みだが目視習慣として）
-     - 変更内容から Conventional Commits 形式・本文日本語のメッセージを作成
-     - 過不足なければ `git add -A` でまとめて追加（意図しない野良ファイルが見える場合のみ個別指定）
-     - コード・ドキュメント・トラッカー JSON・xlsx 更新分をこのコミットに含める
-     - コミット後に `git status` でクリーンになったことを確認する
-   - ※ `.claude/handovers/` は `.gitignore` 済みのため、handover ファイル自体はここでもコミットされない
+2. Conventional Commits 形式・本文日本語でコミットし、`git status` がクリーンになったことを確認する。
+   ※ `.claude/handovers/` は `.gitignore` 済みのため、handover ファイル自体はここでもコミットされない。
 
 ### B. handover ファイル作成
 
-3. handover ファイル本文を書く（構成は `~/.claude/commands/handover.md` に従う）
-
-4. handover ファイルの末尾に「未対応バグ・課題サマリー」セクションを追記する:
-   ```
-   ## 未対応バグ・課題サマリー
-
-   ### 未対応バグ（N件: 高=x / 中=y / 低=z）
-   - BUG-XXX [高] タイトル
-   - ...
-
-   ### 未対応課題（N件: 高=x / 中=y / 低=z）
-   - ISSUE-XXX [高/機能追加] タイトル
-   - ...
-
-   ### todo.md 残件（高=x / 中=y / 低=z）
-   - （高優先のみタイトルを抜粋）
-   - ...
-
-   ※ 詳細は `mgmt/tracker/reports/{bugs,issues}_export.xlsx` または
-     `venv/bin/python3 mgmt/tracker/track.py {bug,issue} show <ID>` で確認
-   ```
-   件数・集計値は `track.py bug list --open` / `track.py issue list --open` の結果から、
-   todo.md 残件は `mgmt/todo.md` の件数を直接カウントして取得すること。
+1. 構成は `~/.claude/commands/handover.md` に従う。
+2. 末尾に「未対応バグ・課題サマリー」を追記する。件数は `track.py bug/issue list --open`、todo.md 残件は `mgmt/todo.md` を直接カウント。
 
 ### C. 後始末（フォールバック）
 
-5. `git status` を確認する:
-   - 通常はクリーン（handover ファイルは `.gitignore` 対象、作業差分は A-2 でコミット済み）。そのまま終了
-   - 万一 xlsx 等の管理対象差分が残っていれば、ここで Conventional Commits 形式・本文日本語でコミットしてクリーンにする
+1. `git status` を確認し、管理対象の差分が残っていればコミットしてクリーンにする。
 
 ## ドキュメント更新時のルール
 
@@ -173,12 +140,14 @@ Issue から todo.md への降格判定:
 **ドキュメントの更新が完了した直後（その作業ターン内）に必ず commit する**こと。push は別途指示があるまで不要。
 
 対象ドキュメント:
+
 - `docs/` 配下のすべてのファイル（URD/SRS/HLD/LLD/UT/IT/ST/OPS/GLOSSARY/environment）
 - `docs/decisions/` 配下の ADR と research 資料
 - `ref/SOURCES.md` などの参照資料
 - `mgmt/plan.md`・`mgmt/lessons.md`（devel ブランチ運用ファイル）
 
 手順:
+
 1. 更新作業が一段落したら `git status` で対象を確認
 2. `git status` で想定外の野良ファイルがないことを確認のうえ `git add -A`（意図しない変更が見える場合のみ個別指定）
 3. Conventional Commits 形式・本文日本語でコミット
@@ -196,11 +165,11 @@ Issue から todo.md への降格判定:
   4. `git checkout main && git merge release/vX.X`
 
 ## その他
+
 他のプロジェクトの参考コードは以下の場所にあります：
 @../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。
 
 ### SOTA関連資料
-- SOTAの山岳リスト(JAで始まるものが日本支部のサミット)
-  https://www.sotadata.org.uk/summitslist.csv
-- SOTA日本支部への山岳リスト更新申請書
-  https://www.kawauchi.homeip.mydns.jp/sotajp/wp-content/uploads/2024/03/SOTA-Summit-list-revision-request.xlsx
+
+- [SOTAの山岳リスト](https://www.sotadata.org.uk/summitslist.csv)（JAで始まるものが日本支部のサミット）
+- [SOTA日本支部への山岳リスト更新申請書](https://www.kawauchi.homeip.mydns.jp/sotajp/wp-content/uploads/2024/03/SOTA-Summit-list-revision-request.xlsx)
