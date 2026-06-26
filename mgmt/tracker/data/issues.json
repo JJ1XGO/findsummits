@@ -4441,14 +4441,31 @@
       "created_date": "2026-06-26",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "newピーク山岳名の必須/任意と未入力時のFR-011挙動を確定。ADR-SRS候補。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-26",
       "verified_date": null,
       "created_session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-26T20:41:06",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        },
+        {
+          "date": "2026-06-26T20:41:48",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-036: 山岳名JP必須・EN任意、未入力時は警告して続行可(最終判断はSOTA日本支部担当者)。FR-019(1149)・FR-011※1に反映。",
+          "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        }
+      ]
     }
   ]
 }
