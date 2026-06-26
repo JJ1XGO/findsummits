@@ -1122,7 +1122,17 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - アクティベーションゾーン（AZ）は半透明の塗りで表示する（外枠線なし・クリック不可）。なお `area_complete=false`（解析範囲内で完結しなかった AZ）を持つピークは上流（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグ）で処理が停止し viewer には到達しないため、viewer 側に不完全 AZ の警告表示の責務は持たない
   - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
   - delete判定ゾーンは AZ と重なる範囲を除外し、AZ に覆われていない部分のみ表示する（AZ＝活性化範囲を優先。重なり除外の計算方式は HLD に委ねる）
-  - **カテゴリ別表示フィルター**: フィーチャを new / dominant / changed / unchanged の 4 カテゴリに分類し、カテゴリ単位で表示の ON/OFF を切り替えられる（初期は全カテゴリ表示）。カテゴリは配色でも区別する（new=緑系 / dominant=赤系 / changed=橙系 / unchanged=灰系。具体的な配色値は HLD に委ねる）。後述「検索確定時にフィルターを自動 ON」はこのカテゴリ分類に基づく
+  - **カテゴリ別表示フィルター**: フィーチャを new / dominant / changed / unchanged の 4 カテゴリに分類し、カテゴリ単位で表示の ON/OFF を切り替えられる（初期は全カテゴリ表示）。カテゴリは配色でも区別する（new=緑系 / dominant=赤系 / changed=橙系 / unchanged=灰系。具体的な配色値は HLD に委ねる）。後述「検索確定時にフィルターを自動 ON」はこのカテゴリ分類に基づく。各カテゴリと [FR-009](#fr-009-sotaリスト突合match_status-判定) のフィーチャ（`feature_type` / `match_status` / `is_band_change_candidate`）の対応は以下のとおり（根拠: [ADR-SRS-035](decisions/ADR-SRS-035-viewer-category-filter-feature-mapping.md)）:
+
+    | カテゴリ | 対象フィーチャ |
+    |---|---|
+    | new | `feature_type="peak"` ∧ `match_status="new"`（および対応する key_col） |
+    | dominant | `feature_type="peak"` ∧ `match_status="dominant"`（および対応する key_col）、ならびに当該ピークに従属する `feature_type="summit"` ∧ `match_status="delete"`（削除候補サミット） |
+    | changed | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=true`（および対応する key_col・matched summit） |
+    | unchanged | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=false`（および対応する key_col）、ならびに `feature_type="summit"` ∧ `match_status="matched"`（バンド変更なし既存サミット） |
+
+    - **削除候補サミット（`summit.match_status="delete"`）は dominant カテゴリに含める**（dominant ピークへの従属が削除の主因のため同一グループとして扱う）
+    - **key_col は独立カテゴリ／独立トグルを持たず、親ピーク（`summit_code` で対応）のカテゴリに追従する**
   - **参照線フィーチャの可視化**: `prominence_range`（ピーク〜Keyコルを結ぶプロミネンス基準線）と `coord_diff`（SOTA 登録座標と解析座標の差分線）を破線で表示する（色・太さ等は HLD に委ねる）
   - **全プロパティ折りたたみ表示**: 各フィーチャの popup に、その GeoJSON プロパティ全体を確認できる折りたたみ表示（「全データ」）を設ける。ただし activation_zone / delete判定ゾーンのポリゴンはクリック不可とし対象外とする
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
@@ -1133,7 +1143,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     - 入力に応じてサジェスト候補（最大10件、先頭一致優先）をリアルタイム表示する
     - 候補クリックまたは Enter 確定で該当サミットへ地図ズーム移動しポップアップを開く
     - サジェスト候補はキーボードでも操作できる（↑↓で候補移動・Enter で確定・Esc で閉じる）
-    - 確定時、当該サミットが現在フィルターで非表示の場合は対象カテゴリのフィルターを自動的に ON にする
+    - 確定時、当該フィーチャが現在フィルターで非表示の場合は対象カテゴリのフィルターを自動的に ON にする（カテゴリ判定は上記カテゴリ別表示フィルターの対応に従う。key_col 確定時は親ピークのカテゴリ、delete サミット確定時は dominant カテゴリを ON にする。[ADR-SRS-035](decisions/ADR-SRS-035-viewer-category-filter-feature-mapping.md)）
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）（UTC）
     - 地理院タイル更新日（提供元）（`gsi_tile_latest_date`）（UTC）: パイプラインがローカルキャッシュタイルの mtime 最大値として `merged_summit.geojson` の `metadata` に格納する（生成実装は ISSUE-064 で管理）。表示時は `(UTC)` を付記する
