@@ -4367,14 +4367,31 @@
       "created_date": "2026-06-26",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-012の生成トリガを確定(推定: FR-021エビデンスZIP同梱)し、出力欄・エクスポート記述・FR-021/FR-012本文の整合を取る。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-26",
       "verified_date": null,
       "created_session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-26T20:35:51",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        },
+        {
+          "date": "2026-06-26T20:36:10",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "FR-012 は FR-021 ZIP 同梱で確定済み(FR-012/FR-021本体)。FR-019 の出力欄(1109)・申請エビデンスボタン(1166)を整合。ADR不要。",
+          "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        }
+      ]
     },
     {
       "id": "ISSUE-133",
