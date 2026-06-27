@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-27",
-    "counter": 137
+    "counter": 138
   },
   "issues": [
     {
@@ -4575,6 +4575,43 @@
           "to": "対応完了",
           "comment": "ADR-SRS-039 作成・SRS §6.6/§6.13 注記・既定背景タイル明示・GLOSSARY/CLAUDE.md 整備（commit a6426f8）",
           "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-138",
+      "title": "main文書からの内部トラッカーID（ISSUE-XXX）排除と lint 検査追加",
+      "description": "mgmt/tracker/ は release 時に git rm -r mgmt/ で main から除外されるが、docs に ISSUE-094 等の内部トラッカー ID がテキストとして散在（40件）しており、第三者が main を見たとき辿れず意味をなさない。docs 全体から ISSUE-ID を排除し、scripts/lint_docs.py に検査C（ISSUE-\\d+ / mgmt/ パス参照検出）を追加して再発防止する。",
+      "type": "改善",
+      "priority": "中",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-27",
+      "stage": "COD",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "タスク1: ADR-SRS-040 作成（排除方針記録）、タスク2: ADR-SRS-018 の Markdown リンク2件をテキスト化、タスク3: docs 全体の ISSUE-ID 除去（40件）＋ research ファイル git mv、タスク4: lint 検査C 追加、タスク5: docs/CLAUDE.md にルール明文化",
+      "notes": null,
+      "resolved_date": "2026-06-27",
+      "verified_date": null,
+      "created_session_id": "1e904419-e66a-4b40-94d6-7c137294638a",
+      "history": [
+        {
+          "date": "2026-06-27T17:39:21",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "1e904419-e66a-4b40-94d6-7c137294638a"
+        },
+        {
+          "date": "2026-06-27T17:54:49",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-040 作成、docs/ 全体の ISSUE-ID 除去（40件）、research ファイル git mv、lint 検査C 追加（docs/ スコープ限定・インラインコード除外）、docs/CLAUDE.md ルール明文化。make lint 警告ゼロ確認。",
+          "session_id": "1e904419-e66a-4b40-94d6-7c137294638a"
         }
       ]
     }

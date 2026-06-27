@@ -107,13 +107,13 @@ dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開される�
 
 ### 関連 ISSUE への影響
 
-| ISSUE | 影響 |
+| 課題 | 影響 |
 |---|---|
-| **ISSUE-055**（HTML ビューア UI 要件追加） | 本改訂に統合・クローズ |
-| **ISSUE-043**（merge.py: delete判定ゾーン対応） | スコープ再評価が必要。merge.py が GeoJSON を出力するか・output_geojson.py との責務分担は本改訂後に決定 |
-| **ISSUE-044**（output_geojson.py: delete判定ゾーン対応） | スコープ再評価が必要。同上 |
+| HTML ビューア UI 要件追加 | 本改訂に統合・クローズ |
+| merge.py: delete判定ゾーン対応 | スコープ再評価が必要。merge.py が GeoJSON を出力するか・output_geojson.py との責務分担は本改訂後に決定 |
+| output_geojson.py: delete判定ゾーン対応 | スコープ再評価が必要。同上 |
 
 ### スコープ外
 
-- コード（merge.py, output_geojson.py 等）の修正は HLD/COD ステージで対応（ISSUE-043/044 として継続）
+- コード（merge.py, output_geojson.py 等）の修正は HLD/COD ステージで対応（後続ステージで継続）
 - rationale 永続化方式・XLSX マージロジックの詳細は HLD ステージで決定

@@ -5,7 +5,7 @@
 
 ## Context
 
-SRS FR-013 の metadata 一覧（ISSUE-116 レビューで発覚）に `gsi_tile_latest_date`（地理院タイル更新日）が参照されているが、SRS L1110 で「生成実装は別 ISSUE 管理」として棚上げされており、どの FR が生成するか未定義だった（ISSUE-117 で解決）。
+SRS FR-013 の metadata 一覧の FR-013 レビューで `gsi_tile_latest_date`（地理院タイル更新日）が参照されているが、SRS で「生成実装は別途管理」として棚上げされており、どの FR が生成するか未定義だった（本 ADR で解決）。
 
 ### 問題の核心
 

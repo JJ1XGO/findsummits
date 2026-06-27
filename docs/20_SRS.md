@@ -1149,7 +1149,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     - 確定時、当該フィーチャが現在フィルターで非表示の場合は対象カテゴリのフィルターを自動的に ON にする（カテゴリ判定は上記カテゴリ別表示フィルターの対応に従う。key_col 確定時は親ピークのカテゴリ、delete サミット確定時は dominant カテゴリを ON にする。[ADR-SRS-035](decisions/ADR-SRS-035-viewer-category-filter-feature-mapping.md)）
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）（UTC）
-    - 地理院タイル更新日（提供元）（`gsi_tile_latest_date`）（UTC）: パイプラインがローカルキャッシュタイルの mtime 最大値として `merged_summit.geojson` の `metadata` に格納する（生成実装は ISSUE-064 で管理）。表示時は `(UTC)` を付記する
+    - 地理院タイル更新日（提供元）（`gsi_tile_latest_date`）（UTC）: パイプラインがローカルキャッシュタイルの mtime 最大値として `merged_summit.geojson` の `metadata` に格納する（根拠: [ADR-SRS-032](decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md)）。表示時は `(UTC)` を付記する
     - 解析実行日時（`generated_at`）
   - **等高線オーバーレイ**: 地理院標高タイル（dem5a/dem5b/dem5c/dem10b）をブラウザからリアルタイム取得し、Canvas でピクセル単位に等高線を描画するオーバーレイレイヤーを設ける。主用途は OSM 選択時の等高線欠落の補完。レイヤーコントロールから ON/OFF 可能（デフォルト OFF）。描画は基図より上・GeoJSON より下の独立レイヤーとして表示する（重ね順の詳細は HLD、ズーム別描画パラメータは HLD に委ねる）
   - **補助参照レイヤー**（いずれもレイヤーコントロールから ON/OFF・デフォルト OFF）:

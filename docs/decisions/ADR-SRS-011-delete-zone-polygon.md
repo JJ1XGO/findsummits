@@ -22,7 +22,7 @@
 - 「AZ 外 50m ゾーン」案では 1 件も拾えない
 - 削除判定の本質は **新規ピーク発見によりプロミネンスが SOTA 閾値 150m 未満に再計算される現象** であり、`main_Δ` ≈ 150m に収束する構造的必然がある
 
-詳細は [research/issue-020-keycol-threshold-analysis.md](research/issue-020-keycol-threshold-analysis.md) を参照。
+詳細は [research/keycol-threshold-analysis.md](research/keycol-threshold-analysis.md) を参照。
 
 ## Decision
 

@@ -117,7 +117,7 @@ docs/ 配下のファイルを編集・作成するときはこのファイル�
 - `{STAGE}` は `URD` / `SRS` / `HLD` / `LLD` / `COD` / `UT` / `IT` / `ST` / `OPS` の 9 種類
 - 判断の中身が最も自然に属するステージを選ぶ（上流側で決められるなら上流を優先）
 - `NNN` は 3 桁連番で **ステージごとに独立**
-- 既存 ADR の番号は維持。新規は各ステージの現状最大値 + 1 から採番（次の URD = 015、次の SRS = 014、初の HLD = 001）
+- 既存 ADR の番号は維持。新規は各ステージの現状最大値 + 1 から採番（`ls docs/decisions/ | grep ADR-{STAGE}` で最大値を確認して +1）
 - 詳細は `docs/00_GLOSSARY.md` の「ADR 命名規約」を参照
 
 **フォーマット**:
@@ -136,6 +136,7 @@ docs/ 配下のファイルを編集・作成するときはこのファイル�
 
 - ADR は自己完結した文書とする
 - 参照可能なファイル: `docs/` 配下・`ref/` 配下・`CLAUDE.md`
+- **内部トラッカーID（`ISSUE-XXX`/`BUG-XXX`）を docs に書かない**。経緯は日付・文脈・ADR へのリンクで残す（根拠: [ADR-SRS-040](decisions/ADR-SRS-040-remove-internal-tracker-id-from-docs.md)）。違反は `make lint-md`（検査C）で検出される
 - **`mgmt/` への参照は禁止**（devel ブランチ専用のため main で参照できない）
 - 詳細な調査資料が必要な場合は `docs/decisions/research/` に置き ADR から参照する
 

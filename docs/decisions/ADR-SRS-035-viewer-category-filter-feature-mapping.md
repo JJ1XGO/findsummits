@@ -9,13 +9,13 @@ HTML ビューア（[FR-019](../20_SRS.md#fr-019-html-ビューア機能仕様)�
 フィーチャを **new / dominant / changed / unchanged** の 4 カテゴリに分類するが（FR-019）、
 この 4 カテゴリが `merged_summit.geojson` のデータモデル（[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)
 が定義する `feature_type` / `match_status` / `is_band_change_candidate`）のどの値に対応するか
-SRS 本文に定義がなかった（ISSUE-131）。
+SRS 本文に定義がなかった。
 
 `new` / `dominant` は `peak.match_status` と直接対応が取れるが、`changed` / `unchanged` は
 どのプロパティ値に対応するかが宙に浮いていた。さらに、検索確定時に「非表示カテゴリのフィルタを
 自動 ON にする」挙動（FR-019）について、4 カテゴリに帰属が定義されていない
 `feature_type="summit"` ∧ `match_status="delete"` の削除候補サミット・`feature_type="key_col"` の
-コルをどのカテゴリ扱いにすべきかが不定だった（ISSUE-133）。
+コルをどのカテゴリ扱いにすべきかが不定だった。
 
 表示マーカーは FR-009 スキーマ上、次の 3 種:
 
@@ -35,7 +35,7 @@ SRS 本文に定義がなかった（ISSUE-131）。
 | **unchanged** | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=false`（および対応する `key_col`）、ならびに `feature_type="summit"` ∧ `match_status="matched"`（バンド変更なしの既存サミット） |
 | **needs_review** | `feature_type="summit"` ∧ `match_status="unmatched"`（どのピークにも従属しない孤立サミット。地形変化による消滅の可能性。[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) で追加） |
 
-帰属の原則（ISSUE-133 の解決）:
+帰属の原則:
 
 1. **削除候補サミット（`summit.match_status="delete"`）は dominant カテゴリに含める**。
    その削除は dominant ピークがサミットを従属させたこと（[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)
@@ -66,5 +66,5 @@ SRS 本文に定義がなかった（ISSUE-131）。
 - FR-019（1124 カテゴリ別表示フィルタ・1135 検索自動フィルタ ON）に本対応表を反映する（本コミットで実施）。
 - 配色は引き続き new=緑系 / dominant=赤系 / changed=橙系 / unchanged=灰系（具体値は HLD）。
   削除候補サミットは dominant カテゴリの配色に従う。needs_review の配色も HLD で規定する。
-- ISSUE-131・ISSUE-133 を本 ADR で決着する。needs_review カテゴリの追加は [ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md)（ISSUE-135）による。
+- 上記の帰属定義は本 ADR で決着する。needs_review カテゴリの追加は [ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) による。
 - 実装（フィルタ判定ロジック）への反映は別タスク（HLD・実装フェーズ）で行う。

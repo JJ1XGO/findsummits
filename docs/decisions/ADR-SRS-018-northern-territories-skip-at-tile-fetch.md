@@ -36,4 +36,4 @@ FR-017 が生成する北方領土除外タイルリストを FR-001 が読み�
 - **正の影響**: 通信量・取得時間・ローカルキャッシュ容量の削減。FR-004 責務の縮小。コンポーネント責務の明確化。
 - **負の影響**: FR-017（N03 ZIP 配置・前処理実行）が FR-001 の必須前提となるため、N03 ZIP が未配置の場合は FR-001 を実行できない。
 - **フォールバック**: 北方領土除外タイルリスト未存在時は FR-001 がエラー終了する（旧方式では FR-004 が除外スキップで解析を続行していたが、本方式では前提条件として扱う）。
-- **実装追従 ISSUE**: [ISSUE-056](../../mgmt/tracker/) (prefetch_tiles.py)、[ISSUE-079](../../mgmt/tracker/) (preprocess_pref_boundaries.py)
+- **実装**: `prefetch_tiles.py`・`preprocess_pref_boundaries.py` で対応予定（HLD/LLD ステージで詳細化）

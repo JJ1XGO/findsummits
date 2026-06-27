@@ -8,7 +8,7 @@
 UR-013（[ADR-URD-016](ADR-URD-016-observability-intermediate-visualization-ur.md)）は、解析パイプラインの
 中間成果物 GeoJSON を生成タイミングで地図上に可視化し、**ピーク・コル・ゾーンの対応関係**を目視確認できることを要求する。
 これを受けた NFR-009 は中間 GeoJSON を地理院地図へのドラッグ&ドロップで確認できることを仕様化したが、
-「ピーク・コルの対応関係の精密な可視化（コル位置の地図表示）は保証範囲外」と明示し、本 ADR に委ねていた（ISSUE-106）。
+「ピーク・コルの対応関係の精密な可視化（コル位置の地図表示）は保証範囲外」と明示し、本 ADR に委ねていた（[ADR-SRS-025](ADR-SRS-025-observability-nfr-ur013-srs-scope.md) 参照）。
 
 現行の中間 GeoJSON（ADR-SRS-022 の join 方式）は以下のフィーチャのみを持つ:
 
