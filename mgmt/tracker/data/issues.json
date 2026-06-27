@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-26",
-    "counter": 134
+    "last_updated": "2026-06-27",
+    "counter": 135
   },
   "issues": [
     {
@@ -4464,6 +4464,43 @@
           "to": "対応完了",
           "comment": "ADR-SRS-036: 山岳名JP必須・EN任意、未入力時は警告して続行可(最終判断はSOTA日本支部担当者)。FR-019(1149)・FR-011※1に反映。",
           "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-135",
+      "title": "地形変化で消滅したサミット（unmatched）の要確認扱い・FR-009 即停止の見直し",
+      "description": "現行 FR-009 / ADR-SRS-011 は、既存 SOTA サミットが AZ・delete判定ゾーンのいずれにも入らない場合を summit.match_status=unmatched とし『閾値不備または解析欠落』とみなして処理停止する。しかし噴火・山体崩壊・カルデラ陥没で山が実際に消えた場合、旧サミット座標がどのゾーンにも入らず unmatched になりうる。これはシステム不備ではなく正当な地形変化＝削除候補であり、即停止設計は実態を捉えていない盲点。座標だけでは地形変化と解析不備を機械区別できないため自動削除は誤削除リスクがある。",
+      "type": "設計",
+      "priority": "高",
+      "category": "merge.py",
+      "reporter": "Opus",
+      "created_date": "2026-06-27",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "新規 ADR-SRS-037 を作成し以下を確定: (1) unmatched を『要確認』状態として続行扱い（停止トリガーから外す）。申請書の削除行には自動掲載せず merged_summit.xlsx・HTMLビューアのカテゴリで担当者に提示。(2) 件数しきい値（config.ini）で解析バグを防御。少数は続行、しきい値超過は解析異常の疑いで停止。(3) is_area_incomplete / is_key_col_unresolved は従来どおり停止維持。影響文書を同期更新（ADR-SRS-011 / ADR-URD-007 / 20_SRS FR-009・データ辞書 / ADR-SRS-033 / ADR-SRS-035 / GLOSSARY）。",
+      "notes": "ユーザー確認済み: 要確認続行＋件数しきい値停止。成果物はSRS/ADR文書のみ（ADR-SRS-011 が採用・未実装のためコード変更なし）。",
+      "resolved_date": "2026-06-27",
+      "verified_date": null,
+      "created_session_id": "e58c17f2-0da8-462d-9657-c36861c528fc",
+      "history": [
+        {
+          "date": "2026-06-27T11:44:10",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "e58c17f2-0da8-462d-9657-c36861c528fc"
+        },
+        {
+          "date": "2026-06-27T12:00:49",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-037 を作成し、unmatched を要確認扱い（続行・件数しきい値超過時のみ停止・申請書削除行へ非自動掲載）へ変更。FR-009・データ辞書・ADR-SRS-011/URD-007/033/035・GLOSSARY を同期更新（commit 4a6a1a5）。unmatched_review_threshold の確定値は初回全国解析の実データで見直し（ADR-SRS-037 未確定事項）。",
+          "session_id": "e58c17f2-0da8-462d-9657-c36861c528fc"
         }
       ]
     }
