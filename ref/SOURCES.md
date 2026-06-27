@@ -54,6 +54,20 @@
 
 ---
 
+## 国土地理院 地図タイル（標準地図・淡色地図）
+
+| 項目 | 内容 |
+|---|---|
+| 提供元 | 国土地理院 |
+| データ種別 | 標準地図（`std`）・淡色地図（`pale`）。ラスタタイル（PNG） |
+| 取得 URL | 標準地図: `https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png`<br>淡色地図: `https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png` |
+| 参照 URL | <https://maps.gsi.go.jp/development/ichiran.html> |
+| 利用規約 | 国土地理院コンテンツ利用規約（https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html） |
+| 帰属表示義務 | 利用成果物に「国土地理院」の帰属表示が必要 |
+| 本プロジェクトでの利用形態 | HTML ビューアの背景地図タイルとして使用（OSM・OpenTopoMap との切り替え用）。表示範囲のタイルをブラウザから実行時取得して描画する。タイルデータはリポジトリに含めない。ビューアの帰属表示に `© 国土地理院` を含める。選定経緯: [ADR-SRS-006](../docs/decisions/ADR-SRS-006-viewer-background-tile-selection.md) |
+
+---
+
 ## OpenStreetMap（地図タイル）
 
 | 項目 | 内容 |

@@ -76,6 +76,7 @@ docs/ 配下のファイルを編集・作成するときはこのファイル�
 - SRS セクション6「外部インターフェース仕様」には **外部I/F のみ** を記載する
 - ユーザー入力は SRS 7.1、内部データは SRS 7.2 に記載する
 - 内部トランザクションは 7.2 の対象外。発生する FR の入出力欄に発生元 FR を明示する（根拠: [ADR-SRS-017](decisions/ADR-SRS-017-internal-transaction-category.md)）
+- **各 FR の入出力テーブルは、該当する全外部I/F を列挙する**（実行時取得・キャッシュ再利用を問わない）。生成 FR が出力する成果物の実行時 I/F は、その実行時挙動を定義する FR に集約する（根拠: [ADR-SRS-038](decisions/ADR-SRS-038-fr-io-table-external-if-completeness.md)）
 
 ## ドキュメントフォーマット標準
 
