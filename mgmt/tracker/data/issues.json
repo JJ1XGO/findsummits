@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-27",
-    "counter": 136
+    "counter": 137
   },
   "issues": [
     {
@@ -4537,6 +4537,43 @@
           "from": "対応中",
           "to": "対応完了",
           "comment": "ADR-SRS-038 作成・FR-019 入力表に背景タイル追記・SOURCES/GLOSSARY/CLAUDE.md 整備・spec-panel 横串チェック追加（commit 39b83f5）",
+          "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-137",
+      "title": "モックアップの位置付け明文化と SRS への反映方針（ADR-SRS-039）",
+      "description": "docs/mockup/ が SRS から「画面サンプル」リンクとしてのみ参照され、位置付け（プロトタイプか正式か・更新方針・SRS/HLD/LLD との関係）が未文書化だった。仕様優先原則と整合する形で、モックアップを UI 確定用プロトタイプ（正は仕様書）と位置付け、観測挙動→SRS／実装具体値→HLD/LLD の反映粒度を定める必要があった。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-27",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "ADR-SRS-039 を作成し位置付けと反映方針を記録。SRS §6.6/§6.13 に注記・ADR 参照、既定背景タイルを明示、GLOSSARY 用語追加、docs/CLAUDE.md に運用ルール追加（commit a6426f8）。反映範囲 A（位置付け明文化＋SRS不足分のみ）。HLD 作成・mockup サンプルデータ修正はスコープ外。",
+      "notes": null,
+      "resolved_date": "2026-06-27",
+      "verified_date": null,
+      "created_session_id": "927586d5-3dc0-49f4-a5af-076306de535d",
+      "history": [
+        {
+          "date": "2026-06-27T13:21:57",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
+        },
+        {
+          "date": "2026-06-27T13:21:57",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-039 作成・SRS §6.6/§6.13 注記・既定背景タイル明示・GLOSSARY/CLAUDE.md 整備（commit a6426f8）",
           "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
         }
       ]
