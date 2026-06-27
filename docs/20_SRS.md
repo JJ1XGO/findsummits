@@ -1175,7 +1175,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
   - **エクスポート機能**（エクスポートアイコン展開メニューに 3 ボタンを配置）:
     - **「申請書」ボタン**（[FR-011](#fr-011-申請書-xlsx-生成) 準拠）: SheetJS を使い申請書 XLSX を**単独**ブラウザダウンロードする
-      - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。仮サミットコードを山岳IDとして使用）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のため本エクスポートの出力対象外
+      - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。A列=追加・B列=県名）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のため本エクスポートの出力対象外
       - XLSX 列 I（根拠）: 各フィーチャの `rationale` プロパティ値（編集済みの場合は編集後の値、未編集の場合は自動生成値）を転記する（詳細は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
     - **「申請エビデンス」ボタン**（[FR-021](#fr-021-申請エビデンス-zip-生成) 準拠）: JSZip を使い申請エビデンス ZIP をブラウザダウンロードする。ZIP には [FR-012](#fr-012-サミット一覧申請内容反映版生成) のサミット一覧（申請内容反映版）`merged_summit_revised.xlsx` を同梱する。詳細は [FR-021 参照](#fr-021-申請エビデンス-zip-生成)
     - **「公開用 HTML」ボタン**（[FR-020](#fr-020-公開用-html-ビューア生成) 準拠）: localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** を**単独**ブラウザダウンロードする。詳細は [FR-020 参照](#fr-020-公開用-html-ビューア生成)
@@ -1185,40 +1185,41 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 #### FR-011: 申請書 XLSX 生成
 
 - **対応 UR**: [UR-004](10_URD.md#ur-004)
-- **概要**: 申請書 XLSX は **HTML ビューア（[FR-013](#fr-013-html-ビューア生成)）がブラウザ内で生成・ダウンロード**する。Python バッチは XLSX を生成しない。
+- **概要**: 申請書 XLSX は **HTML ビューア（[FR-019](#fr-019-html-ビューア機能仕様)）の「申請書」ボタンでブラウザ内で生成・ダウンロード**する。Python バッチは XLSX を生成しない。
 
 **入力**:
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | 作業用 HTML ビューアに埋め込み済み |
-| HTML ビューア上のユーザー入力 | ユーザー入力 | 必須 | — | 山岳名・rationale 編集値。[FR-019](#fr-019-html-ビューア機能仕様) が管理 |
+| localStorage 編集内容 | 内部データ | 必須 | — | 山岳名・rationale 編集値。[FR-019](#fr-019-html-ビューア機能仕様) が管理 |
 
 **出力**:
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 申請書 XLSX | 外部I/F | XLSX | ブラウザダウンロード。テンプレート列 A〜J 構成。フォーマットは [6.3](#63-出力-申請書-xlsx) 参照 |
+| 申請書 XLSX | 外部I/F | XLSX | ブラウザダウンロード。テンプレート列 A〜J 構成。フォーマットは [6.3](#63-出力-申請書-xlsx) 参照。SOTA 指定の固定テンプレートのため GSI 出典・加工明示は対象外（[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md)） |
 
 **説明**:
 
   - テンプレート列構成（`ref/SOTA-Summit-list-revision-request.xlsx` 準拠）:
     - 1シート構成
-    - カラム: 既存山岳ID または仮サミットコード / アクション / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
+    - カラム: アクション / 既存山岳ID または県名 / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
   - アクション別カラムマッピング（テンプレート列 A〜J）:
 
-| アクション | A: 山岳ID/仮サミットコード | B: アクション | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 |
-|---|---|---|---|---|---|---|---|---|---|
-| 追加（new） | summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
-| 追加（dominant）| summit_code（仮サミットコード）| 追加 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | peak_elev | ※2 |
-| 削除 | SummitCode | 削除 | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 |
-| 変更 | SummitCode | 変更 | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 |
+| アクション | A: アクション | B: 既存山岳ID/県名 | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 | J: MT使用欄 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 追加（new） | 追加 | 県名 ※6 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | floor(peak_elev) | ※2 | 空白 |
+| 追加（dominant） | 追加 | 県名 ※6 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | floor(peak_elev) | ※2 | 空白 |
+| 削除 | 削除 | SummitCode | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 | 空白 |
+| 変更 | 変更 | SummitCode | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 | 空白 |
 
   - **※1**: HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-html-ビューア生成)）。山岳名JP は必須・山岳名EN は任意（未入力時は警告のうえ続行可。[FR-019](#fr-019-html-ビューア機能仕様) の山岳名入力 UI・[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md) 参照）
   - **※2**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（追加根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
   - **※3**: summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること
   - **※4**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（削除根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
   - **※5**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（変更根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
+  - **※6**: 都道府県名（北海道は振興局名）。[FR-009](#fr-009-sotaリスト突合match_status-判定) の rationale ※2 フォーマットと同じデータソース（N03 前処理済み市区町村 GeoJSON）から取得する。仮サミットコードは申請書には出力しない（GeoJSON・エビデンス・サミット一覧での内部識別子。正式コードは支部による承認後に採番）。J: MT使用欄は SOTA 日本支部マネジメントチーム記入欄のため全アクション空白
 
 #### FR-012: サミット一覧（申請内容反映版）生成
 
@@ -1424,7 +1425,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | 項目 | 仕様 |
 |---|---|
-| 生成方式 | HTML ビューア（[FR-013](#fr-013-html-ビューア生成)）の「申請書エクスポート」ボタンによるブラウザダウンロード（Python バッチは XLSX を生成しない） |
+| 生成方式 | HTML ビューア（[FR-019](#fr-019-html-ビューア機能仕様)）の「申請書」ボタンによるブラウザダウンロード（Python バッチは XLSX を生成しない） |
 | カラム構成・アクション | [FR-011 参照](#fr-011-申請書-xlsx-生成) |
 
 ### 6.4 出力: サミット一覧（申請内容反映版）
