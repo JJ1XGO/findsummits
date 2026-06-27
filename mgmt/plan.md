@@ -52,5 +52,6 @@
 ## 残課題（プロセス）→ 解消済み
 
 - `mgmt/plan.md` は `mv` 後に lint されず、`docs/` 相対リンクが broken になる構造的問題があった。
-  恒久対策として `mgmt/plan.md` を lint-md の対象から除外（Makefile pathspec `':!:mgmt/plan.md'`）。
-  経緯は `mgmt/lessons.md` の「プロセス」節に記録。
+  恒久対策: plan.md 内のファイル参照を Markdown リンクにせずコード表記にする（リンクが無ければ
+  壊れない）。lint は除外せず対象に残す（隠さない）。規約は `CLAUDE.md`「計画ファイル・handover の
+  扱い」に明記。経緯は `mgmt/lessons.md`「プロセス」節に記録。

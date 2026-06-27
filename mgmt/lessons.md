@@ -44,7 +44,7 @@
 
 - **PyMarkdown の front-matter 拡張は既定オフ**: YAML frontmatter（`---`）付きの .md（command ファイル等）を lint すると、終端の `---` が setext 見出しの下線と誤読され MD041/MD003/MD022 が誤検出される。これは PyMarkdown のバグではなく front-matter 拡張が既定無効なだけ。`.pymarkdown` に `extensions.front-matter.enabled: true` を足せば解消する。「lint がバグっている」と感じたらまず設定（拡張の有効/無効）を疑う。（2026-06-25: 前セッションで「known false-positive・修正不可」と誤認していたが、実証したら設定1行で解消できた）
 
-- **`mgmt/plan.md` は lint 除外（mv 後 lint 漏れ＋相対リンク broken の構造問題）**: 計画は `.claude/plans/` で書いてから `mgmt/plan.md` へ `mv` する運用だが、(1) `make lint` を `mv` の前に実行すると移動後の `mgmt/plan.md` が一度も lint されない、(2) 計画内の `docs/decisions/...` 等の相対リンクは `docs/` 起点では正だが `mgmt/` 起点では broken-link になる。2026-06-27 に前タスクの `mgmt/plan.md` へ broken-link が紛れて顕在化。対策: `mgmt/plan.md` を lint-md の git ls-files pathspec から除外（`':!:mgmt/plan.md'`）。手作業（毎回コード表記に直す）に頼る規律は手動列挙漏れと同じ構造的弱点なので、除外で一本化した。（ADR-SRS-039 検討時）
+- **`mgmt/plan.md` 内のファイル参照はコード表記（lint は維持）**: 計画は `.claude/plans/` で書いてから `mgmt/plan.md` へ `mv` する運用だが、(1) `make lint` を `mv` の前に実行すると移動後の `mgmt/plan.md` が一度も lint されない、(2) 計画内の `docs/decisions/...` 等の Markdown 相対リンクは `docs/` 起点では正だが `mgmt/`（および `mv` 元の `.claude/plans/`）起点では broken-link になる。2026-06-27 に前タスクの `mgmt/plan.md` へ broken-link が紛れて顕在化。最初 lint 除外で対処したが「除外＝検査を止めるだけで将来の broken を隠す」とユーザー指摘。最終対策: `plan.md` ではリポジトリ内ファイル参照を **Markdown リンクにせずコード表記**で書く（リンクが無ければ壊れようがない＝構造的回避）。`mgmt/plan.md` は **lint 対象に残したまま**（隠さない）。規約は `CLAUDE.md`「計画ファイル・handover の扱い」に明記。（ADR-SRS-039 検討時）
 
 ## 設計・仕様
 
