@@ -1,107 +1,72 @@
-# 計画: main 文書からの内部トラッカー ID（ISSUE-XXX）排除
+# 計画: FR-011 spec-panel レビュー指摘の SRS 反映
 
-## Context（背景・目的）
+## Context（なぜやるか）
 
-`mgmt/tracker/`（ISSUE 実体 `issues.json`）は devel ブランチでのみ git 管理され、リリース時に
-`git rm -r mgmt/` で main から除外される（`docs/CLAUDE.md:51`）。
-一方、main にも持っていくベースライン文書（URD/SRS/ADR/research）には `ISSUE-094` のような
-**内部トラッカー ID がテキストとして45行・18ファイルに散在**している。
+FR-011（申請書 XLSX 生成）の spec-panel レビュー（4 視点）をクリーン再実施し、`docs/20_SRS.md` を実照合して 6 件の指摘を抽出・全件ユーザー確定済み。最重要成果物である申請書 XLSX の列定義が**実テンプレート `ref/SOTA-Summit-list-revision-request.xlsx` と不整合**（A/B 列の入れ替わり・J 列欠落・追加行で仮コードを出力する記述）であることが判明したため、SRS を実テンプレート準拠に是正する。
 
-第三者が main を見たとき、これらの ID は辿る先（トラッカー）が存在せず**意味を成さない**。
-ユーザー方針: 「今のうちにベースライン文書から ISSUE-ID を排除する。mgmt の git 管理は維持する」。
+実テンプレート実ヘッダー（確認済み）: A=アクション / B=既存山岳ID もしくは 県名 / C・D・E=変更前(名JP・名EN・標高) / F・G・H=変更後(名JP・名EN・標高) / I=変更の根拠 / J=MT使用欄。
 
-ID は単なる経緯タグであり、決定内容そのものは ADR/SRS 本文に self-contained で記録済み
-（課題運用ルール「issue のスコープ＝決着の ADR/SRS 記録まで」がこれを担保）。
-よって ID を除去しても情報は失われない。日付・文脈は本文に残す。
+## 確定した修正方針（全 6 件・ユーザー承認済み）
 
-### 確定事項（ユーザー合意済み）
+| # | 重要度 | 確定内容 |
+|---|---|---|
+| ① | 高 | 列マッピング表を実テンプレート準拠に是正: **A=アクション / B=既存山岳ID もしくは 県名**（現 SRS は A/B が逆）。**追加行 B＝県名（都道府県名／北海道は振興局名）**、仮サミットコードは申請書に出力しない。削除・変更行 B＝既存 SummitCode。**J＝MT使用欄、全行空白**（MT＝SOTA 日本支部マネジメントチーム） |
+| ② | 中 | エクスポートボタンの参照先を FR-013→**FR-019** に是正、ボタン名称を「**申請書**」に統一 |
+| ③ | 中 | FR-011 入力表の山岳名・rationale 編集値の行を FR-012 と揃えて「**localStorage 編集内容／内部データ**」に統一 |
+| ④ | 中 | 追加行 H列（変更後標高）を **`floor(peak_elev)`** に統一（変更行と同じ切り捨て。現状は生値 peak_elev） |
+| ⑤ | 低 | FR-011 に一文追記: 申請書 XLSX は SOTA 指定固定テンプレートのため GSI 出典・加工明示は対象外（`ADR-URD-014`） |
+| ⑥ | 低 | 変更行の変更後名同値出力は**現仕様維持・取り下げ**（実テンプレート記入例が全項目記入のため）。作業なし |
 
-- 排除対象: **main に出る docs 全体**（URD/SRS + ADR + research、ファイル名含む）
-- mgmt/tracker の git 管理: **維持**（docs から ID を消せば main には出ない。devel 履歴・バックアップは保つ）
+## タスク（すべて `docs/20_SRS.md` の編集。実行モデル: Sonnet）
 
-### 現状の問題2層（調査結果）
+### タスク1: 指摘①（列マッピング表の是正）
 
-- **第1層（既存ルール違反）**: `docs/decisions/ADR-SRS-018-...:39` に
-  `[ISSUE-056](../../mgmt/tracker/)`・`[ISSUE-079](../../mgmt/tracker/)` の Markdown リンク2件。
-  `docs/CLAUDE.md:139`「`mgmt/` へのパス参照禁止」違反。`lint_docs.py` の broken-link 検査は
-  `.md` 終端リンクのみ対象（`LINK_RE`）のため末尾 `/` のこれらを見逃している。
-- **第2層（テキスト ID）**: 残り43件。リンクではない経緯タグ。lint 非検出。
-  大半は括弧内の経緯タグだが、一部は main で意味を失う「生き依存」（後述）。
+- `docs/20_SRS.md:1207`（カラム列挙）: 順序を実テンプレート準拠へ。「アクション / 既存山岳ID もしくは 県名 / 変更前(名JP・名EN・標高) / 変更後(名JP・名EN・標高) / 変更の根拠 / MT使用欄」
+- `docs/20_SRS.md:1210-1211`（アクション別マッピング表）を全面再構築:
+  - 列見出し: `A: アクション | B: 既存山岳ID/県名 | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 | J: MT使用欄`
+  - 追加(new)/追加(dominant): A=追加 / B=県名 / C・D・E=空白 / F=山岳名JP ※1 / G=山岳名EN ※1 / H=`floor(peak_elev)` / I=※2 / J=空白
+  - 削除: A=削除 / B=SummitCode / C=summit_name_jp ※3 / D=summit_name / E=sota_alt_m / F・G・H=空白 / I=※4 / J=空白
+  - 変更: A=変更 / B=SummitCode / C=summit_name_jp / D=summit_name / E=sota_alt_m / F=summit_name_jp(同値) / G=summit_name(同値) / H=`floor(peak_elev)` / I=※5 / J=空白
+- ※ 注記を追記:
+  - 追加行 B 列の県名は rationale ※2 と同じ「都道府県名（北海道は振興局名）」を用いる（同一データソース）
+  - 仮サミットコードは申請書には出力しない（GeoJSON・エビデンス・サミット一覧での内部識別子。正式コードは承認後に支部が採番）
+  - J: MT使用欄は SOTA 日本支部マネジメントチーム記入欄のため全アクション空白
 
-## 作業タスク
+### タスク2: 指摘①の波及（FR-019 の矛盾記述是正）
 
-### タスク1: 方針の決定記録 ADR-SRS-040 作成（モデル: Sonnet）
+- `docs/20_SRS.md:1178`「追加（… 仮サミットコードを山岳IDとして使用）」を是正。仮コードを山岳ID として出力する記述を削除し、追加行 B＝県名・仮コード非出力に整合させる
 
-- 新規 `docs/decisions/ADR-SRS-040-...md`（次番号は ADR-SRS-039 の次＝040）。
-- 命名・フォーマットは `docs/CLAUDE.md`・`docs/00_GLOSSARY.md`「ADR 命名規約」に従う。
-- 記録内容: 決定（main docs から内部 ID 排除・mgmt は git 管理維持）、
-  代替案と却下理由（release 時機械除去／何もしない／正式仕様のみ排除）、影響。
+### タスク3: 指摘②（ボタン参照先・名称）
 
-### タスク2: 既存リンク違反の修正（モデル: Sonnet）
+- `docs/20_SRS.md:1427`（§6.3 生成方式）: 「HTML ビューア（FR-013）の『申請書エクスポート』ボタン」→「HTML ビューア（**FR-019**）の『**申請書**』ボタン」
+- `docs/20_SRS.md:1188`（FR-011 概要）: ダウンロード動作の参照を FR-019 に揃える（ビューア生成＝FR-013、ダウンロード機能＝FR-019）
+- L938・L1164 の「申請書エクスポート」は動作を指す説明句のため**変更しない**（ボタン名称ではない）
 
-- `docs/decisions/ADR-SRS-018-...:39` の `[ISSUE-056](../../mgmt/tracker/)`・
-  `[ISSUE-079](../../mgmt/tracker/)` を**リンクなしの文脈記述**へ書き換え
-  （例: 「実装追従は別途トラッカーで管理」等、ID を出さず意味が通る形）。
+### タスク4: 指摘③（入力カテゴリ統一）
 
-### タスク3: docs 全体の ISSUE-ID 除去（モデル: Sonnet）
+- `docs/20_SRS.md:1195`: 「HTML ビューア上のユーザー入力 | ユーザー入力 | …」→「localStorage 編集内容 | 内部データ | …（備考・FR-019 管理 は維持）」。FR-012 入力表（`docs/20_SRS.md:1233`）と一致させる
 
-`grep -rEn "ISSUE-[0-9]+" docs/` の全45件を文脈別に処理:
+### タスク5: 指摘⑤（出典対象外の明記）
 
-- **経緯タグ系**（大半）: 括弧内 ID を削除し日付・文脈は残す。
-  - 例 `FR-006 レビュー（ISSUE-094）で指摘された` → `FR-006 レビューで指摘された`
-  - 例 `改訂注記（2026-06-14 ISSUE-094）` → `改訂注記（2026-06-14）`
-  - 例 `（ISSUE-078、2026-06-05）` → `（2026-06-05）`
-  - `ADR-SRS-004` 決定日欄の長大な経緯（ISSUE-090 等複数）も同様に ID のみ除去。
-- **生き依存系**（内容確認して文言調整）:
-  - `docs/20_SRS.md:1152`「生成実装は ISSUE-064 で管理」→ ADR-SRS-032(ISSUE-117) で
-    生成 FR は確定済み。確定先 FR を本文参照に置換（要 SRS 該当箇所確認）。
-  - `ADR-SRS-013:113-118` ISSUE-043/044「HLD/COD で継続」→ ID を出さず
-    「後続ステージで対応」等に一般化。
-  - `ADR-SRS-025`・`ADR-SRS-026` の ISSUE-106「で管理」→ 決着先 ADR-SRS-026 への
-    本文リンクに置換（ADR 間は Markdown リンク可）。
-- **research ファイル**:
-  - 本文中の `ISSUE-020` 言及を除去（`issue-020-keycol-threshold-analysis.md`）。
-  - ファイル名 `issue-020-keycol-threshold-analysis.md` → `keycol-threshold-analysis.md` に
-    `git mv`（履歴維持）。**参照元 `docs/decisions/ADR-SRS-011-...` のリンク1件を更新**。
-  - 本文中の `mgmt/archive/plan_2026-05-20_issue-020-discussion.md` 参照は mgmt パスのため除去。
+- FR-011 説明部または出力表備考に一文追記: 「申請書 XLSX は SOTA 指定の固定テンプレートのため、GSI 出典・加工明示は対象外（`ADR-URD-014`）」。SRS 本文への実記載は Markdown リンク（`[ADR-URD-014](decisions/...)`）で行う
 
-### タスク4: 再発防止 — lint 検査C 追加（モデル: Sonnet）
+## 課題管理の扱い（推奨）
 
-- `scripts/lint_docs.py` に検査C を追加: 本文中の `ISSUE-\d+` パターンと
-  `](.../mgmt/...)` 形式のパス参照を検出して違反報告。
-- `mgmt/` 自身・`mgmt/archive` は lint 対象外（既存除外）なので誤検出しない。
-  検査対象は `make lint-md` の docs/ スコープ。
-- 既存の検査A/B と同じ violations リスト方式で実装。
-
-### タスク5: ルール明文化（モデル: Sonnet）
-
-- `docs/CLAUDE.md` の参照ルール（139行付近）に
-  「docs 配下に内部トラッカー ID（`ISSUE-XXX`/`BUG-XXX`）を書かない。経緯は日付・文脈で残す」を明記。
-- 既存「`mgmt/` へのパス参照禁止」と並べて整理。
-
-### タスク6: 課題登録（モデル: Sonnet・作業前）
-
-- 本作業は docs/CLAUDE.md 改訂＋ADR 作成（仕様議論）を伴うため `issue add` で登録。
-  `venv/bin/python3 mgmt/tracker/track.py issue add ...`（actor はモデル名）。
-- 着手時 `--status 対応中`、完了時 `issue close`。
+- **新規 issue・ADR は作成しない**。理由: 仕様議論は本レビューで全件決着済みで、残作業は確定済み決定の SRS への機械的反映のみ（プロジェクト規約「残作業で判定」→ todo/直接反映）。是正内容は実テンプレートに駆動された defect 修正で、開ける設計トレードオフが残っていない
+- 監査証跡は **commit メッセージ**で担保（spec-panel FR-011 レビュー由来である旨を明記）
+- （ユーザーが重い証跡を望む場合のみ issue 化に切替可）
 
 ## 検証
 
-- `grep -rEn "ISSUE-[0-9]+" docs/` が **0 件**であること。
-- `grep -rn "mgmt/" docs/` に新たなパス参照が残っていないこと。
-- `make lint` 警告ゼロ（新検査C 含む）。
-- 検査C の発火確認: docs に一時的に `ISSUE-999` を仕込み `make lint-md` で検出されることを確認 → 削除。
-- ADR-SRS-040・research リネーム・ADR-SRS-011 参照更新後に broken-link が無いこと。
+- 修正後マッピング表の列順・列文字（A〜J）が `ref/SOTA-Summit-list-revision-request.xlsx` 実ヘッダー（A=アクション, B=既存山岳ID/県名, …, J=MT使用欄）と一致することを目視照合
+- `docs/20_SRS.md` 内に「仮サミットコードを山岳IDとして使用」等の矛盾記述が残っていないことを `grep` で確認（タスク2 の取りこぼし防止）
+- `make lint`（`lint-md` 中心）警告ゼロ
+- `git diff` で意図どおりの差分のみを確認
+- ドキュメント更新のため**同一ターン内に commit**（push は別途指示まで不要）。完了後 `/handover`
 
-## コミット方針
+## 関連ファイル
 
-- ドキュメント更新は作業ターン内に commit（push は別途指示まで不要）。
-- `scripts/lint_docs.py` の変更は docs 修正と同一作業のため同梱可。
-- Conventional Commits・本文日本語。
-
-## モデル運用メモ
-
-全タスク **Sonnet** 想定（方針は確定済み・残作業は文書編集と単純な lint 拡張）。
-生き依存の言い換え（タスク3）で SRS/ADR の該当箇所確認が必要だが難解ではない。
-ExitPlanMode 承認後、`/model` で Sonnet 切替を促してから着手する。
-承認後この plan は `.claude/plans/` から `mgmt/plan.md` へ `mv` する。
+- `docs/20_SRS.md`（FR-011=L1185-1222・FR-019=L1095-1184・§6.3=L1423-1428）
+- `ref/SOTA-Summit-list-revision-request.xlsx`（列定義の正・A〜J 実ヘッダー）
+- `docs/decisions/ADR-URD-014-gsi-tile-attribution-policy.md`（出典対象外の根拠）
+- `docs/CLAUDE.md`（入出力分類規約・採番・ADR/参照ルール）
