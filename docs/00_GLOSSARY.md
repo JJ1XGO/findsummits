@@ -17,7 +17,7 @@
 | 用語（本書での表記） | 正式名称 | 説明 |
 |---|---|---|
 | SOTA | Summits On The Air | [Summits On The Air](https://www.sota.org.uk/)。アマチュア無線の運用活動。本プロジェクトは[SOTA日本支部](https://www.kawauchi.homeip.mydns.jp/sotajp/)（JA）の山岳リスト更新申請を目的とする。 |
-| サミット | Summit | SOTA に登録されている山岳。本プロジェクトでは `ref/summitslist.csv` に含まれる JA プレフィックスのサミットを指す。GeoJSON では `type="summit"` のフィーチャで表現され、`match_status` は `matched`（存続）または `delete`（削除候補）の2値を取る。 |
+| サミット | Summit | SOTA に登録されている山岳。本プロジェクトでは `ref/summitslist.csv` に含まれる JA プレフィックスのサミットを指す。GeoJSON では `type="summit"` のフィーチャで表現され、`match_status` は `matched`（存続）・`delete`（削除候補）・`unmatched`（要確認の孤立サミット。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）のいずれかを取る。 |
 | サミットコード | Summit Code | SOTAが各山岳に付与する識別コード。`JA/YN-001` の形式（`JA`: アソシエーション、`YN`: リージョン、`001`: サミット番号）。`summitslist.csv` の `SummitCode` 列が正式名称。matched サミットに対応。プロパティ名: `summit_code` |
 | アクティベーションゾーン | Activation Zone | SOTAルールにおける山頂での運用可能エリア。山頂の最高地点から標高差 25m 以内の連続エリアをさす。このエリア内での無線運用が「山頂からの運用」として認められる（参照: [SOTA日本支部 FAQ Q12](https://www.kawauchi.homeip.mydns.jp/sotajp/faqs/)）。本プロジェクトではピークと既存SOTAサミットの照合に使用する（FR-016）。本プロジェクトにおける標高差の設定値はデータ辞書の**アクティベーションゾーン標高差**（[SRS 2.2.1](20_SRS.md#221-設定可能項目)）で管理する。 |
 | プロミネンス | 比高 | ピークの独立性を示す指標。ピーク標高とコル標高の差。本プロジェクトでは 150m 以上を申請対象とする。 |
@@ -149,6 +149,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 |---|---|---|
 | サミット候補 | — | 既存 SOTA サミットリストにない新規ピーク（match_status="new"）。SOTA 日本支部への追加申請対象。 |
 | 削除候補サミット | — | match_status=delete が確定した既存 SOTA サミット。サミット座標が dominant peak の delete判定ゾーン内に存在するがアクティベーションゾーン外であると判定されたもの。SOTA 日本支部への削除申請対象となる。 |
+| 要確認サミット | — | match_status=unmatched の既存 SOTA サミット。サミット座標がどのピークのアクティベーションゾーンにも delete判定ゾーンにも含まれない孤立サミット。噴火・山体崩壊・カルデラ陥没による消滅（削除すべき）と、しきい値不備・解析欠落（システム不備）が同一症状のため座標では機械区別できず、SOTA 日本支部担当者の確認に委ねる。申請書の削除行には自動掲載せず、件数が要確認サミット件数しきい値を超えた場合のみ解析異常として停止する（詳細は SRS FR-009・[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md) 参照）。 |
 | 主ピーク | dominant peak | 削除候補となる SOTA サミットが従属するピーク。サミット座標がそのピークの delete判定ゾーン内に含まれることで判定される（詳細は SRS FR-009・[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）。 |
 | delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop`（デフォルト 250m）はデータ辞書「delete_zone 比高上限」として定義（[SRS 2.2.1](20_SRS.md#221-設定可能項目) 参照）。詳細は SRS FR-016・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照。 |
 | 削除（delete） | — | `summit.match_status` の値。既存 SOTA サミット座標が検出ピークの delete判定ゾーン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |

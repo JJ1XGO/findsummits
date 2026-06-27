@@ -54,6 +54,8 @@ per-feature プロパティ（`key_col_resolved`・`area_complete`）は維持�
 
 これにより xlsx が `merged_peak.csv`（ピーク中心）と `summitslist.csv`（サミット中心）の全エントリを網羅する確認表になる。
 
+> **補足（[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) 採用後）**: 本 ADR 制定時、`unmatched` 行は「不備ゲートで停止する対象の調査用」として xlsx に出力する位置づけだった。[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) により `unmatched` は「要確認として続行し担当者に提示する対象」へ動機が変わったため、xlsx 出力は**要確認サミットを担当者が判断するための主要な提示手段**となる（件数しきい値以下では停止せず続行したうえで提示する）。`unmatched` 行を xlsx に出力する決定自体は維持する。
+
 ### 3. 不備ゲート発動時の出力保証
 
 FR-009 の異常終了制御（SRS L914）を以下のように書き換える:

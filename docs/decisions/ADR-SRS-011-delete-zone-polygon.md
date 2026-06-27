@@ -61,9 +61,9 @@ delete_zone_max_drop = 150 + ceil(max_abs_diff / 50) * 50
 |---|---|
 | `matched` | いずれかのピークの AZ 内に存在 |
 | `delete` | いずれかのピークの delete判定ゾーン内かつ AZ 外に存在 |
-| `unmatched` | いずれにも該当しない（エラー、処理中止） |
+| `unmatched` | いずれにも該当しない（要確認の孤立サミット。件数しきい値超過時のみ停止） |
 
-`unmatched` は本来発生しないべき状態で、発生した場合は `delete_zone_max_drop` の値が小さすぎる等の不備を示す。merge.py は non-zero exit で停止し、後続の FR-013（GeoJSON/HTML 生成）はスキップする。
+`unmatched` は、噴火・山体崩壊・カルデラ陥没で山が消失・大幅低下した場合（＝削除すべきサミット）と、`delete_zone_max_drop` の値が小さすぎる等の不備（＝システム不備）の両方で発生しうる。座標だけでは両者を機械区別できないため、本 ADR 制定時に想定した「本来発生しないべき不備・即停止」から、[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) により「**担当者の確認を要する状態（要確認）として続行**」へ方針を改めた。`unmatched` 単独では停止せず（`merged_summit.xlsx`・HTML ビューアの「要確認」カテゴリで提示）、件数が **要確認サミット件数しきい値**（`unmatched_review_threshold`）を超えた場合のみ解析異常の疑いとして merge.py が non-zero exit で停止し、後続の FR-013（GeoJSON/HTML 生成）をスキップする。
 
 ### コル等高線ポリゴンの廃止
 
@@ -116,4 +116,4 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 
 ### 未確定事項
 
-- 全国解析実行時に `summit.match_status="unmatched"` が発生しないことの実証
+- 全国解析実行時の `summit.match_status="unmatched"` 発生件数の分布実測（[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) で `unmatched` を要確認扱いへ変更したため、「発生しないことの実証」から「発生件数の分布確認・`unmatched_review_threshold` 確定値の決定」へ更新）

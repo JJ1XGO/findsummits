@@ -128,6 +128,7 @@
 | User-Agent 識別子 | タイル取得 HTTP リクエストの送信元識別子。ツール名と連絡先メールアドレスを含む（地理院側での問い合わせ対応のため必須） | — | `<ツール名>/<バージョン> (mailto:<メールアドレス>)` 形式 |
 | SOTA 既存サミット GeoJSON バージョン | 突合に使用する既存 SOTA サミット GeoJSON データのバージョン番号 N（`ref/geojson_v{N}/` に対応） | — | 正の整数 |
 | 仮サミットコード連番上限 | 同一エリアに採番する仮コードの最大 prefix 文字。この文字の `99` を超えたら異常終了（[FR-009](#fr-009-sotaリスト突合match_status-判定) 参照） | A | A〜Z |
+| 要確認サミット件数しきい値 | `summit.match_status="unmatched"`（どのピークにも紐付かない孤立サミット）の許容件数。本値以下なら要確認として続行、超過したら解析異常の疑いとして [FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートで停止する（`unmatched_review_threshold`。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md) 参照） | 10 | 0 以上の整数（デフォルト10は暫定値。初回全国解析の実データで見直す） |
 
 ---
 
@@ -865,7 +866,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - **`summit.match_status` 判定**（peak.match_status とは独立した値。ピーク中心 → サミット中心へ視点が切り替わる基点。以下の順に評価し、AZ 内が最優先）:
     - `matched`: 既存 SOTA サミット座標がいずれかのピークのアクティベーションゾーン内に存在する（正常存続）
     - `delete`: 既存 SOTA サミット座標がいずれかのピークの delete判定ゾーン内かつアクティベーションゾーン外に存在する（削除候補）
-    - `unmatched`: 既存 SOTA サミット座標がいずれのピークの AZ・delete判定ゾーンにも含まれない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。本来発生しないべき状態で、発生した場合は `delete_zone_max_drop` 値の不備または解析欠落を示す。ログ警告を出力し `is_unmatched_summit` フラグを true にセットする（即時停止せず、全件評価後に不備フラグ検査で停止）
+    - `unmatched`: 既存 SOTA サミット座標がいずれのピークの AZ・delete判定ゾーンにも含まれない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。**担当者の確認を要する孤立サミット**であり、噴火・山体崩壊・カルデラ陥没で山が消失・大幅低下した場合（＝削除すべきサミット）と、`delete_zone_max_drop` 値の不備・解析欠落（＝システム不備）の両方が同一症状を示すため、座標だけでは機械区別できない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）。ログ警告を出力し `is_unmatched_summit` フラグを true にセットする。**`unmatched` 単独では停止しない**（要確認として続行し、`merged_summit.xlsx` と HTML ビューアの「要確認」カテゴリで担当者に提示）。ただし件数が **要確認サミット件数しきい値**（[データ辞書参照](#221-設定可能項目)・`unmatched_review_threshold`）を超えた場合は解析異常の疑いとして不備ゲートで停止する。申請書の「削除」行には自動掲載せず、担当者が地形変化を確認のうえ手動で削除申請に回す
   - **仮サミットコード割り当て**（`new` および `dominant` ピーク）:
     - match_status=new・dominant 両方のピークに、[FR-017](#fr-017-n03-行政区域前処理データ準備) で前処理した地域データを用いて仮サミットコードを付与する
     - フォーマット: `JAx/XX-A00`
@@ -888,7 +889,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - 各 delete 候補サミット座標に対して、delete判定ゾーンポリゴン（`feature_type="delete_zone"`）内に
       その座標が含まれるピークを候補とする（point-in-polygon 判定）
     - 候補が複数の場合は**プロミネンスが最小のピーク**を主ピークとする（プロミネンスが最小のピークは親ピークへ最も早く合流する局所的な隆起であり、delete 候補サミットと同一山塊と見なせる）
-    - いずれの delete判定ゾーンにも含まれないサミットは `summit.match_status="unmatched"` として上記のエラー停止が発動する（自動フォールバックは行わない）
+    - いずれの delete判定ゾーンにも含まれないサミットは `summit.match_status="unmatched"`（要確認）として記録する。主ピークは紐付かず `dominant_peak_code` 等は付与しない。停止はせず、件数しきい値超過時のみ不備ゲートで停止する（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。自動フォールバック・申請書削除行への自動掲載は行わない）
     - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算。人手確認用）
   - **rationale プロパティ生成**（各フィーチャの `rationale` プロパティに格納する申請書根拠テキスト。HTML ビューアで編集可能・[FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に転記）:
     - **対象フィーチャ**: match_status が `new` / `dominant` のピーク Point、`matched_band_change`（`is_band_change_candidate=true`）の matched ピーク Point、match_status が `delete` の既存 SOTA サミット Point
@@ -918,7 +919,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - `key_col_resolved=false` のピークは `col_elev`・`prominence` が確定していないため、※2 の該当箇所を「未確定」と表示する
     - rationale はビューア上の textarea で**編集可能**。編集後の値が [FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に反映される（編集前は上記フォーマットの自動生成値が初期値）。永続化方式・編集値マージロジックの詳細は HLD 範疇
   - **不備ゲートと異常終了制御**（[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）: 本 FR は**全サミット評価完了後**に以下の不備条件を検査し、いずれかに該当する場合は**不備ゲート**として**意図的に異常終了**する（即時停止ではなく全判定後にまとめて検査。入力欠落・例外によるハードクラッシュとは区別する）:
-    - 既存サミット行で `summit.match_status="unmatched"` が1件以上存在する
+    - 既存サミット行で `summit.match_status="unmatched"` の件数が **要確認サミット件数しきい値**（[データ辞書参照](#221-設定可能項目)・`unmatched_review_threshold`）を超える（解析異常の疑い。しきい値以下の `unmatched` は要確認として続行し停止しない。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）
     - ピーク行で AZ または delete判定ゾーンポリゴンの `area_complete=false` が1件以上存在する（[FR-016](#fr-016-ピーク域ポリゴン生成) で 3×3 完結が想定されているが想定外に発生した場合）
     - ピーク行で `key_col_resolved=false` が1件以上存在する（解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）の N=4→5→6 エスカレーションでも解消せず）
     - 不備ゲート発動時は `merged_summit.geojson` および `merged_summit.xlsx` をともに不備エントリを含めて**必ず出力してから停止**する（調査用）。ハードクラッシュ時は出力を保証しない。[FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は本 FR の exit code を見てスキップする（exit code の詳細は HLD 参照）
@@ -944,6 +945,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | matched | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
 | new | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル） |
 | dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット）※ 既存 SOTA サミット Point とピーク → SOTA サミット LineString は、当該 delete判定ゾーンに含まれる削除候補サミットの数だけ生成される（複数可） |
+| unmatched | Point（既存 SOTA サミット）のみ。どのピークにも従属しない孤立サミットのため、ピーク Point・コル・ポリゴン・LineString は紐付かない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。ビューアの「要確認」カテゴリで表示） |
 
 ##### 各フィーチャのプロパティ
 
@@ -980,7 +982,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "summit" |
-| `match_status` | matched / delete |
+| `match_status` | matched / delete / unmatched（unmatched は要確認の孤立サミット。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 | `summit_code` | SOTA サミットコード |
 | `summit_name` | サミット名（summitslist.csv の SummitName、英語/ローマ字） |
 | `summit_name_jp` | 日本語山岳名（本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |

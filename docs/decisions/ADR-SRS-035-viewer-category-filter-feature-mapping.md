@@ -25,7 +25,7 @@ SRS 本文に定義がなかった（ISSUE-131）。
 
 ## Decision
 
-カテゴリ別表示フィルタ 4 分類とフィーチャの対応を以下に確定する。
+カテゴリ別表示フィルタとフィーチャの対応を以下に確定する（制定時は new / dominant / changed / unchanged の 4 分類。[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) により needs_review を追加し 5 分類へ拡張）。
 
 | カテゴリ | 対象フィーチャ |
 |---|---|
@@ -33,6 +33,7 @@ SRS 本文に定義がなかった（ISSUE-131）。
 | **dominant** | `feature_type="peak"` ∧ `match_status="dominant"`（および対応する `key_col`）、ならびに当該ピークに従属する `feature_type="summit"` ∧ `match_status="delete"`（削除候補サミット） |
 | **changed** | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=true`（および対応する `key_col`・対応する matched `summit`） |
 | **unchanged** | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=false`（および対応する `key_col`）、ならびに `feature_type="summit"` ∧ `match_status="matched"`（バンド変更なしの既存サミット） |
+| **needs_review** | `feature_type="summit"` ∧ `match_status="unmatched"`（どのピークにも従属しない孤立サミット。地形変化による消滅の可能性。[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) で追加） |
 
 帰属の原則（ISSUE-133 の解決）:
 
@@ -42,16 +43,20 @@ SRS 本文に定義がなかった（ISSUE-131）。
    1 グループで表示・フィルタするのが自然。
 2. **key_col は独立カテゴリ／独立トグルを持たず、親ピーク（`summit_code` で対応）のカテゴリに追従する**。
    コルはピークのプロミネンス根拠を示す従属フィーチャであり、ピークと表示単位を揃える。
+3. **要確認サミット（`summit.match_status="unmatched"`）は独立した needs_review カテゴリとする**（[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md)）。
+   delete サミットを dominant に同梱した原則 1 とは異なり、unmatched は従属する dominant ピークを
+   持たない孤立フィーチャのため、いずれの既存カテゴリにも帰属できず独立カテゴリが必然となる。
 
 検索確定時の自動フィルタ ON（FR-019）は、確定対象フィーチャが属する上記カテゴリを ON にする
-（key_col 確定時は親ピークのカテゴリ、delete サミット確定時は dominant カテゴリ）。
+（key_col 確定時は親ピークのカテゴリ、delete サミット確定時は dominant カテゴリ、unmatched サミット確定時は needs_review カテゴリ）。
 
 ## Alternatives
 
-- **削除候補サミットを独立した第 5 カテゴリにする**: delete を新カテゴリとして分離し 5 分類化する案。
+- **削除候補サミットを独立したカテゴリにする**: delete を新カテゴリとして分離する案。
   分類の対称性は増すが、dominant ピークと削除候補サミットは申請上一体（dominant ピーク追加と
   サミット削除がセット）で、別カテゴリにすると関連フィーチャがフィルタで分断され目視確認しづらい。
-  既存の 4 分類を変えないためにも不採用。
+  delete は dominant に同梱するため不採用。（なお、従属ピークを持たない孤立サミット `unmatched` は
+  同梱先がなく、独立した needs_review カテゴリとした。[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) 参照）
 - **key_col を独立トグルレイヤーにする**: コルを別レイヤーで ON/OFF する案。コルだけを単独で
   表示制御する運用上の要求がなく、親ピークと表示が分離するとプロミネンスの対応確認が
   かえって煩雑になるため不採用。親ピーク追従とする。
@@ -60,6 +65,6 @@ SRS 本文に定義がなかった（ISSUE-131）。
 
 - FR-019（1124 カテゴリ別表示フィルタ・1135 検索自動フィルタ ON）に本対応表を反映する（本コミットで実施）。
 - 配色は引き続き new=緑系 / dominant=赤系 / changed=橙系 / unchanged=灰系（具体値は HLD）。
-  削除候補サミットは dominant カテゴリの配色に従う。
-- ISSUE-131・ISSUE-133 を本 ADR で決着する。
+  削除候補サミットは dominant カテゴリの配色に従う。needs_review の配色も HLD で規定する。
+- ISSUE-131・ISSUE-133 を本 ADR で決着する。needs_review カテゴリの追加は [ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md)（ISSUE-135）による。
 - 実装（フィルタ判定ロジック）への反映は別タスク（HLD・実装フェーズ）で行う。

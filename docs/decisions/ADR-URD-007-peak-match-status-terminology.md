@@ -44,7 +44,7 @@
 | new | AZ・delete判定ゾーン内に既存サミットなし（新規候補）| — |
 | dominant | delete判定ゾーン内かつ AZ 外に既存サミット座標あり | — |
 | delete | — | delete判定ゾーン内かつ AZ 外に存在（削除候補） |
-| unmatched | — | AZ にも delete判定ゾーンにも該当しない（エラー、処理中止。[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md) 参照） |
+| unmatched | — | AZ にも delete判定ゾーンにも該当しない孤立サミット（要確認。地形変化による消滅とシステム不備が同一症状のため担当者が判断。件数しきい値超過時のみ停止。[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) 参照） |
 
 **申請書生成への影響**:
 
