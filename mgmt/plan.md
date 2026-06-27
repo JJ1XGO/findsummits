@@ -49,7 +49,8 @@
 3. SRS・GLOSSARY・docs/CLAUDE.md から ADR-SRS-039 への参照が解決（broken-link ゼロ）。
 4. ドキュメント更新ターン内に commit（即 commit ルール）。push は別途指示まで不要。
 
-## 残課題（プロセス）
+## 残課題（プロセス）→ 解消済み
 
 - `mgmt/plan.md` は `mv` 後に lint されず、`docs/` 相対リンクが broken になる構造的問題があった。
-  本ファイルはコード表記で回避。恒久対策（plan.md の lint 除外 or リンク規約）は別途検討。
+  恒久対策として `mgmt/plan.md` を lint-md の対象から除外（Makefile pathspec `':!:mgmt/plan.md'`）。
+  経緯は `mgmt/lessons.md` の「プロセス」節に記録。

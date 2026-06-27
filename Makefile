@@ -58,11 +58,13 @@ lint: lint-md lint-py lint-geojson lint-html
 
 # Markdown lint（チェックのみ・ファイルは書き換えない）。
 # 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
+# mgmt/plan.md は mv で生成される作業用一時計画（docs/ 相対リンクが mgmt/ 起点で
+# broken になる）ため除外する（根拠: ADR-SRS-039 検討時のプロセス是正）。
 # LINT_MD_PATHS を指定した場合はそのパスを再帰走査する（override）。
 LINT_MD_PATHS ?=
 lint-md: venv
 	@if [ -n "$(LINT_MD_PATHS)" ]; then targets="$(LINT_MD_PATHS)"; ropt="-r"; \
-	else targets=$$(git ls-files '*.md' ':!:mgmt/archive/**'); ropt=""; fi; \
+	else targets=$$(git ls-files '*.md' ':!:mgmt/archive/**' ':!:mgmt/plan.md'); ropt=""; fi; \
 	venv/bin/python3 -m pymarkdown -c .pymarkdown scan $$ropt $$targets; s1=$$?; \
 	venv/bin/python3 scripts/lint_docs.py $$targets; s2=$$?; \
 	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
