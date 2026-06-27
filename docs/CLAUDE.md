@@ -50,6 +50,17 @@ docs/ 配下のファイルを編集・作成するときはこのファイル�
 
 `docs/` は devel・main 両ブランチに含める。`mgmt/` は devel ブランチのみ（リリース時に `git rm -r mgmt/` で除外）。
 
+## モックアップの扱い
+
+`docs/mockup/`（`viewer_mockup.html` ＋ `summits_data.js`）は HTML ビューアの UI を確定させる
+プロトタイプ（紙芝居レベル）。**正は仕様書（SRS/HLD/LLD）**であり、モックアップは権威ではなく
+仕様と同期させる参照物（仕様優先原則を維持。根拠: [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md)）。
+
+- モックアップ更新時は、**観測可能挙動を SRS、実装具体値（配色・サイズ・パラメータ・z-index・
+  レイアウト等）を HLD/LLD** へ反映要否判断する。HLD/LLD 未作成の段階では HLD 相当の UI 具体値は
+  モックアップが暫定保持し、HLD/LLD 起票時に抽出する。
+- 埋め込みサンプルデータ（例示フィーチャ）は仕様ではないため、仕様反映の対象外。
+
 ## GLOSSARY と SOURCES の役割分担
 
 | ファイル | 役割 | 書くこと | 書かないこと |

@@ -89,6 +89,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 
 | 用語 | 説明 |
 |---|---|
+| 画面サンプル（モックアップ） | HTML ビューアの UI を確定させるためのプロトタイプ（紙芝居レベル）。`docs/mockup/viewer_mockup.html` は作業用・公開用ビューア共通のサンプルで、逐次更新される。正は仕様書（SRS/HLD/LLD）であり、観測可能挙動は SRS、実装具体値は HLD/LLD へ反映する（位置付け: [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md)）。 |
 | 地理院タイル | 国土地理院が提供する XYZ タイル形式の地図・標高データ。Web メルカトル投影（EPSG:3857）。仕様詳細は[地理院タイルの仕様](https://maps.gsi.go.jp/development/siyou.html)を参照。 |
 | DEM（Digital Elevation Model） | 数値標高モデル。地表面の標高値を格子状に記録したデータ。地理院タイルでは RGB 値に標高をエンコードした PNG として提供される。 |
 | DEM5a / DEM5b / DEM5c | 国土地理院の5mメッシュ数値標高モデル（ズームレベル15）。5aが最優先、なければ5b、5cの順でフォールバック。 |

@@ -1102,7 +1102,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | 作業用 HTML ビューアに埋め込み済み（[FR-013](#fr-013-html-ビューア生成) 出力） |
-| 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（[6.6](#66-出力-geojson作業用-html-ビューア) 参照）。ブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
+| 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.6](#66-出力-geojson作業用-html-ビューア) 参照）。ブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 | 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | — | 等高線オーバーレイ／基準点レイヤー ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 
 **出力**:
@@ -1465,13 +1465,15 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)
 
+> ※ 画面サンプル（モックアップ）は UI を確定させるためのプロトタイプ（紙芝居レベル）であり、逐次更新される。正式仕様は §6.6・[6.13](#613-出力-公開用-html閲覧専用ブラウザダウンロード)・[FR-019](#fr-019-html-ビューア機能仕様)、実装具体値（配色・サイズ・パラメータ等）は HLD/LLD が定める。モックアップは権威ではなく仕様と同期させる参照物である（位置付けの詳細: [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md)）。
+
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `$DATA_DIR/results/merged_viewer.html` |
 | 用途 | 山岳名入力・目視確認・申請書 / 申請エビデンス / 公開用 HTML のエクスポートを行うローカル作業用ビューア |
 | HTML テンプレート | 作業用テンプレートファイル（詳細は HLD） |
 | 使用ライブラリ | Leaflet（地図・CDN 経由）・SheetJS/xlsx.js（XLSX エクスポート・CDN 経由）・JSZip（ZIP 生成・CDN 経由） |
-| 背景タイル | 国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap（切り替え可能） |
+| 背景タイル | 国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap（切り替え可能。既定: 国土地理院標準地図） |
 | GeoJSON 参照方式 | HTML 内に JavaScript 変数として埋め込み（外部ファイル参照なし） |
 | 動作環境 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
 
@@ -1521,7 +1523,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 ### 6.13 出力: 公開用 HTML（閲覧専用・ブラウザダウンロード）
 
-画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)（作業用ビューアと共通のモックアップ。公開用は編集 UI・XLSX エクスポートなし）
+画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)（作業用ビューアと共通のモックアップ。公開用は編集 UI・XLSX エクスポートなし）。モックアップの位置付け（UI 確定用プロトタイプ・正は仕様書）は [6.6](#66-出力-geojson作業用-html-ビューア) 注記および [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md) を参照
 
 | 項目 | 仕様 |
 |---|---|
