@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-27",
-    "counter": 135
+    "counter": 136
   },
   "issues": [
     {
@@ -4501,6 +4501,43 @@
           "to": "対応完了",
           "comment": "ADR-SRS-037 を作成し、unmatched を要確認扱い（続行・件数しきい値超過時のみ停止・申請書削除行へ非自動掲載）へ変更。FR-009・データ辞書・ADR-SRS-011/URD-007/033/035・GLOSSARY を同期更新（commit 4a6a1a5）。unmatched_review_threshold の確定値は初回全国解析の実データで見直し（ADR-SRS-037 未確定事項）。",
           "session_id": "e58c17f2-0da8-462d-9657-c36861c528fc"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-136",
+      "title": "FR-019 入力表の外部I/F網羅性是正（背景タイル追記）＋網羅性規約の明文化",
+      "description": "FR-019（HTML ビューア機能仕様）の入力テーブルが、実行時取得の外部I/F のうち等高線オーバーレイ／基準点タイルのみを載せ、背景タイル4種（地理院標準・淡色・OSM・OpenTopoMap）を落としていた。全22 FR 中で外部I/F をテーブルから落としているのは FR-019 が唯一。『FR 入出力表は全外部I/F を列挙する』という暗黙規約が未明文化のため逸脱を機械検出できていなかった。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-27",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": "ADR-SRS-038 で網羅性規約と生成FR/実行時I/Fの集約先（FR-019）切り分けを記録。FR-019 入力表に背景タイル行を追記、SOURCES.md に std/pale 出典追加、GLOSSARY 用語追加、docs/CLAUDE.md に規約明文化、spec-panel に横串チェック追加（commit 39b83f5）。",
+      "notes": null,
+      "resolved_date": "2026-06-27",
+      "verified_date": null,
+      "created_session_id": "927586d5-3dc0-49f4-a5af-076306de535d",
+      "history": [
+        {
+          "date": "2026-06-27T12:57:01",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
+        },
+        {
+          "date": "2026-06-27T12:57:01",
+          "actor": "Opus",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-038 作成・FR-019 入力表に背景タイル追記・SOURCES/GLOSSARY/CLAUDE.md 整備・spec-panel 横串チェック追加（commit 39b83f5）",
+          "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
         }
       ]
     }
