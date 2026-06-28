@@ -107,6 +107,16 @@
 
 ### 中
 
+- [ ] **(FR-001 spec-panel 指摘③) FR-001 北方領土除外段落に竹島の扱いを注記追加**
+  - 対象: `docs/20_SRS.md` FR-001 説明（北方領土除外 段落末尾）
+  - 「竹島（メッシュ 5531）はメッシュコードリストで除外済みのため本 FR での特別処理なし（[ADR-URD-009](../docs/decisions/ADR-URD-009-takeshima-exclusion.md) 参照）」を追記
+  - ADR-URD-009 §Consequences「関連 FR への竹島記述追加が必要」への対応
+
+- [ ] **(FR-001 spec-panel 指摘④) FR-001 行331 If-Modified-Since ヘッダーの値のソースを明記**
+  - 対象: `docs/20_SRS.md` FR-001 説明 行331（If-Modified-Since の記述）
+  - 「キャッシュファイルの mtime（[ADR-SRS-032](../docs/decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md) で焼き込む提供元更新日）を If-Modified-Since ヘッダーの値として使用する」を追記
+  - ADR-SRS-032 と SRS 行331 の接続が現状暗黙なため明示化
+
 - [ ] **(元 ISSUE-066) FR-019 検索機能実装: 実 GeoJSON データでの動作確認と本実装**
   - モックアップで実装した検索機能（サミットコード/山岳名(和英)/緯度経度の部分一致検索・サジェスト・flyTo+ポップアップ）を、本実装フェーズで実 GeoJSON データに対して再現・検証する
   - 仕様詳細: `docs/20_SRS.md` FR-019

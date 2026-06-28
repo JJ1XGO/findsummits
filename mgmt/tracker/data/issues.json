@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-28",
-    "counter": 146
+    "counter": 149
   },
   "issues": [
     {
@@ -5040,6 +5040,66 @@
           "session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3"
         }
       ]
+    },
+    {
+      "id": "ISSUE-147",
+      "title": "ADR-URD-005 Consequences が旧方式（FR-003 NODATA 扱い）のまま残存し ADR-SRS-018 と矛盾",
+      "description": "ADR-URD-005 の §Consequences（行96–107）は「北方領土タイルは FR-001 で引き続き取得し FR-003 で NODATA 扱い」という旧方式の記述が残存している。しかし ADR-SRS-018（2026-06-07 採用）では FR-001 が HTTP リクエストを発行しない新方式に変更されており、ADR-URD-005 Decision 本文（行40–54）もこの新方式を記述している。Consequences のみが旧方式のまま放置されており、ADR 内で矛盾が生じている。",
+      "type": "改善",
+      "priority": "高",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "ADR-URD-005 §Consequences から FR-003 への言及（行101）と「北方領土タイルは FR-001 で引き続き取得される」記述（行102–104）を削除し、「FR-001 が HTTP リクエストを発行しないことで除外が完結する」旨に書き換える。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
+      "history": []
+    },
+    {
+      "id": "ISSUE-148",
+      "title": "FR-001 で DEM10b（Z14）取得時の北方領土除外方法が仕様に未記述",
+      "description": "北方領土除外タイルリストは Z15 形式（x y 整数ペア、§7.2.2.1）と FR-001 行329 に明記されているが、DEM10b は Z14 で配信される（§6.2.10）。Z14 タイルを Z15 リストからどう除外するか（floor(x/2), floor(y/2) による変換で Z14 タイルを除外するか、別途 Z14 リストを生成するか、そもそも北方領土に DEM10b タイルが存在しないかなど）が FR-001 にも §7.2.2.1 にも記述なく、実装時にバグを招く可能性がある。ADR-URD-005 の Decision（行50）も「ズームレベル 15 の x/y 整数ペア」のみ言及し Z14 への言及がない。",
+      "type": "設計",
+      "priority": "高",
+      "category": "prefetch",
+      "reporter": null,
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "ADR-URD-005 あるいは新規 ADR-SRS-XXX で Z14 タイル除外方法を設計決定し、FR-001 説明および §7.2.2.1 に明記する。設計の選択肢: (a) Z15 リストを floor(x/2),floor(y/2) で変換して Z14 タイルも除外 / (b) FR-017 が Z14 リストを別途生成 / (c) 地理院は北方領土の DEM10b タイルを提供しないため取得時に HTTP 404 になるだけで除外不要（実データ確認が先決）。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
+      "history": []
+    },
+    {
+      "id": "ISSUE-149",
+      "title": "FR-001 リトライ（HTTP 429/503）上限超過後の挙動が SRS 未定義",
+      "description": "FR-001 説明 行333 に「HTTP 429/503 が返された場合は再試行する（リトライ戦略の詳細は HLD 参照）」とあるが、リトライ上限超過後の挙動（エラー終了して全体を止めるか、当該タイルをスキップして継続するか）が SRS レベルの方針として未定義。他の異常系（北方領土リスト未存在→エラー終了、HTTP 404→キャッシュ削除）は SRS で明確化されているが、リトライ超過のみ HLD 丸投げとなっている。",
+      "type": "設計",
+      "priority": "中",
+      "category": "prefetch",
+      "reporter": null,
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "SRS の FR-001 説明にリトライ上限超過後の基本方針（エラー終了 or スキップ継続）を明記し、上限回数・バックオフアルゴリズム等の詳細は引き続き HLD に委任する。ユーザーへの影響（全タイル取得失敗か部分取得かで後段解析品質が大きく変わる）を考慮して設計方針を決定すること。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
+      "history": []
     }
   ]
 }
