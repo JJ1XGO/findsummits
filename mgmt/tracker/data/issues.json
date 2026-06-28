@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-28",
-    "counter": 143
+    "counter": 146
   },
   "issues": [
     {
@@ -4929,6 +4929,66 @@
           "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
         }
       ]
+    },
+    {
+      "id": "ISSUE-144",
+      "title": "FR-017 生成1（60地域GeoJSON）への北方領土ポリゴン含有の扱いを明示",
+      "description": "FR-017 §生成1（60地域GeoJSON）を作成する際、北方領土6村（N03_007: 01695〜01700）のポリゴンを dissolve 対象に含めるか除外するかが未定義。生成3（北方領土除外タイルリスト）は同コードを抽出して別途処理するが、生成1の dissolve 処理で除外するか残すかが記述されていない。含めたままにすると FR-009 でのエリアコード付与対象に北方領土のポリゴン範囲が残るが、北方領土のピーク候補は FR-001 タイル取得スキップにより解析結果に流れ込まない設計のため実害はない。ただし設計意図が読み取れない状態であり、実装者が迷う可能性がある。",
+      "type": "設計",
+      "priority": "中",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "「生成1では北方領土ポリゴンを dissolve 対象に含める（除外は生成3＋FR-001 で完結しているため重複除外は不要）」または「生成3と同一条件で生成1から除外する」どちらかを決定し、FR-017 §生成1 の説明文に明記する。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
+      "history": []
+    },
+    {
+      "id": "ISSUE-145",
+      "title": "FR-017 生成1 dissolve の出力形状（MultiPolygon 可否）を明示",
+      "description": "FR-017 §生成1（行282）に「1地域1ポリゴンに集約」と記述されているが、沖縄・鹿児島等の離島は本島と隣接しないため dissolve の自然な結果は MultiPolygon になる。「1ポリゴン」が MultiPolygon 許容なのか厳密に単一 Polygon なのかが未定義。FR-009 での point-in-polygon 処理の実装時（GeoJSON ライブラリの扱い）に影響する。",
+      "type": "設計",
+      "priority": "中",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "「1フィーチャ（MultiPolygon 許容）に集約」として SRS の記述「1地域1ポリゴン」を「1地域1フィーチャ（MultiPolygon 許容）」に更新することを推奨する。離島を含む都府県は必然的に MultiPolygon になるため単一 Polygon への厳密化は現実的でない。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
+      "history": []
+    },
+    {
+      "id": "ISSUE-146",
+      "title": "FR-017 再実行条件（N03 ZIP 差し替え時）の SRS 記載 vs HLD 委任を判断",
+      "description": "FR-017 §実行タイミング（行276）は「初回のみ。出力ファイル群が未生成の場合に起動する」と定義しているが、N03 ZIP を新年版に差し替えた場合の再実行手順が未定義。「出力ファイルを削除してから再実行する」という操作手順を SRS 段階で明記するか、HLD に完全委任するかを決める必要がある。",
+      "type": "設計",
+      "priority": "低",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "SRS に「出力ファイルを手動削除することで再実行できる（詳細は HLD 参照）」程度の一文を追加する方向を推奨する。完全 HLD 委任とする場合は FR-017 §実行タイミングに『再実行はHLD参照』の一文を追記する。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
+      "history": []
     }
   ]
 }
