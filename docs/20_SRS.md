@@ -648,7 +648,7 @@
   - [FR-005](#fr-005-ピーク候補検出) の処理中に 2 つ以上の連結成分が初めて接触した時点のピクセルがコルであり、その標高がコル標高となる。接触した各成分ペアについて、標高の低い方のピークの Key コルとして確定し、高い方は親成分に吸収されてさらに高いコルを待つ。3 成分以上が同時接触する場合も、各ペアで独立に同一ルールを適用する
   - プロミネンス = ピーク標高 − コル標高
   - **`key_col_resolved` 判定**: 走査ループ中に陸地連結成分が、[FR-005](#fr-005-ピーク候補検出) が走査前に初期化した海面連結成分（グリッド最外周 1px 海面ボーダーを含む全 0m ピクセル）に 8 近傍接触した場合、その連結成分の Key コルは解析窓外に存在する可能性があるため `key_col_resolved=false` とし、`col_elev`・`prominence` は未確定（sentinel: 空欄）として出力する（[FR-022 参照](#fr-022-コル充足判定)）。`key_col_resolved=false` の場合、`col_lat`・`col_lon` は 0.0（日本の解析範囲は北緯 24° 以北・東経 123° 以東に限定されるため 0.0 は sentinel として機能する）
-  - **海面確定規則（走査ループ完了後の後処理）**: 走査ループ完了後に、海面連結成分への接触フラグが立っていない連結成分（グリッド最外周 1px 海面ボーダーに一度も接触しなかったピーク）を確定対象とする。該当ピークは解析窓内の陸地全体で最高点（島の最高峰または解析窓内で陸地が孤立した独立峰）と判断し、Key コル = 海面（0m）・`key_col_resolved=true` を設定する（プロミネンス = ピーク標高）。島の最高峰はこの規則で 3×3 または広域解析内で自動確定する
+  - **海面確定規則（走査ループ完了後の後処理）**: 走査ループ完了後に、海面連結成分への接触フラグが立っていない連結成分（グリッド最外周 1px 海面ボーダーに一度も接触しなかったピーク）を確定対象とする。該当ピークは解析窓内の陸地全体で最高点（島の最高峰または解析窓内で陸地が孤立した独立峰）と判断し、Key コル = 海面（0m）・`key_col_resolved=true` を設定する（プロミネンス = ピーク標高）。この場合も `col_lat`/`col_lon` は 0.0 に設定する（`key_col_resolved=true` + `col_lat`/`col_lon`=0.0 の組み合わせが「海面を Key コルとして確定」の sentinel となる。陸地最高峰リスト（層2・[FR-008](#fr-008-per-mesh-csv-統合)）と同一表現に統一する）。島の最高峰はこの規則で 3×3 または広域解析内で自動確定する
 
 #### FR-007: per-mesh CSV 出力（プロミネンス閾値適用）
 
@@ -686,8 +686,8 @@
 | peak_lat | float | 小数点8桁 | ピーク緯度 |
 | peak_lon | float | 小数点8桁 | ピーク経度 |
 | peak_elev | float | 小数点2桁 | ピーク標高（m） |
-| col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合は 0.0） |
-| col_lon | float | 小数点8桁 | コル経度（`key_col_resolved=false` の場合は 0.0） |
+| col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合、または海面確定（`key_col_resolved=true` + Key コル=0m）の場合は 0.0） |
+| col_lon | float | 小数点8桁 | コル経度（`key_col_resolved=false` の場合、または海面確定（`key_col_resolved=true` + Key コル=0m）の場合は 0.0） |
 | col_elev | float | 小数点2桁 | コル標高（m）。`key_col_resolved=false` の場合は未確定（空欄） |
 | prominence | float | 小数点2桁 | プロミネンス（m）。`key_col_resolved=false` の場合は未確定（空欄） |
 | key_col_resolved | bool | true/false | コルが解析範囲内で確定済みの場合 true、解析範囲外で未発見の場合 false |
@@ -812,7 +812,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - **再入可能性（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）**: [FR-008](#fr-008-per-mesh-csv-統合) とセットで、解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）のループ内を毎回再入する。FR-008 が `merged_peak.csv` を再生成するたびに本機能も再実行され、その世代の `merged_peak.csv` で絞り込んだ `merged_peak.geojson` を上書き再生成する。広域解析（[FR-014](#fr-014-広域結合解析オーケストレーション)）は計算負荷が高く待ち時間が長いため、その間に人間が各世代の `merged_peak.geojson` を地理院地図上で確認できるようにすることが目的（コル確定済みピークのゾーン確認・未確定ピークの位置の見当付け）。本動作は [NFR-009](#nfr-009-観測可能性中間成果物の可視化) が根拠とする [UR-013](10_URD.md#ur-013) の実現手段
   - **可視化フィーチャ（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）**: ゾーンポリゴンに加えて以下の Point・LineString を同一ファイルに出力する。座標元は `merged_peak.csv`（FR-008 出力）であり、広域解析で確定した独立峰のコルも含む:
     - `feature_type="peak"`（Point）: `merged_peak.csv` の全採用ピーク座標
-    - `feature_type="key_col"`（Point）: `merged_peak.csv` で `key_col_resolved=true` かつ `col_lat`/`col_lon` が 0.0 以外（有意なコル座標）のピークのみ出力（広域解析でコルが確定したピークを含む。陸地最高峰は `col_lat`/`col_lon`=0.0 sentinel のため除外）
+    - `feature_type="key_col"`（Point）: `merged_peak.csv` で `key_col_resolved=true` かつ `col_lat`/`col_lon` が 0.0 以外（有意なコル座標）のピークのみ出力（広域解析でコルが確定したピークを含む。陸地最高峰・島嶼部最高峰（[FR-006](#fr-006-コル検出プロミネンス計算) 海面確定規則による自動確定を含む）は `col_lat`/`col_lon`=0.0 sentinel のため除外）
     - `feature_type="peak_col_link"`（LineString）: `key_col` がある場合にピーク→コル接続線を出力
     - 地理院地図スタイル属性を `properties` に付与し、地理院地図へのドラッグ&ドロップでピーク↔コル対応を目視確認できる（色スキームは HLD で規定）
 
@@ -904,9 +904,11 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - **stability**: [FR-008](#fr-008-per-mesh-csv-統合) が `merged_peak.csv` に算出・付与した値をそのまま参照する（`confirmed`/`unstable`/`-` の定義は [FR-008](#fr-008-per-mesh-csv-統合) 参照）
   - **主ピーク特定**（[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)）:
     - 各 delete 候補サミット座標に対して、delete判定ゾーンポリゴン（`feature_type="delete_zone"`）内に
-      その座標が含まれるピークを候補とする（point-in-polygon 判定）
+      その座標が含まれるピークを候補とする（point-in-polygon 判定）。ただし `match_status=matched` のピークは
+      候補から除外する（[ADR-SRS-042](decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md) 参照）。
+      matched ピークの delete判定ゾーン内に AZ 外の SOTA サミットが存在した場合は `unmatched`（要確認）として扱う
     - 候補が複数の場合は**プロミネンスが最小のピーク**を主ピークとする（プロミネンスが最小のピークは親ピークへ最も早く合流する局所的な隆起であり、delete 候補サミットと同一山塊と見なせる）
-    - いずれの delete判定ゾーンにも含まれないサミットは `summit.match_status="unmatched"`（要確認）として記録する。主ピークは紐付かず `dominant_peak_code` 等は付与しない。停止はせず、件数しきい値超過時のみ不備ゲートで停止する（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。自動フォールバック・申請書削除行への自動掲載は行わない）
+    - いずれの delete判定ゾーンにも含まれないサミット（matched を除外した結果として候補なしになった場合を含む）は `summit.match_status="unmatched"`（要確認）として記録する。主ピークは紐付かず `dominant_peak_code` 等は付与しない。停止はせず、件数しきい値超過時のみ不備ゲートで停止する（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。自動フォールバック・申請書削除行への自動掲載は行わない）
     - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算。人手確認用）
   - **rationale プロパティ生成**（各フィーチャの `rationale` プロパティに格納する申請書根拠テキスト。HTML ビューアで編集可能・[FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に転記）:
     - **対象フィーチャ**: match_status が `new` / `dominant` のピーク Point、`matched_band_change`（`is_band_change_candidate=true`）の matched ピーク Point、match_status が `delete` の既存 SOTA サミット Point
@@ -1149,7 +1151,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - マーカーはクライアント側（ブラウザ内）で描画し、外部サーバ（地理院等）のアイコン画像取得に依存しない（[NFR-010](#nfr-010-描画応答性連続操作の滑らかさ) 参照）
   - 各マーカーはズームレベルに応じてサイズを変える（ズームアウト時は小さく、ズームイン時は大きく。具体的なサイズ段階は HLD に委ねる）
   - アクティベーションゾーン（AZ）は半透明の塗りで表示する（外枠線なし・クリック不可）。なお `area_complete=false`（解析範囲内で完結しなかった AZ）を持つピークは上流（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグ）で処理が停止し viewer には到達しないため、viewer 側に不完全 AZ の警告表示の責務は持たない
-  - delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
+  - delete判定ゾーンポリゴンを独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する。matched は delete判定ゾーンが生成されるが（[FR-016](#fr-016-ピーク域ポリゴン生成) は match_status を問わず全ピークに生成）、主ピーク候補から除外されるため（[ADR-SRS-042](decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md) 参照）delete判定ゾーン内に削除候補サミットは存在しない
   - delete判定ゾーンは AZ と重なる範囲を除外し、AZ に覆われていない部分のみ表示する（AZ＝活性化範囲を優先。重なり除外の計算方式は HLD に委ねる）
   - **カテゴリ別表示フィルター**: フィーチャを new / dominant / changed / unchanged の 4 カテゴリに分類し、カテゴリ単位で表示の ON/OFF を切り替えられる（初期は全カテゴリ表示）。カテゴリは配色でも区別する（new=緑系 / dominant=赤系 / changed=橙系 / unchanged=灰系。具体的な配色値は HLD に委ねる）。後述「検索確定時にフィルターを自動 ON」はこのカテゴリ分類に基づく。各カテゴリと [FR-009](#fr-009-sotaリスト突合match_status-判定) のフィーチャ（`feature_type` / `match_status` / `is_band_change_candidate`）の対応は以下のとおり（根拠: [ADR-SRS-035](decisions/ADR-SRS-035-viewer-category-filter-feature-mapping.md)）:
 
@@ -1182,7 +1184,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     - **1次メッシュグリッド**: 日本国土の1次メッシュ境界を表示する（一定ズーム以上でメッシュコードのラベルを表示）。解析単位の確認用
     - **基準点レイヤー**: 国土地理院の基準点（電子基準点・一等／二等／三等三角点）を表示する。種別ごとに配色し、点名・基準点種別・基準点コードを popup 表示する。データは地理院基準点タイル（`https://cyberjapandata.gsi.go.jp/xyz/cp/{z}/{x}/{y}.geojson`）をブラウザから実行時取得する（出典・利用形態は [SOURCES.md](../ref/SOURCES.md) 参照。採用経緯: [ADR-SRS-034](decisions/ADR-SRS-034-viewer-reference-layers.md)）
   - 地図帰属表示: peak/col/summit/AZ/delete_zone 等の GeoJSON データは地理院標高タイル解析由来であるため、**基図の選択に関わらず** `© 国土地理院`（リンク先: `https://maps.gsi.go.jp/`）を常時表示する。等高線レイヤー ON/OFF 状態によらず同 attribution を維持する。OSM 選択時は加えて `© OpenStreetMap contributors`、OpenTopoMap 選択時は `© OpenTopoMap contributors` を表示する。基準点レイヤー ON 時は基準点データの出典として `国土地理院` を併記する（地理院由来のため提供元は上記 `© 国土地理院` と同一）
-  - **ピーク popup の情報表示**: ピークの popup には標高・プロミネンスに加え、プロミネンスの根拠となる **Keyコル標高（`col_elev`）** を表示する。key_col Point が GeoJSON に含まれない場合（陸地最高峰・島嶼部最高峰は `col_lat/col_lon=0.0` sentinel のため key_col feature が除外される）は「未定義（陸地最高峰）」と表示する。陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）
+  - **ピーク popup の情報表示**: ピークの popup には標高・プロミネンスに加え、プロミネンスの根拠となる **Keyコル標高（`col_elev`）** を表示する。key_col Point が GeoJSON に含まれない場合（陸地最高峰・島嶼部最高峰は `col_lat/col_lon=0.0` sentinel のため key_col feature が除外される）は「未定義（陸地最高峰）」と表示する。陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）。どちらも `col_lat`/`col_lon`=0.0 sentinel で統一されておりビューアが区別できる内部属性を持たないため、「未定義（陸地最高峰）」を統一ラベルとして使用する
   - **Keyコル（key_col）popup の表示**: Keyコルのマーカー popup には、Keyコル標高・対応するピークのコード（new の場合は仮コード）・緯度経度を表示する
   - **ピーク↔Keyコル相互ジャンプ**: ピーク popup に「Keyコルへ移動」ボタン（`key_col_resolved=true` のときのみ）、Keyコル popup に「ピークへ移動」ボタンを設け、押下で対応するフィーチャへ地図移動して popup を開く
   - **山岳名入力 UI**:

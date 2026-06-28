@@ -1,68 +1,156 @@
-# 計画: FR-020 spec-panel 指摘①②④⑤ 対応
+# 計画: ISSUE-151〜154 SRS反映
 
 ## Context
 
-spec-panel FR-020（公開用 HTML ビューア生成）レビューで 4 件の指摘を検出。
-全て機械的テキスト追加で設計判断不要。対象ファイルは `docs/20_SRS.md` 1 本。
+spec-panelレビュー（FR-009 matched行へのdelete_zone追記・FR-019 is_island削除）で発見した
+4件の仕様未定義箇所について、設計決定が出揃ったため SRS および ADR に反映する。
 
-## タスク一覧（全 Sonnet・対象: `docs/20_SRS.md`）
+決定内容:
 
-### T1: ISSUE 未登録 todo① — FR-020 入力テーブルに背景タイル2行を追加
+- ISSUE-151: matchedのdelete_zoneをビューアで表示する
+- ISSUE-152: 案A — 海面確定規則でもcol_lat/col_lon=0.0 sentinelに統一
+- ISSUE-153: 表示文言「未定義（陸地最高峰）」を統一ラベルとして維持（理由を明記）
+- ISSUE-154: 案① — matchedピークをdeleteサミットの主ピーク候補から除外（将来的に案②へ移行可能性あり）
 
-`localStorage 編集内容` 行（1090行）の直後に追加:
+## 変更ファイル一覧
+
+| ファイル | 変更内容 | 対応ISSUE |
+|---|---|---|
+| `docs/20_SRS.md` | FR-019 line 1152 / FR-006 line 651 / per-mesh CSVカラム定義 line 689 / FR-018 line 815 / FR-019 line 1185 / FR-009 line 905-910 | 151/152/153/154 |
+| `docs/decisions/ADR-SRS-019-land-summit-highest-peak-handling.md` | 層1の col_lat/col_lon=0.0 設定を Decision に追記 | 152 |
+| `docs/decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md` | 新規作成（ISSUE-154 案①の根拠） | 154 |
+
+## タスク一覧（Sonnet・実行順）
+
+### 1. ISSUE-151: FR-019 line 1152 — delete_zone レイヤー表示対象の拡張
+
+**対象**: `docs/20_SRS.md` line 1152
+
+変更前:
 
 ```text
-| 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.2.8](#628-公開用-html閲覧専用ブラウザダウンロード) 参照）。公開用 HTML 表示時にブラウザから実行時取得（出典・利用形態: ref/SOURCES.md） |
-| 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | — | 等高線オーバーレイ／基準点レイヤー ON 時に公開用 HTML 表示時にブラウザから実行時取得（出典・利用形態: ref/SOURCES.md） |
+delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。
+new は delete判定ゾーン内に既存サミットが存在しないことを、
+dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
 ```
 
-FR-019 入力テーブル（1125〜1126行）の行から複写し、備考の参照を 6.2.6 → 6.2.8 に変更し
-「公開用 HTML 表示時に」の文言を追加している。
-
-### T2: todo② — §6.2.8 詳細仕様テーブルに「背景タイル」行を追加
-
-`使用ライブラリ` 行（1556行）の直後に追加:
+変更後（「new / dominant」を削除し、matchedの意味を追記）:
 
 ```text
-| 背景タイル | 国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap（切り替え可能。既定: 国土地理院標準地図） |
+delete判定ゾーンポリゴンを独立したトグルレイヤーとして追加（デフォルト ON・半透明）。
+new は delete判定ゾーン内に既存サミットが存在しないことを、
+dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する。
+matched は delete判定ゾーンが生成されるが（FR-016 は match_status を問わず全ピークに生成）、
+主ピーク候補から除外されるため（ADR-SRS-042 参照）delete判定ゾーン内に削除候補サミットは存在しない
 ```
 
-§6.2.6 の `背景タイル` 行（1532行）と同内容。
+### 2. ISSUE-152: FR-006 line 651 — 海面確定規則にcol sentinel追記
 
-### T3: todo④ — §6.2.8 詳細仕様テーブルに「ファイル名」行を追加
+**対象**: `docs/20_SRS.md` FR-006 line 651
 
-`用途` 行（1554行）の直後に追加（§6.2.9 が `sota_evidence_YYYYMMDD.zip` を同位置で定義している実績に合わせる）:
+末尾「島の最高峰はこの規則で 3×3 または広域解析内で自動確定する」の直後に追記:
 
 ```text
-| ファイル名 | `sota_viewer_YYYYMMDD.html`（具体的な命名規則は HLD で定義） |
+この場合も col_lat/col_lon は 0.0 に設定する
+（key_col_resolved=true + col_lat/col_lon=0.0 の組み合わせが「海面を Key コルとして確定」の sentinel となる。
+陸地最高峰リスト（層2・FR-008）と同一表現に統一する）
 ```
 
-### T4: todo⑤ — §6.2.8「特徴」行に CDN 依存制約の注記を追記
+### 3. ISSUE-152: per-mesh CSV カラム定義 line 689 — col_lat/col_lon 説明の拡張
 
-`特徴` 行（1560行）を更新:
+**対象**: `docs/20_SRS.md` line 689付近の col_lat・col_lon カラム行
 
-現行:
+変更前:
 
 ```text
-| 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用） |
+| col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合は 0.0） |
 ```
 
 変更後:
 
 ```text
-| 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用）。地図表示は Leaflet（CDN 経由）および各タイルサーバーへの疎通を要する（オフライン環境では地図タイル表示不可） |
+| col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合、または海面確定（`key_col_resolved=true` + Key コル=0m）の場合は 0.0） |
 ```
 
-## 実装手順
+col_lon カラムも同様に修正。
 
-1. T1 → T2 → T3 → T4 の順に `docs/20_SRS.md` を編集
-2. `make lint` 警告ゼロを確認
-3. mgmt/todo.md の todo①②④⑤ を削除
-4. `docs/20_SRS.md` と `mgmt/todo.md` をまとめて commit
+### 4. ISSUE-152: FR-018 line 815 — 島嶼部最高峰を明記
 
-## 検証
+**対象**: `docs/20_SRS.md` line 815
 
-- `make lint` 警告ゼロ
-- FR-020 入力テーブルに「背景タイル」「地理院標高タイル」行が外部I/F として存在する
-- §6.2.8 に「背景タイル」「ファイル名」行が存在する
-- §6.2.8「特徴」行に CDN 依存注記が存在する
+変更前:
+
+```text
+陸地最高峰は `col_lat`/`col_lon`=0.0 sentinel のため除外
+```
+
+変更後:
+
+```text
+陸地最高峰・島嶼部最高峰（FR-006 海面確定規則による自動確定を含む）は
+`col_lat`/`col_lon`=0.0 sentinel のため除外
+```
+
+### 5. ISSUE-152: ADR-SRS-019 — 層1のcol座標値を Decision に追記
+
+**対象**: `docs/decisions/ADR-SRS-019-land-summit-highest-peak-handling.md`
+
+Decision セクション「層1: 海面確定規則」の説明末尾に追記:
+
+```text
+col_lat/col_lon は 0.0 に設定する（層2の陸地最高峰リストと同一 sentinel 表現に統一）。
+これにより FR-018 の key_col Point 除外ロジックが「col_lat/col_lon=0.0 かどうか」で統一できる。
+```
+
+### 6. ISSUE-153: FR-019 line 1185 — 統一ラベルの根拠を明記
+
+**対象**: `docs/20_SRS.md` line 1185
+
+末尾「陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）」を以下に置き換え:
+
+```text
+陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）。
+どちらも col_lat/col_lon=0.0 sentinel で統一されておりビューアが区別できる内部属性を持たないため、
+「未定義（陸地最高峰）」を統一ラベルとして使用する。
+```
+
+### 7. ISSUE-154: ADR-SRS-042 新規作成
+
+**ファイル**: `docs/decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md`
+
+フォーマット:
+
+```markdown
+| 状態 | 採用・未実装 |
+| 決定日 | 2026-06-28 |
+
+## Context
+...
+## Decision
+matchedピークはdeleteサミットの主ピーク候補から除外する。
+主ピーク特定ロジックの候補条件を「match_status=dominant のピーク」に絞る。
+matchedのdelete_zone内にいるAZ外SOTAサミットは unmatched（要確認）として扱う。
+## Alternatives
+案②（matchedをdominantに昇格）は全国解析実データ確認後に再検討。
+## Consequences
+FR-009 line 905-910 に制約を追加。
+```
+
+### 8. ISSUE-154: FR-009 line 905-910 — 主ピーク特定に制約を追記
+
+**対象**: `docs/20_SRS.md` line 906 の「候補とする」の直後に追記:
+
+```text
+ただし match_status=matched のピークは候補から除外する（[ADR-SRS-042] 参照）。
+matchedピークのdelete_zone内にAZ外のSOTAサミットが存在した場合は unmatched（要確認）として扱う。
+```
+
+## 実施後の検証
+
+1. `make lint` 警告ゼロ
+2. ADR-SRS-042 へのリンク（`[ADR-SRS-042](...)`）が SRS 本文中で正しいこと
+3. ISSUE-151〜154 を tracker で `close` する
+
+## コミット方針
+
+全 8 タスクを 1 コミットにまとめる。

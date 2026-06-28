@@ -5183,14 +5183,23 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "① matchedのdelete_zoneをビューアのトグルレイヤーで表示するか否かを設計決定する。② 表示する場合はFR-019 line 1152の「new / dominant」制限を削除してSRS修正。③ 表示しない場合は「matched を除く」旨を明示し、SRS FR-009 line 1028の「new / dominant のみ」と整合させる。いずれの場合もFR-009 line 1028・FR-019 line 1152の両方を同時修正する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T19:42:22",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-019 line 1152 を修正: delete_zone レイヤーの表示対象を全match_status（matched含む）に拡張。matchedの挙動はADR-SRS-042を参照",
+          "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        }
+      ]
     },
     {
       "id": "ISSUE-152",
@@ -5203,14 +5212,23 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "FR-006 line 651（海面確定規則）に「col_lat/col_lon=0.0 sentinelを設定する」旨を追記。per-mesh CSV カラム定義（line 689）をkey_col_resolved=falseの場合に加えて「海面確定（key_col_resolved=true + Key Col=0m）の場合もcol_lat=col_lon=0.0」と拡張。FR-018 line 815を「陸地最高峰・島嶼部最高峰（海面確定規則）は」に拡張。ADR-SRS-019の層1説明にもcol座標値を追記する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T19:42:22",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "案A採用: FR-006 line 651・per-mesh CSVカラム定義・FR-018 line 815・ADR-SRS-019の層1説明にcol_lat/col_lon=0.0 sentinelを明記",
+          "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        }
+      ]
     },
     {
       "id": "ISSUE-153",
@@ -5223,14 +5241,23 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "① 表示文言を「未定義（Keyコルなし）」等の地理的事実に中立な文言に変更する、または ② 現文言「未定義（陸地最高峰）」を維持し「陸地最高峰・島嶼部最高峰を区別せず統一ラベルとして使用」旨を括弧書きで明記する。どちらを選ぶかをユーザーと合意してSRS line 1185を更新する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T19:42:22",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "FR-019 line 1185 に統一ラベル採用理由を追記: col_lat/col_lon=0.0 sentinelで統一されビューアが区別できる内部属性を持たないため",
+          "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        }
+      ]
     },
     {
       "id": "ISSUE-154",
@@ -5243,14 +5270,23 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "以下のいずれかを決定してFR-009 line 905-910・line 962に反映する。① matchedピークは主ピーク候補から除外する（「AZ内にSOTAサミットがいるピーク（matched）はdelete_zone内に別のサミットがいても主ピークにならない」制約を追加）。② matchedかつ主ピークになるケースを許容し、フィーチャ構成にdeleteサミットPoint・LineStringを追加する記述を加える。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T19:42:22",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "案①採用: ADR-SRS-042新規作成・FR-009 line 905-910にmatched除外制約を追記。将来的な案②移行意図をADR-SRS-042に記録",
+          "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        }
+      ]
     }
   ]
 }
