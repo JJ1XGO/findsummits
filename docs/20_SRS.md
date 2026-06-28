@@ -832,7 +832,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 内部データ | CSV | N = 生成段階タグ（3×3 後は `-3`、4×4 後は `-4`）。カラム: `peak_lat, peak_lon`（ヘッダー行あり・1行1件）。[FR-023](#fr-023-解析パイプライン制御) の制御に使用。未確定ピークがゼロの場合は生成しない |
+| コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 内部データ | CSV | ファイル: `$DATA_DIR/results/key_col_unresolved_peaks-<N>.csv`（[8.1 参照](#81-内部データ一覧)）。N = 生成段階タグ（3×3 後は `-3`、4×4 後は `-4`）。カラム: `peak_lat, peak_lon`（ヘッダー行あり・1行1件）。[FR-023](#fr-023-解析パイプライン制御) の制御に使用。未確定ピークがゼロの場合は生成しない |
 | 未確定有無 | 内部トランザクション | 判定結果 | 未確定ピークがゼロなら「ゼロ」、1 件以上なら「残あり」。[FR-023](#fr-023-解析パイプライン制御) がエスカレーション判断に使用 |
 
 **説明**:
@@ -1666,7 +1666,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 4 | 日本全土１次メッシュコードリスト | — | — | [FR-001](#fr-001-標高タイル事前取得) / [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-008](#fr-008-per-mesh-csv-統合) / [FR-014](#fr-014-広域結合解析オーケストレーション) | [日本の国土にかかる第1次地域区画](../ref/SOURCES.md#日本の国土にかかる第1次地域区画)を参照し、ベースラインとして本システムで用意する。[FR-008](#fr-008-per-mesh-csv-統合) では `expected_count` 算出基準として使用する |
 | 5 | 標高タイル（ローカルキャッシュ） | `$DATA_DIR/tiles/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` | [FR-001](#fr-001-標高タイル事前取得) | [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-014](#fr-014-広域結合解析オーケストレーション) | |
 | 6 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) / [FR-022](#fr-022-コル充足判定) | |
-| 7 | コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 一時ファイル。ファイル名: `$DATA_DIR/results/key_col_unresolved_peaks-<N>.csv`（N = 生成段階タグ：3×3 後は `-3`、4×4 後は `-4`） | [FR-022](#fr-022-コル充足判定) | [FR-014](#fr-014-広域結合解析オーケストレーション) | FR-022 が各段階で生成し、FR-023 の制御により FR-014 呼び出し時にパスとして渡す |
+| 7 | コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 一時ファイル。ファイル名: `$DATA_DIR/results/key_col_unresolved_peaks-<N>.csv`（N = 生成段階タグ：3×3 後は `-3`、4×4 後は `-4`） | [FR-022](#fr-022-コル充足判定) | [FR-014](#fr-014-広域結合解析オーケストレーション) / [FR-023](#fr-023-解析パイプライン制御) | FR-022 が各段階で生成し、FR-023 の制御により FR-014 呼び出し時にパスとして渡す |
 | 8 | per-mesh ピーク候補 CSV | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/<解析識別子>.csv`（通常: `3-<meshcode>.csv`、広域: `<N>-<meshcode>-<コーナー>.csv`） | [FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) | [FR-008](#fr-008-per-mesh-csv-統合) | カラム定義は FR-007 出力仕様参照。通常 per-mesh と広域 per-mesh はファイル名のプレフィックスで区別する。[FR-008](#fr-008-per-mesh-csv-統合) は `$DATA_DIR/results/csv/` 配下を読み込む（読み込み範囲は `対象1次メッシュコードリスト` で制御） |
 | 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
 | 10 | 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
