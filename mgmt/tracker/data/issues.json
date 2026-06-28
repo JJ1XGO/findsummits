@@ -5015,14 +5015,31 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "SRS に「出力ファイルを手動削除することで再実行できる（詳細は HLD 参照）」程度の一文を追加する方向を推奨する。完全 HLD 委任とする場合は FR-017 §実行タイミングに『再実行はHLD参照』の一文を追記する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T14:26:19",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3"
+        },
+        {
+          "date": "2026-06-28T14:27:30",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "FR-017 §実行タイミングに『N03 ZIP 差し替え時は出力ファイル群を削除して再実行（操作詳細は HLD 参照）』を追記した。",
+          "session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3"
+        }
+      ]
     }
   ]
 }
