@@ -959,7 +959,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | match_status | フィーチャ |
 |---|---|
-| matched | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
+| matched | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット） |
 | new | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル） |
 | dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット）※ 既存 SOTA サミット Point とピーク → SOTA サミット LineString は、当該 delete判定ゾーンに含まれる削除候補サミットの数だけ生成される（複数可） |
 | unmatched | Point（既存 SOTA サミット）のみ。どのピークにも従属しない孤立サミットのため、ピーク Point・コル・ポリゴン・LineString は紐付かない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。ビューアの「要確認」カテゴリで表示） |
