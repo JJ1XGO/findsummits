@@ -70,12 +70,13 @@
      - [6.2.2 申請書 XLSX](#622-申請書-xlsx)
      - [6.2.3 サミット一覧（申請内容反映版）](#623-サミット一覧申請内容反映版)
      - [6.2.4 標高地形図](#624-標高地形図)
-     - [6.2.5 GeoJSON・作業用 HTML ビューア](#625-geojson作業用-html-ビューア)
-     - [6.2.6 サミット一覧（突合後）](#626-サミット一覧突合後)
-     - [6.2.7 公開用 HTML（閲覧専用・ブラウザダウンロード）](#627-公開用-html閲覧専用ブラウザダウンロード)
-     - [6.2.8 申請エビデンス ZIP（パッケージング仕様）](#628-申請エビデンス-zipパッケージング仕様)
-     - [6.2.9 地理院標高タイル](#629-地理院標高タイル)
-     - [6.2.10 SOTA サミットリスト CSV](#6210-sota-サミットリスト-csv)
+     - [6.2.5 突合済み統合 GeoJSON](#625-突合済み統合-geojson)
+     - [6.2.6 作業用 HTML ビューア](#626-作業用-html-ビューア)
+     - [6.2.7 サミット一覧（突合後）](#627-サミット一覧突合後)
+     - [6.2.8 公開用 HTML（閲覧専用・ブラウザダウンロード）](#628-公開用-html閲覧専用ブラウザダウンロード)
+     - [6.2.9 申請エビデンス ZIP（パッケージング仕様）](#629-申請エビデンス-zipパッケージング仕様)
+     - [6.2.10 地理院標高タイル](#6210-地理院標高タイル)
+     - [6.2.11 SOTA サミットリスト CSV](#6211-sota-サミットリスト-csv)
 7. [ユーザー入力と内部データ](#7-ユーザー入力と内部データ)
    - [7.1 ユーザー入力](#71-ユーザー入力)
      - [7.1.1 ユーザー入力一覧](#711-ユーザー入力一覧)
@@ -309,7 +310,7 @@
 | 1次メッシュコードリスト | ユーザー入力 | 任意 | 日本全土１次メッシュコードリスト | [7.1.2.1 参照](#7121-1次メッシュコードリスト) |
 | 日本全土１次メッシュコードリスト | 内部データ | 必須 | — | [7.2.1 参照](#721-内部データ一覧) |
 | 北方領土除外タイルリスト | 内部データ | 必須 | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成。詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
-| 地理院標高タイル | 外部I/F | 必須 | — | [6.2.9 参照](#629-地理院標高タイル) |
+| 地理院標高タイル | 外部I/F | 必須 | — | [6.2.10 参照](#6210-地理院標高タイル) |
 
 **出力**:
 
@@ -856,7 +857,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・不備フラグ metadata を含む |
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・不備フラグ metadata を含む |
 | サミット一覧（突合後）（`merged_summit.xlsx`） | 内部データ | XLSX | バッチ生成時点の確認用。HTML ビューア編集内容は反映しない |
 
 **説明**:
@@ -1056,13 +1057,13 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | FR-009 出力の中心データ |
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | 必須 | — | FR-009 出力の中心データ |
 
 **出力**:
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 作業用 HTML ビューア（`merged_viewer.html`） | 内部データ | 静的 HTML | — |
+| 作業用 HTML ビューア（`merged_viewer.html`） | 外部I/F | HTML | — |
 
 **説明**:
 
@@ -1087,18 +1088,18 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 公開用 HTML ファイル | 外部I/F | HTML | ブラウザダウンロード。閲覧専用・自己完結型。詳細は [6.2.7](#627-公開用-html閲覧専用ブラウザダウンロード) 参照 |
+| 公開用 HTML ファイル | 外部I/F | HTML | ブラウザダウンロード。閲覧専用・自己完結型。詳細は [6.2.8](#628-公開用-html閲覧専用ブラウザダウンロード) 参照 |
 
 **説明**:
 
   - 公開用は閲覧専用（編集 UI なし・XLSX エクスポートなし・localStorage 不使用）
   - **提供機能**: 公開用は [FR-019](#fr-019-html-ビューア機能仕様) が定義する閲覧系機能のうち、**編集 UI・エクスポート機能・localStorage を除く全て**を含む（地図表示・マーカー・背景タイル切替・検索・カテゴリ別表示フィルター・等高線/基準点/1次メッシュ各レイヤー・popup・ピーク↔Keyコル相互ジャンプ等）。各フィーチャの「全データ」折りたたみ popup も作業用と同様に含む（公開用での内部解析値の露出を許容する）
   - **メタデータ表示**: 埋め込みデータの `metadata`（`summitslist_date`・`gsi_tile_latest_date`・`generated_at`）を引き継ぎ、[FR-019](#fr-019-html-ビューア機能仕様) と同様に基準日等を画面表示する（UTC 付記）
-  - **帰属表示**: [UR-011](10_URD.md#ur-011) に従い、公開用テンプレートにも [FR-019](#fr-019-html-ビューア機能仕様) と同等の地図帰属表示（`© 国土地理院` 常時表示＋OSM/OpenTopoMap 各選択時の attribution 併記＋「加工して作成」の旨の明示）を備える。詳細は [6.2.7](#627-公開用-html閲覧専用ブラウザダウンロード) 参照
+  - **帰属表示**: [UR-011](10_URD.md#ur-011) に従い、公開用テンプレートにも [FR-019](#fr-019-html-ビューア機能仕様) と同等の地図帰属表示（`© 国土地理院` 常時表示＋OSM/OpenTopoMap 各選択時の attribution 併記＋「加工して作成」の旨の明示）を備える。詳細は [6.2.8](#628-公開用-html閲覧専用ブラウザダウンロード) 参照
   - localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージしたうえで、公開用テンプレートに GeoJSON データを埋め込み、自己完結型 HTML を生成する。マージ対象は **エクスポート時点のビューア表示状態のスナップショット**（localStorage を直接読むのではなく、[FR-019](#fr-019-html-ビューア機能仕様) の引き継ぎ確認を経た現在の編集状態）とする
   - ユーザーはダウンロードした HTML を GitHub Pages 等の静的ホスティングに配置することで外部公開できる
   - 公開用 HTML に使用する別テンプレート（閲覧専用）をソースコードに同梱する（詳細は HLD）
-  - 詳細仕様は [6.2.7 公開用 HTML](#627-公開用-html閲覧専用ブラウザダウンロード) を参照
+  - 詳細仕様は [6.2.8 公開用 HTML](#628-公開用-html閲覧専用ブラウザダウンロード) を参照
 
 ---
 
@@ -1116,7 +1117,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | 作業用 HTML ビューアに埋め込み済み（[FR-013](#fr-013-html-ビューア生成) 出力） |
-| 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.2.5](#625-geojson作業用-html-ビューア) 参照）。ブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
+| 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.2.6](#626-作業用-html-ビューア) 参照）。ブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 | 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | — | 等高線オーバーレイ／基準点レイヤー ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 
 **出力**:
@@ -1428,12 +1429,13 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 2 | 申請書 XLSX | 出力 | XLSX | [FR-011](#fr-011-申請書-xlsx-生成) | [6.2.2 参照](#622-申請書-xlsx) |
 | 3 | サミット一覧（申請内容反映版）| 出力 | XLSX | [FR-012](#fr-012-サミット一覧申請内容反映版生成) | [6.2.3 参照](#623-サミット一覧申請内容反映版) |
 | 4 | 標高地形図 | 出力 | PNG | [FR-015](#fr-015-標高地形図出力) | [6.2.4 参照](#624-標高地形図) |
-| 5 | GeoJSON・作業用 HTML ビューア | 出力 | GeoJSON / HTML | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-013](#fr-013-html-ビューア生成) | [6.2.5 参照](#625-geojson作業用-html-ビューア) |
-| 6 | サミット一覧（突合後）| 出力 | XLSX | [FR-009](#fr-009-sotaリスト突合match_status-判定) | [6.2.6 参照](#626-サミット一覧突合後) |
-| 7 | 公開用 HTML（閲覧専用・ブラウザダウンロード）| 出力 | HTML | [FR-020](#fr-020-公開用-html-ビューア生成) | [6.2.7 参照](#627-公開用-html閲覧専用ブラウザダウンロード) |
-| 8 | 申請エビデンス ZIP（パッケージング仕様）| 出力 | ZIP | [FR-021](#fr-021-申請エビデンス-zip-生成) | [6.2.8 参照](#628-申請エビデンス-zipパッケージング仕様) |
-| 9 | 地理院標高タイル | 入力 | PNG（RGB エンコード） | [FR-001](#fr-001-標高タイル事前取得) / [FR-002](#fr-002-dem-階層フォールバック) | [6.2.9 参照](#629-地理院標高タイル) |
-| 10 | SOTA サミットリスト CSV | 入力 | CSV | [FR-009](#fr-009-sotaリスト突合match_status-判定) | [6.2.10 参照](#6210-sota-サミットリスト-csv) |
+| 5 | 突合済み統合 GeoJSON | 出力 | GeoJSON | [FR-009](#fr-009-sotaリスト突合match_status-判定) | [6.2.5 参照](#625-突合済み統合-geojson) |
+| 6 | 作業用 HTML ビューア | 出力 | HTML | [FR-013](#fr-013-html-ビューア生成) | [6.2.6 参照](#626-作業用-html-ビューア) |
+| 7 | サミット一覧（突合後）| 出力 | XLSX | [FR-009](#fr-009-sotaリスト突合match_status-判定) | [6.2.7 参照](#627-サミット一覧突合後) |
+| 8 | 公開用 HTML（閲覧専用・ブラウザダウンロード）| 出力 | HTML | [FR-020](#fr-020-公開用-html-ビューア生成) | [6.2.8 参照](#628-公開用-html閲覧専用ブラウザダウンロード) |
+| 9 | 申請エビデンス ZIP（パッケージング仕様）| 出力 | ZIP | [FR-021](#fr-021-申請エビデンス-zip-生成) | [6.2.9 参照](#629-申請エビデンス-zipパッケージング仕様) |
+| 10 | 地理院標高タイル | 入力 | PNG（RGB エンコード） | [FR-001](#fr-001-標高タイル事前取得) / [FR-002](#fr-002-dem-階層フォールバック) | [6.2.10 参照](#6210-地理院標高タイル) |
+| 11 | SOTA サミットリスト CSV | 入力 | CSV | [FR-009](#fr-009-sotaリスト突合match_status-判定) | [6.2.11 参照](#6211-sota-サミットリスト-csv) |
 
 ### 6.2 外部I/F詳細仕様
 
@@ -1498,27 +1500,26 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 （標高地形図サンプル画像は実装段階で `docs/figures/` に配置予定）
 
-#### 6.2.5 GeoJSON・作業用 HTML ビューア
-
-**突合済み統合 GeoJSON**（中心データ）
+#### 6.2.5 突合済み統合 GeoJSON
 
 | 項目 | 仕様 |
 |---|---|
-| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心データ。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#626-サミット一覧突合後)）も生成） |
+| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心データ。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#627-サミット一覧突合後)）も生成） |
 | ファイル | `$DATA_DIR/results/merged_summit.geojson` |
 | 座標参照系 | WGS84（EPSG:4326） |
 | メタデータ | トップレベルに `metadata` オブジェクトを付与。定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（`summitslist_date` / `generated_at` / `gsi_tile_latest_date` / `attribution` / `source_url` / `license_url`） |
 | フィーチャ構成 | [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（Point / Polygon / LineString 全フィーチャ含む） |
 | `rationale` プロパティ | new / dominant ピーク Point に ※2 フォーマット、match_status=delete サミット Point に ※4 フォーマット、`is_band_change_candidate=true` の matched ピーク Point に ※5 フォーマットで付与。HTML ビューアで編集可能。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定) |
 
-**作業用 HTML ビューア**（`merged_viewer.html`）
+#### 6.2.6 作業用 HTML ビューア
 
 画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)
 
-> ※ 画面サンプル（モックアップ）は UI を確定させるためのプロトタイプ（紙芝居レベル）であり、逐次更新される。正式仕様は §6.2.5・[6.2.7](#627-公開用-html閲覧専用ブラウザダウンロード)・[FR-019](#fr-019-html-ビューア機能仕様)、実装具体値（配色・サイズ・パラメータ等）は HLD/LLD が定める。モックアップは権威ではなく仕様と同期させる参照物である（位置付けの詳細: [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md)）。
+> ※ 画面サンプル（モックアップ）は UI を確定させるためのプロトタイプ（紙芝居レベル）であり、逐次更新される。正式仕様は §6.2.6・[6.2.8](#628-公開用-html閲覧専用ブラウザダウンロード)・[FR-019](#fr-019-html-ビューア機能仕様)、実装具体値（配色・サイズ・パラメータ等）は HLD/LLD が定める。モックアップは権威ではなく仕様と同期させる参照物である（位置付けの詳細: [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md)）。
 
 | 項目 | 仕様 |
 |---|---|
+| 生成 FR | [FR-013](#fr-013-html-ビューア生成) |
 | ファイル | `$DATA_DIR/results/merged_viewer.html` |
 | 用途 | 山岳名入力・目視確認・申請書 / 申請エビデンス / 公開用 HTML のエクスポートを行うローカル作業用ビューア |
 | HTML テンプレート | 作業用テンプレートファイル（詳細は HLD） |
@@ -1527,7 +1528,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | GeoJSON 参照方式 | HTML 内に JavaScript 変数として埋め込み（外部ファイル参照なし） |
 | 動作環境 | `file://` で直接開くだけで動作（HTTP サーバ不要） |
 
-#### 6.2.6 サミット一覧（突合後）
+#### 6.2.7 サミット一覧（突合後）
 
 | 項目 | 仕様 |
 |---|---|
@@ -1538,9 +1539,9 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
 | カラム | [FR-012 参照](#fr-012-サミット一覧申請内容反映版生成)（カラム構成は同一） |
 
-#### 6.2.7 公開用 HTML（閲覧専用・ブラウザダウンロード）
+#### 6.2.8 公開用 HTML（閲覧専用・ブラウザダウンロード）
 
-画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)（作業用ビューアと共通のモックアップ。公開用は編集 UI・XLSX エクスポートなし）。モックアップの位置付け（UI 確定用プロトタイプ・正は仕様書）は [6.2.5](#625-geojson作業用-html-ビューア) 注記および [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md) を参照
+画面サンプル: [`docs/mockup/viewer_mockup.html`](mockup/viewer_mockup.html)（作業用ビューアと共通のモックアップ。公開用は編集 UI・XLSX エクスポートなし）。モックアップの位置付け（UI 確定用プロトタイプ・正は仕様書）は [6.2.6](#626-作業用-html-ビューア) 注記および [ADR-SRS-039](decisions/ADR-SRS-039-mockup-positioning-and-spec-reflection.md) を参照
 
 | 項目 | 仕様 |
 |---|---|
@@ -1553,7 +1554,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 帰属表示 | `© 国土地理院`（リンク先: `https://maps.gsi.go.jp/`）を基図選択によらず常時表示。OSM 選択時は `© OpenStreetMap contributors`、OpenTopoMap 選択時は `© OpenTopoMap contributors` を併記。「加工して作成」の旨を明示する（[UR-011](10_URD.md#ur-011)） |
 | 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用） |
 
-#### 6.2.8 申請エビデンス ZIP（パッケージング仕様）
+#### 6.2.9 申請エビデンス ZIP（パッケージング仕様）
 
 | 項目 | 仕様 |
 |---|---|
@@ -1565,14 +1566,14 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル名 | 内容 | 仕様参照 |
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版） | [6.2.3](#623-サミット一覧申請内容反映版) |
-| `new.geojson` | 新規ピーク候補フィーチャ（`match_status="new"` の Point・Polygon・LineString） | [6.2.5](#625-geojson作業用-html-ビューア) より抽出 |
-| `dominant.geojson` | 差替候補ピークおよびその従属サミット（`match_status="dominant"` ピーク + 対応する `match_status="delete"` サミット） | [6.2.5](#625-geojson作業用-html-ビューア) より抽出 |
-| `changed.geojson` | バンド変更候補（`match_status="matched"` かつ `is_band_change_candidate=true` のピーク + 対応サミット） | [6.2.5](#625-geojson作業用-html-ビューア) より抽出 |
-| `unchanged.geojson` | 変更なし既存サミット（`match_status="matched"` かつ `is_band_change_candidate=false` のピーク + 対応サミット） | [6.2.5](#625-geojson作業用-html-ビューア) より抽出 |
+| `new.geojson` | 新規ピーク候補フィーチャ（`match_status="new"` の Point・Polygon・LineString） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
+| `dominant.geojson` | 差替候補ピークおよびその従属サミット（`match_status="dominant"` ピーク + 対応する `match_status="delete"` サミット） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
+| `changed.geojson` | バンド変更候補（`match_status="matched"` かつ `is_band_change_candidate=true` のピーク + 対応サミット） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
+| `unchanged.geojson` | 変更なし既存サミット（`match_status="matched"` かつ `is_band_change_candidate=false` のピーク + 対応サミット） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
 
 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）。
 
-#### 6.2.9 地理院標高タイル
+#### 6.2.10 地理院標高タイル
 
 | 項目 | 仕様 |
 |---|---|
@@ -1583,7 +1584,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 無効値（NODATA）の定義 | R=128, G=0, B=0 のピクセルは標高値なし（海・データ未整備等）を示し、-9999.0m として扱う |
 | タイル URL | ベース: `https://cyberjapandata.gsi.go.jp/xyz/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` |
 
-#### 6.2.10 SOTA サミットリスト CSV
+#### 6.2.11 SOTA サミットリスト CSV
 
 | 項目 | 仕様 |
 |---|---|
@@ -1718,10 +1719,10 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 外部システム | 用途 |
 |---|---|
 | 国土地理院 標高タイル配信（`cyberjapandata.gsi.go.jp`） | DEM5a/5b/5c/DEM10b タイル取得（[FR-001](#fr-001-標高タイル事前取得)） |
-| SOTA データベース（`sotadata.org.uk`） | サミットリスト CSV 取得（[6.2.10](#6210-sota-サミットリスト-csv)） |
+| SOTA データベース（`sotadata.org.uk`） | サミットリスト CSV 取得（[6.2.11](#6211-sota-サミットリスト-csv)） |
 | 国土数値情報 N03（国土交通省） | 行政区域データ取得（[FR-017](#fr-017-n03-行政区域前処理データ準備)） |
-| 地図タイル配信（OSM・OpenTopoMap） | HTML ビューアの背景地図（[6.2.5](#625-geojson作業用-html-ビューア)） |
-| CDN（Leaflet・SheetJS） | HTML ビューアの地図・XLSX エクスポートライブラリ（[6.2.5](#625-geojson作業用-html-ビューア)） |
+| 地図タイル配信（OSM・OpenTopoMap） | HTML ビューアの背景地図（[6.2.6](#626-作業用-html-ビューア)） |
+| CDN（Leaflet・SheetJS） | HTML ビューアの地図・XLSX エクスポートライブラリ（[6.2.6](#626-作業用-html-ビューア)） |
 
 ---
 
