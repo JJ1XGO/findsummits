@@ -1088,6 +1088,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | 作業用 HTML ビューアに埋め込み済み |
 | localStorage 編集内容 | 内部データ | 任意 | 初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート） | [FR-019](#fr-019-html-ビューア機能仕様) が管理。未編集（localStorage 空）の場合は初期値を使用する |
+| 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.2.8](#628-公開用-html閲覧専用ブラウザダウンロード) 参照）。公開用 HTML 表示時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
+| 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | — | 等高線オーバーレイ／基準点レイヤー ON 時に公開用 HTML 表示時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 
 **出力**:
 
@@ -1552,12 +1554,14 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|
 | 生成方式 | 作業用 HTML ビューア（`merged_viewer.html`）の「公開用 HTML」ボタンによるブラウザダウンロード（Python バッチは生成しない） |
 | 用途 | GitHub Pages 等の静的ホスティングによる外部公開（申請先への証跡共有等） |
+| ファイル名 | `sota_viewer_YYYYMMDD.html`（具体的な命名規則は HLD で定義） |
 | HTML テンプレート | 閲覧専用テンプレートファイル（詳細は HLD） |
 | 使用ライブラリ | Leaflet（地図・CDN 経由） |
+| 背景タイル | 国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap（切り替え可能。既定: 国土地理院標準地図） |
 | 提供機能 | [FR-019](#fr-019-html-ビューア機能仕様) の閲覧系機能のうち編集 UI・エクスポート・localStorage を除く全て（「全データ」popup を含む）。詳細は [FR-020](#fr-020-公開用-html-ビューア生成) 参照 |
 | メタデータ表示 | 埋め込み `metadata` から SOTA サミットリスト基準日・地理院タイル更新日（いずれも UTC）・解析実行日時を画面表示 |
 | 帰属表示 | `© 国土地理院`（リンク先: `https://maps.gsi.go.jp/`）を基図選択によらず常時表示。OSM 選択時は `© OpenStreetMap contributors`、OpenTopoMap 選択時は `© OpenTopoMap contributors` を併記。「加工して作成」の旨を明示する（[UR-011](10_URD.md#ur-011)） |
-| 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用） |
+| 特徴 | 自己完結型（GeoJSON 埋め込み・編集 UI なし・XLSX エクスポートなし・localStorage 不使用）。地図表示は Leaflet（CDN 経由）および各タイルサーバーへの疎通を要する（オフライン環境では地図タイル表示不可） |
 
 #### 6.2.9 申請エビデンス ZIP（パッケージング仕様）
 
