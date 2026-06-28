@@ -1581,11 +1581,11 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 ユーザーがシステムに提供するデータ。コマンドライン引数・手動配置ファイル・ブラウザ入力フォームを含む。FR の入出力テーブル「データ名」セルは以下で定義した名称を使用する（[ADR-SRS-016 規約](decisions/ADR-SRS-016-data-classification-external-user-internal.md) 参照）。
 
-| 入力名 | 提供方法 / 形態 | 使用 FR | 補足 |
-|---|---|---|---|
-| 1次メッシュコードリスト | コマンドライン引数（単一コードまたはファイルパス） | [FR-001](#fr-001-標高タイル事前取得)・[FR-004](#fr-004-33メッシュ結合解析オーケストレーション)・[FR-008](#fr-008-per-mesh-csv-統合)・[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [7.1.2.1 参照](#7121-1次メッシュコードリスト) |
-| HTML ビューア上のユーザー入力 | ブラウザ入力フォーム（山岳名・rationale） | [FR-019](#fr-019-html-ビューア機能仕様) | [7.1.2.2 参照](#7122-html-ビューア上のユーザー入力) |
-| N03 行政区域 ZIP | ユーザー手動ダウンロード・`$DATA_DIR/ref/` 直下に配置 | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [7.1.2.3 参照](#7123-n03-行政区域-zip) |
+| No. | 入力名 | 提供方法 / 形態 | 使用 FR | 補足 |
+|---|---|---|---|---|
+| 1 | N03 行政区域 ZIP | ユーザー手動ダウンロード・`$DATA_DIR/ref/` 直下に配置 | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [7.1.2.3 参照](#7123-n03-行政区域-zip) |
+| 2 | 1次メッシュコードリスト | コマンドライン引数（単一コードまたはファイルパス） | [FR-001](#fr-001-標高タイル事前取得)・[FR-004](#fr-004-33メッシュ結合解析オーケストレーション)・[FR-008](#fr-008-per-mesh-csv-統合)・[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [7.1.2.1 参照](#7121-1次メッシュコードリスト) |
+| 3 | HTML ビューア上のユーザー入力 | ブラウザ入力フォーム（山岳名・rationale） | [FR-019](#fr-019-html-ビューア機能仕様) | [7.1.2.2 参照](#7122-html-ビューア上のユーザー入力) |
 
 #### 7.1.2 ユーザー入力詳細仕様
 
@@ -1625,20 +1625,20 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 
 内部トランザクション（特定の解析処理のスコープ内でのみ有効で、処理完了時に破棄される値。永続化されず後続フェーズや他の解析からは参照されない）は本一覧の対象外。各 FR の入出力欄に発生元 FR を明示する（根拠: [ADR-SRS-017](decisions/ADR-SRS-017-internal-transaction-category.md)）。
 
-| データ名 | 保存先 / 形態 | 生成 FR | 参照 FR | 補足 |
-|---|---|---|---|---|
-| per-mesh ピーク候補 CSV | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/<解析識別子>.csv`（通常: `3-<meshcode>.csv`、広域: `<N>-<meshcode>-<コーナー>.csv`） | [FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) | [FR-008](#fr-008-per-mesh-csv-統合) | カラム定義は FR-007 出力仕様参照。通常 per-mesh と広域 per-mesh はファイル名のプレフィックスで区別する。[FR-008](#fr-008-per-mesh-csv-統合) は `$DATA_DIR/results/csv/` 配下を読み込む（読み込み範囲は `対象1次メッシュコードリスト` で制御） |
-| per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
-| 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-022](#fr-022-コル充足判定) | |
-| 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
-| コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 一時ファイル。ファイル名: `key_col_unresolved_peaks-<N>.csv`（N = 生成段階タグ：3×3 後は `-3`、4×4 後は `-4`） | [FR-022](#fr-022-コル充足判定) | [FR-014](#fr-014-広域結合解析オーケストレーション) | FR-022 が各段階で生成し、FR-023 の制御により FR-014 呼び出し時にパスとして渡す |
-| 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
-| 日本全土１次メッシュコードリスト | — | — | [FR-001](#fr-001-標高タイル事前取得) / [FR-008](#fr-008-per-mesh-csv-統合) | [日本の国土にかかる第1次地域区画](../ref/SOURCES.md#日本の国土にかかる第1次地域区画)を参照し、ベースラインとして本システムで用意する。[FR-008](#fr-008-per-mesh-csv-統合) では `expected_count` 算出基準として使用する |
-| 標高タイル（ローカルキャッシュ） | `$DATA_DIR/tiles/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` | [FR-001](#fr-001-標高タイル事前取得) | [FR-002](#fr-002-dem-階層フォールバック) / [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) | |
-| N03 前処理済み地域 GeoJSON | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | 詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
-| N03 前処理済み市区町村 GeoJSON | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | 詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
-| 北方領土除外タイルリスト | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-001](#fr-001-標高タイル事前取得) | 詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
-| localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-019](#fr-019-html-ビューア機能仕様) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映 |
+| No. | データ名 | 保存先 / 形態 | 生成 FR | 参照 FR | 補足 |
+|---|---|---|---|---|---|
+| 1 | N03 前処理済み地域 GeoJSON | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | 詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
+| 2 | N03 前処理済み市区町村 GeoJSON | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | 詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
+| 3 | 北方領土除外タイルリスト | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-001](#fr-001-標高タイル事前取得) | 詳細仕様は [7.2.2.1](#7221-n03-前処理済みファイル詳細仕様) 参照 |
+| 4 | 日本全土１次メッシュコードリスト | — | — | [FR-001](#fr-001-標高タイル事前取得) / [FR-008](#fr-008-per-mesh-csv-統合) | [日本の国土にかかる第1次地域区画](../ref/SOURCES.md#日本の国土にかかる第1次地域区画)を参照し、ベースラインとして本システムで用意する。[FR-008](#fr-008-per-mesh-csv-統合) では `expected_count` 算出基準として使用する |
+| 5 | 標高タイル（ローカルキャッシュ） | `$DATA_DIR/tiles/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` | [FR-001](#fr-001-標高タイル事前取得) | [FR-002](#fr-002-dem-階層フォールバック) / [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) | |
+| 6 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-022](#fr-022-コル充足判定) | |
+| 7 | コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 一時ファイル。ファイル名: `key_col_unresolved_peaks-<N>.csv`（N = 生成段階タグ：3×3 後は `-3`、4×4 後は `-4`） | [FR-022](#fr-022-コル充足判定) | [FR-014](#fr-014-広域結合解析オーケストレーション) | FR-022 が各段階で生成し、FR-023 の制御により FR-014 呼び出し時にパスとして渡す |
+| 8 | per-mesh ピーク候補 CSV | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/<解析識別子>.csv`（通常: `3-<meshcode>.csv`、広域: `<N>-<meshcode>-<コーナー>.csv`） | [FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) | [FR-008](#fr-008-per-mesh-csv-統合) | カラム定義は FR-007 出力仕様参照。通常 per-mesh と広域 per-mesh はファイル名のプレフィックスで区別する。[FR-008](#fr-008-per-mesh-csv-統合) は `$DATA_DIR/results/csv/` 配下を読み込む（読み込み範囲は `対象1次メッシュコードリスト` で制御） |
+| 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
+| 10 | 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
+| 11 | 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
+| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-019](#fr-019-html-ビューア機能仕様) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映 |
 
 #### 7.2.2 内部データ詳細仕様
 
