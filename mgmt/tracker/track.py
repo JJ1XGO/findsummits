@@ -235,7 +235,10 @@ def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
     for ri, d in enumerate(dates, 2):
         ds = d.isoformat()
         cnt_reg  = sum(1 for x in items if x.get(date_field)     and x[date_field]     <= ds)
-        cnt_res  = sum(1 for x in items if x.get("resolved_date") and x["resolved_date"] <= ds)
+        cnt_res  = sum(1 for x in items if (
+            (x.get("resolved_date") and x["resolved_date"] <= ds) or
+            (x.get("status") == "却下" and x.get("verified_date") and x["verified_date"] <= ds)
+        ))
         cnt_ver  = sum(1 for x in items if x.get("verified_date") and x["verified_date"] <= ds)
         ws.cell(row=ri, column=1, value=d.isoformat())
         ws.cell(row=ri, column=2, value=cnt_reg)
@@ -257,6 +260,7 @@ def write_convergence_sheet(ws, items, date_field, hdr_cell, border, to_serial):
     for _label, col, color in [("累計登録", 2, "FF0000"), ("対応累計", 3, "4472C4"), ("確認累計", 4, "70AD47")]:
         yvals = Reference(ws, min_col=col, min_row=1, max_row=len(dates) + 1)
         s = Series(yvals, title_from_data=True)
+        s.smooth = False
         s.graphicalProperties.line.solidFill = color
         s.graphicalProperties.line.width     = 20000
         s.cat = cats_src
@@ -481,6 +485,8 @@ def bug_verify(args):
         print(f"エラー: {args.id} が見つかりません"); sys.exit(1)
     today = date.today().isoformat()
     bug["verified_date"] = today
+    if not bug.get("resolved_date"):
+        bug["resolved_date"] = today
     append_history(bug, args.actor, bug["status"], "解決済", f"[解決確認] {args.comment or ''}".strip())
     bug["status"] = "解決済"
     save(BUG_DATA, data)
@@ -808,6 +814,8 @@ def issue_verify(args):
         print(f"エラー: {args.id} が見つかりません"); sys.exit(1)
     today = date.today().isoformat()
     issue["verified_date"] = today
+    if not issue.get("resolved_date"):
+        issue["resolved_date"] = today
     append_history(issue, args.actor, issue["status"], "解決済", f"[解決確認] {args.comment or ''}".strip())
     issue["status"] = "解決済"
     save(ISSUE_DATA, data)

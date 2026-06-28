@@ -2524,7 +2524,7 @@
       "assignee": null,
       "resolution": null,
       "notes": "FR-017 レビュー時にユーザーから「ADR-URD-005 の主張が疑わしい」との指摘あり。論理的には『取り逃しタイル ≒ 海岸線付近 ≒ 標高低 = サミット候補にならない』だが、実データ確認が必要。",
-      "resolved_date": null,
+      "resolved_date": "2026-06-05",
       "verified_date": "2026-06-05",
       "history": [
         {
@@ -3702,7 +3702,7 @@
       "assignee": "Opus",
       "resolution": "全国一括突合を運用前提に確定（ADR-SRS-028）。FR-010 削除・FR-009 メッシュリスト入力削除・is_out_of_range_summit/is_dem_invalid_summit 削除を SRS に反映。残る不備フラグは is_unmatched_summit/is_area_incomplete/is_key_col_unresolved の 3 つに限定。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-23",
       "verified_date": "2026-06-23",
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
       "history": [
@@ -3731,7 +3731,7 @@
       "assignee": "Opus",
       "resolution": "全サミット評価完了後に不備フラグを一括検査し、いずれか true なら必ず出力してから停止する方式に統一。SRS FR-009 の異常終了制御セクションを更新済み。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-23",
       "verified_date": "2026-06-23",
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
       "history": [
@@ -3760,7 +3760,7 @@
       "assignee": "Opus",
       "resolution": "per-mesh: 3-<meshcode>_activation.geojson → 3-<meshcode>.geojson、merged: merged_activation.geojson → merged_peak.geojson。和名も更新（per-mesh アクティベーションゾーン GeoJSON → per-mesh ピーク候補 GeoJSON、統合済みピーク域 GeoJSON → 統合ピーク候補 GeoJSON）。feature_type 値（activation_zone/delete_zone）は据え置き（ADR-SRS-029）。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-23",
       "verified_date": "2026-06-23",
       "created_session_id": "1989f3f4-4881-47d7-8f17-fb473ea8ec8d",
       "history": [
@@ -3789,7 +3789,7 @@
       "assignee": "Sonnet",
       "resolution": "ファイル名をmerged_summit.geojsonに変更（merged_summit.xlsxとペア）。和名を「突合済み統合 GeoJSON」に統一。ADR-SRS-030作成・SRS本文反映・関連ADR整合更新で対応。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-23",
       "verified_date": "2026-06-23",
       "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
       "history": [
@@ -3818,7 +3818,7 @@
       "assignee": "Sonnet",
       "resolution": "2.2.1設定可能項目に「仮サミットコード連番上限」を追加（デフォルトA・許容A〜Z）。連番を01始まり→00始まりへ変更。フォーマット例をA01→A00へ全更新。ADR-SRS-031作成・SRS本文反映で対応。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-23",
       "verified_date": "2026-06-23",
       "created_session_id": "4a422b4c-d3cf-461b-9eb0-2d1404d325c8",
       "history": [
