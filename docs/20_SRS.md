@@ -1295,7 +1295,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 内部データ | 必須 | — | 作業用 HTML ビューアに埋め込み済み |
-| localStorage 編集内容 | 内部データ | 必須 | — | [FR-019](#fr-019-html-ビューア機能仕様) が管理 |
+| localStorage 編集内容 | 内部データ | 任意 | 初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート） | [FR-019](#fr-019-html-ビューア機能仕様) が管理。未編集（localStorage 空）の場合は初期値を使用する |
 
 **出力**:
 
@@ -1311,14 +1311,15 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
 | `new.geojson` | 新規ピーク候補 | peak の `match_status="new"` |
-| `dominant.geojson` | 削除候補ピークおよびその従属サミット | peak の `match_status="dominant"` ＋ 対応する `match_status="delete"` の summit フィーチャ |
+| `dominant.geojson` | 差替候補ピークおよびその従属サミット | peak の `match_status="dominant"` ＋ 対応する `match_status="delete"` の summit フィーチャ |
 | `changed.geojson` | ポイントバンド変更候補 | peak の `match_status="matched"` かつ `is_band_change_candidate=true` ＋ 対応する summit フィーチャ |
 | `unchanged.geojson` | 変更なし既存サミット | peak の `match_status="matched"` かつ `is_band_change_candidate=false` ＋ 対応する summit フィーチャ |
 
   - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）
   - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
-  - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う
+  - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う（localStorage を直接読むのではなく、[FR-019](#fr-019-html-ビューア機能仕様) の引き継ぎ確認を経た現在の編集状態のスナップショットを使用する。[FR-020](#fr-020-公開用-html-ビューア生成) と同方式）
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
+  - `unchanged.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
 
 ---
 
@@ -1337,6 +1338,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 - **対応 UR**: [UR-001](10_URD.md#ur-001), [UR-002](10_URD.md#ur-002), [UR-003](10_URD.md#ur-003), [UR-007](10_URD.md#ur-007)
 - 本ツールの動作前提マシン（物理メモリ 62.72GB + スワップ 39.7GB、詳細は [01_environment.md](01_environment.md)）で動作すること
 - 実測値（9メッシュ最大解析時）: 解析ピーク時 90.8%（≒56.9GB）、スワップ使用あり・完走確認済み
+- ブラウザ内 ZIP 生成（[FR-021](#fr-021-申請エビデンス-zip-生成)）: unchanged.geojson を含む全日本解析の ZIP サイズ目安は未測定（実装後に計測して HLD に反映する）
 
 ### NFR-003: 再現性（決定論的出力）
 
@@ -1549,7 +1551,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 項目 | 仕様 |
 |---|---|
 | 生成方式 | 作業用 HTML ビューア（`merged_viewer.html`）の「申請エビデンス」ボタンによるブラウザダウンロード（[FR-021](#fr-021-申請エビデンス-zip-生成)） |
-| ファイル名 | （HLD で確定） |
+| ファイル名 | `sota_evidence_YYYYMMDD.zip`（`YYYYMMDD` は `metadata.generated_at` の日付部分。完全仕様は HLD に委ねる） |
 
 **同梱ファイル一覧**:
 

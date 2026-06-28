@@ -1,82 +1,165 @@
-# FR-012 spec-panel レビュー対応計画
+# 計画: FR-021 spec-panel 指摘対応
 
 ## Context
 
-`spec-panel` で FR-012（サミット一覧（申請内容反映版）生成）を 4 視点レビューした結果、
-**FR-012 の出力カラム定義と入力（`merged_summit.geojson`）が整合していない**構造的問題と、
-3 件の文言不整合が見つかった。
+spec-panel で FR-021（申請エビデンス ZIP 生成）をレビューした結果、高指摘 2 件・中指摘 4 件・低指摘 1 件が検出された。
+ユーザーが方針を確定済みのため、仕様議論は不要。全 7 件を文書修正として実施する。
 
-最大の論点は、FR-012 が「`merged_summit.geojson` のみから生成（ブラウザ内・FR-013 が
-geojson のみ埋め込む設計）」と「`merged_summit.xlsx`（突合後）とカラム構成を同一にする
-（`docs/20_SRS.md` の §6.5 該当・FR-012 カラム参照）」の 2 要請を負うが、geojson スキーマに
-診断系・行政区域系プロパティが無いため両立していない点。
+主な変更:
 
-ユーザー承認方針: **案A（`merged_summit.geojson` スキーマに不足プロパティを追加し、
-FR-012 が geojson のみで両 XLSX と同一カラムを生成できるようにする）**。情報欠落なし・
-カラム統一維持を優先。
+- UR-005 の「CSV」→「XLSX」（ユーザーが途中で方針転換したが URD 修正が漏れていた）
+- FR-021 入力テーブルの localStorage 必須/任意を FR-020 と整合させる
+- 用語・記述の揺れを 5 箇所修正
 
-## 指摘一覧（確定）
+## 対象ファイル
 
-| # | 重要度 | 指摘 | 該当箇所 | 対応 |
-|---|---|---|---|---|
-| ① | 高 | 出力カラムの `col_margin_px`・`analysis_count`・`expected_count`・`municipality`・`dominant_peak_code`・`dominant_peak_dist_m` が geojson スキーマに無く、FR-012 から生成不能 | カラム `docs/20_SRS.md:1266-1277`／geojson スキーマ `docs/20_SRS.md:954-1010` | 案A: geojson スキーマ拡張＋ADR |
-| ② | 中 | `summit_name_jp` 説明「本 FR が geojson_v{N} から取得し格納」が誤り（FR-012 は geojson_v{N} 非アクセス） | `docs/20_SRS.md:1256` | 「FR-009 が格納済みの値を `merged_summit.geojson` から引き継ぐ」へ修正 |
-| ③ | 中 | 概要「山岳名・rationale を反映」と説明「rationale プロパティは含めない」が矛盾 | 概要 `docs/20_SRS.md:1227`・`docs/20_SRS.md:1244` vs 説明 `docs/20_SRS.md:1246` | 概要側を「山岳名（summit_name_jp）を反映」へ修正。rationale は FR-011 側で反映する旨を明記 |
-| ④ | 中 | 出力備考「HTML ビューアからブラウザダウンロード」が §6「単独ダウンロードせず ZIP に同梱」と矛盾 | 備考 `docs/20_SRS.md:1240` vs §6 `docs/20_SRS.md:1113` | 「FR-021 の ZIP に同梱してダウンロード（単独ダウンロードしない）」へ統一 |
+- `docs/10_URD.md` — UR-005 文言修正（指摘②）
+- `docs/20_SRS.md` — FR-021 本体 + §6.18 + NFR の 6 箇所修正（指摘①③④⑤⑥⑦）
+- `docs/decisions/ADR-URD-018-evidence-format-csv-to-xlsx.md` — 新規作成（指摘②の ADR）
+- `mgmt/todo.md` — 7 件追記（完了後に削除）
 
-## タスク
+## タスク一覧
 
-すべて `docs/20_SRS.md` の編集と ADR 新規作成（設計判断は確定済み・機械的整合作業）。実行モデル: **Sonnet**。
+### タスク 0: todo.md 追記（モデル: Sonnet）
 
-### タスク1: tracker 登録（Sonnet）
+`mgmt/todo.md` に指摘①〜⑦を追記する（完了後に順次削除）。
 
-- ISSUE（type=設計）: 「FR-012 出力カラムと `merged_summit.geojson` スキーマの整合（案A: geojson 拡張）」← 指摘①
-- `mgmt/todo.md` に指摘②③④（FR-012 文言整合）を 1 行ずつ追記
-- 登録は `venv/bin/python3 mgmt/tracker/track.py issue add`／`--actor` はモデル名（impersonation 禁止）
+---
 
-### タスク2: ADR 作成（Sonnet）
+### タスク 1: ADR-URD-018 作成（モデル: Sonnet）
 
-- `docs/decisions/ADR-SRS-NNN-merged-geojson-schema-for-revised-xlsx.md`（NNN は `ls docs/decisions/ | grep ADR-SRS` の最大値+1 で実装時採番）
-- Decision: `merged_summit.geojson` スキーマに診断系・行政区域系プロパティを追加し、FR-012 が geojson のみで両 XLSX と同一カラムを生成できるようにする
-- Alternatives: 案B（FR-012 カラム削減）→ 申請有用情報（municipality 等）欠落・カラム統一前提（§6.5）崩壊のため却下
-- Consequences: FR-009 スキーマ拡張・FR-012 生成可能化・FR-013 埋め込み（geojson のみ）は変更不要
+`docs/decisions/ADR-URD-018-evidence-format-csv-to-xlsx.md` を新規作成。
 
-### タスク3: FR-009 geojson スキーマ拡張（Sonnet）
+```markdown
+| 状態 | 採用・未実装 |
+| 決定日 | 2026-06-28 |
 
-`docs/20_SRS.md:954-1010` の各フィーチャ・プロパティ表に追加:
+## Context
 
-- **Point: ピーク**（`954-967`）: `analysis_count`・`expected_count`・`municipality`
-- **Point: コル**（`973-978`）: `col_margin_px`
-- **Point: 既存 SOTA サミット**（`982-991`）: `municipality`・`dominant_peak_code`・`dominant_peak_dist_m`（dominant 従属の delete のみ）
+UR-005 はエビデンスの出力形式として「CSV」を規定していたが、
+実装設計が進む中でサミット一覧（申請内容反映版）XLSX（FR-012）＋
+カテゴリ別 GeoJSON 4 件（FR-021 ZIP 同梱）で同等以上の情報をカバー
+できることが判明し、方針を XLSX+GeoJSON に転換した。
+URD の修正が漏れていたため、本 ADR で根拠を記録しつつ URD を是正する。
 
-留意:
+## Decision
 
-- 各プロパティの定義・適用条件は既存記述（`col_margin_px`=`docs/20_SRS.md:679`、`analysis_count`/`expected_count`=`docs/20_SRS.md:765-766`、`municipality`=`docs/20_SRS.md:861`、`dominant_peak_code`/`dominant_peak_dist_m`=`docs/20_SRS.md:893`）と整合させる
-- FR-009 の `merged_summit.xlsx` カラム定義箇所（§6.5 付近・`docs/20_SRS.md:1436-1458` 周辺）を確認し、geojson と xlsx と FR-012 の三者でカラムが揃うことを担保する
-- ADR-SRS-013（geojson が中心データ・スキーマ正本）への準拠を維持
+UR-005 の出力形式を CSV から「サミット一覧（申請内容反映版）XLSX
+（申請エビデンス ZIP に同梱）」に変更する。
 
-### タスク4: FR-012 文言修正（Sonnet）
+## Alternatives
 
-- 指摘②: `docs/20_SRS.md:1256` の `summit_name_jp` 取得元表現を「FR-009 が格納済み・引き継ぎ」に
-- 指摘③: `docs/20_SRS.md:1227`・`docs/20_SRS.md:1244` の「rationale を反映」を「山岳名を反映」に修正し、`docs/20_SRS.md:1246` と整合
-- 指摘④: `docs/20_SRS.md:1240` の出力備考を §6（`docs/20_SRS.md:1113`）と統一
+- CSV を維持する: CSV は機械可読性が高いが、ユーザーが直接確認するには
+  XLSX の方が視認性が高く、列名・書式が整っている。GeoJSON で座標情報も
+  含むため情報量として CSV に劣らない。
 
-### タスク5: 検証・コミット（Sonnet）
+## Consequences
 
-- `make lint`（警告ゼロ確認）
-- 整合確認（下記）
-- Conventional Commits でコミット（ドキュメント更新のため作業ターン内に commit）
-- ISSUE close（①の決着＝ADR 記録＋SRS 反映）・`mgmt/todo.md` の②③④消化
+- UR-005 の文言を XLSX ベースに更新する
+- FR-012・FR-021 はすでに XLSX+GeoJSON で実装予定のため、コード変更不要
+```
 
-## 検証
+---
 
-- `grep -n "col_margin_px\|analysis_count\|expected_count\|municipality\|dominant_peak_code\|dominant_peak_dist_m" docs/20_SRS.md` で、FR-009 geojson スキーマ（`954-1010`）に 6 プロパティが追加されたことを確認
-- FR-012 出力カラム（`1252-1278`）の全項目が geojson スキーマ上のプロパティ／geometry で賄えることを 1 項目ずつ突き合わせ
-- FR-012 概要・説明・備考に rationale・単独ダウンロードの矛盾が残っていないことを確認
-- `make lint` 警告ゼロ
-- リンク切れ・内部トラッカーID 混入なし（`make lint-md` 検査C）
+### タスク 2: UR-005 修正（モデル: Sonnet）
 
-## tracker 振り分け方針
+`docs/10_URD.md` の UR-005 行を修正。
 
-- 指摘①（仕様議論＋ADR を伴う設計判断）→ **issue（設計）**
-- 指摘②③④（文言の不整合修正・議論不要）→ **`mgmt/todo.md`**（①の SRS 修正と同一ターンで一括処理）
+**変更前**（UR-005 L.45）:
+
+```text
+| UR-005 | 申請内容のエビデンスとなるCSV（突合結果・サミット座標・標高・Keyコル座標・標高・プロミネンス）を生成できること |
+```
+
+**変更後**:
+
+```text
+| UR-005 | 申請内容のエビデンスとなるサミット一覧（申請内容反映版）XLSX（突合結果・サミット座標・標高・Keyコル座標・標高・プロミネンスを含む）を申請エビデンス ZIP に同梱して出力できること（根拠: ADR-URD-018） |
+```
+
+---
+
+### タスク 3: 指摘①〜⑦ を SRS に反映（モデル: Sonnet）
+
+`docs/20_SRS.md` の 6 箇所を修正。
+
+#### 指摘①: localStorage 必須→任意（FR-021 入力テーブル L.1298）
+
+`localStorage 編集内容` 行を以下に変更:
+
+- 必須/任意: `必須` → `任意`
+- デフォルト（任意時）: `—` → `初期値（FR-009 自動生成テンプレート）`
+- 備考: 現行のまま
+
+#### 指摘③: 用語統一（FR-021 同梱ファイル一覧 L.1314）
+
+`dominant.geojson` の内容欄:
+
+- 変更前: `削除候補ピークおよびその従属サミット`
+- 変更後: `差替候補ピークおよびその従属サミット`
+
+#### 指摘⑤: localStorage マージ方式の補足（FR-021 説明 L.1320）
+
+現行:
+
+```text
+GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う
+```
+
+変更後:
+
+```text
+GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う（localStorage を直接読むのではなく、FR-019 の引き継ぎ確認を経た現在の編集状態のスナップショットを使用する。FR-020 と同方式）
+```
+
+#### 指摘⑥: unchanged.geojson の同梱根拠（FR-021 説明欄への追記）
+
+同梱ファイル一覧の箇条書き末尾（L.1321 の後）に追記:
+
+> `unchanged.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
+
+#### 指摘④: §6.18 ZIP ファイル名命名規則（L.1552）
+
+現行:
+
+```text
+| ファイル名 | （HLD で確定） |
+```
+
+変更後:
+
+```text
+| ファイル名 | `sota_evidence_YYYYMMDD.zip`（`YYYYMMDD` は `metadata.generated_at` の日付部分。完全仕様は HLD に委ねる） |
+```
+
+#### 指摘⑦: NFR に ZIP サイズ言及（NFR-002 末尾に追記）
+
+NFR-002（メモリ使用量）の末尾に追記:
+
+> - ブラウザ内 ZIP 生成（FR-021）: unchanged.geojson を含む全日本解析の ZIP サイズ目安は未測定（実装後に計測して HLD に反映する）
+
+---
+
+### タスク 4: make lint + commit（モデル: Sonnet）
+
+```bash
+make lint   # 警告ゼロを確認
+```
+
+確認後、変更ファイルをまとめてコミット:
+
+```text
+docs(srs/urd): FR-021 spec-panel 指摘①〜⑦ 対応（UR-005 CSV→XLSX・localStorage 任意化・用語統一他）
+```
+
+## 検証手順
+
+1. `make lint` 警告ゼロ（lint-md / lint-py / lint-geojson / lint-html）
+2. `grep -n "CSV.*エビデンス\|エビデンス.*CSV" docs/10_URD.md` → 旧表現が残っていないこと
+3. `grep -n "削除候補ピーク" docs/20_SRS.md` → FR-021 箇所が「差替候補ピーク」に変わっていること
+4. FR-021 入力テーブルの localStorage 行が「任意」になっていること（目視）
+
+## モデル推奨
+
+全タスクとも文書の文言修正のみ。**Sonnet 4.6** で十分。
+（既に Sonnet 4.6 で作業中なので `/model` 切替不要）
