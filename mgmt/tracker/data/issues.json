@@ -5052,14 +5052,31 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "ADR-URD-005 §Consequences から FR-003 への言及（行101）と「北方領土タイルは FR-001 で引き続き取得される」記述（行102–104）を削除し、「FR-001 が HTTP リクエストを発行しないことで除外が完結する」旨に書き換える。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T14:44:42",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        },
+        {
+          "date": "2026-06-28T14:45:09",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-URD-005 §Consequences を新方式（FR-001 で HTTP スキップ）に書き換え。FR-003 の言及と旧方式の記述を削除し、ADR-SRS-018 参照付きで FR-001 が除外を完結する旨に更新。",
+          "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        }
+      ]
     },
     {
       "id": "ISSUE-148",

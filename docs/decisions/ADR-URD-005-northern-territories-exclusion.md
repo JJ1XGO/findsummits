@@ -98,10 +98,9 @@ Z15 タイル交差ベースで検証した結果:
 - **FR-017**: preprocess_pref_boundaries.py の責務が拡張される。
   既存出力（`N03-2026_regions.geojson`）に加え、
   `N03-2026_excluded_tiles.txt` および `N03-2026_municipalities.geojson` を追加出力する
-- **FR-003**: C エンジン起動時に `N03-2026_excluded_tiles.txt` の読み込みが追加される
-- **ローカルキャッシュ**: 北方領土タイルは FR-001 で引き続き取得されるが、
-  FR-003 で NODATA 扱いになるため解析結果に影響しない
-  （タイル取得スキップは実装複雑性に対して効果が小さく採用しない）
-- **市区町村名（FR-011 連携）**: FR-017 の拡張で生成する
+- **FR-001**: `N03-2026_excluded_tiles.txt` を読み込み、リスト内の Z15 タイルへの HTTP リクエストを
+  発行しない。これにより北方領土タイルがローカルキャッシュに存在せず、ピーク候補はフェーズ2以降に
+  一切流れ込まない（詳細: [ADR-SRS-018](ADR-SRS-018-northern-territories-skip-at-tile-fetch.md)）
+- **市区町村名（FR-009 連携）**: FR-017 の拡張で生成する
   `N03-2026_municipalities.geojson` は FR-009 での市区町村名判定にも使用する
   （所在地の申請書記載レベルを都道府県から市区町村に向上させる）
