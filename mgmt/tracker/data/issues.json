@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-27",
-    "counter": 138
+    "last_updated": "2026-06-28",
+    "counter": 139
   },
   "issues": [
     {
@@ -4614,6 +4614,26 @@
           "session_id": "1e904419-e66a-4b40-94d6-7c137294638a"
         }
       ]
+    },
+    {
+      "id": "ISSUE-139",
+      "title": "FR-012 出力カラムと merged_summit.geojson スキーマの整合（案A: geojson スキーマ拡張）",
+      "description": "spec-panel FR-012 レビュー（指摘①・高）: FR-012 の出力カラムのうち col_margin_px・analysis_count・expected_count・municipality・dominant_peak_code・dominant_peak_dist_m の6件が merged_summit.geojson スキーマ（FR-009 スキーマ正本）に存在しない。FR-012 はブラウザ内生成で geojson のみを入力とするため、これらの値を取得できずカラムを生成不能。案A: FR-009 が出力する merged_summit.geojson スキーマに不足プロパティを追加し、FR-012 が geojson のみで両 XLSX と同一カラムを生成できるようにする。ADR 作成・SRS FR-009 スキーマ拡張が必要。",
+      "type": "設計",
+      "priority": "高",
+      "category": null,
+      "reporter": "Sonnet 4.6",
+      "created_date": "2026-06-28",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": null,
+      "notes": "【設計確定・ADR 作成済み後 close】ユーザー承認: 案A（geojson スキーマ拡張）。計画: mgmt/plan.md タスク2-3",
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "b6c2cdf7-a5c7-4f19-89e8-5f15ec1eee58",
+      "history": []
     }
   ]
 }

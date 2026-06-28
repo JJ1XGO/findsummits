@@ -1,72 +1,82 @@
-# 計画: FR-011 spec-panel レビュー指摘の SRS 反映
+# FR-012 spec-panel レビュー対応計画
 
-## Context（なぜやるか）
+## Context
 
-FR-011（申請書 XLSX 生成）の spec-panel レビュー（4 視点）をクリーン再実施し、`docs/20_SRS.md` を実照合して 6 件の指摘を抽出・全件ユーザー確定済み。最重要成果物である申請書 XLSX の列定義が**実テンプレート `ref/SOTA-Summit-list-revision-request.xlsx` と不整合**（A/B 列の入れ替わり・J 列欠落・追加行で仮コードを出力する記述）であることが判明したため、SRS を実テンプレート準拠に是正する。
+`spec-panel` で FR-012（サミット一覧（申請内容反映版）生成）を 4 視点レビューした結果、
+**FR-012 の出力カラム定義と入力（`merged_summit.geojson`）が整合していない**構造的問題と、
+3 件の文言不整合が見つかった。
 
-実テンプレート実ヘッダー（確認済み）: A=アクション / B=既存山岳ID もしくは 県名 / C・D・E=変更前(名JP・名EN・標高) / F・G・H=変更後(名JP・名EN・標高) / I=変更の根拠 / J=MT使用欄。
+最大の論点は、FR-012 が「`merged_summit.geojson` のみから生成（ブラウザ内・FR-013 が
+geojson のみ埋め込む設計）」と「`merged_summit.xlsx`（突合後）とカラム構成を同一にする
+（`docs/20_SRS.md` の §6.5 該当・FR-012 カラム参照）」の 2 要請を負うが、geojson スキーマに
+診断系・行政区域系プロパティが無いため両立していない点。
 
-## 確定した修正方針（全 6 件・ユーザー承認済み）
+ユーザー承認方針: **案A（`merged_summit.geojson` スキーマに不足プロパティを追加し、
+FR-012 が geojson のみで両 XLSX と同一カラムを生成できるようにする）**。情報欠落なし・
+カラム統一維持を優先。
 
-| # | 重要度 | 確定内容 |
-|---|---|---|
-| ① | 高 | 列マッピング表を実テンプレート準拠に是正: **A=アクション / B=既存山岳ID もしくは 県名**（現 SRS は A/B が逆）。**追加行 B＝県名（都道府県名／北海道は振興局名）**、仮サミットコードは申請書に出力しない。削除・変更行 B＝既存 SummitCode。**J＝MT使用欄、全行空白**（MT＝SOTA 日本支部マネジメントチーム） |
-| ② | 中 | エクスポートボタンの参照先を FR-013→**FR-019** に是正、ボタン名称を「**申請書**」に統一 |
-| ③ | 中 | FR-011 入力表の山岳名・rationale 編集値の行を FR-012 と揃えて「**localStorage 編集内容／内部データ**」に統一 |
-| ④ | 中 | 追加行 H列（変更後標高）を **`floor(peak_elev)`** に統一（変更行と同じ切り捨て。現状は生値 peak_elev） |
-| ⑤ | 低 | FR-011 に一文追記: 申請書 XLSX は SOTA 指定固定テンプレートのため GSI 出典・加工明示は対象外（`ADR-URD-014`） |
-| ⑥ | 低 | 変更行の変更後名同値出力は**現仕様維持・取り下げ**（実テンプレート記入例が全項目記入のため）。作業なし |
+## 指摘一覧（確定）
 
-## タスク（すべて `docs/20_SRS.md` の編集。実行モデル: Sonnet）
+| # | 重要度 | 指摘 | 該当箇所 | 対応 |
+|---|---|---|---|---|
+| ① | 高 | 出力カラムの `col_margin_px`・`analysis_count`・`expected_count`・`municipality`・`dominant_peak_code`・`dominant_peak_dist_m` が geojson スキーマに無く、FR-012 から生成不能 | カラム `docs/20_SRS.md:1266-1277`／geojson スキーマ `docs/20_SRS.md:954-1010` | 案A: geojson スキーマ拡張＋ADR |
+| ② | 中 | `summit_name_jp` 説明「本 FR が geojson_v{N} から取得し格納」が誤り（FR-012 は geojson_v{N} 非アクセス） | `docs/20_SRS.md:1256` | 「FR-009 が格納済みの値を `merged_summit.geojson` から引き継ぐ」へ修正 |
+| ③ | 中 | 概要「山岳名・rationale を反映」と説明「rationale プロパティは含めない」が矛盾 | 概要 `docs/20_SRS.md:1227`・`docs/20_SRS.md:1244` vs 説明 `docs/20_SRS.md:1246` | 概要側を「山岳名（summit_name_jp）を反映」へ修正。rationale は FR-011 側で反映する旨を明記 |
+| ④ | 中 | 出力備考「HTML ビューアからブラウザダウンロード」が §6「単独ダウンロードせず ZIP に同梱」と矛盾 | 備考 `docs/20_SRS.md:1240` vs §6 `docs/20_SRS.md:1113` | 「FR-021 の ZIP に同梱してダウンロード（単独ダウンロードしない）」へ統一 |
 
-### タスク1: 指摘①（列マッピング表の是正）
+## タスク
 
-- `docs/20_SRS.md:1207`（カラム列挙）: 順序を実テンプレート準拠へ。「アクション / 既存山岳ID もしくは 県名 / 変更前(名JP・名EN・標高) / 変更後(名JP・名EN・標高) / 変更の根拠 / MT使用欄」
-- `docs/20_SRS.md:1210-1211`（アクション別マッピング表）を全面再構築:
-  - 列見出し: `A: アクション | B: 既存山岳ID/県名 | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 | J: MT使用欄`
-  - 追加(new)/追加(dominant): A=追加 / B=県名 / C・D・E=空白 / F=山岳名JP ※1 / G=山岳名EN ※1 / H=`floor(peak_elev)` / I=※2 / J=空白
-  - 削除: A=削除 / B=SummitCode / C=summit_name_jp ※3 / D=summit_name / E=sota_alt_m / F・G・H=空白 / I=※4 / J=空白
-  - 変更: A=変更 / B=SummitCode / C=summit_name_jp / D=summit_name / E=sota_alt_m / F=summit_name_jp(同値) / G=summit_name(同値) / H=`floor(peak_elev)` / I=※5 / J=空白
-- ※ 注記を追記:
-  - 追加行 B 列の県名は rationale ※2 と同じ「都道府県名（北海道は振興局名）」を用いる（同一データソース）
-  - 仮サミットコードは申請書には出力しない（GeoJSON・エビデンス・サミット一覧での内部識別子。正式コードは承認後に支部が採番）
-  - J: MT使用欄は SOTA 日本支部マネジメントチーム記入欄のため全アクション空白
+すべて `docs/20_SRS.md` の編集と ADR 新規作成（設計判断は確定済み・機械的整合作業）。実行モデル: **Sonnet**。
 
-### タスク2: 指摘①の波及（FR-019 の矛盾記述是正）
+### タスク1: tracker 登録（Sonnet）
 
-- `docs/20_SRS.md:1178`「追加（… 仮サミットコードを山岳IDとして使用）」を是正。仮コードを山岳ID として出力する記述を削除し、追加行 B＝県名・仮コード非出力に整合させる
+- ISSUE（type=設計）: 「FR-012 出力カラムと `merged_summit.geojson` スキーマの整合（案A: geojson 拡張）」← 指摘①
+- `mgmt/todo.md` に指摘②③④（FR-012 文言整合）を 1 行ずつ追記
+- 登録は `venv/bin/python3 mgmt/tracker/track.py issue add`／`--actor` はモデル名（impersonation 禁止）
 
-### タスク3: 指摘②（ボタン参照先・名称）
+### タスク2: ADR 作成（Sonnet）
 
-- `docs/20_SRS.md:1427`（§6.3 生成方式）: 「HTML ビューア（FR-013）の『申請書エクスポート』ボタン」→「HTML ビューア（**FR-019**）の『**申請書**』ボタン」
-- `docs/20_SRS.md:1188`（FR-011 概要）: ダウンロード動作の参照を FR-019 に揃える（ビューア生成＝FR-013、ダウンロード機能＝FR-019）
-- L938・L1164 の「申請書エクスポート」は動作を指す説明句のため**変更しない**（ボタン名称ではない）
+- `docs/decisions/ADR-SRS-NNN-merged-geojson-schema-for-revised-xlsx.md`（NNN は `ls docs/decisions/ | grep ADR-SRS` の最大値+1 で実装時採番）
+- Decision: `merged_summit.geojson` スキーマに診断系・行政区域系プロパティを追加し、FR-012 が geojson のみで両 XLSX と同一カラムを生成できるようにする
+- Alternatives: 案B（FR-012 カラム削減）→ 申請有用情報（municipality 等）欠落・カラム統一前提（§6.5）崩壊のため却下
+- Consequences: FR-009 スキーマ拡張・FR-012 生成可能化・FR-013 埋め込み（geojson のみ）は変更不要
 
-### タスク4: 指摘③（入力カテゴリ統一）
+### タスク3: FR-009 geojson スキーマ拡張（Sonnet）
 
-- `docs/20_SRS.md:1195`: 「HTML ビューア上のユーザー入力 | ユーザー入力 | …」→「localStorage 編集内容 | 内部データ | …（備考・FR-019 管理 は維持）」。FR-012 入力表（`docs/20_SRS.md:1233`）と一致させる
+`docs/20_SRS.md:954-1010` の各フィーチャ・プロパティ表に追加:
 
-### タスク5: 指摘⑤（出典対象外の明記）
+- **Point: ピーク**（`954-967`）: `analysis_count`・`expected_count`・`municipality`
+- **Point: コル**（`973-978`）: `col_margin_px`
+- **Point: 既存 SOTA サミット**（`982-991`）: `municipality`・`dominant_peak_code`・`dominant_peak_dist_m`（dominant 従属の delete のみ）
 
-- FR-011 説明部または出力表備考に一文追記: 「申請書 XLSX は SOTA 指定の固定テンプレートのため、GSI 出典・加工明示は対象外（`ADR-URD-014`）」。SRS 本文への実記載は Markdown リンク（`[ADR-URD-014](decisions/...)`）で行う
+留意:
 
-## 課題管理の扱い（推奨）
+- 各プロパティの定義・適用条件は既存記述（`col_margin_px`=`docs/20_SRS.md:679`、`analysis_count`/`expected_count`=`docs/20_SRS.md:765-766`、`municipality`=`docs/20_SRS.md:861`、`dominant_peak_code`/`dominant_peak_dist_m`=`docs/20_SRS.md:893`）と整合させる
+- FR-009 の `merged_summit.xlsx` カラム定義箇所（§6.5 付近・`docs/20_SRS.md:1436-1458` 周辺）を確認し、geojson と xlsx と FR-012 の三者でカラムが揃うことを担保する
+- ADR-SRS-013（geojson が中心データ・スキーマ正本）への準拠を維持
 
-- **新規 issue・ADR は作成しない**。理由: 仕様議論は本レビューで全件決着済みで、残作業は確定済み決定の SRS への機械的反映のみ（プロジェクト規約「残作業で判定」→ todo/直接反映）。是正内容は実テンプレートに駆動された defect 修正で、開ける設計トレードオフが残っていない
-- 監査証跡は **commit メッセージ**で担保（spec-panel FR-011 レビュー由来である旨を明記）
-- （ユーザーが重い証跡を望む場合のみ issue 化に切替可）
+### タスク4: FR-012 文言修正（Sonnet）
+
+- 指摘②: `docs/20_SRS.md:1256` の `summit_name_jp` 取得元表現を「FR-009 が格納済み・引き継ぎ」に
+- 指摘③: `docs/20_SRS.md:1227`・`docs/20_SRS.md:1244` の「rationale を反映」を「山岳名を反映」に修正し、`docs/20_SRS.md:1246` と整合
+- 指摘④: `docs/20_SRS.md:1240` の出力備考を §6（`docs/20_SRS.md:1113`）と統一
+
+### タスク5: 検証・コミット（Sonnet）
+
+- `make lint`（警告ゼロ確認）
+- 整合確認（下記）
+- Conventional Commits でコミット（ドキュメント更新のため作業ターン内に commit）
+- ISSUE close（①の決着＝ADR 記録＋SRS 反映）・`mgmt/todo.md` の②③④消化
 
 ## 検証
 
-- 修正後マッピング表の列順・列文字（A〜J）が `ref/SOTA-Summit-list-revision-request.xlsx` 実ヘッダー（A=アクション, B=既存山岳ID/県名, …, J=MT使用欄）と一致することを目視照合
-- `docs/20_SRS.md` 内に「仮サミットコードを山岳IDとして使用」等の矛盾記述が残っていないことを `grep` で確認（タスク2 の取りこぼし防止）
-- `make lint`（`lint-md` 中心）警告ゼロ
-- `git diff` で意図どおりの差分のみを確認
-- ドキュメント更新のため**同一ターン内に commit**（push は別途指示まで不要）。完了後 `/handover`
+- `grep -n "col_margin_px\|analysis_count\|expected_count\|municipality\|dominant_peak_code\|dominant_peak_dist_m" docs/20_SRS.md` で、FR-009 geojson スキーマ（`954-1010`）に 6 プロパティが追加されたことを確認
+- FR-012 出力カラム（`1252-1278`）の全項目が geojson スキーマ上のプロパティ／geometry で賄えることを 1 項目ずつ突き合わせ
+- FR-012 概要・説明・備考に rationale・単独ダウンロードの矛盾が残っていないことを確認
+- `make lint` 警告ゼロ
+- リンク切れ・内部トラッカーID 混入なし（`make lint-md` 検査C）
 
-## 関連ファイル
+## tracker 振り分け方針
 
-- `docs/20_SRS.md`（FR-011=L1185-1222・FR-019=L1095-1184・§6.3=L1423-1428）
-- `ref/SOTA-Summit-list-revision-request.xlsx`（列定義の正・A〜J 実ヘッダー）
-- `docs/decisions/ADR-URD-014-gsi-tile-attribution-policy.md`（出典対象外の根拠）
-- `docs/CLAUDE.md`（入出力分類規約・採番・ADR/参照ルール）
+- 指摘①（仕様議論＋ADR を伴う設計判断）→ **issue（設計）**
+- 指摘②③④（文言の不整合修正・議論不要）→ **`mgmt/todo.md`**（①の SRS 修正と同一ターンで一括処理）

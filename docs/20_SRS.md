@@ -965,6 +965,9 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出。出力プロパティ名は `points`（FR-009 内部変数 `peak_points` とは別） |
 | `is_band_change_candidate` | Points バンド遷移フラグ（bool）。matched のみ。`points ≠ sota_points` の場合 true（変更申請対象）。new / dominant は空欄 |
 | `rationale` | 申請書根拠テキスト（new / dominant は ※2 フォーマット、`is_band_change_candidate=true` の matched は ※5 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched（バンド変更なし）は空文字）。HTML ビューアで編集可能 |
+| `analysis_count` | このピークが含まれた解析回数（重複排除前の出現回数）。[FR-008](#fr-008-per-mesh-csv-統合) 算出値 |
+| `expected_count` | このピークが含まれるべき期待解析回数。日本全土1次メッシュコードリスト基準で [FR-008](#fr-008-per-mesh-csv-統合) が算出。通常モード行のみ（広域モード行は空欄） |
+| `municipality` | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
 
 **Point: コル**
 
@@ -976,6 +979,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `col_elev` | コル標高（m） |
 | `points` | 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出） |
+| `col_margin_px` | コルから解析範囲の端までの最短距離（ピクセル単位）。タイルズームレベルに依存（通常 L15px・広域 L14px）。診断用フィールド（[ADR-SRS-020](decisions/ADR-SRS-020-peak-col-pair-record.md) 参照） |
 
 **Point: 既存 SOTA サミット**
 
@@ -989,6 +993,9 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `sota_alt_m` | SOTA 登録標高（m） |
 | `sota_points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出 |
 | `rationale` | 申請書根拠テキスト（match_status=delete は ※4 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched は空文字）。HTML ビューアで編集可能 |
+| `municipality` | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字。delete サミットのみ付与（matched / unmatched は空欄） |
+| `dominant_peak_code` | 主ピークのサミットコード（dominant に従属する delete サミットのみ）。それ以外は空欄 |
+| `dominant_peak_dist_m` | 主ピークから当該サミット座標までの距離 m（Haversine 公式）。dominant に従属する delete サミットのみ。人手確認用。それ以外は空欄 |
 
 **Polygon: アクティベーションゾーン**
 
@@ -1224,7 +1231,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 #### FR-012: サミット一覧（申請内容反映版）生成
 
 - **対応 UR**: [UR-005](10_URD.md#ur-005), [UR-011](10_URD.md#ur-011)
-- **概要**: `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心データ）から、[FR-019](#fr-019-html-ビューア機能仕様) でユーザーが編集した山岳名・rationale を反映したサミット一覧（申請内容反映版）を **HTML ビューア（[FR-019](#fr-019-html-ビューア機能仕様)）内でブラウザ生成**する。生成した XLSX は申請エビデンス ZIP（[FR-021](#fr-021-申請エビデンス-zip-生成)）に同梱してダウンロードする（[UR-005](10_URD.md#ur-005) 対応）。
+- **概要**: `merged_summit.geojson`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の中心データ）から、[FR-019](#fr-019-html-ビューア機能仕様) でユーザーが編集した山岳名（`summit_name_jp`）を反映したサミット一覧（申請内容反映版）を **HTML ビューア（[FR-019](#fr-019-html-ビューア機能仕様)）内でブラウザ生成**する。生成した XLSX は申請エビデンス ZIP（[FR-021](#fr-021-申請エビデンス-zip-生成)）に同梱してダウンロードする（[UR-005](10_URD.md#ur-005) 対応）。rationale は申請書 XLSX（[FR-011](#fr-011-申請書-xlsx-生成)）にのみ反映する。
 
 **入力**:
 
@@ -1237,11 +1244,11 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| サミット一覧（申請内容反映版）（`merged_summit_revised.xlsx`） | 外部I/F | XLSX | HTML ビューアからブラウザダウンロード。申請エビデンス ZIP 内に同梱 |
+| サミット一覧（申請内容反映版）（`merged_summit_revised.xlsx`） | 外部I/F | XLSX | [FR-021](#fr-021-申請エビデンス-zip-生成) の ZIP に同梱してダウンロード（単独ダウンロードしない） |
 
 **説明**:
 
-  - [FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の `merged_summit.xlsx`（サミット一覧（突合後）・バッチ生成時点）とは異なり、ユーザーが HTML ビューアで入力した山岳名・rationale 編集内容を反映する（フェーズ5 で生成）
+  - [FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の `merged_summit.xlsx`（サミット一覧（突合後）・バッチ生成時点）とは異なり、ユーザーが HTML ビューアで入力した山岳名（`summit_name_jp`）編集内容を反映する（フェーズ5 で生成）。rationale は申請書 XLSX（[FR-011](#fr-011-申請書-xlsx-生成)）にのみ反映する
   - **Point フィーチャのみが行に変換される**（Polygon / LineString フィーチャは含めない）
   - `rationale` プロパティは含めない（申請書根拠テキストは HTML ビューアで確認・編集し XLSX に直接反映する。サミット一覧（申請内容反映版）は座標・標高・突合結果のみを記録する）
   - **出典シート**: XLSX の最後に「出典」シートを設け、「地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)」を記載する（[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
@@ -1253,7 +1260,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | stability | 解析品質（confirmed/unstable/-） |
 | summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A00）または ZZ/ZZ-A00（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
-| summit_name_jp | 日本語山岳名（本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
+| summit_name_jp | 日本語山岳名（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` に格納済みの値を引き継ぐ。未取得時は空文字） |
 | peak_lat | ピーク緯度 |
 | peak_lon | ピーク経度 |
 | peak_elev | ピーク標高（m） |
@@ -1432,7 +1439,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | 項目 | 仕様 |
 |---|---|
-| ファイル | `merged_summit_revised.xlsx`（申請エビデンス ZIP 内に同梱。ブラウザダウンロード） |
+| ファイル | `merged_summit_revised.xlsx`（[FR-021](#fr-021-申請エビデンス-zip-生成) の ZIP に同梱してダウンロード（単独ダウンロードしない）） |
 | 生成元 | HTML ビューア（[FR-012](#fr-012-サミット一覧申請内容反映版生成) が `merged_summit.geojson` の Point フィーチャからブラウザ内で生成。[FR-019](#fr-019-html-ビューア機能仕様) でのユーザー編集内容を反映） |
 | フォーマット | XLSX（単一シート・データ表） |
 | 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
