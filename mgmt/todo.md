@@ -18,6 +18,17 @@
 
 ### 高
 
+- [ ] **(spec-panel A1) FR-009 line 1028「new / dominant のみ」を削除する**
+  - `docs/20_SRS.md` line 1028 の「**Polygon: delete判定ゾーン**」見出し直下の「new / dominant のみ。」を削除
+  - line 962 のフィーチャ構成テーブルで matched にも Polygon（delete判定ゾーン）を追記済みなので、詳細説明の制限文との矛盾を解消する
+  - FR-016 概要「各ピークについて」・ADR-SRS-011「各ピークについて delete_zone を生成する」に整合
+  - ※ ビューアでの表示可否は ISSUE-151 で別途決定。このタスクは merged_summit.geojson スキーマ定義の修正のみ
+
+- [ ] **(spec-panel D2) mockup/viewer_mockup.html line 279 の is_island コメントを修正する**
+  - `docs/mockup/viewer_mockup.html` line 279 の「`is_island=true → 島嶼部最高峰。col・prominence_range は含めない（SRS 仕様）`」を削除または書き換える
+  - SRS から is_island を削除済みなので「SRS 仕様」参照が陳腐化している
+  - 代替: 「`col_lat/col_lon=0.0` のため key_col feature が除外される（SRS FR-006 海面確定規則・陸地最高峰リスト）」に書き換え
+
 - [ ] **(ISSUE-108 コード追従) FR-023 shell スクリプト新規実装**
   - Phase2（FR-004 全メッシュ）→ FR-008+FR-018 → FR-022 → N=4/5/6 ループ（FR-014→FR-008+FR-018→FR-022）→ Phase4（FR-009）を制御する shell スクリプト
   - N カウンタを一元管理。FR-014 に N を明示引数で渡す

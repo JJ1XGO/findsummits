@@ -276,7 +276,7 @@ const GEOJSON_DATA = {
       properties: { feature_type: "prominence_range", summit_code: "JA/ZZ-A01" } },
 
     // ── new: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
-    // is_island=true → 島嶼部最高峰。col・prominence_range は含めない（SRS 仕様）
+    // col_lat/col_lon=0.0 sentinel のため key_col feature・prominence_range を含めない（SRS FR-006 海面確定規則）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
       properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A02",
                     peak_elev: 820, prominence: 820, stability: "unstable",

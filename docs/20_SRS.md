@@ -1025,7 +1025,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 **Polygon: delete判定ゾーン**
 
-new / dominant のみ。[FR-016](#fr-016-ピーク域ポリゴン生成) 出力から取得（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。
+[FR-016](#fr-016-ピーク域ポリゴン生成) 出力から取得（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。match_status を問わず全ピークに生成（FR-016 概要「各ピークについて」・ADR-SRS-011「各ピークについて delete_zone を生成する」に基づく）。
 
 | プロパティ名 | 説明 |
 |---|---|
