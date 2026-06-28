@@ -1169,7 +1169,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - **山岳名入力 UI**:
     - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」（必須）「山岳名EN」（任意）入力フィールドを表示する。山岳名JP が未入力の new ピークが存在する状態で申請書（[FR-011](#fr-011-申請書-xlsx-生成)）をエクスポートする場合は、該当ピーク一覧を警告表示する。ただし公式申請の最終判断は SOTA 日本支部担当者が行うため、エクスポートはブロックせず空欄のままの続行も許容する（ソフト必須。[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md)）
     - matched（既存）ピーク: 入力フィールド不要（名称変更は申請対象外。`is_band_change_candidate=true` の場合は申請書エクスポート時に自動的に「変更」行を出力する）
-    - dominant（削除候補ピーク）: 入力フィールド不要（GeoJSON データを使用）
+    - dominant（差替候補ピーク）: 入力フィールド不要（GeoJSON データを使用）
   - **rationale 編集 UI**:
     - new / dominant ピーク・match_status=delete サミット・`is_band_change_candidate=true` の matched ピーク: ポップアップまたはサイドパネルに `rationale` プロパティを表示する textarea を設ける
     - 初期値: `merged_summit.geojson` の `rationale` プロパティ（[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成したテンプレート文字列）
