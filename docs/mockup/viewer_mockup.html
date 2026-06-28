@@ -296,7 +296,7 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
       properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A02",
                     peak_elev: 820, prominence: 820, stability: "unstable",
-                    key_col_resolved: false, is_island: true, points: 6,
+                    key_col_resolved: false, points: 6,
                     rationale: "国土地理院標高タイルで解析\n35.22000,138.92000\n所在地：東京都 大島町\nコル標高：未確定\nプロミネンス：未確定",
                     analysis_count: 2, expected_count: 2, municipality: "東京都 大島町" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.910,35.210],[138.930,35.210],[138.930,35.230],[138.910,35.230],[138.910,35.210]]] },
@@ -311,7 +311,7 @@ const GEOJSON_DATA = {
       properties: { feature_type: "peak", match_status: "matched",
                     summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     peak_elev: 3776, prominence: 3776, stability: "unstable",
-                    key_col_resolved: false, is_island: false,
+                    key_col_resolved: false,
                     is_band_change_candidate: false, points: 10,
                     rationale: "", analysis_count: 4, expected_count: 4, municipality: "静岡県 富士宮市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
@@ -1054,8 +1054,8 @@ function renderFeatures() {
 
       const pkLat = geom.coordinates[1].toFixed(5);
       const pkLon = geom.coordinates[0].toFixed(5);
-      // key_col_resolved=false → 陸地最高峰 or 島嶼部最高峰
-      const domLabel = !p.key_col_resolved ? (p.is_island ? '島嶼部最高峰' : '陸地最高峰') : null;
+      // key_col_resolved=false → 陸地最高峰（Key コル未定義）
+      const domLabel = !p.key_col_resolved ? '陸地最高峰' : null;
       const domBadge = domLabel
         ? `<span class="popup-badge" style="background:#7B2FBE">${domLabel}</span>`
         : '';
