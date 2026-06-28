@@ -259,22 +259,6 @@ const GEOJSON_DATA = {
     generated_at: "2026-05-13T09:00:00+09:00"
   },
   features: [
-    // ── new: 新規ピーク候補（1521m → 10pt）────────────────────────────
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A00",
-                    peak_elev: 1521, prominence: 210, stability: "confirmed", key_col_resolved: true,
-                    points: 10,
-                    rationale: "国土地理院標高タイルで解析\n35.42000,138.80000\n所在地：山梨県 富士河口湖町\nコル標高：1311m\nプロミネンス：210m",
-                    analysis_count: 3, expected_count: 3, municipality: "山梨県 富士河口湖町" } },
-    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-A00", area_complete: true, points: 10 } },
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.71, 35.33] },
-      properties: { feature_type: "key_col", summit_code: "JA/ZZ-A00", col_elev: 1311, points: 10, col_margin_px: 92 } },
-    { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.695,35.315],[138.725,35.315],[138.725,35.345],[138.695,35.345],[138.695,35.315]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A00" } },
-    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.71,35.33]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/ZZ-A00" } },
-
     // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.68, 35.31] },
       properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A01",
