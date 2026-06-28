@@ -293,6 +293,8 @@
   - **このリストの使われ方**: FR-017 はリストを生成するだけ。実際の除外は [FR-001](#fr-001-標高タイル事前取得) がリストを読み込み、リスト内のタイルへの HTTP リクエストを発行しないことで実現する（詳細: [ADR-SRS-018](decisions/ADR-SRS-018-northern-territories-skip-at-tile-fetch.md)）
 - **フォールバック（後段 FR の動作）**:
   - N03 前処理済み地域 GeoJSON が未生成の場合: [FR-009](#fr-009-sotaリスト突合match_status-判定) は SOTA エリアコード判定をスキップし、地域不明を示す仮サミットコード（`ZZ/ZZ-A00` 形式）を付与する（詳細: [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)）
+  - N03 前処理済み市区町村 GeoJSON が未生成の場合: [FR-009](#fr-009-sotaリスト突合match_status-判定) は市区町村名を空文字として続行する（警告ログ出力）
+  - 北方領土除外タイルリストが未生成の場合: [FR-001](#fr-001-標高タイル事前取得) がエラー終了する（詳細: [ADR-SRS-018](decisions/ADR-SRS-018-northern-territories-skip-at-tile-fetch.md) 参照）
 - 出典: [`ref/SOURCES.md`](../ref/SOURCES.md)（国土数値情報 N03 行政区域）
 
 ---
