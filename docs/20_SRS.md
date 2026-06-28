@@ -764,7 +764,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部データ | CSV | ファイル: `$DATA_DIR/results/merged_peak.csv`。内部 work CSV。[FR-009](#fr-009-sotaリスト突合match_status-判定) の入力として使用される中間ファイル |
+| 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部データ | CSV | ファイル: `$DATA_DIR/results/merged_peak.csv`。内部 work CSV |
 
 **説明**:
 
@@ -773,12 +773,12 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - **代表採用ロジック**（重複した複数解析レコードから 1 件を選ぶ優先順位。決定論的に一意となるよう以下の順で適用する）:
       1. `key_col_resolved=true` のレコードを `false` のレコードより優先する
       2. `true` のレコードが複数ある場合は `col_elev`（コル標高）が最も高いものを優先する（保守的評価）
-      3. `col_elev` が同値の場合は、通常モード（L15・接頭辞 `3`）を広域モード（L14・接頭辞 `4/5/6`）より優先し、さらに同値であれば `analysis_id` 昇順で一意に決定する（[NFR-003](#nfr-003-再現性決定論的出力) 担保）
+      3. `col_elev` が同値の場合は、通常モード（L15・接頭辞 `3`）を広域モード（解析グリッド L14・接頭辞 `4/5/6`）より優先し、さらに同値であれば `analysis_id` 昇順で一意に決定する（[NFR-003](#nfr-003-再現性決定論的出力) 担保）
       4. 全レコードが `key_col_resolved=false` の場合は `key_col_resolved=false` のまま維持する（プロミネンス未確定のため、[FR-022](#fr-022-コル充足判定) がエスカレーション対象として報告する）
     - 通常 per-mesh では `key_col_resolved=false` だったピークも、広域 per-mesh で `key_col_resolved=true` の結果が得られていれば、本ロジックにより広域モード結果が自動的に代表として採用される
     - `analysis_count`: 重複排除前の出現回数（実際の解析回数）
     - `expected_count`: **日本全土1次メッシュコードリストを基準**に算出する期待解析回数（`対象1次メッシュコードリスト` で範囲を絞っても本値は変わらない）。通常モード行（`analysis_id` 接頭辞 `3`）のみを対象とし、3×3 隣接カウントで算出する。広域モード行（接頭辞 `4/5/6`）は `expected_count` の算出対象外（空欄）。本リストは常に存在するため、通常モード行で空欄になることはない
-    - `stability`: `key_col_resolved=false` が 1 件でも含まれるか、`analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`。統合範囲を絞った場合（`対象1次メッシュコードリスト` 指定時）は、範囲端メッシュの周辺メッシュが未解析のため `analysis_count < expected_count` となり、自動的に `unstable` と判定される（これは正しい挙動であり、限定範囲統合の結果を過信させない設計である）
+    - `stability`: 3値で表す。広域モード代表行（`expected_count` 空欄）のピークは `key_col_resolved` のみで判定し、`false` なら `unstable`、`true` なら `-`（通常モード安定性評価なし）を付与する。通常モード代表行（`expected_count` 非空欄）のピークは、`key_col_resolved=false` が 1 件でも含まれるか `analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`。統合範囲を絞った場合（`対象1次メッシュコードリスト` 指定時）は、範囲端メッシュの周辺メッシュが未解析のため `analysis_count < expected_count` となり、自動的に `unstable` と判定される（これは正しい挙動であり、限定範囲統合の結果を過信させない設計である）
   - プロミネンス最終フィルタ: **プロミネンス最終フィルタ閾値**（[データ辞書参照](#221-設定可能項目)）以上（[FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) の一次フィルタ通過済みのレコードに適用）
   - **陸地最高峰の海面確定（[ADR-SRS-027](decisions/ADR-SRS-027-fr022-purification-fr023-pipeline-control.md)）**: `陸地最高峰リスト` と近傍一致（許容距離は HLD で定義）するピークを `key_col_resolved=true`（Key コル = 海面 0m）に更新してから `merged_peak.csv` を出力する。本機能を複数回再実行しても確定値が消えることはない
   - **再入可能性**: 本機能は解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）から複数回呼び出され、その都度 merged_peak.csv（内部 work CSV）が再生成される。詳細・設計判断: [ADR-SRS-023](decisions/ADR-SRS-023-fr008-merge-input-mesh-list-semantics.md)
@@ -977,7 +977,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `summit_name_jp` | 日本語山岳名（matched / dominant のみ・本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
 | `peak_elev` | 検出標高（m） |
 | `prominence` | プロミネンス（m）。`key_col_resolved=false`（Key コル未確定）の場合は `null`（キーは常に存在し値のみ null）。ビューア表示は `prominence ?? '未定義'` で対応可能 |
-| `stability` | confirmed / unstable |
+| `stability` | confirmed / unstable / -（`-` = 広域モード確定ピーク・通常モード安定性評価なし。定義は [FR-008](#fr-008-per-mesh-csv-統合) 参照） |
 | `key_col_resolved` | コル確定フラグ（true=確定 / false=未確定） |
 | `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出。出力プロパティ名は `points`（FR-009 内部変数 `peak_points` とは別） |
 | `is_band_change_candidate` | Points バンド遷移フラグ（bool）。matched のみ。`points ≠ sota_points` の場合 true（変更申請対象）。new / dominant は空欄 |
@@ -1665,7 +1665,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 3 | 北方領土除外タイルリスト | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-001](#fr-001-標高タイル事前取得) | 詳細仕様は [8.2.1](#821-n03-前処理済みファイル詳細仕様) 参照 |
 | 4 | 日本全土１次メッシュコードリスト | — | — | [FR-001](#fr-001-標高タイル事前取得) / [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-008](#fr-008-per-mesh-csv-統合) / [FR-014](#fr-014-広域結合解析オーケストレーション) | [日本の国土にかかる第1次地域区画](../ref/SOURCES.md#日本の国土にかかる第1次地域区画)を参照し、ベースラインとして本システムで用意する。[FR-008](#fr-008-per-mesh-csv-統合) では `expected_count` 算出基準として使用する |
 | 5 | 標高タイル（ローカルキャッシュ） | `$DATA_DIR/tiles/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` | [FR-001](#fr-001-標高タイル事前取得) | [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-014](#fr-014-広域結合解析オーケストレーション) | |
-| 6 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-022](#fr-022-コル充足判定) | |
+| 6 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) / [FR-022](#fr-022-コル充足判定) | |
 | 7 | コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 一時ファイル。ファイル名: `$DATA_DIR/results/key_col_unresolved_peaks-<N>.csv`（N = 生成段階タグ：3×3 後は `-3`、4×4 後は `-4`） | [FR-022](#fr-022-コル充足判定) | [FR-014](#fr-014-広域結合解析オーケストレーション) | FR-022 が各段階で生成し、FR-023 の制御により FR-014 呼び出し時にパスとして渡す |
 | 8 | per-mesh ピーク候補 CSV | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/<解析識別子>.csv`（通常: `3-<meshcode>.csv`、広域: `<N>-<meshcode>-<コーナー>.csv`） | [FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) | [FR-008](#fr-008-per-mesh-csv-統合) | カラム定義は FR-007 出力仕様参照。通常 per-mesh と広域 per-mesh はファイル名のプレフィックスで区別する。[FR-008](#fr-008-per-mesh-csv-統合) は `$DATA_DIR/results/csv/` 配下を読み込む（読み込み範囲は `対象1次メッシュコードリスト` で制御） |
 | 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |

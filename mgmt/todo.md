@@ -227,6 +227,25 @@
 - [x] **(FR-016 spec-panel ④) FR-016 説明末尾の自己参照リンクを削除**
   - `docs/20_SRS.md` FR-016 説明末尾（行742相当）: 「ファイル仕様は [FR-016] 出力仕様参照」（FR-016内でFR-016見出しへの自己参照）を削除
 
+### FR-008 spec-panel 指摘（記述補完・SRS 修正）
+
+- [ ] **(FR-008 spec-panel ①) FR-008 の `stability` に `-` 値の定義を追記し、FR-009 properties 表と整合させる**
+  - `docs/20_SRS.md` FR-008 line 781（stability 定義）: 「広域モード代表行（`expected_count` 空欄）のピークは `key_col_resolved` のみで判定し、false なら `unstable`、true なら `-`（通常モード安定性評価なし）を付与する」を追記
+  - `docs/20_SRS.md` FR-009 merged_summit.geojson properties 表（line 980）: `stability` の値域を「confirmed / unstable / -」に修正（`-` = 広域モード確定ピーク）
+  - 背景: FR-009 line 904 が「`confirmed`/`unstable`/`-` の定義は FR-008 参照」と委ねているが、FR-008 は2値のみ定義。広域モード行（`expected_count` 空欄）での計算ロジックが不定
+
+- [ ] **(FR-008 spec-panel ②) §8.1 No.6 の参照 FR 列に FR-018 を追加（台帳漏れ）**
+  - `docs/20_SRS.md` §8.1 No.6（line 1668）: 「参照 FR」列を「FR-009 / FR-022」→「FR-009 / FR-022 / FR-018」に修正
+  - 背景: `merged_peak.csv` は FR-018 の必須入力（line 796）だが §8.1 台帳に未登録
+
+- [ ] **(FR-008 spec-panel ③) FR-008 出力テーブル備考の消費 FR 記載を削除し他 FR と慣例を統一**
+  - `docs/20_SRS.md` FR-008 出力テーブル（line 767）: 備考「FR-009 の入力として使用される中間ファイル」→「内部 work CSV」に変更（消費 FR 一覧は §8.1 に委ねる）
+  - 背景: FR-007・FR-016 等の出力テーブルは消費 FR を備考に書かない慣例。FR-008 だけが FR-009 のみ列挙し、かつ FR-022・FR-018 が欠落していた
+
+- [ ] **(FR-008 spec-panel ④) 代表採用ロジック優先順位 3 の「L14」表記に補足を追記**
+  - `docs/20_SRS.md` FR-008 line 776: 「広域モード（L14・接頭辞 `4/5/6`）」→「広域モード（解析グリッド L14・接頭辞 `4/5/6`）」に修正
+  - 背景: FR-014 line 498 でピーク座標は L15 を維持すると定義されており、FR-008 の重複排除も L15 座標で行う（line 772）。「L14」のみだと「広域モードのピーク座標が L14 空間にある」と誤読するリスクがある
+
 ### FR-013レビュー決着の機械反映（finding 3/4/6/7・用語変更）
 
 以下は仕様確定済み。SRS/ADR は反映済み。実装追従のみ残る。
