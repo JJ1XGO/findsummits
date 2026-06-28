@@ -261,42 +261,48 @@ const GEOJSON_DATA = {
   features: [
     // ── new: 新規ピーク候補（1521m → 10pt）────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.80, 35.42] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "ZZ/ZZ-A00",
+      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A00",
                     peak_elev: 1521, prominence: 210, stability: "confirmed", key_col_resolved: true,
-                    points: 10 } },
+                    points: 10,
+                    rationale: "国土地理院標高タイルで解析\n35.42000,138.80000\n所在地：山梨県 富士河口湖町\nコル標高：1311m\nプロミネンス：210m",
+                    analysis_count: 3, expected_count: 3, municipality: "山梨県 富士河口湖町" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
-      properties: { feature_type: "activation_zone", summit_code: "ZZ/ZZ-A00", area_complete: true, points: 10 } },
+      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-A00", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.71, 35.33] },
-      properties: { feature_type: "col", summit_code: "ZZ/ZZ-A00", col_elev: 1311, points: 10 } },
+      properties: { feature_type: "key_col", summit_code: "JA/ZZ-A00", col_elev: 1311, points: 10, col_margin_px: 92 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.695,35.315],[138.725,35.315],[138.725,35.345],[138.695,35.345],[138.695,35.315]]] },
-      properties: { feature_type: "delete_zone", summit_code: "ZZ/ZZ-A00" } },
+      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.80,35.42],[138.71,35.33]] },
-      properties: { feature_type: "prominence_range", summit_code: "ZZ/ZZ-A00" } },
+      properties: { feature_type: "prominence_range", summit_code: "JA/ZZ-A00" } },
 
     // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.68, 35.31] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "ZZ/ZZ-A01",
+      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A01",
                     peak_elev: 580, prominence: 165, stability: "confirmed", key_col_resolved: true,
-                    points: 2 } },
+                    points: 2,
+                    rationale: "国土地理院標高タイルで解析\n35.31000,138.68000\n所在地：山梨県 南部町\nコル標高：415m\nプロミネンス：165m",
+                    analysis_count: 2, expected_count: 2, municipality: "山梨県 南部町" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.670,35.300],[138.690,35.300],[138.690,35.320],[138.670,35.320],[138.670,35.300]]] },
-      properties: { feature_type: "activation_zone", summit_code: "ZZ/ZZ-A01", area_complete: true, points: 2 } },
+      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-A01", area_complete: true, points: 2 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.66, 35.29] },
-      properties: { feature_type: "col", summit_code: "ZZ/ZZ-A01", col_elev: 415, points: 2 } },
+      properties: { feature_type: "key_col", summit_code: "JA/ZZ-A01", col_elev: 415, points: 2, col_margin_px: 78 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.650,35.278],[138.672,35.278],[138.672,35.302],[138.650,35.302],[138.650,35.278]]] },
-      properties: { feature_type: "delete_zone", summit_code: "ZZ/ZZ-A01" } },
+      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A01" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
-      properties: { feature_type: "prominence_range", summit_code: "ZZ/ZZ-A01" } },
+      properties: { feature_type: "prominence_range", summit_code: "JA/ZZ-A01" } },
 
     // ── new: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
     // is_island=true → 島嶼部最高峰。col・prominence_range は含めない（SRS 仕様）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "ZZ/ZZ-A02",
+      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A02",
                     peak_elev: 820, prominence: 820, stability: "unstable",
-                    key_col_resolved: false, is_island: true, points: 6 } },
+                    key_col_resolved: false, is_island: true, points: 6,
+                    rationale: "国土地理院標高タイルで解析\n35.22000,138.92000\n所在地：東京都 大島町\nコル標高：未確定\nプロミネンス：未確定",
+                    analysis_count: 2, expected_count: 2, municipality: "東京都 大島町" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.910,35.210],[138.930,35.210],[138.930,35.230],[138.910,35.230],[138.910,35.210]]] },
-      properties: { feature_type: "activation_zone", summit_code: "ZZ/ZZ-A02", area_complete: true, points: 6 } },
+      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-A02", area_complete: true, points: 6 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
-      properties: { feature_type: "delete_zone", summit_code: "ZZ/ZZ-A02" } },
+      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A02" } },
 
     // ── matched: 陸地最高峰・既存サミットと一致（3776m → 10pt）──────────────
     // 富士山: 日本本土最高峰のため Key コル未定義（key_col_resolved=false, is_island=false）
@@ -306,13 +312,14 @@ const GEOJSON_DATA = {
                     summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     peak_elev: 3776, prominence: 3776, stability: "unstable",
                     key_col_resolved: false, is_island: false,
-                    is_band_change_candidate: false, points: 10 } },
+                    is_band_change_candidate: false, points: 10,
+                    rationale: "", analysis_count: 4, expected_count: 4, municipality: "静岡県 富士宮市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.790,35.410],[138.810,35.410],[138.810,35.430],[138.790,35.430],[138.790,35.410]]] },
       properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-D01", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
       properties: { feature_type: "summit", match_status: "matched",
                     summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
-                    sota_alt_m: 3776, sota_points: 10 } },
+                    sota_alt_m: 3776, sota_points: 10, rationale: "" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
       properties: { feature_type: "coord_diff", summit_code: "JA/ZZ-D01", match_status: "matched" } },
 
@@ -321,15 +328,17 @@ const GEOJSON_DATA = {
       properties: { feature_type: "peak", match_status: "matched",
                     summit_code: "JA/SZ-001", summit_name: "Sample-dake", summit_name_jp: "サンプル岳",
                     peak_elev: 2100, prominence: 450, stability: "confirmed",
-                    key_col_resolved: true, is_band_change_candidate: true, points: 8 } },
+                    key_col_resolved: true, is_band_change_candidate: true, points: 8,
+                    rationale: "国土地理院 DEM 解析による標高再測定: 1950m (6pt) → 2100m (8pt)\n座標: 35.50000,138.85000（長野県 飯田市）",
+                    analysis_count: 3, expected_count: 3, municipality: "長野県 飯田市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.840,35.490],[138.860,35.490],[138.860,35.510],[138.840,35.510],[138.840,35.490]]] },
       properties: { feature_type: "activation_zone", summit_code: "JA/SZ-001", area_complete: true, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.83, 35.48] },
-      properties: { feature_type: "col", summit_code: "JA/SZ-001", col_elev: 1650, points: 8 } },
+      properties: { feature_type: "key_col", summit_code: "JA/SZ-001", col_elev: 1650, points: 8, col_margin_px: 85 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.84, 35.47] },
       properties: { feature_type: "summit", match_status: "matched",
                     summit_code: "JA/SZ-001", summit_name: "Sample-dake", summit_name_jp: "サンプル岳",
-                    sota_alt_m: 1950, sota_points: 6 } },
+                    sota_alt_m: 1950, sota_points: 6, rationale: "" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.85,35.50],[138.83,35.48]] },
       properties: { feature_type: "prominence_range", summit_code: "JA/SZ-001" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.85,35.50],[138.84,35.47]] },
@@ -342,16 +351,21 @@ const GEOJSON_DATA = {
       properties: { feature_type: "peak", match_status: "dominant",
                     summit_code: "JA/YN-A00", summit_name: "", summit_name_jp: "",
                     peak_elev: 1050, prominence: 320, stability: "confirmed", key_col_resolved: true,
-                    points: 8 } },
+                    points: 8,
+                    rationale: "国土地理院標高タイルで解析\n35.25000,138.65000\n所在地：神奈川県 相模原市\nコル標高：730m\nプロミネンス：320m",
+                    analysis_count: 2, expected_count: 2, municipality: "神奈川県 相模原市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.640,35.240],[138.660,35.240],[138.660,35.260],[138.640,35.260],[138.640,35.240]]] },
       properties: { feature_type: "activation_zone", summit_code: "JA/YN-A00", area_complete: true, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.63, 35.23] },
-      properties: { feature_type: "col", summit_code: "JA/YN-A00", col_elev: 730, points: 8 } },
+      properties: { feature_type: "key_col", summit_code: "JA/YN-A00", col_elev: 730, points: 8, col_margin_px: 62 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
       properties: { feature_type: "summit", match_status: "delete",
                     summit_code: "JA/ZZ-D02", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
                     sota_alt_m: 880, sota_points: 6,
-                    dominant_peak_code: "JA/YN-A00" } },
+                    dominant_peak_code: "JA/YN-A00",
+                    dominant_peak_dist_m: 342,
+                    municipality: "神奈川県 相模原市",
+                    rationale: "国土地理院標高タイルを解析し、JA/YN-A00に従属している事を確認" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
       properties: { feature_type: "delete_zone", summit_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
@@ -930,9 +944,10 @@ const filterGroups = {
 const peakCategory = {};
 
 // カテゴリ判定（peak フィーチャ用）
-function categorize(matchStatus) {
-  if (matchStatus === "new")      return "new";
-  if (matchStatus === "dominant") return "dominant";
+function categorize(p) {
+  if (p.match_status === "new")      return "new";
+  if (p.match_status === "dominant") return "dominant";
+  if (p.is_band_change_candidate)    return "changed";
   return "unchanged";
 }
 
@@ -968,7 +983,7 @@ function renderFeatures() {
   GEOJSON_DATA.features.forEach(f => {
     const p = f.properties;
     if (p.feature_type !== "peak") return;
-    peakCategory[p.summit_code] = categorize(p.match_status);
+    peakCategory[p.summit_code] = categorize(p);
   });
 
   // summit_code → peak feature のマップ（各フィーチャのカテゴリ解決用）
@@ -979,7 +994,7 @@ function renderFeatures() {
   GEOJSON_DATA.features.forEach(f => {
     const ft = f.properties.feature_type;
     if (ft === "peak")            peakByCode[f.properties.summit_code]   = f;
-    if (ft === "col")             colByCode[f.properties.summit_code]    = f;
+    if (ft === "key_col")         colByCode[f.properties.summit_code]    = f;
     if (ft === "summit")          summitByCode[f.properties.summit_code] = f;
     if (ft === "activation_zone") azByCode[f.properties.summit_code]     = f;
   });
@@ -1135,7 +1150,7 @@ function renderFeatures() {
       return;
     }
 
-    if (p.feature_type === "col") {
+    if (p.feature_type === "key_col") {
       const cat = catByCode(p.summit_code);
       const colLat = geom.coordinates[1].toFixed(5);
       const colLon = geom.coordinates[0].toFixed(5);
