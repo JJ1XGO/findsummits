@@ -1059,13 +1059,30 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "解決済",
       "assignee": null,
       "resolution": "(1) UR-001 〜 UR-010 を縦軸、現状の対応 FR/NFR を横軸に整理した一覧表を作成し漏れを抽出\n(2) 漏れている対応関係を該当 FR / NFR の '対応 UR' フィールドに追記\n(3) ISSUE-031（RTM）作成の前提データとして提供",
       "notes": "UR-009 削除・NFR-003 対応 UR を UR-004/005 に・NFR-007 対応 UR を UR-008 に振り替え済み（ISSUE-029 対応、2026-05-24）",
-      "resolved_date": null,
-      "verified_date": null,
-      "history": [],
+      "resolved_date": "2026-06-28",
+      "verified_date": "2026-06-28",
+      "history": [
+        {
+          "date": "2026-06-28T11:32:39",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS §4 各 FR・§5 各 NFR の『対応 UR』フィールドを精査し、対応漏れがないことを確認済み。成果はISSUE-032の RTM（§11）に反映。",
+          "session_id": "3bd4bdbd-213b-479e-9b02-4de4d0b7c3e2"
+        },
+        {
+          "date": "2026-06-28T11:33:05",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK",
+          "session_id": "3bd4bdbd-213b-479e-9b02-4de4d0b7c3e2"
+        }
+      ],
       "planned_stage": "SRS"
     },
     {
@@ -1078,13 +1095,30 @@
       "reporter": null,
       "created_date": "2026-05-14",
       "stage": "SRS",
-      "status": "未対応",
+      "status": "解決済",
       "assignee": null,
       "resolution": "SRS に '10. 要求トレーサビリティ・マトリックス' を新章として追加。\n- FR セクションと NFR セクションを 2 つの表に分割するか、1 つにまとめるかは可読性で判断\n- 目次にもセクション 10 を追加\n- ISSUE-031 の調査結果を反映",
       "notes": null,
-      "resolved_date": null,
-      "verified_date": null,
-      "history": [],
+      "resolved_date": "2026-06-28",
+      "verified_date": "2026-06-28",
+      "history": [
+        {
+          "date": "2026-06-28T11:32:45",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS §11 に要求追跡マトリクスを追加（FR-001〜FR-023・NFR-001〜NFR-010 × UR-001〜UR-014、33行×13列、UR-009欠番除外）。各行にタイトル列、各UR列ヘッダーに短縮日本語タイトルを付与。コミット 1ef2a90。",
+          "session_id": "3bd4bdbd-213b-479e-9b02-4de4d0b7c3e2"
+        },
+        {
+          "date": "2026-06-28T11:33:05",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK",
+          "session_id": "3bd4bdbd-213b-479e-9b02-4de4d0b7c3e2"
+        }
+      ],
       "planned_stage": "SRS"
     },
     {
