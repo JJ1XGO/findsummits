@@ -1182,7 +1182,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     - **1次メッシュグリッド**: 日本国土の1次メッシュ境界を表示する（一定ズーム以上でメッシュコードのラベルを表示）。解析単位の確認用
     - **基準点レイヤー**: 国土地理院の基準点（電子基準点・一等／二等／三等三角点）を表示する。種別ごとに配色し、点名・基準点種別・基準点コードを popup 表示する。データは地理院基準点タイル（`https://cyberjapandata.gsi.go.jp/xyz/cp/{z}/{x}/{y}.geojson`）をブラウザから実行時取得する（出典・利用形態は [SOURCES.md](../ref/SOURCES.md) 参照。採用経緯: [ADR-SRS-034](decisions/ADR-SRS-034-viewer-reference-layers.md)）
   - 地図帰属表示: peak/col/summit/AZ/delete_zone 等の GeoJSON データは地理院標高タイル解析由来であるため、**基図の選択に関わらず** `© 国土地理院`（リンク先: `https://maps.gsi.go.jp/`）を常時表示する。等高線レイヤー ON/OFF 状態によらず同 attribution を維持する。OSM 選択時は加えて `© OpenStreetMap contributors`、OpenTopoMap 選択時は `© OpenTopoMap contributors` を表示する。基準点レイヤー ON 時は基準点データの出典として `国土地理院` を併記する（地理院由来のため提供元は上記 `© 国土地理院` と同一）
-  - **ピーク popup の情報表示**: ピークの popup には標高・プロミネンスに加え、プロミネンスの根拠となる **Keyコル標高（`col_elev`）** を表示する。Keyコル未確定（`key_col_resolved=false`、陸地最高峰・島嶼部最高峰）の場合は「未定義（陸地最高峰／島嶼部最高峰）」と表示する
+  - **ピーク popup の情報表示**: ピークの popup には標高・プロミネンスに加え、プロミネンスの根拠となる **Keyコル標高（`col_elev`）** を表示する。key_col Point が GeoJSON に含まれない場合（陸地最高峰・島嶼部最高峰は `col_lat/col_lon=0.0` sentinel のため key_col feature が除外される）は「未定義（陸地最高峰）」と表示する。陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）
   - **Keyコル（key_col）popup の表示**: Keyコルのマーカー popup には、Keyコル標高・対応するピークのコード（new の場合は仮コード）・緯度経度を表示する
   - **ピーク↔Keyコル相互ジャンプ**: ピーク popup に「Keyコルへ移動」ボタン（`key_col_resolved=true` のときのみ）、Keyコル popup に「ピークへ移動」ボタンを設け、押下で対応するフィーチャへ地図移動して popup を開く
   - **山岳名入力 UI**:
