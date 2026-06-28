@@ -304,26 +304,28 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
       properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A02" } },
 
-    // ── matched: 陸地最高峰・既存サミットと一致（3776m → 10pt）──────────────
-    // 富士山: 日本本土最高峰のため Key コル未定義（key_col_resolved=false, is_island=false）
-    // col・prominence_range は含めない（SRS 仕様）
+    // ── matched: 変更なし（key_col_resolved=true・3776m → 10pt）──────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
       properties: { feature_type: "peak", match_status: "matched",
-                    summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
-                    peak_elev: 3776, prominence: 3776, stability: "unstable",
-                    key_col_resolved: false,
+                    summit_code: "JA/SO-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
+                    peak_elev: 3776, prominence: 376, stability: "unstable",
+                    key_col_resolved: true,
                     is_band_change_candidate: false, points: 10,
                     rationale: "", analysis_count: 4, expected_count: 4, municipality: "静岡県 富士宮市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-D01", area_complete: true, points: 10 } },
+      properties: { feature_type: "activation_zone", summit_code: "JA/SO-001", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.706,35.336],[138.754,35.336],[138.754,35.384],[138.706,35.384],[138.706,35.336]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-D01" } },
+      properties: { feature_type: "delete_zone", summit_code: "JA/SO-001" } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
+      properties: { feature_type: "key_col", summit_code: "JA/SO-001", col_elev: 3400, points: 10, col_margin_px: 120 } },
+    { type: "Feature", geometry: { type: "Point", coordinates: [138.732, 35.358] },
       properties: { feature_type: "summit", match_status: "matched",
-                    summit_code: "JA/ZZ-D01", summit_name: "Fuji-san", summit_name_jp: "富士山",
+                    summit_code: "JA/SO-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     sota_alt_m: 3776, sota_points: 10, rationale: "" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
-      properties: { feature_type: "coord_diff", summit_code: "JA/ZZ-D01", match_status: "matched" } },
+      properties: { feature_type: "prominence_range", summit_code: "JA/SO-001" } },
+    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.732,35.358]] },
+      properties: { feature_type: "coord_diff", summit_code: "JA/SO-001", match_status: "matched" } },
 
     // ── matched: 変更候補（is_band_change_candidate=true・2100m/8pt・SOTAは1950m/6pt）──
     { type: "Feature", geometry: { type: "Point", coordinates: [138.85, 35.50] },
