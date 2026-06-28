@@ -18,21 +18,6 @@
 
 ### 高
 
-- [ ] **(spec-panel FR-012 指摘②) FR-012 カラム定義の summit_name_jp 取得元表現を修正**
-  - `docs/20_SRS.md:1256` の「本 FR が geojson_v{N} から取得し格納」を「FR-009 が merged_summit.geojson に格納済みの値を引き継ぐ」に修正
-  - FR-012 は geojson_v{N}（`ref/` 配下ローカルファイル）に直接アクセスしない（ブラウザ内生成）
-  - ISSUE-139 の SRS 修正と同一ターンで実施
-
-- [ ] **(spec-panel FR-012 指摘③) FR-012 概要・説明の rationale 矛盾を修正**
-  - `docs/20_SRS.md:1227`・`1244` の「山岳名・rationale を反映」を「山岳名（summit_name_jp）を反映」へ修正
-  - rationale は FR-011（申請書 XLSX）側で反映する旨を明記し、FR-012 説明の「rationale は含めない」（`docs/20_SRS.md:1246`）と整合させる
-  - ISSUE-139 の SRS 修正と同一ターンで実施
-
-- [ ] **(spec-panel FR-012 指摘④) FR-012 出力備考のダウンロード方法を §6 と統一**
-  - `docs/20_SRS.md:1240` の備考「HTML ビューアからブラウザダウンロード」を「FR-021 の ZIP に同梱してダウンロード（単独ダウンロードしない）」へ修正
-  - §6 `docs/20_SRS.md:1113` の記述と統一
-  - ISSUE-139 の SRS 修正と同一ターンで実施
-
 - [ ] **(ISSUE-108 コード追従) FR-023 shell スクリプト新規実装**
   - Phase2（FR-004 全メッシュ）→ FR-008+FR-018 → FR-022 → N=4/5/6 ループ（FR-014→FR-008+FR-018→FR-022）→ Phase4（FR-009）を制御する shell スクリプト
   - N カウンタを一元管理。FR-014 に N を明示引数で渡す
