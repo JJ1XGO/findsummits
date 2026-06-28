@@ -4626,14 +4626,23 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "【設計確定・ADR 作成済み後 close】ユーザー承認: 案A（geojson スキーマ拡張）。計画: mgmt/plan.md タスク2-3",
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "b6c2cdf7-a5c7-4f19-89e8-5f15ec1eee58",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T09:32:08",
+          "actor": "Sonnet 4.6",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "ADR-SRS-041 作成・FR-009 geojson スキーマに 6 プロパティ追加・FR-012 文言整合（コミット ec8ef27）",
+          "session_id": "b6c2cdf7-a5c7-4f19-89e8-5f15ec1eee58"
+        }
+      ]
     }
   ]
 }
