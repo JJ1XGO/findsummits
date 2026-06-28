@@ -5089,14 +5089,31 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "ADR-URD-005 あるいは新規 ADR-SRS-XXX で Z14 タイル除外方法を設計決定し、FR-001 説明および §7.2.2.1 に明記する。設計の選択肢: (a) Z15 リストを floor(x/2),floor(y/2) で変換して Z14 タイルも除外 / (b) FR-017 が Z14 リストを別途生成 / (c) 地理院は北方領土の DEM10b タイルを提供しないため取得時に HTTP 404 になるだけで除外不要（実データ確認が先決）。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T14:51:37",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        },
+        {
+          "date": "2026-06-28T14:51:37",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "実データ確認（2026-06-28）で国後島 Z14 タイルが HTTP 200 を返すことを確認。案 A（FR-001 内で Z15→Z14 変換 x//2, y//2）を採用。ADR-SRS-018 に Z14 変換の設計根拠を追記、FR-001 説明に DEM5/DEM10b 別の除外手順を明記、§7.2.2.1 にリスト仕様の補足を追記。竹島注記も同時追記（todo③対応完了）。",
+          "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        }
+      ]
     },
     {
       "id": "ISSUE-149",
