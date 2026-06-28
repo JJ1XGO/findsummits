@@ -4904,14 +4904,31 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応完了",
       "assignee": null,
       "resolution": "NFR-010 のスコープを FR-020 にも明示的に拡張する（「HTML ビューア（FR-013・FR-020）のマーカー描画に適用する」）か、FR-013 と同等の要件が FR-020 に引き継がれることを NFR-010 本文または ADR に明記するかを選択し、RTM の FR-020 行 UR-014 列に ✅ を追記する。",
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-28",
       "verified_date": null,
       "created_session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-28T14:02:28",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
+        },
+        {
+          "date": "2026-06-28T14:03:05",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "NFR-010 スコープを FR-013・FR-020 に拡張。RTM の FR-020 行 UR-014 列に ✅ を追記",
+          "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
+        }
+      ]
     }
   ]
 }
