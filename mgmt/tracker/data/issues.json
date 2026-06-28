@@ -4214,12 +4214,12 @@
       "created_date": "2026-06-25",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-020対応URにUR-011追加。6.13にattribution行(© 国土地理院常時＋OSM/OpenTopoMap各表示＋『加工して作成』)明記。UR紐付けのADR要否を判断。",
       "notes": null,
       "resolved_date": "2026-06-25",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
       "history": [
         {
@@ -4229,6 +4229,14 @@
           "to": "対応完了",
           "comment": "SRS FR-020 対応URに UR-011 追加・6.13 と FR-020 説明に帰属表示(© 国土地理院常時＋OSM/OpenTopoMap併記＋加工して作成)を明記。UR紐付けはトレーサビリティ修正のためADR不要と決定。",
           "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4243,12 +4251,12 @@
       "created_date": "2026-06-25",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "公開用に含める閲覧機能の包含規則をFR-020/6.13に明記。内部値露出ポリシー・metadata基準日表示の要否を順に確定(露出判断はADR候補)。",
       "notes": null,
       "resolved_date": "2026-06-25",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
       "history": [
         {
@@ -4258,6 +4266,14 @@
           "to": "対応完了",
           "comment": "公開用は『FR-019の閲覧系機能のうち編集UI・エクスポート・localStorageを除く全て』と包含規則で定義(2a)。内部値露出は作業用と同じ全データpopupを許容(2b)。metadataは引き継ぎ・画面表示(2c)。SRS FR-020/6.13 に明記。",
           "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4272,12 +4288,12 @@
       "created_date": "2026-06-25",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "マージ元を『現在のビューア表示状態のスナップショット』と明記する。",
       "notes": null,
       "resolved_date": "2026-06-25",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
       "history": [
         {
@@ -4287,6 +4303,14 @@
           "to": "対応完了",
           "comment": "マージ対象を『エクスポート時点のビューア表示状態のスナップショット(localStorage直読みではなくFR-019引き継ぎ確認後の現在の編集状態)』と SRS FR-020 説明に明記。",
           "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4301,12 +4325,12 @@
       "created_date": "2026-06-25",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "HLD所掌か ADR-SRS 化かを判断し、ADR化なら作成。",
       "notes": null,
       "resolved_date": "2026-06-25",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "3384e768-1723-40a1-846d-79efb36f233f",
       "history": [
         {
@@ -4316,6 +4340,14 @@
           "to": "対応完了",
           "comment": "別テンプレート分離は実装詳細としてHLD所掌、SRS段階のADRは不要と決定。FR-020 は『別テンプレートをソースコードに同梱(詳細はHLD)』の記述を維持。",
           "session_id": "3384e768-1723-40a1-846d-79efb36f233f"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4330,12 +4362,12 @@
       "created_date": "2026-06-26",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-009のデータモデルを確認し、4カテゴリ↔プロパティの対応表をFR-019本文に定義。設計判断を含むためADR-SRS候補。",
       "notes": null,
       "resolved_date": "2026-06-26",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3",
       "history": [
         {
@@ -4353,6 +4385,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-035 でカテゴリ↔フィーチャ対応表を確定。FR-019(1124) に反映。",
           "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4367,12 +4407,12 @@
       "created_date": "2026-06-26",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-012の生成トリガを確定(推定: FR-021エビデンスZIP同梱)し、出力欄・エクスポート記述・FR-021/FR-012本文の整合を取る。",
       "notes": null,
       "resolved_date": "2026-06-26",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3",
       "history": [
         {
@@ -4390,6 +4430,14 @@
           "to": "対応完了",
           "comment": "FR-012 は FR-021 ZIP 同梱で確定済み(FR-012/FR-021本体)。FR-019 の出力欄(1109)・申請エビデンスボタン(1166)を整合。ADR不要。",
           "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4404,12 +4452,12 @@
       "created_date": "2026-06-26",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "delete サミット・key_col を4カテゴリにどう割り当てるか(ISSUE-131と連動)を定義。",
       "notes": null,
       "resolved_date": "2026-06-26",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3",
       "history": [
         {
@@ -4427,6 +4475,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-035 で delete→dominant・key_col→親追従を確定。FR-019(1135) に反映。",
           "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4441,12 +4497,12 @@
       "created_date": "2026-06-26",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "newピーク山岳名の必須/任意と未入力時のFR-011挙動を確定。ADR-SRS候補。",
       "notes": null,
       "resolved_date": "2026-06-26",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3",
       "history": [
         {
@@ -4464,6 +4520,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-036: 山岳名JP必須・EN任意、未入力時は警告して続行可(最終判断はSOTA日本支部担当者)。FR-019(1149)・FR-011※1に反映。",
           "session_id": "df2d6dfa-ec5c-4a1d-86bd-39ceeec110c3"
+        },
+        {
+          "date": "2026-06-28T10:43:18",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4478,12 +4542,12 @@
       "created_date": "2026-06-27",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "新規 ADR-SRS-037 を作成し以下を確定: (1) unmatched を『要確認』状態として続行扱い（停止トリガーから外す）。申請書の削除行には自動掲載せず merged_summit.xlsx・HTMLビューアのカテゴリで担当者に提示。(2) 件数しきい値（config.ini）で解析バグを防御。少数は続行、しきい値超過は解析異常の疑いで停止。(3) is_area_incomplete / is_key_col_unresolved は従来どおり停止維持。影響文書を同期更新（ADR-SRS-011 / ADR-URD-007 / 20_SRS FR-009・データ辞書 / ADR-SRS-033 / ADR-SRS-035 / GLOSSARY）。",
       "notes": "ユーザー確認済み: 要確認続行＋件数しきい値停止。成果物はSRS/ADR文書のみ（ADR-SRS-011 が採用・未実装のためコード変更なし）。",
       "resolved_date": "2026-06-27",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "e58c17f2-0da8-462d-9657-c36861c528fc",
       "history": [
         {
@@ -4501,6 +4565,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-037 を作成し、unmatched を要確認扱い（続行・件数しきい値超過時のみ停止・申請書削除行へ非自動掲載）へ変更。FR-009・データ辞書・ADR-SRS-011/URD-007/033/035・GLOSSARY を同期更新（commit 4a6a1a5）。unmatched_review_threshold の確定値は初回全国解析の実データで見直し（ADR-SRS-037 未確定事項）。",
           "session_id": "e58c17f2-0da8-462d-9657-c36861c528fc"
+        },
+        {
+          "date": "2026-06-28T10:43:19",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4515,12 +4587,12 @@
       "created_date": "2026-06-27",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-SRS-038 で網羅性規約と生成FR/実行時I/Fの集約先（FR-019）切り分けを記録。FR-019 入力表に背景タイル行を追記、SOURCES.md に std/pale 出典追加、GLOSSARY 用語追加、docs/CLAUDE.md に規約明文化、spec-panel に横串チェック追加（commit 39b83f5）。",
       "notes": null,
       "resolved_date": "2026-06-27",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "927586d5-3dc0-49f4-a5af-076306de535d",
       "history": [
         {
@@ -4538,6 +4610,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-038 作成・FR-019 入力表に背景タイル追記・SOURCES/GLOSSARY/CLAUDE.md 整備・spec-panel 横串チェック追加（commit 39b83f5）",
           "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
+        },
+        {
+          "date": "2026-06-28T10:43:19",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4552,12 +4632,12 @@
       "created_date": "2026-06-27",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-SRS-039 を作成し位置付けと反映方針を記録。SRS §6.6/§6.13 に注記・ADR 参照、既定背景タイルを明示、GLOSSARY 用語追加、docs/CLAUDE.md に運用ルール追加（commit a6426f8）。反映範囲 A（位置付け明文化＋SRS不足分のみ）。HLD 作成・mockup サンプルデータ修正はスコープ外。",
       "notes": null,
       "resolved_date": "2026-06-27",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "927586d5-3dc0-49f4-a5af-076306de535d",
       "history": [
         {
@@ -4575,6 +4655,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-039 作成・SRS §6.6/§6.13 注記・既定背景タイル明示・GLOSSARY/CLAUDE.md 整備（commit a6426f8）",
           "session_id": "927586d5-3dc0-49f4-a5af-076306de535d"
+        },
+        {
+          "date": "2026-06-28T10:43:19",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4589,12 +4677,12 @@
       "created_date": "2026-06-27",
       "stage": "COD",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "タスク1: ADR-SRS-040 作成（排除方針記録）、タスク2: ADR-SRS-018 の Markdown リンク2件をテキスト化、タスク3: docs 全体の ISSUE-ID 除去（40件）＋ research ファイル git mv、タスク4: lint 検査C 追加、タスク5: docs/CLAUDE.md にルール明文化",
       "notes": null,
       "resolved_date": "2026-06-27",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "1e904419-e66a-4b40-94d6-7c137294638a",
       "history": [
         {
@@ -4612,6 +4700,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-040 作成、docs/ 全体の ISSUE-ID 除去（40件）、research ファイル git mv、lint 検査C 追加（docs/ スコープ限定・インラインコード除外）、docs/CLAUDE.md ルール明文化。make lint 警告ゼロ確認。",
           "session_id": "1e904419-e66a-4b40-94d6-7c137294638a"
+        },
+        {
+          "date": "2026-06-28T10:43:19",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     },
@@ -4626,12 +4722,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "【設計確定・ADR 作成済み後 close】ユーザー承認: 案A（geojson スキーマ拡張）。計画: mgmt/plan.md タスク2-3",
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-28",
       "created_session_id": "b6c2cdf7-a5c7-4f19-89e8-5f15ec1eee58",
       "history": [
         {
@@ -4641,6 +4737,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-041 作成・FR-009 geojson スキーマに 6 プロパティ追加・FR-012 文言整合（コミット ec8ef27）",
           "session_id": "b6c2cdf7-a5c7-4f19-89e8-5f15ec1eee58"
+        },
+        {
+          "date": "2026-06-28T10:43:19",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "8a2abedb-db5f-456f-b410-8a54769e0826"
         }
       ]
     }
