@@ -873,7 +873,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 **説明**:
 
-  - `ref/summitslist.csv` の JA プレフィックスサミットと突合する
+  - `ref/summitslist.csv` の JA プレフィックスサミットのうち、`ValidTo`（`DD/MM/YYYY` 形式）が実行日以降のもの（現役サミット）を突合対象とする。`ValidTo` < 実行日のサミットは廃止済みとして除外する（[6.2.11 参照](#6211-sota-サミットリスト-csv)）
   - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
   - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。merged_peak.csv と merged_peak.geojson の突合キーは `peak_lat`/`peak_lon`（join キー）であり、[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) が GeoJSON Feature properties として保持する値と merged_peak.csv の列値が完全一致する（[ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) が当該世代の merged_peak.csv に絞り込んだ上で merged_peak.geojson を生成するため（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）、merged_peak.csv に対応しない孤立ポリゴン（orphan）は merged_peak.geojson に存在せず、本突合で誤って参照されることはない。**merged_peak.geojson にはポリゴン以外（`feature_type="peak"`/`"key_col"`/`"peak_col_link"` 等）のフィーチャも含まれるため、point-in-polygon は `feature_type ∈ {activation_zone, delete_zone}` のポリゴンフィーチャに絞って処理する**（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）
   - マッチング一意性: **プロミネンス最終フィルタ閾値 > アクティベーションゾーン標高差**（[データ辞書参照](#221-設定可能項目)・デフォルトでは 150m > 25m。両値とも SOTA 規定の固定値）が成り立つため、アクティベーションゾーンは互いに素であり、(a) 1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在せず、(b) 1 つの SOTA サミットが複数ピークのアクティベーションゾーンに同時に含まれることもない（両者は同一の論拠から従う）。これにより、`matched` サミットが紐付くピーク・バンド変更判定の基準ピークは一意に定まり、複数ピークへの帰属タイブレークは不要となる（互いに素性の証明: 2 ピークの AZ が交わると仮定すると、AZ は「ピーク標高 − アクティベーションゾーン標高差」以上の連結領域であるため、両ピーク間に「低い方のピーク標高 − アクティベーションゾーン標高差」以上の経路が存在することになり、低い方のピークのプロミネンスがアクティベーションゾーン標高差以下となって最終フィルタ閾値に反する）。delete判定ゾーン内には縦走路上などで複数 SOTA サミットが含まれうるが、主ピーク特定アルゴリズム（[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)）で各サミットの主ピークが一意に決まる
@@ -1658,7 +1658,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル | `ref/summitslist.csv` |
 | 取得元 | <https://www.sotadata.org.uk/summitslist.csv> |
 | 対象レコード | SummitCode が `JA` で始まるもの |
-| 使用カラム | SummitCode, SummitName, AltM, Latitude, Longitude（その他は無視） |
+| 使用カラム | SummitCode, SummitName, AltM, Latitude, Longitude, ValidTo（その他は無視） |
+| 有効レコード絞り込み | `ValidTo`（`DD/MM/YYYY` 形式）を解析し、**実行日以降**のレコードのみを突合対象とする（`ValidTo` < 実行日のサミットは廃止済みとして除外する） |
 
 ---
 
