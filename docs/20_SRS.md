@@ -1362,7 +1362,6 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | 必須 | — | 作業用 HTML ビューアに埋め込み済み |
 | localStorage 編集内容 | 内部データ | 任意 | 初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート） | [FR-019](#fr-019-html-ビューア機能仕様) が管理。未編集（localStorage 空）の場合は初期値を使用する |
-| サミット一覧（申請内容反映版）（`merged_summit_revised.xlsx`） | 外部I/F | 必須 | — | ZIP 生成と同一操作内で [FR-012](#fr-012-サミット一覧申請内容反映版生成) を内部実行して生成する |
 
 **出力**:
 
@@ -1507,7 +1506,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 項目 | 仕様 |
 |---|---|
 | 用途 | matched・delete サミットの日本語山岳名（`summit_name_jp`）取得（[FR-009](#fr-009-sotaリスト突合match_status-判定)） |
-| ファイル | `ref/geojson_v{N}/ja0.geojson` 〜 `ja9.geojson`（{N} は **SOTA 既存サミット GeoJSON バージョン**（[データ辞書参照](#221-設定可能項目)）） |
+| ファイル | `ref/geojson_v{N}/ja0_v{N}.geojson` 〜 `ja9_v{N}.geojson`（{N} は **SOTA 既存サミット GeoJSON バージョン**（[データ辞書参照](#221-設定可能項目)）） |
 | ファイル分割 | 全国サミットデータが10ファイルに分割されている（分割方針は出典元データに依存。詳細は出典元に確認） |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
