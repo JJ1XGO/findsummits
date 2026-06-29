@@ -57,10 +57,11 @@
     }
     #filters label { display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; white-space: nowrap; }
     #filters input[type="checkbox"] { cursor: pointer; width: 13px; height: 13px; accent-color: currentColor; }
-    #filters label[data-cat="new"]       { color: #4D7A20; }
-    #filters label[data-cat="dominant"]  { color: #C8101E; }
-    #filters label[data-cat="changed"]   { color: #DC5D04; }
-    #filters label[data-cat="unchanged"] { color: #888; }
+    #filters label[data-cat="add"]        { color: #4D7A20; }
+    #filters label[data-cat="band_change"]{ color: #DC5D04; }
+    #filters label[data-cat="no_change"] { color: #888; }
+    #filters label[data-cat="delete"]    { color: #C8101E; }
+    #filters label[data-cat="review"]    { color: #7B2FBE; }
 
     #map { flex: 1; }
 
@@ -236,10 +237,11 @@
   <span class="spacer"></span>
   <div id="filters">
     <span>表示:</span>
-    <label data-cat="new">       <input type="checkbox" data-cat="new"       checked> 新規</label>
-    <label data-cat="changed">   <input type="checkbox" data-cat="changed"   checked> 変更あり</label>
-    <label data-cat="dominant">  <input type="checkbox" data-cat="dominant"  checked> 削除</label>
-    <label data-cat="unchanged"> <input type="checkbox" data-cat="unchanged" checked> 変更なし</label>
+    <label data-cat="add">        <input type="checkbox" data-cat="add"        checked> 追加</label>
+    <label data-cat="band_change"><input type="checkbox" data-cat="band_change" checked> 変更あり</label>
+    <label data-cat="no_change"> <input type="checkbox" data-cat="no_change"  checked> 変更なし</label>
+    <label data-cat="delete">    <input type="checkbox" data-cat="delete"     checked> 削除</label>
+    <label data-cat="review">    <input type="checkbox" data-cat="review"     checked> 要確認</label>
   </div>
 </div>
 
@@ -259,93 +261,93 @@ const GEOJSON_DATA = {
     generated_at: "2026-05-13T09:00:00+09:00"
   },
   features: [
-    // ── new: 新規ピーク候補（580m → 2pt）─────────────────────────────
+    // ── add: 新規ピーク候補（580m → 2pt）─────────────────────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.68, 35.31] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A01",
+      properties: { feature_type: "peak", match_status: "new", category: "add", summit_code: "JA/ZZ-A01",
                     peak_elev: 580, prominence: 165, stability: "confirmed", key_col_resolved: true,
                     points: 2,
                     rationale: "国土地理院標高タイルで解析\n35.31000,138.68000\n所在地：山梨県 南部町\nコル標高：415m\nプロミネンス：165m",
                     analysis_count: 2, expected_count: 2, municipality: "山梨県 南部町" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.670,35.300],[138.690,35.300],[138.690,35.320],[138.670,35.320],[138.670,35.300]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-A01", area_complete: true, points: 2 } },
+      properties: { feature_type: "activation_zone", category: "add", summit_code: "JA/ZZ-A01", area_complete: true, points: 2 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.66, 35.29] },
-      properties: { feature_type: "key_col", summit_code: "JA/ZZ-A01", col_elev: 415, points: 2, col_margin_px: 78 } },
+      properties: { feature_type: "key_col", category: "add", summit_code: "JA/ZZ-A01", col_elev: 415, points: 2, col_margin_px: 78 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.650,35.278],[138.672,35.278],[138.672,35.302],[138.650,35.302],[138.650,35.278]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A01" } },
+      properties: { feature_type: "delete_zone", category: "add", summit_code: "JA/ZZ-A01" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.68,35.31],[138.66,35.29]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/ZZ-A01" } },
+      properties: { feature_type: "prominence_range", category: "add", summit_code: "JA/ZZ-A01" } },
 
-    // ── new: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
+    // ── add: 島嶼部最高峰（key_col_resolved=false・離島 820m → 6pt）──────────
     // col_lat/col_lon=0.0 sentinel のため key_col feature・prominence_range を含めない（SRS FR-006 海面確定規則）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.92, 35.22] },
-      properties: { feature_type: "peak", match_status: "new", summit_code: "JA/ZZ-A02",
+      properties: { feature_type: "peak", match_status: "new", category: "add", summit_code: "JA/ZZ-A02",
                     peak_elev: 820, prominence: 820, stability: "unstable",
                     key_col_resolved: false, points: 6,
                     rationale: "国土地理院標高タイルで解析\n35.22000,138.92000\n所在地：東京都 大島町\nコル標高：未確定\nプロミネンス：未確定",
                     analysis_count: 2, expected_count: 2, municipality: "東京都 大島町" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.910,35.210],[138.930,35.210],[138.930,35.230],[138.910,35.230],[138.910,35.210]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/ZZ-A02", area_complete: true, points: 6 } },
+      properties: { feature_type: "activation_zone", category: "add", summit_code: "JA/ZZ-A02", area_complete: true, points: 6 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/ZZ-A02" } },
+      properties: { feature_type: "delete_zone", category: "add", summit_code: "JA/ZZ-A02" } },
 
-    // ── matched: 変更なし（key_col_resolved=true・3776m → 10pt）──────────────
+    // ── no_change: 変更なし（key_col_resolved=true・3776m → 10pt）────────────
     { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
-      properties: { feature_type: "peak", match_status: "matched",
+      properties: { feature_type: "peak", match_status: "matched", category: "no_change",
                     summit_code: "JA/SO-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
                     peak_elev: 3776, prominence: 376, stability: "unstable",
                     key_col_resolved: true,
                     is_band_change_candidate: false, points: 10,
                     rationale: "", analysis_count: 4, expected_count: 4, municipality: "静岡県 富士宮市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/SO-001", area_complete: true, points: 10 } },
+      properties: { feature_type: "activation_zone", category: "no_change", summit_code: "JA/SO-001", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.706,35.336],[138.754,35.336],[138.754,35.384],[138.706,35.384],[138.706,35.336]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/SO-001" } },
+      properties: { feature_type: "delete_zone", category: "no_change", summit_code: "JA/SO-001" } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
-      properties: { feature_type: "key_col", summit_code: "JA/SO-001", col_elev: 3400, points: 10, col_margin_px: 120 } },
+      properties: { feature_type: "key_col", category: "no_change", summit_code: "JA/SO-001", col_elev: 3400, points: 10, col_margin_px: 120 } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/SO-001" } },
+      properties: { feature_type: "prominence_range", category: "no_change", summit_code: "JA/SO-001" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.7274,35.3606]] },
-      properties: { feature_type: "coord_diff", summit_code: "JA/SO-001", match_status: "matched" } },
+      properties: { feature_type: "coord_diff", category: "no_change", summit_code: "JA/SO-001", match_status: "matched" } },
 
-    // ── matched: 変更候補（is_band_change_candidate=true・2100m/8pt・SOTAは1950m/6pt）──
+    // ── band_change: 変更候補（is_band_change_candidate=true・2100m/8pt・SOTAは1950m/6pt）──
     { type: "Feature", geometry: { type: "Point", coordinates: [138.85, 35.50] },
-      properties: { feature_type: "peak", match_status: "matched",
+      properties: { feature_type: "peak", match_status: "matched", category: "band_change",
                     summit_code: "JA/SZ-001", summit_name: "Sample-dake", summit_name_jp: "サンプル岳",
                     peak_elev: 2100, prominence: 450, stability: "confirmed",
                     key_col_resolved: true, is_band_change_candidate: true, points: 8,
                     rationale: "国土地理院 DEM 解析による標高再測定: 1950m (6pt) → 2100m (8pt)\n座標: 35.50000,138.85000（長野県 飯田市）",
                     analysis_count: 3, expected_count: 3, municipality: "長野県 飯田市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.840,35.490],[138.860,35.490],[138.860,35.510],[138.840,35.510],[138.840,35.490]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/SZ-001", area_complete: true, points: 8 } },
+      properties: { feature_type: "activation_zone", category: "band_change", summit_code: "JA/SZ-001", area_complete: true, points: 8 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.832,35.482],[138.868,35.482],[138.868,35.518],[138.832,35.518],[138.832,35.482]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/SZ-001" } },
+      properties: { feature_type: "delete_zone", category: "band_change", summit_code: "JA/SZ-001" } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.83, 35.48] },
-      properties: { feature_type: "key_col", summit_code: "JA/SZ-001", col_elev: 1650, points: 8, col_margin_px: 85 } },
+      properties: { feature_type: "key_col", category: "band_change", summit_code: "JA/SZ-001", col_elev: 1650, points: 8, col_margin_px: 85 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.848, 35.497] },
-      properties: { feature_type: "summit", match_status: "matched",
+      properties: { feature_type: "summit", match_status: "matched", category: "band_change",
                     summit_code: "JA/SZ-001", summit_name: "Sample-dake", summit_name_jp: "サンプル岳",
                     sota_alt_m: 1950, sota_points: 6, rationale: "" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.85,35.50],[138.83,35.48]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/SZ-001" } },
+      properties: { feature_type: "prominence_range", category: "band_change", summit_code: "JA/SZ-001" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.85,35.50],[138.848,35.497]] },
-      properties: { feature_type: "coord_diff", summit_code: "JA/SZ-001", match_status: "matched" } },
+      properties: { feature_type: "coord_diff", category: "band_change", summit_code: "JA/SZ-001", match_status: "matched" } },
 
-    // ── dominant: 削除候補（ピーク 1050m → 8pt・SOTA サミット 880m → 6pt）──
+    // ── add（ピーク側）+ delete（サミット側）: dominant ピーク 1050m → 8pt・SOTA サミット 880m → 6pt ──
     // 本ツール検出ピーク(8pt)のコル等高線内に SOTA 既存サミット(6pt)が位置しているが
-    // アクティベーションゾーン外 → ピークが dominant peak、サミットが削除候補
+    // アクティベーションゾーン外 → ピークが dominant peak（category=add）、サミットが削除候補（category=delete）
     { type: "Feature", geometry: { type: "Point", coordinates: [138.65, 35.25] },
-      properties: { feature_type: "peak", match_status: "dominant",
+      properties: { feature_type: "peak", match_status: "dominant", category: "add",
                     summit_code: "JA/YN-A00", summit_name: "", summit_name_jp: "",
                     peak_elev: 1050, prominence: 320, stability: "confirmed", key_col_resolved: true,
                     points: 8,
                     rationale: "国土地理院標高タイルで解析\n35.25000,138.65000\n所在地：神奈川県 相模原市\nコル標高：730m\nプロミネンス：320m",
                     analysis_count: 2, expected_count: 2, municipality: "神奈川県 相模原市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.646,35.246],[138.654,35.246],[138.654,35.254],[138.646,35.254],[138.646,35.246]]] },
-      properties: { feature_type: "activation_zone", summit_code: "JA/YN-A00", area_complete: true, points: 8 } },
+      properties: { feature_type: "activation_zone", category: "add", summit_code: "JA/YN-A00", area_complete: true, points: 8 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.63, 35.23] },
-      properties: { feature_type: "key_col", summit_code: "JA/YN-A00", col_elev: 730, points: 8, col_margin_px: 62 } },
+      properties: { feature_type: "key_col", category: "add", summit_code: "JA/YN-A00", col_elev: 730, points: 8, col_margin_px: 62 } },
     { type: "Feature", geometry: { type: "Point", coordinates: [138.655, 35.245] },
-      properties: { feature_type: "summit", match_status: "delete",
+      properties: { feature_type: "summit", match_status: "delete", category: "delete",
                     summit_code: "JA/ZZ-D02", summit_name: "Sample-yama", summit_name_jp: "サンプル山",
                     sota_alt_m: 880, sota_points: 6,
                     dominant_peak_code: "JA/YN-A00",
@@ -353,18 +355,28 @@ const GEOJSON_DATA = {
                     municipality: "神奈川県 相模原市",
                     rationale: "国土地理院標高タイルを解析し、JA/YN-A00に従属している事を確認" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.635,35.230],[138.665,35.230],[138.665,35.270],[138.635,35.270],[138.635,35.230]]] },
-      properties: { feature_type: "delete_zone", summit_code: "JA/YN-A00" } },
+      properties: { feature_type: "delete_zone", category: "add", summit_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.63,35.23]] },
-      properties: { feature_type: "prominence_range", summit_code: "JA/YN-A00" } },
+      properties: { feature_type: "prominence_range", category: "add", summit_code: "JA/YN-A00" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.65,35.25],[138.655,35.245]] },
-      properties: { feature_type: "coord_diff", summit_code: "JA/YN-A00", match_status: "dominant" } }
+      properties: { feature_type: "coord_diff", category: "delete", summit_code: "JA/YN-A00", match_status: "dominant" } },
+
+    // ── review: 孤立既存サミット（unmatched・どのピークにも紐付かない要確認サミット）──
+    { type: "Feature", geometry: { type: "Point", coordinates: [139.10, 35.60] },
+      properties: { feature_type: "summit", match_status: "unmatched", category: "review",
+                    summit_code: "JA/KN-001", summit_name: "Review-yama", summit_name_jp: "要確認山",
+                    sota_alt_m: 720, sota_points: 4,
+                    municipality: "神奈川県 山北町" } }
   ]
 };
 
 // 既存SOTAサミット全件（geojson_v31 由来・summits_data.js）を「変更なし」サミットとしてマージ
 // _ref=true 印: 既存サミットは Canvas 丸（summitRenderer）。解析結果（peak/col/summit）も同一 Canvas で描く
 if (window.ALL_SUMMITS && Array.isArray(window.ALL_SUMMITS.features)) {
-  window.ALL_SUMMITS.features.forEach(f => { f.properties._ref = true; });
+  window.ALL_SUMMITS.features.forEach(f => {
+    f.properties._ref = true;
+    f.properties.category = "no_change";
+  });
   GEOJSON_DATA.features.push(...window.ALL_SUMMITS.features);
 }
 
@@ -918,24 +930,15 @@ let savedInputs = {};
 try { savedInputs = JSON.parse(localStorage.getItem(storageKey) || "{}"); } catch(e) {}
 
 // ---- フィルター用レイヤーグループ ----
-// カテゴリ: new / dominant / changed（matched で入力あり）/ unchanged（matched で入力なし）
+// カテゴリ: add / band_change / no_change / delete / review
 const filterGroups = {
-  new:       L.layerGroup().addTo(map),
-  dominant:  L.layerGroup().addTo(map),
-  changed:   L.layerGroup().addTo(map),
-  unchanged: L.layerGroup().addTo(map),
+  add:         L.layerGroup().addTo(map),
+  band_change: L.layerGroup().addTo(map),
+  no_change:   L.layerGroup().addTo(map),
+  delete:      L.layerGroup().addTo(map),
+  review:      L.layerGroup().addTo(map),
 };
 
-// summit_code → カテゴリ のマップ（フィーチャ振り分け用）
-const peakCategory = {};
-
-// カテゴリ判定（peak フィーチャ用）
-function categorize(p) {
-  if (p.match_status === "new")      return "new";
-  if (p.match_status === "dominant") return "dominant";
-  if (p.is_band_change_candidate)    return "changed";
-  return "unchanged";
-}
 
 function rawPropsHtml(props) {
   const rows = Object.entries(props)
@@ -965,14 +968,7 @@ map.on('zoomend', () => {
 function renderFeatures() {
   Object.values(filterGroups).forEach(g => g.clearLayers());
 
-  // summit_code → category を先に解決
-  GEOJSON_DATA.features.forEach(f => {
-    const p = f.properties;
-    if (p.feature_type !== "peak") return;
-    peakCategory[p.summit_code] = categorize(p);
-  });
-
-  // summit_code → peak feature のマップ（各フィーチャのカテゴリ解決用）
+  // summit_code → peak feature のマップ（popup 相互参照・turf 差分用）
   const peakByCode = {};
   const colByCode = {};
   const summitByCode = {};
@@ -990,12 +986,8 @@ function renderFeatures() {
     const geom = f.geometry;
     const color = pointsToColor(p.points);
 
-    function catByCode(code) {
-      return peakCategory[code] || "unchanged";
-    }
-
     if (p.feature_type === "activation_zone") {
-      const cat = catByCode(p.summit_code);
+      const cat = p.category || "no_change";
       L.polygon(geom.coordinates[0].map(c => [c[1], c[0]]), {
         pane: "azPane", fillColor: "#4D7A20", fillOpacity: 0.1, stroke: false, interactive: false
       }).addTo(filterGroups[cat]);
@@ -1003,7 +995,7 @@ function renderFeatures() {
     }
 
     if (p.feature_type === "delete_zone") {
-      const cat = catByCode(p.summit_code);
+      const cat = p.category || "no_change";
       const style = { fillColor: "#C8101E", fillOpacity: 0.15, stroke: false, interactive: false };
       // 対応する AZ と重なる部分を除外し、重なっていない部分だけ赤く描く（turf で差分）
       let drawData = f;
@@ -1017,14 +1009,14 @@ function renderFeatures() {
     }
 
     if (p.feature_type === "prominence_range") {
-      const cat = catByCode(p.summit_code);
+      const cat = p.category || "no_change";
       L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
         { color: "#777", weight: 3, dashArray: "4,3" }).bindPopup(rawPropsHtml(p)).addTo(filterGroups[cat]);
       return;
     }
 
     if (p.feature_type === "coord_diff") {
-      const cat = catByCode(p.summit_code);
+      const cat = p.category || "no_change";
       L.polyline(geom.coordinates.map(c => [c[1], c[0]]),
         { color: "#777", weight: 3, dashArray: "4,3" }).bindPopup(rawPropsHtml(p)).addTo(filterGroups[cat]);
       return;
@@ -1032,7 +1024,7 @@ function renderFeatures() {
 
     if (p.feature_type === "peak") {
       const coordKey = p.summit_code;
-      const cat = peakCategory[coordKey];
+      const cat = p.category || "no_change";
       const saved = savedInputs[coordKey] || {};
       const marker = new CanvasTriangle([geom.coordinates[1], geom.coordinates[0]], { renderer: summitRenderer, dir: 'up', radius: summitRadius(), color: '#fff', fillColor: pointsToColor(p.points), fillOpacity: 1, weight: 1.5 });
       _sampleMarkers.push(marker);
@@ -1137,7 +1129,7 @@ function renderFeatures() {
     }
 
     if (p.feature_type === "key_col") {
-      const cat = catByCode(p.summit_code);
+      const cat = p.category || "no_change";
       const colLat = geom.coordinates[1].toFixed(5);
       const colLon = geom.coordinates[0].toFixed(5);
       const colParentPeak = peakByCode[p.summit_code];
@@ -1161,8 +1153,10 @@ function renderFeatures() {
 
     if (p.feature_type === "summit") {
       const sotaColor = pointsToColor(p.sota_points);
-      const cat = peakCategory[p.summit_code] ?? (p.match_status === "delete" ? "dominant" : "unchanged");
-      const badge = p.match_status === "delete" ? "delete" : "matched";
+      const cat = p.category || "no_change";
+      const badge = p.match_status === "delete" ? "delete"
+                  : p.match_status === "unmatched" ? "review"
+                  : "matched";
       const sotaLat = geom.coordinates[1].toFixed(5);
       const sotaLon = geom.coordinates[0].toFixed(5);
       let summitPopupHtml;
@@ -1179,6 +1173,17 @@ function renderFeatures() {
           <div class="popup-notes-label">変更の根拠</div>
           <textarea id="notes_${p.summit_code}" class="popup-textarea">${savedNotes}</textarea>
           <button onclick="saveInput('${p.summit_code}')" style="margin-top:4px;width:100%;font-size:11px;">保存</button>
+          ${rawPropsHtml(p)}
+        `;
+      } else if (p.match_status === "unmatched") {
+        summitPopupHtml = `
+          <div class="popup-title"><i class="fa-solid fa-circle" style="color:${sotaColor}"></i> ${p.summit_name_jp || p.summit_name}<span class="popup-badge" style="background:#7B2FBE">${badge}</span></div>
+          <div class="popup-row"><label>コード</label>${p.summit_code}</div>
+          <div class="popup-row"><label>緯度</label>${sotaLat}</div>
+          <div class="popup-row"><label>経度</label>${sotaLon}</div>
+          <div class="popup-row"><label>SOTA標高</label>${p.sota_alt_m}m</div>
+          <div class="popup-row"><label>ポイント</label>${p.sota_points}pt</div>
+          <div style="color:#7B2FBE;font-size:11px;margin-top:4px">要確認（孤立サミット）：どのピークの AZ・delete 判定ゾーンにも含まれません</div>
           ${rawPropsHtml(p)}
         `;
       } else {
@@ -1228,7 +1233,7 @@ function saveInput(key) {
   const notes = document.getElementById("notes_" + key)?.value || "";
   savedInputs[key] = { jp, en, notes };
   localStorage.setItem(storageKey, JSON.stringify(savedInputs));
-  renderFeatures(); // 変更あり/なし の再分類
+  renderFeatures(); // localStorage 保存後の再描画
   // 再描画後に変更したフィルターグループを地図に反映
   document.querySelectorAll(".filter-btn").forEach(b => {
     if (b.classList.contains("active")) filterGroups[b.dataset.cat].addTo(map);
@@ -1363,8 +1368,8 @@ new ExportControl().addTo(map);
     clearSuggest();
     searchInput.value = p.summit_name_jp || p.summit_name || p.summit_code || "";
 
-    // フィルターで非表示なら ON にする（summit は peakCategory に無いため renderFeatures と同じロジックで解決）
-    const cat = peakCategory[p.summit_code] ?? (p.match_status === "delete" ? "dominant" : "unchanged");
+    // フィルターで非表示なら ON にする（各フィーチャの category プロパティを参照）
+    const cat = feature.properties.category || "no_change";
     if (cat && !map.hasLayer(filterGroups[cat])) {
       filterGroups[cat].addTo(map);
       const cb = document.querySelector(`#filters input[data-cat="${cat}"]`);
@@ -1409,7 +1414,7 @@ document.getElementById("btn-export").addEventListener("click", () => {
   alert("（モックアップ）申請書 .xlsx を単独ダウンロードします\n実物では SheetJS で SOTA申請書フォーマットの XLSX を生成してダウンロードします");
 });
 document.getElementById("btn-evidence").addEventListener("click", () => {
-  alert("（モックアップ）申請エビデンス .zip をダウンロードします\n\n同梱内容:\n・merged_summit_revised.xlsx（サミット一覧（申請内容反映版））\n  ※ 最後に「出典」シートを付与（UR-011・ADR-014 準拠）\n・new.geojson\n・dominant.geojson\n・changed.geojson\n・unchanged.geojson\n  ※ 各 GeoJSON には metadata.attribution を含む\n\n実物では JSZip で生成してダウンロードします");
+  alert("（モックアップ）申請エビデンス .zip をダウンロードします\n\n同梱内容:\n・merged_summit_revised.xlsx（サミット一覧（申請内容反映版））\n・add.geojson（追加申請候補ピークおよび関連フィーチャ）\n・delete.geojson（削除申請候補サミットおよび接続線）\n・changed.geojson（ポイントバンド変更候補ピークおよび関連フィーチャ）\n・unchanged.geojson（変更なし既存サミットおよび関連フィーチャ）\n・review.geojson（要確認サミット（孤立既存サミット））\n  ※ 各 GeoJSON には metadata.attribution を含む\n\n実物では JSZip で生成してダウンロードします");
 });
 document.getElementById("btn-publish").addEventListener("click", () => {
   alert("（モックアップ）公開用 HTML を単独ダウンロードします\n実物では入力内容を埋め込んだ閲覧専用 HTML をダウンロードします");
