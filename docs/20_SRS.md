@@ -1299,7 +1299,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | 必須 | — | 作業用 HTML ビューアに埋め込み済み |
-| localStorage 編集内容 | 内部データ | 必須 | — | [FR-019](#fr-019-html-ビューア機能仕様) が管理 |
+| localStorage 編集内容 | 内部データ | 必須 | — | 山岳名（`summit_name_jp`）編集値のみ参照（`rationale` は不使用）。[FR-019](#fr-019-html-ビューア機能仕様) が管理 |
 
 **出力**:
 
@@ -1313,13 +1313,14 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - **行集約規則**: 1 行 = 1 サミット（申請の主語）。Polygon / LineString は行を生まない。peak Point・col Point・AZ 内 matched サミット Point は 1 行に集約する。category 別のカラム値の取得元フィーチャ（delete/review 行の `peak_*`/`col_*` は空欄になるなど）は [FR-009 行生成モデル](#fr-009-sotaリスト突合match_status-判定) を参照（正本: [ADR-SRS-045](decisions/ADR-SRS-045-summit-xlsx-row-aggregation-model.md)）
   - `rationale` プロパティは含めない（申請書根拠テキストは HTML ビューアで確認・編集し XLSX に直接反映する。サミット一覧（申請内容反映版）は座標・標高・突合結果のみを記録する）
   - **出典シート**: XLSX の最後に「出典」シートを設け、「地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)」を記載する（[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
+  - `no_change`・`review` 行も XLSX に含む（申請対象外だが SOTA 日本支部担当者が全件状態をエビデンスとして確認できるよう同梱する。詳細は [FR-021](#fr-021-申請エビデンス-zip-生成) 参照）
   - **出力カラム**:
 
 | カラム | 説明 |
 |---|---|
 | category | 申請カテゴリ（add/band_change/no_change/delete/review）。[FR-009](#fr-009-sotaリスト突合match_status-判定) が算出した `category` プロパティの値をそのまま転記（[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)） |
-| match_status | SOTAリスト突合結果（ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched）。`category=review`（`unmatched`）の per-row 確認に使用 |
-| stability | 解析品質（confirmed/unstable/-） |
+| match_status | SOTAリスト突合結果。category 別の値: add(new)→new / add(dominant)→dominant / band_change/no_change→matched（matched peak Point から転記）/ delete→delete / review→unmatched。`category=review`（`unmatched`）の per-row 確認に使用 |
+| stability | 解析品質（confirmed/unstable/-。`-` = 広域モード確定ピーク・通常モード安定性評価なし。定義は [FR-008](#fr-008-per-mesh-csv-統合) 参照） |
 | summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A00）または ZZ/ZZ-A00（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
 | summit_name_jp | 日本語山岳名。localStorage に編集値があればそれを優先し（[FR-019](#fr-019-html-ビューア機能仕様) が管理）、なければ [FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` に格納済みの値を引き継ぐ。未取得時は空文字 |
@@ -1335,16 +1336,16 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | col_margin_px | コルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
-| sota_lat | SOTA リスト登録緯度（matched のみ（band_change/no_change）。new/dominant は空欄） |
-| sota_lon | SOTA リスト登録経度（matched のみ（band_change/no_change）。new/dominant は空欄） |
-| sota_alt_m | SOTA リスト登録標高（m）。matched のみ（band_change/no_change）。new/dominant は空欄 |
-| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched のみ（band_change/no_change）。new/dominant は空欄 |
-| is_band_change_candidate | Points バンド遷移フラグ（bool）。`points ≠ sota_points` の場合 true（変更申請対象）。matched のみ。それ以外は空欄 |
+| sota_lat | SOTA リスト登録緯度。matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄 |
+| sota_lon | SOTA リスト登録経度。matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄 |
+| sota_alt_m | SOTA リスト登録標高（m）。matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄 |
+| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄 |
+| is_band_change_candidate | Points バンド遷移フラグ（bool）。`points ≠ sota_points` の場合 true（変更申請対象）。band_change/no_change のみ（matched peak 行）。それ以外は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
 | region_name | 都道府県名（北海道は振興局名）。N03 前処理済み地域 GeoJSON の `region_name` から取得。未取得時は空文字 |
-| area_complete | アクティベーションゾーンが解析範囲内で完結しているか（true=完結 / false=途切れ）。ピーク行のみ。既存サミット行は空欄 |
+| area_complete | アクティベーションゾーンが解析範囲内で完結しているか（true=完結 / false=途切れ）。add/band_change/no_change のみ（matched peak Point 参照）。delete/review 行は空欄 |
 | dominant_peak_code | 主ピークのサミットコード（delete サミットのみ付与）。主ピークが dominant の場合は仮サミットコード、主ピークが matched の場合は既存 SOTA コード |
-| dominant_peak_dist_m | 主ピークから削除候補サミット座標までの距離 m（Haversine 公式）。delete サミットのみ付与 |
+| dominant_peak_dist_m | 主ピークから削除候補サミット座標までの距離 m（Haversine 公式）。delete サミットのみ付与。ビューアなしで delete 申請根拠を行内検証するための距離（[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照） |
 
 ---
 

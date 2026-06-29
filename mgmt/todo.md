@@ -112,6 +112,46 @@
   - 対象: `scripts/merge.py` または `scripts/prefetch_tiles.py`
   - 仕様: SRS FR-019（ビューア表示時は末尾に `(UTC)` を付記）
 
+### FR-012 spec-panel 指摘（SRS 修正のみ）
+
+- [ ] **指摘①②（高）: FR-012 カラム表 `sota_*` の delete/review 行欠落修正（ADR-SRS-045 追従）**
+  - `sota_lat/sota_lon/sota_alt_m/sota_points` の説明が「matched のみ」だが ADR-SRS-045 では delete/review も値あり
+  - 修正後: 「matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄」
+  - 対象: `docs/20_SRS.md` L1338-1341（カラム表 sota_* 4 行）
+
+- [ ] **指摘②（高）: `is_band_change_candidate` 説明の旧用語「matched のみ」を category 表現に修正**
+  - 「matched のみ」は match_status 値と category の混同を招く（ADR-SRS-044 の 5 カテゴリモデルが正本）
+  - 修正後: 「band_change/no_change のみ（matched peak 行）。それ以外は空欄」
+  - 対象: `docs/20_SRS.md` L1342
+
+- [ ] **指摘③（中）: `match_status` カラムの値域説明を行集約モデルに整合させる**
+  - 現記述「ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched」が ADR-SRS-045 と不整合
+  - 修正後: category 別に対応を明示（add(new)→new / add(dominant)→dominant / band_change/no_change→matched / delete→delete / review→unmatched）
+  - 対象: `docs/20_SRS.md` L1321
+
+- [ ] **指摘④（中）: `stability` カラムに FR-008 参照リンクと `-` の補足説明を追加**
+  - FR-009 カラム表（L1010）には「定義は [FR-008] 参照」があるが FR-012 には欠落
+  - 修正後: 「解析品質（confirmed/unstable/-。`-` = 広域モード確定ピーク・通常モード安定性評価なし。定義は [FR-008](#fr-008-per-mesh-csv-統合) 参照）」
+  - 対象: `docs/20_SRS.md` L1322
+
+- [ ] **指摘⑤（中）: 入力テーブル `localStorage 編集内容` の備考を FR-011 と粒度を揃える**
+  - FR-011 は「山岳名・rationale 編集値」と明示、FR-012 は `[FR-019] が管理` のみで参照フィールドが不明
+  - 修正後: 「山岳名（`summit_name_jp`）編集値のみ参照（`rationale` は不使用）。[FR-019](#fr-019-html-ビューア機能仕様) が管理」
+  - 対象: `docs/20_SRS.md` L1302 備考欄
+
+- [ ] **指摘⑥（低）: `area_complete` の「ピーク行のみ」表現を ADR-SRS-045 の行モデルに合わせる**
+  - band_change/no_change は「行の主語が既存サミット」だが area_complete あり → 現記述「ピーク行のみ」だと誤読
+  - 修正後: 「add/band_change/no_change のみ（matched peak Point 参照）。delete/review 行は空欄」
+  - 対象: `docs/20_SRS.md` L1345
+
+- [ ] **指摘⑦（低）: `dominant_peak_dist_m` に用途説明と ADR-SRS-043 リンクを追加**
+  - ADR-SRS-045 L52 に「XLSX 単体での delete 申請根拠の行内検証用」とあるが FR-012 カラム表に未記載
+  - 対象: `docs/20_SRS.md` L1347
+
+- [ ] **指摘⑧（低）: no_change/review 行が XLSX に含まれる目的を FR-012 説明ブロックに追記**
+  - FR-021 に「担当者が全件状態を確認できるよう同梱」と明記されているが FR-012 側に理由なし
+  - 対象: `docs/20_SRS.md` FR-012 説明ブロック
+
 ### 中
 
 - [ ] **(元 ISSUE-066) FR-019 検索機能実装: 実 GeoJSON データでの動作確認と本実装**
