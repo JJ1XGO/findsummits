@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-29",
-    "counter": 158
+    "counter": 161
   },
   "issues": [
     {
@@ -5577,6 +5577,93 @@
           "to": "解決済",
           "comment": "[解決確認]",
           "session_id": "536dd4d7-c31c-45ff-8684-0ac33b78e25b"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-159",
+      "title": "FR-009 ZIP 分割(§6.2.9)の category 体系追従と review カテゴリ欠落",
+      "description": "FR-009 が category(add/band_change/no_change/delete/review の5分類・ADR-SRS-044)を正本付与する一方、§6.2.9 ZIP 分割は旧 match_status 命名(new/dominant/changed/unchanged)のまま。GLOSSARY L162「ZIP分割に category 使用」と矛盾し、review 用 geojson も欠落。category 参照元↔定義元の不完全性。ZIP命名のcategory追従要否・review同梱可否を協議し、§6.2.9/FR-021 と FR-009 を同期する。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": null,
+      "notes": "協議完了・SRS反映は次セッション。ADR-SRS-044 で既決（ZIP は add/band_change/no_change/delete/review の5ファイル・delete独立・review同梱。状態=採用未実装）の §6.2.9 追従漏れと判明。ファイル名は category 値に厳密準拠で合意（band_change/no_change を使う。ADR表記の changed/unchanged は旧名残存）。次セッション作業: ①§6.2.9 同梱ファイル一覧を5ファイルに修正 ②ADR-SRS-043 の『delete を dominant.geojson に同梱』記述も ADR-SRS-044（delete独立）に追従 ③FR-021本文のZIP分割記述の追従確認 ④旧ファイル名 new/dominant/changed/unchanged.geojson の全残存を grep 確認。",
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4",
+      "history": [
+        {
+          "date": "2026-06-29T16:23:50",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-160",
+      "title": "FR-009 仮サミットコード採番の prominence=null ソート挙動が未定義",
+      "description": "採番順序(SRS L894)の2次キーがプロミネンス降順だが、key_col_resolved=false のピークは prominence=null(L1008)。採番は不備ゲート(全判定後・L940)より前に全件実行されるため、null を含むソートの決定論性(NFR-003)が未定義。null ピークのソート位置(末尾固定等)を明示するか、採番対象から除外する旨を規定する。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-009 spec-panel レビュー指摘⑤（2026-06-29）。",
+      "resolved_date": "2026-06-29",
+      "verified_date": null,
+      "created_session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4",
+      "history": [
+        {
+          "date": "2026-06-29T16:19:59",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS L894 にprominence=null末尾扱いを規定。標高1次キーで完全順序・決定論性確保。新規ADR不要・既存採番規定の境界条件補完として決着。",
+          "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-161",
+      "title": "FR-009 1サミットが複数ピークのAZに同時包含される場合の帰属規則が未定義",
+      "description": "AZ内のSOTAサミット一意性(1AZに複数サミット無し・L877)は保証されるが、逆方向(1サミットが複数ピークのAZに同時包含)の帰属規則が未定義。どのピークが band_change 判定基準になるか曖昧(L880/L883-884)。AZ同士は数学的に重ならない根拠を明記するか、複数包含時の帰属タイブレークを規定する。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Opus",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": "FR-009 spec-panel レビュー指摘⑥（2026-06-29）。",
+      "resolved_date": "2026-06-29",
+      "verified_date": null,
+      "created_session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4",
+      "history": [
+        {
+          "date": "2026-06-29T16:16:55",
+          "actor": "Opus",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "SRS L877 にAZ互いに素性（双方向）と成立条件（閾値>AZ標高差）を証明付きで明記。新規ADR不要・既存数学的性質の明文化として決着。",
+          "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
         }
       ]
     }
