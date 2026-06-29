@@ -549,8 +549,13 @@ function createMeshGrid() {
     }
   }
 
-  map.on("zoomend moveend", syncLabels);
-  map.on("overlayadd", e => { if (e.name === "1次メッシュ") syncLabels(); });
+  let labelTimer = null;
+  function scheduleLabels() {
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(syncLabels, 120);
+  }
+  map.on("zoomend moveend", scheduleLabels);
+  map.on("overlayadd", e => { if (e.name === "1次メッシュ") syncLabels(); }); // 初回表示は即時
 
   return group;
 }
@@ -599,7 +604,7 @@ function createCpLayer() {
         pointToLayer: (f, latlng) => {
           const color = cpColor(f.properties["基準点種別"] || "");
           return L.circleMarker(latlng, {
-            radius: 4, color, fillColor: "#fff", fillOpacity: 1, weight: 1.5
+            renderer: summitRenderer, radius: 4, color, fillColor: "#fff", fillOpacity: 1, weight: 1.5
           });
         },
         onEachFeature: (f, layer) => {
@@ -660,6 +665,9 @@ const ContourLayer = L.GridLayer.extend({
   initialize(options) {
     L.GridLayer.prototype.initialize.call(this, options);
     this._cache = new Map(); // url → Promise<Float32Array|null>
+    const sc = document.createElement('canvas');
+    sc.width = sc.height = 256;
+    this._scratchCtx = sc.getContext('2d', { willReadFrequently: true });
   },
 
   createTile(coords, done) {
@@ -848,20 +856,12 @@ const ContourLayer = L.GridLayer.extend({
     try {
       const res = await fetch(url);
       if (!res.ok) return null;
-      const blobUrl = URL.createObjectURL(await res.blob());
-      return await new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          URL.revokeObjectURL(blobUrl);
-          const oc = document.createElement('canvas');
-          oc.width = oc.height = 256;
-          const ctx = oc.getContext('2d');
-          ctx.drawImage(img, 0, 0, 256, 256);
-          resolve(this._decode(ctx.getImageData(0, 0, 256, 256)));
-        };
-        img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
-        img.src = blobUrl;
-      });
+      // colorSpaceConversion:'none' は必須（標高 RGB バイト値を変えないため）
+      const bmp = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
+      const ctx = this._scratchCtx;
+      ctx.drawImage(bmp, 0, 0, 256, 256);
+      bmp.close();
+      return this._decode(ctx.getImageData(0, 0, 256, 256));
     } catch(e) { return null; }
   },
 
