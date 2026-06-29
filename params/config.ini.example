@@ -11,3 +11,8 @@ geojson_version = 31
 [n03]
 # 国土数値情報 行政区域データの年度（N03-{n03_year}.geojson のファイル名に使用）
 n03_year = 2026
+
+[analysis]
+# delete判定ゾーンの最大標高差（m）。既存サミットとピーク間の標高差がこの値以下の場合に delete 候補とみなす
+# 根拠: ADR-SRS-011（全国実測による上限値 52.26m に安全マージンを加算）
+delete_zone_max_drop = 250

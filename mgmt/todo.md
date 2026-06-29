@@ -112,65 +112,6 @@
   - 対象: `scripts/merge.py` または `scripts/prefetch_tiles.py`
   - 仕様: SRS FR-019（ビューア表示時は末尾に `(UTC)` を付記）
 
-### §3 spec-panel 指摘（SRS 修正のみ）
-
-- [x] **指摘①（中）: §3.1「外部成果物」に「公開用 HTML」「申請エビデンス ZIP」を追加、「証跡 GeoJSON」を §6.1 正式名称「突合済み統合 GeoJSON」に統一**
-- [x] **指摘②（中）: §3.2「申請書生成 UI」主要出力に「サミット一覧（申請内容反映版）」「公開用 HTML」「申請エビデンス ZIP」を追加（「申請用 XLSX」は「申請書 XLSX」に正式名称へ統一）**
-- [x] **指摘③（中）: §3.2「統合・突合コンポーネント」主要入力に「SOTA 既存サミット GeoJSON」（外部I/F）を追加**
-- [x] **指摘④（低）: §3.2「統合・突合コンポーネント」主要入力の「境界 GeoJSON」を正式名称「N03 前処理済み GeoJSON 群（地域・市区町村）」に変更**
-- [x] **指摘⑤（低）: §3.1「外部データソース」の N03 行政区域 GeoJSON にユーザー手動配置である旨を注記**
-- [x] **指摘⑥（低）: §3.3.2 俯瞰図のフェーズ2→フェーズ3/4 分岐説明（2行に分断）を1行に統合**
-- [x] **指摘⑦（低）: §3.3.2 俯瞰図フェーズ5 出力物に「申請エビデンス ZIP」を追加**
-
-### FR-021 spec-panel 指摘（SRS 修正のみ）
-
-- [x] **指摘①（中）: FR-021 入力テーブルに FR-012（XLSX 生成）依存を追記**
-- [x] **指摘②（中）: §6.2.9 のファイル順序を FR-021 本文（正本）に合わせる**（正本: FR-021 本文。順序: add→delete→band_change→no_change→review）
-- [x] **指摘③（中）: 行1384「各 GeoJSON の関連フィーチャ」の誤読を招く表現を修正**（delete/review に col 等が含まれないことを明示）
-- [x] **指摘④（中）: 空 GeoJSON の扱い（0件時も空 FeatureCollection として同梱）を明記**
-- [x] **指摘⑤（低）: ③の修正に同梱して解決**（coord_diff が add に存在しないことが明確化）
-- [x] **指摘⑥（低）: band_change/no_change の関連フィーチャ列に FR-009 参照リンクを追加**
-
-### FR-012 spec-panel 指摘（SRS 修正のみ）
-
-- [ ] **指摘①②（高）: FR-012 カラム表 `sota_*` の delete/review 行欠落修正（ADR-SRS-045 追従）**
-  - `sota_lat/sota_lon/sota_alt_m/sota_points` の説明が「matched のみ」だが ADR-SRS-045 では delete/review も値あり
-  - 修正後: 「matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄」
-  - 対象: `docs/20_SRS.md` L1338-1341（カラム表 sota_* 4 行）
-
-- [ ] **指摘②（高）: `is_band_change_candidate` 説明の旧用語「matched のみ」を category 表現に修正**
-  - 「matched のみ」は match_status 値と category の混同を招く（ADR-SRS-044 の 5 カテゴリモデルが正本）
-  - 修正後: 「band_change/no_change のみ（matched peak 行）。それ以外は空欄」
-  - 対象: `docs/20_SRS.md` L1342
-
-- [ ] **指摘③（中）: `match_status` カラムの値域説明を行集約モデルに整合させる**
-  - 現記述「ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched」が ADR-SRS-045 と不整合
-  - 修正後: category 別に対応を明示（add(new)→new / add(dominant)→dominant / band_change/no_change→matched / delete→delete / review→unmatched）
-  - 対象: `docs/20_SRS.md` L1321
-
-- [ ] **指摘④（中）: `stability` カラムに FR-008 参照リンクと `-` の補足説明を追加**
-  - FR-009 カラム表（L1010）には「定義は [FR-008] 参照」があるが FR-012 には欠落
-  - 修正後: 「解析品質（confirmed/unstable/-。`-` = 広域モード確定ピーク・通常モード安定性評価なし。定義は [FR-008](#fr-008-per-mesh-csv-統合) 参照）」
-  - 対象: `docs/20_SRS.md` L1322
-
-- [ ] **指摘⑤（中）: 入力テーブル `localStorage 編集内容` の備考を FR-011 と粒度を揃える**
-  - FR-011 は「山岳名・rationale 編集値」と明示、FR-012 は `[FR-019] が管理` のみで参照フィールドが不明
-  - 修正後: 「山岳名（`summit_name_jp`）編集値のみ参照（`rationale` は不使用）。[FR-019](#fr-019-html-ビューア機能仕様) が管理」
-  - 対象: `docs/20_SRS.md` L1302 備考欄
-
-- [ ] **指摘⑥（低）: `area_complete` の「ピーク行のみ」表現を ADR-SRS-045 の行モデルに合わせる**
-  - band_change/no_change は「行の主語が既存サミット」だが area_complete あり → 現記述「ピーク行のみ」だと誤読
-  - 修正後: 「add/band_change/no_change のみ（matched peak Point 参照）。delete/review 行は空欄」
-  - 対象: `docs/20_SRS.md` L1345
-
-- [ ] **指摘⑦（低）: `dominant_peak_dist_m` に用途説明と ADR-SRS-043 リンクを追加**
-  - ADR-SRS-045 L52 に「XLSX 単体での delete 申請根拠の行内検証用」とあるが FR-012 カラム表に未記載
-  - 対象: `docs/20_SRS.md` L1347
-
-- [ ] **指摘⑧（低）: no_change/review 行が XLSX に含まれる目的を FR-012 説明ブロックに追記**
-  - FR-021 に「担当者が全件状態を確認できるよう同梱」と明記されているが FR-012 側に理由なし
-  - 対象: `docs/20_SRS.md` FR-012 説明ブロック
-
 ### 中
 
 - [ ] **(元 ISSUE-066) FR-019 検索機能実装: 実 GeoJSON データでの動作確認と本実装**
@@ -204,24 +145,7 @@
   - 注: ADR-SRS-010 Phase 1/2（C → C++/OpenCV 移行）と同時実施が効率的（ISSUE-037/038 と連携）
   - CSV カラム名は C 側と Python 側で揃える必要あり（片方だけ変更するとパイプライン断絶）
 
-- [ ] **(元 ISSUE-045) config.ini.example に delete_zone_max_drop = 250 追加**
-  - `params/config.ini.example` の `[analysis]` セクション（または相当箇所）に追加
-  - 値の根拠コメントとして ADR-SRS-011 を参照
-  - 既存のローカル `params/config.ini`（gitignore）は手動で同期する旨をユーザーに通知
-
 ### 低
-
-- [ ] **(FR-017 spec-panel 指摘⑦) docs/CLAUDE.md 分類ルール例の「N03行政区域（生）」を外部I/F欄からユーザー入力欄へ移す**
-  - 対象: `/workspace/docs/CLAUDE.md` §外部I/F・ユーザー入力・内部データの分類ルール「主な例」列
-  - ADR-SRS-016 でユーザー入力に再分類済みだが docs/CLAUDE.md の例が更新されていない
-
-- [ ] **(FR-017 spec-panel 指摘⑧) FR-017 概要の「約 12 万ポリゴン」に飛び地の補足を追記**
-  - 対象: `docs/20_SRS.md` FR-017 §概要（行 255）
-  - 「約 12 万ポリゴン」→「約 12 万フィーチャ（市区町村単位の飛び地を含む）」に補足
-
-- [ ] **(元 ISSUE-086) src/mesh_analyze.h 内コメント「Terrain-RGB PNG」の修正**
-  - 「Terrain-RGB」は Mapbox 由来の入力タイル形式の業界用語。出力ファイルの呼称として誤っている
-  - SRS 6.8 のタイトル変更（標高地形図 PNG）に合わせて実装側コメントを追従する
 
 - [ ] **(元 ISSUE-082) SRS/URD 全体の裸 FR-XXX/UR-XXX/NFR-XXX 参照の一括リンク化**
   - FR-015 周辺は対応済み。残りの SRS/URD 全体分（約 100 件規模）が対象
@@ -238,15 +162,7 @@
 
 - [ ] **(元 ISSUE-053) docs/figures/context.drawio: ラベル大文字統一**
 
-- [ ] **(元 ISSUE-060) CLAUDE.md / README.md の merged.csv 言及箇所追従**
-  - merged.csv → merged_peak.csv 等の最新命名に追従
-
 - [ ] **(元 ISSUE-065) モックアップ「変更あり」フィルターを is_band_change_cand に変更**
-
-### §6 spec-panel 指摘（SRS 修正のみ）
-
-- [x] **指摘③（中）: §6.2.1 ファイル名仕様と実在ファイルの不一致を修正**
-- [x] **指摘④（中）: FR-021 入力テーブルの `merged_summit_revised.xlsx` 種別を修正**
 
 ### FR-013レビュー決着の機械反映（finding 3/4/6/7・用語変更）
 
