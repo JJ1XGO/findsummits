@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-29",
-    "counter": 157
+    "counter": 158
   },
   "issues": [
     {
@@ -5518,6 +5518,26 @@
           "session_id": "d24f2cc4-db3c-40ff-999c-db0932b1d6d9"
         }
       ]
+    },
+    {
+      "id": "ISSUE-158",
+      "title": "FR-009/FR-012 サミット一覧 XLSX の行集約生成モデルが SRS 未定義",
+      "description": "merged_summit.geojson は複数フィーチャ（ピーク Point／コル Point／AZ Polygon／既存サミット Point／LineString）を持つ。FR-009 の merged_summit.xlsx（サミット一覧（突合後））と FR-012 の merged_summit_revised.xlsx（申請内容反映版）はこれらを 1 行（＝1 ピーククラスタ想定）に集約してカラム化するが、(a) 行の単位（集約単位か Point 毎か）、(b) 結合キー（summit_code 等）、(c) 各カラムの取得元フィーチャ（peak_*/col_*/sota_* ＝各 Point geometry、area_complete ＝ AZ Polygon properties、dominant の sota_* ＝ dominant_peak_code 経由）が SRS 未定義。FR-012 概要は「Point フィーチャのみが行に変換される」（SRS 1298行）としか書かず集約モデルが欠落している。FR-012 は「FR-009 と同じ作り方＋ユーザー編集反映」なので、FR-009 側の行集約モデルが決まれば FR-012 は従属的に決まる。",
+      "type": "設計",
+      "priority": "高",
+      "category": "その他",
+      "reporter": null,
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "未対応",
+      "assignee": null,
+      "resolution": "FR-009 を行集約モデルの正本として XLSX 行生成モデルを定義し、FR-012 はそれを参照する形で記述する。必要なら ADR 化（ADR-SRS-041「geojson スキーマ拡張で全カラム生成可能」の前提を補完）。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "e8a7fa55-4169-461d-add1-6cc2295eabed",
+      "history": []
     }
   ]
 }
