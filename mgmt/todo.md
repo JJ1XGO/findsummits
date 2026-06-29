@@ -112,6 +112,15 @@
   - 対象: `scripts/merge.py` または `scripts/prefetch_tiles.py`
   - 仕様: SRS FR-019（ビューア表示時は末尾に `(UTC)` を付記）
 
+### FR-021 spec-panel 指摘（SRS 修正のみ）
+
+- [x] **指摘①（中）: FR-021 入力テーブルに FR-012（XLSX 生成）依存を追記**
+- [x] **指摘②（中）: §6.2.9 のファイル順序を FR-021 本文（正本）に合わせる**（正本: FR-021 本文。順序: add→delete→band_change→no_change→review）
+- [x] **指摘③（中）: 行1384「各 GeoJSON の関連フィーチャ」の誤読を招く表現を修正**（delete/review に col 等が含まれないことを明示）
+- [x] **指摘④（中）: 空 GeoJSON の扱い（0件時も空 FeatureCollection として同梱）を明記**
+- [x] **指摘⑤（低）: ③の修正に同梱して解決**（coord_diff が add に存在しないことが明確化）
+- [x] **指摘⑥（低）: band_change/no_change の関連フィーチャ列に FR-009 参照リンクを追加**
+
 ### FR-012 spec-panel 指摘（SRS 修正のみ）
 
 - [ ] **指摘①②（高）: FR-012 カラム表 `sota_*` の delete/review 行欠落修正（ADR-SRS-045 追従）**

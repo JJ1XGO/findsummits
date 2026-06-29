@@ -1360,6 +1360,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|---|---|---|
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | 必須 | — | 作業用 HTML ビューアに埋め込み済み |
 | localStorage 編集内容 | 内部データ | 任意 | 初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート） | [FR-019](#fr-019-html-ビューア機能仕様) が管理。未編集（localStorage 空）の場合は初期値を使用する |
+| サミット一覧（申請内容反映版）（`merged_summit_revised.xlsx`） | 外部I/F | 必須 | — | ZIP 生成と同一操作内で [FR-012](#fr-012-サミット一覧申請内容反映版生成) を内部実行して生成する |
 
 **出力**:
 
@@ -1376,12 +1377,13 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
 | `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・prominence_range）|
 | `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て（delete summit・coord_diff LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
-| `band_change.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て |
-| `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て |
+| `band_change.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
+| `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
 | `review.geojson` | 要確認サミット（孤立既存サミット） | `category="review"` のフィーチャ全て（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
   - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）
-  - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
+  - 各 GeoJSON は [FR-009](#fr-009-sotaリスト突合match_status-判定) で定義した category 別フィーチャ構成に基づき、関連フィーチャ（col・activation_zone・delete_zone・prominence_range・coord_diff）を同一 `summit_code` で紐付けて格納する（category によって含まれるフィーチャ種類は異なる）
+  - 対象 category のフィーチャが 0 件の場合も空 FeatureCollection（`{"type":"FeatureCollection","features":[]}`）として ZIP に同梱する（5 ファイルを常に出力し、エビデンスの完全性を保つ）
   - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う（localStorage を直接読むのではなく、[FR-019](#fr-019-html-ビューア機能仕様) の引き継ぎ確認を経た現在の編集状態のスナップショットを使用する。[FR-020](#fr-020-公開用-html-ビューア生成) と同方式）
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
   - `no_change.geojson`・`review.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
@@ -1629,9 +1631,9 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版） | [6.2.3](#623-サミット一覧申請内容反映版) |
 | `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
+| `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
 | `band_change.geojson` | バンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
 | `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ（申請対象外・参照用同梱） | `category="no_change"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
-| `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
 | `review.geojson` | 要確認サミット（孤立既存サミット・申請対象外・参照用同梱） | `category="review"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
 
 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）。
