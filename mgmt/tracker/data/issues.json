@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-29",
-    "counter": 161
+    "counter": 163
   },
   "issues": [
     {
@@ -5696,6 +5696,96 @@
           "to": "解決済",
           "comment": "[解決確認] 確認OK",
           "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-162",
+      "title": "§6.2.11 SOTA サミットリスト CSV の使用カラムに ValidTo が欠落・FR-009 に廃止済みサミット除外仕様がない",
+      "description": "§6.2.11 の使用カラム（SummitCode, SummitName, AltM, Latitude, Longitude）に ValidTo が含まれておらず、廃止済み JA サミットの除外仕様が定義されていない。FR-009 の説明にも「JA プレフィックスサミットと突合する」とだけ書かれており ValidTo チェックの記述がない。実際に JA プレフィックスの廃止済みサミット（ValidTo ≠ 31/12/2099）が 147 件存在する。フィルタなしで突合対象に含めると ①delete 判定ゾーン内の廃止サミット → match_status=delete → 申請書に誤った削除行が自動出力 ②判定ゾーン外 → unmatched 件数増加 → 不備ゲート誤発動のリスクがある（lessons.md: 廃止データを母集団に含めない）。",
+      "type": "改善",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "解決済",
+      "assignee": null,
+      "resolution": "§6.2.11 の使用カラムに ValidTo を追記し、FR-009 の突合前処理として「ValidTo が実行日以降のサミットのみを突合対象とする」旨を明示する。除外条件の表現（実行日比較 vs 31/12/2099 固定判定）を仕様化する。",
+      "notes": null,
+      "resolved_date": "2026-06-29",
+      "verified_date": "2026-06-29",
+      "created_session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0",
+      "history": [
+        {
+          "date": "2026-06-29T18:24:00",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0"
+        },
+        {
+          "date": "2026-06-29T18:24:59",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "§6.2.11 の使用カラムに ValidTo を追記し「有効レコード絞り込み」行を追加（ValidTo < 実行日のサミットを廃止済みとして除外）。FR-009 説明冒頭を現役サミット条件付き表現に変更し §6.2.11 へ相互参照リンクを付与。f1cf12d。",
+          "session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0"
+        },
+        {
+          "date": "2026-06-29T18:30:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK",
+          "session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-163",
+      "title": "§6.1 No.10「使用/生成 FR」欄と FR 入出力テーブルの不整合（FR-004/FR-014 と地理院標高タイルの分類）",
+      "description": "§6.1 No.10（地理院標高タイル）の「使用/生成 FR」欄に FR-001/FR-004/FR-014/FR-019 と記載されているが、FR-004/FR-014 の入力テーブルでは「標高タイル（ローカルキャッシュ）」を「内部データ」として記載しており、外部I/F としての地理院標高タイルは列挙していない。ADR-SRS-016「ローカルキャッシュは内部データ」に基づくと FR-004/FR-014 が参照するのは内部データであり、§6.1 の「使用 FR」欄と FR 入出力テーブルが矛盾する。ADR-SRS-038「入出力テーブルが外部I/Fの単一の俯瞰点になる」という目的からも不整合が生じる。",
+      "type": "改善",
+      "priority": "中",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "解決済",
+      "assignee": null,
+      "resolution": "以下どちらかを選択して SRS を修正する。①§6.1 No.10 の「使用/生成 FR」を FR-001/FR-019 のみに修正（FR-004/FR-014 は外部I/F を直接使わず ADR-SRS-016 に従い内部データ経由とみなす）。②FR-004/FR-014 の入力テーブルに「地理院標高タイル（外部I/F・キャッシュ再利用）」を追加する（ADR-SRS-038 の「キャッシュ再利用を問わず列挙」を優先）。ADR-SRS-016 と ADR-SRS-038 のどちらを上位原則とするかを決めてから修正する。",
+      "notes": null,
+      "resolved_date": "2026-06-29",
+      "verified_date": "2026-06-29",
+      "created_session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0",
+      "history": [
+        {
+          "date": "2026-06-29T18:28:07",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0"
+        },
+        {
+          "date": "2026-06-29T18:28:38",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "§6.1 No.10 の「使用/生成 FR」欄を FR-001/FR-019 のみに修正。FR-004/FR-014 はローカルキャッシュ（内部データ）を参照するため外部I/Fの使用 FR には含まない。補足欄にその旨を明記。72344de。",
+          "session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0"
+        },
+        {
+          "date": "2026-06-29T18:30:50",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK",
+          "session_id": "61247d51-6928-4fad-ae7b-0e96b89d98f0"
         }
       ]
     }
