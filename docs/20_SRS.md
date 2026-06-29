@@ -1717,14 +1717,14 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 1 | N03 前処理済み地域 GeoJSON | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | 詳細仕様は [8.2.1](#821-n03-前処理済みファイル詳細仕様) 参照 |
 | 2 | N03 前処理済み市区町村 GeoJSON | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | 詳細仕様は [8.2.1](#821-n03-前処理済みファイル詳細仕様) 参照 |
 | 3 | 北方領土除外タイルリスト | — | [FR-017](#fr-017-n03-行政区域前処理データ準備) | [FR-001](#fr-001-標高タイル事前取得) | 詳細仕様は [8.2.1](#821-n03-前処理済みファイル詳細仕様) 参照 |
-| 4 | 日本全土１次メッシュコードリスト | — | — | [FR-001](#fr-001-標高タイル事前取得) / [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-008](#fr-008-per-mesh-csv-統合) / [FR-014](#fr-014-広域結合解析オーケストレーション) | [日本の国土にかかる第1次地域区画](../ref/SOURCES.md#日本の国土にかかる第1次地域区画)を参照し、ベースラインとして本システムで用意する。[FR-008](#fr-008-per-mesh-csv-統合) では `expected_count` 算出基準として使用する |
+| 4 | 日本全土１次メッシュコードリスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-001](#fr-001-標高タイル事前取得) / [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-008](#fr-008-per-mesh-csv-統合) / [FR-014](#fr-014-広域結合解析オーケストレーション) | [日本の国土にかかる第1次地域区画](../ref/SOURCES.md#日本の国土にかかる第1次地域区画)を参照し、ベースラインとして本システムで用意する。[FR-008](#fr-008-per-mesh-csv-統合) では `expected_count` 算出基準として使用する |
 | 5 | 標高タイル（ローカルキャッシュ） | `$DATA_DIR/tiles/{サービス名}/{z}/{x}/{y}.png`<br>サービス名: DEM5a=`dem5a_png` / DEM5b=`dem5b_png` / DEM5c=`dem5c_png` / DEM10b=`dem_png` | [FR-001](#fr-001-標高タイル事前取得) | [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-014](#fr-014-広域結合解析オーケストレーション) | |
-| 6 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) / [FR-022](#fr-022-コル充足判定) | |
+| 6 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部 work ファイル。ファイル名: `$DATA_DIR/results/merged_peak.csv` | [FR-008](#fr-008-per-mesh-csv-統合)（陸地最高峰海面確定込み） | [FR-009](#fr-009-sotaリスト突合match_status-判定) / [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) / [FR-022](#fr-022-コル充足判定) / [FR-023](#fr-023-解析パイプライン制御) | |
 | 7 | コル未確定ピーク座標リスト（`key_col_unresolved_peaks-<N>.csv`） | 一時ファイル。ファイル名: `$DATA_DIR/results/key_col_unresolved_peaks-<N>.csv`（N = 生成段階タグ：3×3 後は `-3`、4×4 後は `-4`） | [FR-022](#fr-022-コル充足判定) | [FR-014](#fr-014-広域結合解析オーケストレーション) / [FR-023](#fr-023-解析パイプライン制御) | FR-022 が各段階で生成し、FR-023 の制御により FR-014 呼び出し時にパスとして渡す |
 | 8 | per-mesh ピーク候補 CSV | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/<解析識別子>.csv`（通常: `3-<meshcode>.csv`、広域: `<N>-<meshcode>-<コーナー>.csv`） | [FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) | [FR-008](#fr-008-per-mesh-csv-統合) | カラム定義は FR-007 出力仕様参照。通常 per-mesh と広域 per-mesh はファイル名のプレフィックスで区別する。[FR-008](#fr-008-per-mesh-csv-統合) は `$DATA_DIR/results/csv/` 配下を読み込む（読み込み範囲は `1次メッシュコードリスト` で制御） |
 | 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
 | 10 | 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
-| 11 | 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
+| 11 | 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル。ファイル名: `$DATA_DIR/results/merged_peak.geojson` | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
 | 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-011](#fr-011-申請書-xlsx-生成) / [FR-012](#fr-012-サミット一覧申請内容反映版生成) / [FR-019](#fr-019-html-ビューア機能仕様) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映（FR-020 は公開用 HTML 生成時にマージ） |
 
 ### 8.2 内部データ詳細仕様
@@ -1743,7 +1743,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | フィーチャ数 | 60（46都府県 + 北海道14振興局） |
 | プロパティ | `assoc`（JA/JA5/JA6/JA8）、`area_code`（例: TK、IS）、`region_name`（都道府県名/振興局名） |
 | 生成方法 | [FR-017](#fr-017-n03-行政区域前処理データ準備) で生成 |
-| 省略時の動作 | 詳細は [FR-017 参照](#fr-017-n03-行政区域前処理データ準備) |
+| 省略時の動作 | [FR-009](#fr-009-sotaリスト突合match_status-判定) がエリアコード付与をスキップ（`ZZ/ZZ-A00` 形式）する |
 
 **N03 前処理済み市区町村 GeoJSON**
 
@@ -1755,7 +1755,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | フィーチャ数 | 約2,000（全国市区町村） |
 | プロパティ | `prefecture`（都道府県名）、`municipality`（市区町村名）、`code`（N03_007 行政区域コード） |
 | 生成方法 | [FR-017](#fr-017-n03-行政区域前処理データ準備) で生成 |
-| 省略時の動作 | 詳細は [FR-017 参照](#fr-017-n03-行政区域前処理データ準備) |
+| 省略時の動作 | [FR-009](#fr-009-sotaリスト突合match_status-判定) が市区町村名を空文字付与して続行する |
 
 **北方領土除外タイルリスト**
 
