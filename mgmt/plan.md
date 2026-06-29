@@ -1,98 +1,89 @@
-# FR-012 spec-panel 指摘対応 計画
+# ISSUE-158: サミット一覧 XLSX 行集約モデルの SRS 定義
 
 ## Context
 
-`spec-panel` で FR-012（サミット一覧（申請内容反映版）生成）をレビューした。当初 5 件の指摘を出したが、
-計画着手前の再精査でうち 2 件の前提が変わった。
+`merged_summit.geojson` は 4 カテゴリ（add/band_change/no_change/delete/review）のクラスタに
+peak/col Point・AZ/delete_zone Polygon・各種サミット Point・LineString を大量に束ねている。
+一方 `merged_summit.xlsx`（FR-009 出力）と `merged_summit_revised.xlsx`（FR-012 出力）は、これを
+**サミット中心に 1 行ずつほどいて**カラム化する。この「geojson クラスタ → サミット行」への非対称な
+アンフォールド規則（行の単位・各カラムの取得元フィーチャ）が SRS 未定義というのが ISSUE-158。
 
-- **指摘②（`sota_lat`/`sota_lon` をスキーマ正本に追加）は取り下げ**。`peak_lat`/`peak_lon`・`col_lat`/`col_lon`
-  と同様に各 Point の **geometry 座標**から取得する値であり（SRS 681行・725行が `peak_lat`/`peak_lon` を
-  geometry 変換値と定義）、FR-009 スキーマ正本のプロパティ表に列挙されないのは正常。`sota_lat`/`sota_lon` は
-  対応する既存 SOTA サミット Point の geometry から取得できる。
-- **真の論点（指摘③' に置換）**: FR-009 の `merged_summit.xlsx`（サミット一覧（突合後））と
-  FR-012 の `merged_summit_revised.xlsx` は、`merged_summit.geojson` の複数フィーチャ（ピーク Point／
-  コル Point／AZ Polygon／対応サミット Point／LineString）を **1 行に集約**して生成するが、その
-  **行集約モデル**（集約単位・結合キー・各カラムの取得元フィーチャ）が SRS 未定義。FR-012 概要は
-  「Point フィーチャのみが行に変換される」(1298行) としか書かず、集約方法が欠落している。
-  FR-012 は「FR-009 と同じ作り方＋ユーザー編集反映」なので、**FR-009 側の行集約モデルが決まれば従属的に決まる**。
+`ADR-SRS-041` は「全カラムが geojson から生成可能」（スキーマ拡張）までしか定めておらず、行集約
+モデルが前提として欠落している。本タスクはそれを補完し、FR-009 を行集約モデルの正本として定義する。
 
-**本計画の方針**: 行集約モデル（指摘③'）は仕様議論を伴うため **issue 登録して後日検討**。本セッションでは
-行集約モデルに依存せず独立に直せる指摘①④⑤のみ SRS に反映する。
+加えて確認の過程で、現カラム表の `sota_*` 注記「matched・dominant のみ」が 5 カテゴリモデル
+（`ADR-SRS-044`）と矛盾していること（dominant ピークは add＝既存登録なしなので sota_* は空が正）が判明。
+あわせて修正する。
 
-## タスク一覧
+## 確定済みの決定事項（本セッションでユーザー合意済み）
 
-### タスク1: 行集約モデル未定義を issue 登録（指摘③'）　[Sonnet]
+- **行モデル**: 1 行 = 1 サミット（申請の主語）。1 Point = 1 行ではない。peak Point＋col Point＋AZ 内
+  matched サミット Point は 1 行に集約する。Polygon / LineString は行を生まない
+- **delete 行**: `peak_*`・`col_*` は空。`dominant_peak_code`＋`dominant_peak_dist_m`（距離）を残す。
+  主ピークは matched / dominant 両方ありうる（既存仕様 `ADR-SRS-043` で対応済み）
+- **dominant 行の sota_***: new と同じく空に統一（「matched・dominant のみ」→「matched のみ」）
 
-`venv/bin/python3 mgmt/tracker/track.py issue add` で登録する。
+### 行 → ソースフィーチャ対応（カラム群単位）
 
-- `--title`: 「FR-009/FR-012 サミット一覧 XLSX の行集約生成モデルが SRS 未定義」
-- `--priority 高` `--type 設計` `--stage SRS` `--category その他`
-- `--description`: `merged_summit.geojson` は複数フィーチャ（ピーク Point／コル Point／AZ Polygon／
-  既存サミット Point／LineString）を持つ。FR-009 の `merged_summit.xlsx` と FR-012 の
-  `merged_summit_revised.xlsx` はこれらを 1 行（＝1 ピーククラスタ想定）に集約してカラム化するが、
-  (a) 行の単位（集約単位か Point 毎か）、(b) 結合キー（`summit_code` 等）、(c) 各カラムの取得元フィーチャ
-  （`peak_*`/`col_*`/`sota_*`＝各 Point geometry、`area_complete`＝AZ Polygon properties、dominant の
-  `sota_*`＝`dominant_peak_code` 経由）が SRS 未定義。FR-012 概要は「Point フィーチャのみが行に変換される」
-  としか書かず集約モデルが欠落している。
-- `--resolution`: FR-009 を行集約モデルの正本として XLSX 行生成モデルを定義し、FR-012 はそれを参照する。
-  必要なら ADR 化（ADR-SRS-041「geojson スキーマ拡張で全カラム生成可能」の前提を補完）。
+| category | 行の主語 | 行を生むフィーチャ | peak_* | col_* | sota_* | dominant_* | area_complete | is_band_change_candidate |
+|---|---|---|---|---|---|---|---|---|
+| add (new) | 新設＝ピーク | peak Point | このピーク | このコル | 空 | 空 | このピーク | 空 |
+| add (dominant) | 新設＝ピーク | peak Point | このピーク | このコル | 空 | 空 | このピーク | 空 |
+| band_change | 既存サミット | matched peak Point | このピーク | このコル | AZ 内既存サミット | 空 | このピーク | true |
+| no_change | 既存サミット | matched peak Point | このピーク | このコル | AZ 内既存サミット | 空 | このピーク | false |
+| delete | 削除対象既存サミット | delete summit Point | 空 | 空 | この削除サミット | 主ピーク（code+dist） | 空 | 空 |
+| review | 孤立既存サミット | unmatched summit Point | 空 | 空 | この孤立サミット | 空 | 空 | 空 |
 
-登録後に発番される ISSUE-NNN を控える（コミットメッセージ・todo 連携には docs へ ID を書かない規約に注意。
-docs 本文には ISSUE-ID を記載しない＝今回 SRS 本文には書かない）。
+## タスク（すべて Sonnet。設計判断は確定済み・残りは文書編集と整合チェックのみ）
 
-### タスク2: §8.1 No.12 台帳の参照 FR に FR-012 を追加（指摘①）　[Sonnet]
+### 1. `ADR-SRS-045` 新規作成
 
-`docs/20_SRS.md` 1707行（§8.1 内部データ一覧 No.12 `localStorage 編集内容`）の参照 FR 欄。
+ファイル: `docs/decisions/ADR-SRS-045-summit-xlsx-row-aggregation-model.md`
 
-- 現状: 参照 FR が `FR-011 / FR-019 / FR-020 / FR-021`
-- 修正: FR 番号順に `FR-011 / FR-012 / FR-019 / FR-020 / FR-021` とし FR-012 を挿入
-- 根拠: FR-012 の入力テーブル（1287行）が `localStorage 編集内容` を「必須」参照しているのに台帳側に
-  未登録（前セッションの FR-011 §8.1 修正の横展開漏れ）
+- 状態: 採用・未実装 / 決定日: 当日（`date` で取得）
+- Context: `ADR-SRS-041` は全カラムが geojson から取れることを定めたが、行集約モデル
+  （4 クラスタ → サミット行の非対称アンフォールド）が未定義だった
+- Decision: 1 行 = 1 サミット。上記「行 → ソースフィーチャ対応」表を掲載。delete 行は
+  `peak_*`/`col_*` 空・`dominant_peak_code`+`dominant_peak_dist_m` を保持。dominant 行 sota_* は空
+- Alternatives: 1 Point = 1 行（却下: peak/col/sota が別行に散り、申請単位＝サミットと一致しない）
+- Consequences: FR-009 に行モデル正本を追加。FR-012・6.2.7 の文言/注記を追従修正
+- 注: `mgmt/` 参照禁止・トラッカー ID 非記載（`docs/CLAUDE.md` ADR ルール）
 
-### タスク3: FR-012 `summit_name_jp` カラム説明に localStorage 編集値優先を追記（指摘④）　[Sonnet]
+### 2. FR-009 に行集約モデルを正本として追加（`docs/20_SRS.md`）
 
-`docs/20_SRS.md` 1310行。
+- FR-009 内（`merged_summit.geojson` フィーチャ構成定義の近辺、959〜979 行付近の後）に
+  新サブセクション「`merged_summit.xlsx` の行生成モデル」を追加
+- 内容: アンフォールド規則（1 行 = 1 サミット、複数 Point を集約、Polygon/LineString は行を生まない）
+  ＋「行 → ソースフィーチャ対応」表（カラム群単位）。`ADR-SRS-045` を参照
+- カラムの詳細定義表は FR-012 側に残す（行モデル＝FR-009 正本、カラム意味＝FR-012 で参照する役割分担）
 
-- 現状: 「日本語山岳名（FR-009 が merged_summit.geojson に格納済みの値を引き継ぐ。未取得時は空文字）」
-- 修正案: 「日本語山岳名。localStorage に編集値があればそれを優先し（FR-019 が管理）、なければ FR-009 が
-  merged_summit.geojson に格納済みの値を引き継ぐ。未取得時は空文字」
-- 根拠: FR-012 概要(1280行)は「FR-019 でユーザーが編集した山岳名を反映」と明示しているが、カラム説明は
-  引き継ぎのみで編集値優先が読み取れない
+### 3. FR-012 修正（`docs/20_SRS.md`）
 
-### タスク4: FR-012 `match_status` カラム説明の不正確な記述を削除（指摘⑤）　[Sonnet]
+- 1298 行「**Point フィーチャのみが行に変換される**」→ 行モデルは FR-009 参照に変更し
+  「1 行 = 1 サミット（クラスタ内の複数 Point を集約。Polygon/LineString は行を生まない）」へ文言修正
+- `sota_lat`/`sota_lon`/`sota_alt_m`/`sota_points`（1323〜1326 行）の注記
+  「matched・dominant のみ・new は空欄」→「matched のみ（band_change/no_change）。new/dominant は空欄」
+- `peak_*`・`col_*` カラム（1311〜1320 行）に「delete/review 行は空」の旨を注記、または行モデル参照を付記
 
-`docs/20_SRS.md` 1306行。
+### 4. 6.2.7 修正（`docs/20_SRS.md` 1583 行）
 
-- 現状: 「…不備調査用に残存（`unmatched`・`area_complete=false`・`key_col_resolved=false` の per-row 参照に使用）」
-- 修正案: 「…`category=review`（`unmatched`）の per-row 確認に使用」（`area_complete=false`・
-  `key_col_resolved=false` への言及を削除）
-- 根拠: FR-012 はビューア到達後に生成され、`area_complete=false`/`key_col_resolved=false` 行は FR-009 の
-  不備ゲート(940〜943行)で除去済みのため FR-012 では出現しない。`merged_summit.xlsx`（突合後）の用途説明を
-  転記した形跡
-- **スコープ限定**: 「ピーク行/既存サミット行」という行モデル依存の表現は触らない（指摘③' の issue で扱う）
+- 「含む情報: Point フィーチャの属性のみ」→ 行モデル（FR-009 参照）に整合する文言へ修正
+  （「1 行 = 1 サミット。複数 Point を集約」を明示）
 
-### タスク5: lint・検証・コミット　[Sonnet]
+### 5. トラッカー更新
 
-1. `make lint` 警告ゼロ確認
-2. `grep` で①の参照 FR に FR-012 反映・④⑤の文言反映・旧記述消失を機械確認
-3. `git add docs/20_SRS.md` → コミット（Conventional Commits・日本語本文）
-   - 例: `fix(srs): FR-012 spec-panel 指摘①④⑤を修正（行集約モデルは issue 化）`
-4. `venv/bin/python3 mgmt/tracker/track.py issue export --if-changed` で Excel 同期
-
-## スコープ外（issue で後日検討）
-
-- 指摘③': FR-009/FR-012 の行集約生成モデル定義（タスク1 で issue 登録のみ）
-- 指摘②: 取り下げ（対応不要）
+- 着手時: `venv/bin/python3 mgmt/tracker/track.py issue update ISSUE-158 --status 対応中 --actor Sonnet`
+- 完了時: `issue close`（記録完了＝対応完了。理由に ADR-SRS-045 作成・FR-009/FR-012/6.2.7 修正を記載）
 
 ## 検証
 
-- `make lint` 警告ゼロ
-- `grep -n "FR-012" docs/20_SRS.md` で §8.1 No.12 行に FR-012 が入ったことを確認
-- `grep -n "area_complete=false" docs/20_SRS.md` で FR-012 `match_status` 行（1306行付近）から
-  当該記述が消えたことを確認（他箇所の `area_complete=false` は残ってよい）
-- `venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-NNN` で登録内容を確認
+- `make lint` 警告ゼロ（`lint-md` の broken-link・MD 規約・トラッカー ID 検査を含む）
+- `grep -n "dominant のみ\|matched・dominant" docs/20_SRS.md` で旧注記の残存ゼロを確認
+- `grep -n "Point フィーチャのみが行に変換" docs/20_SRS.md` で旧文言の残存ゼロを確認
+- ADR 相互参照（`ADR-SRS-041` ↔ `ADR-SRS-045`・FR-009 ↔ ADR-SRS-045）のリンク整合を目視
+- ドキュメント更新ルールに従い、当ターン内で Conventional Commits でコミット（push は別途指示まで不要）
 
-## モデル運用
+## モデル指定
 
-全タスク **Sonnet**。設計判断は本計画で完了済みで、残りは SRS 本文の局所修正と issue 登録コマンドの
-ファイル編集中心作業のため。実装セッションが Opus の場合は着手前に `/model` で Sonnet 切替を促す。
+全タスク **Sonnet**。設計判断は本セッションで確定済みで、残作業は文書編集・文言修正・整合チェックのみ。
+実装着手前に現セッションが Opus のため、ユーザーへ `/model` で Sonnet 切替を促す。

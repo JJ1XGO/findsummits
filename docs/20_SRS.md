@@ -978,6 +978,20 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `delete` | Point（delete サミット）+ LineString（親ピーク → delete サミット）。親ピーク本体は `add`/`band_change`/`no_change` として存在する（クラスタが2カテゴリに跨る。[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md) 参照） |
 | `review` | Point（孤立既存 SOTA サミット）のみ。どのピークにも従属しない孤立サミットのため、ピーク Point・コル・ポリゴン・LineString は紐付かない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
+  - **`merged_summit.xlsx` の行生成モデル**（本 FR が生成する `merged_summit.xlsx` および [FR-012](#fr-012-サミット一覧申請内容反映版生成) が生成する `merged_summit_revised.xlsx` の行集約規則の正本。[ADR-SRS-045](decisions/ADR-SRS-045-summit-xlsx-row-aggregation-model.md) 参照）:
+    - **1 行 = 1 サミット**（申請の主語）。1 Point = 1 行ではない
+    - Polygon・LineString は行を生まない
+    - peak Point・col Point・AZ 内 matched サミット Point は同一サミット行に集約する
+
+    | `category` | 行の主語 | 行を生むフィーチャ | `peak_*` | `col_*` | `sota_*` | `dominant_*` | `area_complete` | `is_band_change_candidate` |
+    |---|---|---|---|---|---|---|---|---|
+    | add (new) | 新設＝ピーク | peak Point | このピーク | このコル | 空 | 空 | このピーク | 空 |
+    | add (dominant) | 新設＝ピーク | peak Point | このピーク | このコル | 空 | 空 | このピーク | 空 |
+    | band_change | 既存サミット | matched peak Point | このピーク | このコル | AZ 内既存サミット | 空 | このピーク | true |
+    | no_change | 既存サミット | matched peak Point | このピーク | このコル | AZ 内既存サミット | 空 | このピーク | false |
+    | delete | 削除対象既存サミット | delete summit Point | 空 | 空 | この削除サミット | 主ピーク（code + dist） | 空 | 空 |
+    | review | 孤立既存サミット | unmatched summit Point | 空 | 空 | この孤立サミット | 空 | 空 | 空 |
+
 ##### 各フィーチャのプロパティ
 
 **Point: ピーク**
@@ -1295,7 +1309,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 **説明**:
 
   - [FR-009](#fr-009-sotaリスト突合match_status-判定) 出力の `merged_summit.xlsx`（サミット一覧（突合後）・バッチ生成時点）とは異なり、ユーザーが HTML ビューアで入力した山岳名（`summit_name_jp`）編集内容を反映する（フェーズ5 で生成）。rationale は申請書 XLSX（[FR-011](#fr-011-申請書-xlsx-生成)）にのみ反映する
-  - **Point フィーチャのみが行に変換される**（Polygon / LineString フィーチャは含めない）
+  - **行集約規則**: 1 行 = 1 サミット（申請の主語）。Polygon / LineString は行を生まない。peak Point・col Point・AZ 内 matched サミット Point は 1 行に集約する。category 別のカラム値の取得元フィーチャ（delete/review 行の `peak_*`/`col_*` は空欄になるなど）は [FR-009 行生成モデル](#fr-009-sotaリスト突合match_status-判定) を参照（正本: [ADR-SRS-045](decisions/ADR-SRS-045-summit-xlsx-row-aggregation-model.md)）
   - `rationale` プロパティは含めない（申請書根拠テキストは HTML ビューアで確認・編集し XLSX に直接反映する。サミット一覧（申請内容反映版）は座標・標高・突合結果のみを記録する）
   - **出典シート**: XLSX の最後に「出典」シートを設け、「地理院タイル（標高タイル）を加工して作成。出典: 国土地理院 (https://maps.gsi.go.jp/development/ichiran.html)」を記載する（[UR-011](10_URD.md#ur-011)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）
   - **出力カラム**:
@@ -1320,10 +1334,10 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | col_margin_px | コルのメッシュ端マージン（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
-| sota_lat | SOTA リスト登録緯度（matched・dominant のみ。new は空欄） |
-| sota_lon | SOTA リスト登録経度（matched・dominant のみ。new は空欄） |
-| sota_alt_m | SOTA リスト登録標高（m）。matched・dominant のみ。new は空欄 |
-| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched・dominant のみ。new は空欄 |
+| sota_lat | SOTA リスト登録緯度（matched のみ（band_change/no_change）。new/dominant は空欄） |
+| sota_lon | SOTA リスト登録経度（matched のみ（band_change/no_change）。new/dominant は空欄） |
+| sota_alt_m | SOTA リスト登録標高（m）。matched のみ（band_change/no_change）。new/dominant は空欄 |
+| sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched のみ（band_change/no_change）。new/dominant は空欄 |
 | is_band_change_candidate | Points バンド遷移フラグ（bool）。`points ≠ sota_points` の場合 true（変更申請対象）。matched のみ。それ以外は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
 | region_name | 都道府県名（北海道は振興局名）。N03 前処理済み地域 GeoJSON の `region_name` から取得。未取得時は空文字 |
@@ -1508,7 +1522,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル | `merged_summit_revised.xlsx`（[FR-021](#fr-021-申請エビデンス-zip-生成) の ZIP に同梱してダウンロード（単独ダウンロードしない）） |
 | 生成元 | HTML ビューア（[FR-012](#fr-012-サミット一覧申請内容反映版生成) が `merged_summit.geojson` の Point フィーチャからブラウザ内で生成。[FR-019](#fr-019-html-ビューア機能仕様) でのユーザー編集内容を反映） |
 | フォーマット | XLSX（単一シート・データ表） |
-| 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
+| 含む情報 | 1 行 = 1 サミット（行集約規則は [FR-009 行生成モデル参照](#fr-009-sotaリスト突合match_status-判定)。Polygon / LineString は行を生まない。`rationale` 列は含めない） |
 | カラム | [FR-012 参照](#fr-012-サミット一覧申請内容反映版生成) |
 
 #### 6.2.4 標高地形図
@@ -1580,7 +1594,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` と**同時に必ず生成**。不備ゲート（データ品質による意図的な異常終了）発動時も出力保証。ハードクラッシュ時は保証なし。[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)） |
 | 用途 | バッチ生成時点（ユーザー編集前）のサミット一覧を確認するための XLSX。不備ゲート発動時の不備調査にも使用（`match_status=unmatched` 行・`area_complete=false` 行・`key_col_resolved=false` 行を per-row で確認）。[サミット一覧（申請内容反映版）](#623-サミット一覧申請内容反映版) はユーザー編集内容を反映した版 |
 | フォーマット | XLSX（単一シート・データ表） |
-| 含む情報 | Point フィーチャの属性のみ（Polygon / LineString は除外。`rationale` 列は含めない） |
+| 含む情報 | 1 行 = 1 サミット（行集約規則は [FR-009 行生成モデル参照](#fr-009-sotaリスト突合match_status-判定)。Polygon / LineString は行を生まない。`rationale` 列は含めない） |
 | カラム | [FR-012 参照](#fr-012-サミット一覧申請内容反映版生成)（カラム構成は同一） |
 
 #### 6.2.8 公開用 HTML（閲覧専用・ブラウザダウンロード）

@@ -5456,12 +5456,12 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-29",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b",
       "history": [
         {
@@ -5479,6 +5479,14 @@
           "to": "対応完了",
           "comment": "ADR-SRS-044 新規作成・ADR-SRS-035 廃止。FR-009/011/012/013/019/021・GLOSSARY・ADR-URD-018 を category ベースに更新。commit 8bba50c",
           "session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b"
+        },
+        {
+          "date": "2026-06-29T15:36:00",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "536dd4d7-c31c-45ff-8684-0ac33b78e25b"
         }
       ]
     },
@@ -5493,12 +5501,12 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": null,
       "resolved_date": "2026-06-29",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "d24f2cc4-db3c-40ff-999c-db0932b1d6d9",
       "history": [
         {
@@ -5516,6 +5524,14 @@
           "to": "対応完了",
           "comment": "SRS FR-009 の「Point: コル」プロパティ定義に municipality 行を追加し、本文の市区町村判定記述にもコルを明記。判定はコル自身の座標で行う（親ピーク継承ではない）。",
           "session_id": "d24f2cc4-db3c-40ff-999c-db0932b1d6d9"
+        },
+        {
+          "date": "2026-06-29T15:36:03",
+          "actor": "Sonnet",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認]",
+          "session_id": "536dd4d7-c31c-45ff-8684-0ac33b78e25b"
         }
       ]
     },
@@ -5530,14 +5546,23 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "未対応",
+      "status": "対応中",
       "assignee": null,
       "resolution": "FR-009 を行集約モデルの正本として XLSX 行生成モデルを定義し、FR-012 はそれを参照する形で記述する。必要なら ADR 化（ADR-SRS-041「geojson スキーマ拡張で全カラム生成可能」の前提を補完）。",
       "notes": null,
       "resolved_date": null,
       "verified_date": null,
       "created_session_id": "e8a7fa55-4169-461d-add1-6cc2295eabed",
-      "history": []
+      "history": [
+        {
+          "date": "2026-06-29T15:57:36",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "536dd4d7-c31c-45ff-8684-0ac33b78e25b"
+        }
+      ]
     }
   ]
 }
