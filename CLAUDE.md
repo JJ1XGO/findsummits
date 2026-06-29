@@ -91,6 +91,12 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.md に移行」と記載し、todo.md 側に転記する。
 
+## 計画の自動レビュー（plan self-review）
+
+`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、必ず `/spec-panel mgmt/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。
+
+指摘がある場合は計画に反映してから、または確認事項としてユーザーに明示してから `ExitPlanMode` を出す。
+
 ## 計画ファイル・handover の扱い
 
 - **plan.md の置き場**: プロジェクトの `mgmt/plan.md` とする。`/plan` コマンドはシステムの都合でグローバルの `.claude/plans/` に自動生成するため、ExitPlanMode 承認後・ファイル編集を始める前に `mv` で移動する。
