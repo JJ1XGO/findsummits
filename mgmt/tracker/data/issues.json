@@ -5456,11 +5456,11 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応中",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": null,
-      "resolved_date": null,
+      "resolved_date": "2026-06-29",
       "verified_date": null,
       "created_session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b",
       "history": [
@@ -5470,6 +5470,14 @@
           "from": "未対応",
           "to": "対応中",
           "comment": "",
+          "session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b"
+        },
+        {
+          "date": "2026-06-29T11:06:17",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-044 新規作成・ADR-SRS-035 廃止。FR-009/011/012/013/019/021・GLOSSARY・ADR-URD-018 を category ベースに更新。commit 8bba50c",
           "session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b"
         }
       ]
