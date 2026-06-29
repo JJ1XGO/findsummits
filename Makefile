@@ -62,7 +62,7 @@ lint: lint-md lint-py lint-geojson lint-html
 LINT_MD_PATHS ?=
 lint-md: venv
 	@if [ -n "$(LINT_MD_PATHS)" ]; then targets="$(LINT_MD_PATHS)"; ropt="-r"; \
-	else targets=$$(git ls-files '*.md' ':!:mgmt/archive/**'); ropt=""; fi; \
+	else targets=$$(git -c core.quotepath=false ls-files '*.md' ':!:mgmt/archive/**'); ropt=""; fi; \
 	venv/bin/python3 -m pymarkdown -c .pymarkdown scan $$ropt $$targets; s1=$$?; \
 	venv/bin/python3 scripts/lint_docs.py $$targets; s2=$$?; \
 	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
