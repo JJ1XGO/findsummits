@@ -1,7 +1,11 @@
 # ADR-SRS-042: matched ピークを削除候補サミットの主ピーク候補から除外する
 
-| 状態 | 採用・未実装 |
+| 状態 | 却下・[ADR-SRS-043](ADR-SRS-043-matched-peak-as-delete-reference.md) により supersede |
 | 決定日 | 2026-06-28 |
+
+> **本 ADR は [ADR-SRS-043](ADR-SRS-043-matched-peak-as-delete-reference.md) により supersede された（2026-06-29）。**
+> シナリオD（AZ1+delete_zone1 同一ピーク）で削除申請データを取りこぼす過剰補正であったため。
+> 現行仕様は ADR-SRS-043 を参照すること。
 
 ## Context
 

@@ -18,6 +18,13 @@
 
 ### 高
 
+- [ ] **(ISSUE-155 コード追従) FR-009 実装: ADR-SRS-043 準拠の主ピーク特定ロジック**
+  - 主ピーク特定で `match_status=matched` のピークを候補から除外しない（ADR-042 除外ルールを撤回）
+  - 主ピークが matched の場合、`dominant_peak_code` に当該ピークの既存 SOTA コードを付与する
+  - matched フィーチャ構成に「従属 delete サミット Point + ピーク→サミット LineString（N 個）」を追加生成する
+  - `dominant.geojson` 抽出時に、主ピークが matched の delete サミット（+ 対応 LineString）も含める
+  - 仕様詳細: `docs/20_SRS.md` FR-009 主ピーク特定・フィーチャ構成 matched 行・`docs/decisions/ADR-SRS-043-matched-peak-as-delete-reference.md`
+
 - [ ] **(ISSUE-108 コード追従) FR-023 shell スクリプト新規実装**
   - Phase2（FR-004 全メッシュ）→ FR-008+FR-018 → FR-022 → N=4/5/6 ループ（FR-014→FR-008+FR-018→FR-022）→ Phase4（FR-009）を制御する shell スクリプト
   - N カウンタを一元管理。FR-014 に N を明示引数で渡す

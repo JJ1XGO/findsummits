@@ -1,156 +1,86 @@
-# 計画: ISSUE-151〜154 SRS反映
+# 計画: シナリオD で matched ピークを Key にした削除申請を自動生成する（ADR-042 見直し）
 
 ## Context
 
-spec-panelレビュー（FR-009 matched行へのdelete_zone追記・FR-019 is_island削除）で発見した
-4件の仕様未定義箇所について、設計決定が出揃ったため SRS および ADR に反映する。
+このプロジェクトの主成果物は **削除申請（XLSX）**。SOTA 既存サミット Y を「どのピークに従属しているか」付きで削除申請に自動掲載することが存在意義の中核。
 
-決定内容:
+ところが昨日決定した `ADR-SRS-042`（matched ピークを削除候補サミットの主ピーク候補から除外）は、次のシナリオD で**この主成果物を取りこぼす**ことが判明した。
 
-- ISSUE-151: matchedのdelete_zoneをビューアで表示する
-- ISSUE-152: 案A — 海面確定規則でもcol_lat/col_lon=0.0 sentinelに統一
-- ISSUE-153: 表示文言「未定義（陸地最高峰）」を統一ラベルとして維持（理由を明記）
-- ISSUE-154: 案① — matchedピークをdeleteサミットの主ピーク候補から除外（将来的に案②へ移行可能性あり）
+- ピーク A の AZ 内に既存サミット X → `peak.match_status = matched`（X は正常存続）
+- 同じ A の delete判定ゾーン内（AZ 外）に既存サミット Y、Y はどのピークの AZ にも入らない
+- ADR-042 では「A は matched なので Y の主ピーク候補から除外」→ Y が `unmatched`（要確認）に降格 → `dominant_peak_code`/`dominant_peak_dist_m` が付かず、**申請書「削除」行に自動掲載されない**（`docs/20_SRS.md` line 886・909・911）
 
-## 変更ファイル一覧
+このシナリオD は理論ではなく、過去の九州・四国解析で**実際に1件発生済み**（事前データ: D=1件 / 「AZ0+delete複数」=0件）。`ADR-SRS-042` は viewer 上の `A→Y` 接続線の置き場の曖昧さを避けるために、**XLSX 削除申請に必要なデータ link ごと捨てた過剰補正**だった。
 
-| ファイル | 変更内容 | 対応ISSUE |
-|---|---|---|
-| `docs/20_SRS.md` | FR-019 line 1152 / FR-006 line 651 / per-mesh CSVカラム定義 line 689 / FR-018 line 815 / FR-019 line 1185 / FR-009 line 905-910 | 151/152/153/154 |
-| `docs/decisions/ADR-SRS-019-land-summit-highest-peak-handling.md` | 層1の col_lat/col_lon=0.0 設定を Decision に追記 | 152 |
-| `docs/decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md` | 新規作成（ISSUE-154 案①の根拠） | 154 |
+なお `docs/20_SRS.md` line 885 は元々「delete判定ゾーン内・AZ 外の既存サミット = `delete`」と定義しており、ADR-042（line 909/911）がこれを `unmatched` に上書きしている。本修正はその上書きを撤回し、line 885 本来の挙動へ戻すもの。
 
-## タスク一覧（Sonnet・実行順）
+**意図する結果**: シナリオD でも Y を `delete` として扱い、`dominant_peak_code = matched ピーク A の既存 SOTA コード`を付与し、削除申請を自動生成する。A は `matched` のまま（X は正常存続）。
 
-### 1. ISSUE-151: FR-019 line 1152 — delete_zone レイヤー表示対象の拡張
+## 設計方針（軽量修正）
 
-**対象**: `docs/20_SRS.md` line 1152
+案②（matched→dominant 昇格＝存続/削除のステータス複合）は採らない。A のステータスは単一（`matched`）に保ち、Y を独立した `delete` エンティティとして表現することで、案②の複合フィーチャ仕様整理を回避する。
 
-変更前:
+- delete候補サミットの主ピーク特定で **matched ピークを候補から除外しない**（ADR-042 の除外を撤回）
+- 主ピークが matched の場合、`dominant_peak_code` は当該 matched ピークの**既存 SOTA コード**（X のコード）
+- `unmatched` は「全 AZ・全 delete判定ゾーンのいずれにも含まれない真の孤立サミット」のみに戻す
+- viewer の `A→Y` 接続線は、matched フィーチャ構成に「従属 delete サミット Point + ピーク→サミット LineString（複数可）」を追加して定義する。X（AZ 存続サミット）と Y（従属 delete サミット）は別 Feature・別 `summit.match_status` で区別され、概念混在（旧 merge.py status 列の轍）には当たらない
 
-```text
-delete判定ゾーンポリゴン（new / dominant）を独立したトグルレイヤーとして追加（デフォルト ON・半透明）。
-new は delete判定ゾーン内に既存サミットが存在しないことを、
-dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する
-```
+「削除申請の自動生成」という主目的を満たし、案②より波及が小さい。複合構成の汎用的必要性は全国解析の件数を見てから再検討（ADR に明記）。
 
-変更後（「new / dominant」を削除し、matchedの意味を追記）:
+## タスク
 
-```text
-delete判定ゾーンポリゴンを独立したトグルレイヤーとして追加（デフォルト ON・半透明）。
-new は delete判定ゾーン内に既存サミットが存在しないことを、
-dominant は delete判定ゾーン内に削除候補サミットが存在することを可視化する。
-matched は delete判定ゾーンが生成されるが（FR-016 は match_status を問わず全ピークに生成）、
-主ピーク候補から除外されるため（ADR-SRS-042 参照）delete判定ゾーン内に削除候補サミットは存在しない
-```
+> 全タスク **Sonnet**（仕様文書の編集。設計判断は本計画で確定済み。残作業は確定方針に沿った文章修正と整合確認で、Opus 継続の必要なし）。
 
-### 2. ISSUE-152: FR-006 line 651 — 海面確定規則にcol sentinel追記
+### 1. 課題登録（issue）— Sonnet
 
-**対象**: `docs/20_SRS.md` FR-006 line 651
+- 仕様の再決定を伴うため `issue add`（type: 設計）。`venv/bin/python3 mgmt/tracker/track.py issue add`、`--actor` はモデル名（Sonnet）
+- スコープ: 「ADR-042 がシナリオD で削除申請データを取りこぼす問題の再決定（ADR 改訂 + SRS 反映）」
 
-末尾「島の最高峰はこの規則で 3×3 または広域解析内で自動確定する」の直後に追記:
+### 2. 新規 `ADR-SRS-043`（ADR-042 を supersede）— Sonnet
 
-```text
-この場合も col_lat/col_lon は 0.0 に設定する
-（key_col_resolved=true + col_lat/col_lon=0.0 の組み合わせが「海面を Key コルとして確定」の sentinel となる。
-陸地最高峰リスト（層2・FR-008）と同一表現に統一する）
-```
+- 採番は `ls docs/decisions/ | grep ADR-SRS` で最大値を確認して +1（想定 043、要確認）
+- ファイル: `docs/decisions/ADR-SRS-043-<kebab>.md`（例: `matched-peak-as-dominant-reference-for-delete`）
+- 状態: `採用・未実装`
+- 内容:
+  - Context: シナリオD で削除申請を取りこぼす問題（主成果物の欠落）。九州・四国の事前データ（D=1 / AZ0+複数=0）を根拠として記載
+  - Decision: 上記「設計方針（軽量修正）」
+  - Alternatives: ①案②（matched→dominant 昇格・複合構成。重く汎用的だが本軽量案で要件充足のため不採用、全国解析後に再検討）/ ②ADR-042 維持（主目的を取りこぼすため不採用）
+  - Consequences: シナリオD で削除申請が自動生成される / `unmatched` は真の孤立のみに戻る / `ADR-SRS-042` は supersede
 
-### 3. ISSUE-152: per-mesh CSV カラム定義 line 689 — col_lat/col_lon 説明の拡張
+### 3. `ADR-SRS-042` を supersede 状態に更新 — Sonnet
 
-**対象**: `docs/20_SRS.md` line 689付近の col_lat・col_lon カラム行
+- `docs/decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md`
+- 状態欄を `却下・ADR-SRS-043 により supersede` に変更し、冒頭に supersede 注記＋ADR-043 へのリンクを追加（決定経緯は残す）
 
-変更前:
+### 4. `docs/20_SRS.md` FR-009 反映 — Sonnet
 
-```text
-| col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合は 0.0） |
-```
+- **主ピーク特定（line 906-909）**: 「ただし `match_status=matched` のピークは候補から除外する（ADR-042）…unmatched として扱う」を削除。「matched ピークも主ピーク候補に含める。主ピークが matched の場合 `dominant_peak_code` は当該ピークの既存 SOTA コードとする」に書き換え。参照を ADR-043 に張り替え
+- **line 911**: 「matched を除外した結果として候補なしになった場合を含む」を削除。`unmatched` を line 886 の定義（全ゾーン外）に統一
+- **line 912**: `dominant_peak_code` 説明に「主ピークが matched の場合は既存 SOTA コード」を補足
+- **※4 削除根拠（line 925-928）**: `{dominant_peak_code}` が既存コードになりうる旨を注記（フォーマット自体は変更不要）
+- **フィーチャ構成 matched 行（line 964）**: 「＋ 従属 delete サミット Point ＋ LineString（ピーク→サミット、当該 delete判定ゾーンの削除候補数だけ・複数可）」を追加。X（AZ 存続）と Y（従属 delete）の区別を注記
+- **line 885/886 整合確認**: 修正後に line 885（delete 定義）と矛盾しないことを確認
 
-変更後:
+### 5. 波及確認（grep + 関連 FR）— Sonnet
 
-```text
-| col_lat | float | 小数点8桁 | コル緯度（`key_col_resolved=false` の場合、または海面確定（`key_col_resolved=true` + Key コル=0m）の場合は 0.0） |
-```
+- `grep -rn "ADR-SRS-042" docs/` で残存参照を洗い、撤回した内容を指すものを ADR-043 に整理（または削除）
+- `FR-011`（申請書 XLSX 生成）が delete サミットを自動で削除行に出すこと、matched 由来の除外を持たないことを確認（持てば追従）
+- `FR-019`（HTML ビューア機能仕様）が matched フィーチャに従属 delete サミット/LineString が増えても破綻しないことを確認（必要なら一文追記）
 
-col_lon カラムも同様に修正。
+### 5b. todo.md への分解（実装タスク）— Sonnet
 
-### 4. ISSUE-152: FR-018 line 815 — 島嶼部最高峰を明記
+- 本件は ADR-042 が「採用・未実装」段階での仕様変更。FR-009 実装コードはまだ存在しないため、実装は将来の FR-009 実装時に追従する。実装観点（主ピーク特定で matched 除外しない／matched の従属 delete サミット feature 生成）を `mgmt/todo.md` に追記し取りこぼしを防ぐ
 
-**対象**: `docs/20_SRS.md` line 815
+### 6. lint・コミット — Sonnet
 
-変更前:
+- `make lint`（特に `lint-md`）警告ゼロを確認
+- ドキュメント更新ルールに従い**当ターン内に commit**（Conventional Commits、本文日本語）。push は別途指示まで不要
+- `mgmt/plan.md` への移動: 本計画は承認後 `.claude/plans/` から `mgmt/plan.md` へ `mv`（CLAUDE.md 規約）
 
-```text
-陸地最高峰は `col_lat`/`col_lon`=0.0 sentinel のため除外
-```
+## 検証
 
-変更後:
-
-```text
-陸地最高峰・島嶼部最高峰（FR-006 海面確定規則による自動確定を含む）は
-`col_lat`/`col_lon`=0.0 sentinel のため除外
-```
-
-### 5. ISSUE-152: ADR-SRS-019 — 層1のcol座標値を Decision に追記
-
-**対象**: `docs/decisions/ADR-SRS-019-land-summit-highest-peak-handling.md`
-
-Decision セクション「層1: 海面確定規則」の説明末尾に追記:
-
-```text
-col_lat/col_lon は 0.0 に設定する（層2の陸地最高峰リストと同一 sentinel 表現に統一）。
-これにより FR-018 の key_col Point 除外ロジックが「col_lat/col_lon=0.0 かどうか」で統一できる。
-```
-
-### 6. ISSUE-153: FR-019 line 1185 — 統一ラベルの根拠を明記
-
-**対象**: `docs/20_SRS.md` line 1185
-
-末尾「陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）」を以下に置き換え:
-
-```text
-陸地最高峰と島嶼部最高峰はビューア上で区別しない（`is_island` プロパティは使用しない）。
-どちらも col_lat/col_lon=0.0 sentinel で統一されておりビューアが区別できる内部属性を持たないため、
-「未定義（陸地最高峰）」を統一ラベルとして使用する。
-```
-
-### 7. ISSUE-154: ADR-SRS-042 新規作成
-
-**ファイル**: `docs/decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md`
-
-フォーマット:
-
-```markdown
-| 状態 | 採用・未実装 |
-| 決定日 | 2026-06-28 |
-
-## Context
-...
-## Decision
-matchedピークはdeleteサミットの主ピーク候補から除外する。
-主ピーク特定ロジックの候補条件を「match_status=dominant のピーク」に絞る。
-matchedのdelete_zone内にいるAZ外SOTAサミットは unmatched（要確認）として扱う。
-## Alternatives
-案②（matchedをdominantに昇格）は全国解析実データ確認後に再検討。
-## Consequences
-FR-009 line 905-910 に制約を追加。
-```
-
-### 8. ISSUE-154: FR-009 line 905-910 — 主ピーク特定に制約を追記
-
-**対象**: `docs/20_SRS.md` line 906 の「候補とする」の直後に追記:
-
-```text
-ただし match_status=matched のピークは候補から除外する（[ADR-SRS-042] 参照）。
-matchedピークのdelete_zone内にAZ外のSOTAサミットが存在した場合は unmatched（要確認）として扱う。
-```
-
-## 実施後の検証
-
-1. `make lint` 警告ゼロ
-2. ADR-SRS-042 へのリンク（`[ADR-SRS-042](...)`）が SRS 本文中で正しいこと
-3. ISSUE-151〜154 を tracker で `close` する
-
-## コミット方針
-
-全 8 タスクを 1 コミットにまとめる。
+- **整合**: `grep -rn "ADR-SRS-042" docs/` で撤回済み内容への参照が残っていないこと。ADR-043 と FR-009 の用語・参照リンクが相互に整合していること
+- **シナリオD トレース（机上）**: 「A=matched(X in AZ) / Y in A.delete_zone, AZ外 / Y は他 AZ になし」で、`summit.match_status(Y)=delete`・`dominant_peak_code(Y)=X の既存コード`・`peak.match_status(A)=matched` になることを SRS 記述で追えること。`unmatched` は「全ゾーン外」のみであること
+- **lint**: `make lint` 警告ゼロ
+- **コード**: 本件は仕様フェーズ（FR-009 未実装）。コード変更・`make`・解析実行は不要。実装追従は todo.md に記録
+- **ドキュメント整合性原則**: ADR-042 の supersede 状態と SRS 記述・他 FR が矛盾しないこと

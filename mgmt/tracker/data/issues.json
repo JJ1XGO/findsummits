@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-06-28",
-    "counter": 154
+    "last_updated": "2026-06-29",
+    "counter": 155
   },
   "issues": [
     {
@@ -5285,6 +5285,35 @@
           "to": "対応完了",
           "comment": "案①採用: ADR-SRS-042新規作成・FR-009 line 905-910にmatched除外制約を追記。将来的な案②移行意図をADR-SRS-042に記録",
           "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-155",
+      "title": "ADR-042 シナリオD で削除申請データ取りこぼし問題の再決定（ADR-043 + SRS 反映）",
+      "description": "ADR-SRS-042（matched ピークを delete サミット主ピーク候補から除外）はシナリオD（AZ内1サミット＋delete_zone内1サミットが同一ピークに存在）で削除申請データを取りこぼす。九州・四国解析で実際に1件発生済み。matched ピークも主ピーク候補に含め、dominant_peak_code に matched ピークの既存 SOTA コードを付与して削除申請を自動生成する軽量修正に方針変更する。",
+      "type": "設計",
+      "priority": "高",
+      "category": "その他",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": "新規 ADR-SRS-043 で ADR-042 を supersede。FR-009 主ピーク特定ロジックの matched 除外を撤回し、matched フィーチャ構成に従属 delete サミット Point/LineString を追加定義する。",
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00",
+      "history": [
+        {
+          "date": "2026-06-29T09:51:53",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     }
