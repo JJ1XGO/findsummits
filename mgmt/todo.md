@@ -208,20 +208,6 @@
 - [ ] **finding 7: 旧名 `merged.geojson` の追従漏れ確認**
   - `scripts/` 配下のコードに `merged.geojson` （`merged_summit`/`merged_peak` を除く）が残存していないか確認・修正
 
-### FR-009 spec-panel レビュー指摘の SRS 文書反映（議論不要・確定済み追従）
-
-以下は ADR で既決または文言統一のみ。SRS 本文の修正だけが残る（2026-06-29 レビュー）。
-
-- [ ] **指摘①: 出力テーブルの「不備フラグ metadata」残存を修正（ADR-SRS-033 追従）**
-  - `docs/20_SRS.md` L869: 「全フィーチャ・rationale・不備フラグ metadata を含む」→ boolean 不備フラグは ADR-SRS-033 で metadata から削除済み。「全フィーチャ・rationale・metadata（出典・基準日等）を含む」に修正
-  - metadata 付与項目（L946-952）と整合させる
-
-- [ ] **指摘②: `matched_band_change` 造語を正規 enum に統一**
-  - `docs/20_SRS.md` L914: match_status にも category にも無い造語。「`category=band_change`（`is_band_change_candidate=true`）の matched ピーク Point」に統一（ADR-SRS-044）
-
-- [ ] **指摘④: unmatched（review）サミットの rationale 値を明示**
-  - `docs/20_SRS.md` L1046: summit プロパティ rationale の説明に「unmatched（review）は空文字」を追記（rationale 対象フィーチャ L914 にも非掲載＝空文字を明示）
-
 ---
 
 ## 保留

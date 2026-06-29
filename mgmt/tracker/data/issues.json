@@ -5591,11 +5591,11 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応中",
+      "status": "対応完了",
       "assignee": null,
       "resolution": null,
       "notes": "協議完了・SRS反映は次セッション。ADR-SRS-044 で既決（ZIP は add/band_change/no_change/delete/review の5ファイル・delete独立・review同梱。状態=採用未実装）の §6.2.9 追従漏れと判明。ファイル名は category 値に厳密準拠で合意（band_change/no_change を使う。ADR表記の changed/unchanged は旧名残存）。次セッション作業: ①§6.2.9 同梱ファイル一覧を5ファイルに修正 ②ADR-SRS-043 の『delete を dominant.geojson に同梱』記述も ADR-SRS-044（delete独立）に追従 ③FR-021本文のZIP分割記述の追従確認 ④旧ファイル名 new/dominant/changed/unchanged.geojson の全残存を grep 確認。",
-      "resolved_date": null,
+      "resolved_date": "2026-06-29",
       "verified_date": null,
       "created_session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4",
       "history": [
@@ -5605,6 +5605,14 @@
           "from": "未対応",
           "to": "対応中",
           "comment": "",
+          "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
+        },
+        {
+          "date": "2026-06-29T16:35:09",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "§6.2.9・FR-021・ADR-SRS-044・ADR-SRS-013 を category 値準拠（add/band_change/no_change/delete/review の5ファイル）に統一。todo①②④（L869不備フラグ・L914 matched_band_change・L1046 unmatched空文字）も同コミットで対応完了。",
           "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
         }
       ]
