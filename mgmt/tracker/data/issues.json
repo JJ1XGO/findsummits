@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-29",
-    "counter": 156
+    "counter": 157
   },
   "issues": [
     {
@@ -5479,6 +5479,43 @@
           "to": "対応完了",
           "comment": "ADR-SRS-044 新規作成・ADR-SRS-035 廃止。FR-009/011/012/013/019/021・GLOSSARY・ADR-URD-018 を category ベースに更新。commit 8bba50c",
           "session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-157",
+      "title": "FR-009: コル（key_col）プロパティ定義に municipality を追加",
+      "description": "merged_summit.geojson の Point フィーチャのうち、ピーク・サミットには municipality が付与されるが、コル（key_col）の properties 定義から漏れている。コル自身の座標で point-in-polygon 判定して municipality を付与する仕様に改訂する。",
+      "type": "改善",
+      "priority": "中",
+      "category": "GeoJSON出力",
+      "reporter": "Sonnet",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応完了",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": "2026-06-29",
+      "verified_date": null,
+      "created_session_id": "d24f2cc4-db3c-40ff-999c-db0932b1d6d9",
+      "history": [
+        {
+          "date": "2026-06-29T13:25:24",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "d24f2cc4-db3c-40ff-999c-db0932b1d6d9"
+        },
+        {
+          "date": "2026-06-29T13:26:37",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "SRS FR-009 の「Point: コル」プロパティ定義に municipality 行を追加し、本文の市区町村判定記述にもコルを明記。判定はコル自身の座標で行う（親ピーク継承ではない）。",
+          "session_id": "d24f2cc4-db3c-40ff-999c-db0932b1d6d9"
         }
       ]
     }
