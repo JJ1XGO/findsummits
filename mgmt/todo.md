@@ -185,9 +185,6 @@
 - [ ] **finding 2（実装追従）: FR-009 での `gsi_tile_latest_date` 格納**
   - `scripts/merge.py`: 処理末尾で `$DATA_DIR/tiles/` 全 PNG の mtime 最大値を取得し metadata に格納
 
-- [ ] **finding 7: 旧名 `merged.geojson` の追従漏れ確認**
-  - `scripts/` 配下のコードに `merged.geojson` （`merged_summit`/`merged_peak` を除く）が残存していないか確認・修正
-
 ---
 
 ## 保留

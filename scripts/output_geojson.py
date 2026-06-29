@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-output_geojson.py: merged.csv から GeoJSON を生成する
+output_geojson.py: merged_peak.csv から GeoJSON を生成する
 
 フィーチャ構成:
   - Point: 各行の座標（match_status で色分け）
@@ -32,7 +32,7 @@ if "DATA_DIR" not in os.environ and _config.has_option("paths", "DATA_DIR"):
 _DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 
 DEFAULT_INPUT  = _DATA_DIR / "results/merged.csv"
-DEFAULT_OUTPUT = _DATA_DIR / "results/merged.geojson"
+DEFAULT_OUTPUT = _DATA_DIR / "results/merged_peak.geojson"
 
 GSI_ICON_URL = "https://maps.gsi.go.jp/portal/sys/v4/symbols/{}.png"
 ICONS = {
