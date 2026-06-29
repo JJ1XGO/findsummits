@@ -89,3 +89,6 @@ mgmt/bug-system/reports/bug_tracker.xlsx
 .claude/handovers/
 .claude/incidents/
 .claude/bash_history
+
+# spec-panel 指摘記録（作業用メモ、git 管理対象外）
+mgmt/spec-findings/
