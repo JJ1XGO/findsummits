@@ -147,7 +147,7 @@
 
 - **外部データソース**
   - 国土地理院 標高タイル（DEM5a/5b/5c/DEM10b、ズームレベル15 PNG）
-  - 国土交通省 国土数値情報 N03 行政区域 GeoJSON
+  - 国土交通省 国土数値情報 N03 行政区域 GeoJSON（ユーザーが手動配置。[7.2.3 参照](#723-n03-行政区域-zip)）
   - SOTA Reflector summitslist.csv
 - **外部アクター**
   - 申請担当者（ユーザー）— データ取得・解析実行・申請書確認
@@ -155,7 +155,9 @@
 - **外部成果物（本システムの最終出力）**
   - 申請書 XLSX（SOTA 日本支部提出用）
   - サミット一覧（申請内容反映版）
-  - 証跡 GeoJSON
+  - 突合済み統合 GeoJSON（証跡・中心データ）
+  - 公開用 HTML
+  - 申請エビデンス ZIP
 
 ### 3.2 主要コンポーネント構成
 
@@ -167,9 +169,9 @@
 | タイル取得コンポーネント | DEM タイルを国土地理院から取得・ローカルキャッシュ | メッシュコード、取得設定、北方領土除外タイルリスト | ローカルキャッシュ済み PNG タイル |
 | パイプライン制御コンポーネント | フェーズ2〜4 の実行順序・N エスカレーションループを管理（shell スクリプト） | merged_peak.csv・コル未確定ピーク座標リスト（[FR-022](#fr-022-コル充足判定) 出力） | （各 FR への委譲によって成果物が生成される） |
 | 地形解析エンジン | DEM からピーク／コル／プロミネンス／AZ・delete判定ゾーンを検出 | ローカルキャッシュ済み PNG タイル | 処理モードにより異なる（通常モード: per-mesh CSV / per-mesh ピーク候補 GeoJSON / 標高地形図 PNG、広域モード: per-mesh CSV のみ） |
-| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、rationale 生成・不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、境界 GeoJSON | **merged_summit.geojson**（中心データ）、merged_summit.xlsx（サミット一覧（突合後））、merged_peak.csv（内部 work CSV）、merged_peak.geojson（内部中間） |
+| 統合・突合コンポーネント | per-mesh 成果物を統合し SOTA リストと突合、rationale 生成・不備フラグ判定・exit code 制御 | per-mesh CSV／GeoJSON、SOTA リスト CSV、SOTA 既存サミット GeoJSON、N03 前処理済み GeoJSON 群（地域・市区町村） | **merged_summit.geojson**（中心データ）、merged_summit.xlsx（サミット一覧（突合後））、merged_peak.csv（内部 work CSV）、merged_peak.geojson（内部中間） |
 | 可視化生成コンポーネント | merged_summit.geojson から HTML ビューアを生成 | merged_summit.geojson | merged_viewer.html |
-| 申請書生成 UI | HTML ビューア内でユーザー操作に応じて申請書 XLSX を生成 | ユーザー操作（HTML ビューア上） | 申請用 XLSX |
+| 申請書生成 UI | HTML ビューア内でユーザー操作に応じて申請書 XLSX を生成 | ユーザー操作（HTML ビューア上） | 申請書 XLSX・サミット一覧（申請内容反映版）・公開用 HTML・申請エビデンス ZIP |
 
 ### 3.3 フェーズ分割
 
@@ -221,8 +223,7 @@
 統合時（FR-008/FR-018）  ピーク統合（陸地最高峰の海面確定を含む）
        ├─ merged_peak.csv           （内部 work CSV）
        └─ merged_peak.geojson       ($DATA_DIR/results/merged_peak.geojson) ← 内部中間ファイル
-       ↓ FR-022（コル充足判定）で key_col_resolved=false ゼロ → フェーズ4 へ
-       ↓ key_col_resolved=false が残っていれば FR-023 が N=4→5→6 で以下を繰り返す
+       ↓ FR-022（コル充足判定）: 全確定（key_col_resolved=false ゼロ）→ フェーズ4 へ / 未確定残りあり → N=4 でフェーズ3 へ（FR-023 が N=4→5→6 を繰り返す）
 【フェーズ3: 広域メッシュ解析】（コル充足判定が未充足を検出した場合のみ実行）
 地形解析エンジン         FR-014（広域結合解析オーケストレーション・N×N + L14・ポリゴン生成なし）
        ├─ 広域 per-mesh CSV         ($DATA_DIR/results/csv/<N>-<meshcode>-<コーナー>.csv 例: 4-5239-NW.csv)
@@ -238,8 +239,9 @@
        ↓ ユーザーが HTML ビューアで確認・rationale 編集後にエクスポートを実行
 【フェーズ5: 申請書生成（ローカル HTML ビューア上のユーザー操作）】
        ├─ 申請書 XLSX               （ブラウザダウンロード）
-       ├─ サミット一覧（申請内容反映版）  merged_summit_revised.xlsx
-       └─ 公開用 HTML               （ブラウザダウンロード）
+       ├─ サミット一覧（申請内容反映版）  merged_summit_revised.xlsx（申請エビデンス ZIP に同梱）
+       ├─ 公開用 HTML               （ブラウザダウンロード）
+       └─ 申請エビデンス ZIP         （[FR-021](#fr-021-申請エビデンス-zip-生成)・ブラウザダウンロード）
 ```
 
 ---
