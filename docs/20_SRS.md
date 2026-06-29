@@ -866,7 +866,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・不備フラグ metadata を含む |
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・metadata（出典・基準日等）を含む |
 | サミット一覧（突合後）（`merged_summit.xlsx`） | 外部I/F | XLSX | バッチ生成時点の確認用。HTML ビューア編集内容は反映しない |
 
 **説明**:
@@ -912,7 +912,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - いずれの delete判定ゾーンにも含まれないサミットは `summit.match_status="unmatched"`（要確認）として記録する。主ピークは紐付かず `dominant_peak_code` 等は付与しない。停止はせず、件数しきい値超過時のみ不備ゲートで停止する（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。自動フォールバック・申請書削除行への自動掲載は行わない）
     - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード。主ピークが `matched` の場合は当該ピークの既存 SOTA コード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算。人手確認用）
   - **rationale プロパティ生成**（各フィーチャの `rationale` プロパティに格納する申請書根拠テキスト。HTML ビューアで編集可能・[FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に転記）:
-    - **対象フィーチャ**: match_status が `new` / `dominant` のピーク Point、`matched_band_change`（`is_band_change_candidate=true`）の matched ピーク Point、match_status が `delete` の既存 SOTA サミット Point
+    - **対象フィーチャ**: match_status が `new` / `dominant` のピーク Point、`category="band_change"`（`is_band_change_candidate=true`）の matched ピーク Point、match_status が `delete` の既存 SOTA サミット Point
     - **※2 追加根拠フォーマット**（new / dominant ピーク Point に付与）:
 
       ```text
@@ -1044,7 +1044,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `summit_name_jp` | 日本語山岳名（本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
 | `sota_alt_m` | SOTA 登録標高（m） |
 | `sota_points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出 |
-| `rationale` | 申請書根拠テキスト（match_status=delete は ※4 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched は空文字）。HTML ビューアで編集可能 |
+| `rationale` | 申請書根拠テキスト（match_status=delete は ※4 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched・unmatched は空文字）。HTML ビューアで編集可能 |
 | `municipality` | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字。match_status によらず全サミットに付与 |
 | `region_name` | 都道府県名（北海道は振興局名）。N03 前処理済み地域 GeoJSON の `region_name` から取得。未取得時は空文字。match_status によらず全サミットに付与 |
 | `dominant_peak_code` | 主ピークのサミットコード（delete サミットのみ付与）。主ピークが dominant の場合は仮サミットコード、主ピークが matched の場合は既存 SOTA コード。それ以外は空欄 |
@@ -1351,7 +1351,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 #### FR-021: 申請エビデンス ZIP 生成
 
 - **対応 UR**: [UR-005](10_URD.md#ur-005)
-- **概要**: ローカル HTML ビューア（[FR-013](#fr-013-html-ビューア生成)）上の「申請エビデンス」ボタンで、サミット一覧（申請内容反映版）XLSX と 4 カテゴリ GeoJSON を 1 つの ZIP にまとめてブラウザダウンロードする。
+- **概要**: ローカル HTML ビューア（[FR-013](#fr-013-html-ビューア生成)）上の「申請エビデンス」ボタンで、サミット一覧（申請内容反映版）XLSX と 5 カテゴリ GeoJSON を 1 つの ZIP にまとめてブラウザダウンロードする。
 
 **入力**:
 
@@ -1375,15 +1375,15 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
 | `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・prominence_range）|
 | `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て（delete summit・coord_diff LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
-| `changed.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て |
-| `unchanged.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て |
+| `band_change.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て |
+| `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て |
 | `review.geojson` | 要確認サミット（孤立既存サミット） | `category="review"` のフィーチャ全て（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
   - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）
   - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
   - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う（localStorage を直接読むのではなく、[FR-019](#fr-019-html-ビューア機能仕様) の引き継ぎ確認を経た現在の編集状態のスナップショットを使用する。[FR-020](#fr-020-公開用-html-ビューア生成) と同方式）
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
-  - `unchanged.geojson`・`review.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
+  - `no_change.geojson`・`review.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
 
 ---
 
@@ -1627,10 +1627,11 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル名 | 内容 | 仕様参照 |
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版） | [6.2.3](#623-サミット一覧申請内容反映版) |
-| `new.geojson` | 新規ピーク候補フィーチャ（`match_status="new"` の Point・Polygon・LineString） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
-| `dominant.geojson` | 差替候補ピークおよびその従属サミット、ならびに matched ピークに従属する削除候補サミット（`match_status="dominant"` ピーク + 対応する `match_status="delete"` サミット、加えて主ピークが matched の `match_status="delete"` サミット + 対応 LineString。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
-| `changed.geojson` | バンド変更候補（`match_status="matched"` かつ `is_band_change_candidate=true` のピーク + 対応サミット） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
-| `unchanged.geojson` | 変更なし既存サミット（`match_status="matched"` かつ `is_band_change_candidate=false` のピーク + 対応サミット） | [6.2.5](#625-突合済み統合-geojson) より抽出 |
+| `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
+| `band_change.geojson` | バンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
+| `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ（申請対象外・参照用同梱） | `category="no_change"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
+| `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
+| `review.geojson` | 要確認サミット（孤立既存サミット・申請対象外・参照用同梱） | `category="review"` のフィーチャ全て。[FR-021](#fr-021-申請エビデンス-zip-生成) 参照 |
 
 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）。
 

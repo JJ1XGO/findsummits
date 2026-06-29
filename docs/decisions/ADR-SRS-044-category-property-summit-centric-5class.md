@@ -76,11 +76,11 @@ FR-009 が各フィーチャに `category` プロパティを算出・付与す�
 | `merged_summit.geojson`（FR-009） | フィーチャ構成表が peak.match_status 軸 | 全フィーチャに `category` プロパティ付与。フィーチャ構成表を申請カテゴリ別に再編 |
 | `merged_summit.xlsx` / `merged_summit_revised.xlsx`（FR-012） | `match_status` 列のみ（値域が行種別で異なり直読困難） | `category` 列を追加（`match_status` 列は残す） |
 | ビューアカテゴリフィルター（FR-019/020） | 消費側が実行時に `feature_type`/`match_status`/`is_band_change_candidate` から導出（ADR-SRS-035） | 格納済み `category` プロパティを読む（導出ロジックを廃止） |
-| 申請エビデンス ZIP 分割（FR-021） | new/dominant/changed/unchanged.geojson（4ファイル、delete サミットは dominant に同梱） | add/changed/unchanged/delete.geojson（4ファイル、削除独立）＋ review.geojson（要確認、同梱） |
+| 申請エビデンス ZIP 分割（FR-021） | new/dominant/changed/unchanged.geojson（4ファイル、delete サミットは dominant に同梱） | add/band_change/no_change/delete/review.geojson（5ファイル、ファイル名は category 値に厳密準拠、削除独立・要確認同梱） |
 
 ### FR-021 ZIP への `review.geojson` 同梱
 
-`unchanged.geojson` は「申請対象外だが参照用に同梱」している。同様の理由で
+`no_change.geojson` は「申請対象外だが参照用に同梱」している。同様の理由で
 `review.geojson`（unmatched サミット）も同梱し、担当者が ZIP 単体で全件を確認できるようにする。
 
 ## Alternatives

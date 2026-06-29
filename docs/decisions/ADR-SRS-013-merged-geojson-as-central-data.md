@@ -41,19 +41,19 @@ FR-009（SOTA リスト突合・match_status 判定）の出力を `merged_summi
 
 ```text
 merged_summit.geojson
-├ Point: peak（new/dominant/matched_band_change に rationale プロパティ付与）
+├ Point: peak（category=add/band_change/no_change に rationale プロパティ付与）
 ├ Point: col
 ├ Point: summit（match_status=delete に rationale プロパティ付与）
 ├ Polygon: activation_zone
 ├ Polygon: delete_zone
 ├ LineString: peak→col 接続線
 ├ LineString: peak→summit 接続線
-└ metadata（summitslist_date, generated_at, 不備フラグ）
+└ metadata（summitslist_date, generated_at, attribution 等。不備フラグは除外: ADR-SRS-033）
 ```
 
 ### rationale プロパティの配置
 
-- **ピークフィーチャ**（new / dominant / matched_band_change）: FR-009 で `rationale` プロパティを付与（※2 追加根拠 or ※5 変更根拠。テンプレート定義は FR-009 に集約）
+- **ピークフィーチャ**（category=add の new/dominant・category=band_change の matched）: FR-009 で `rationale` プロパティを付与（※2 追加根拠 or ※5 変更根拠。テンプレート定義は FR-009 に集約）
 - **削除サミットフィーチャ**（match_status=delete）: FR-009 で `rationale` プロパティを付与（※4 削除根拠）
 
 dominant 行は申請書 XLSX で 2 行（追加 + 削除）に展開されるため、ピーク Point と削除サミット Point の 2 つに独立した rationale を持たせる。Point フィーチャが独立しているため自然に両立する。
