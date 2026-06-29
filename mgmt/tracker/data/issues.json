@@ -5628,12 +5628,12 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-009 spec-panel レビュー指摘⑤（2026-06-29）。",
       "resolved_date": "2026-06-29",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4",
       "history": [
         {
@@ -5642,6 +5642,14 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "SRS L894 にprominence=null末尾扱いを規定。標高1次キーで完全順序・決定論性確保。新規ADR不要・既存採番規定の境界条件補完として決着。",
+          "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
+        },
+        {
+          "date": "2026-06-29T16:36:04",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK",
           "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
         }
       ]
@@ -5657,12 +5665,12 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": null,
       "notes": "FR-009 spec-panel レビュー指摘⑥（2026-06-29）。",
       "resolved_date": "2026-06-29",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4",
       "history": [
         {
@@ -5671,6 +5679,14 @@
           "from": "未対応",
           "to": "対応完了",
           "comment": "SRS L877 にAZ互いに素性（双方向）と成立条件（閾値>AZ標高差）を証明付きで明記。新規ADR不要・既存数学的性質の明文化として決着。",
+          "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
+        },
+        {
+          "date": "2026-06-29T16:36:04",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 確認OK",
           "session_id": "8e7df5d3-9398-465f-9f22-c834f0d449b4"
         }
       ]
