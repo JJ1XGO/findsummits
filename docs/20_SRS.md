@@ -1303,11 +1303,11 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | カラム | 説明 |
 |---|---|
 | category | 申請カテゴリ（add/band_change/no_change/delete/review）。[FR-009](#fr-009-sotaリスト突合match_status-判定) が算出した `category` プロパティの値をそのまま転記（[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)） |
-| match_status | SOTAリスト突合結果（ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched）。不備調査用に残存（`unmatched`・`area_complete=false`・`key_col_resolved=false` の per-row 参照に使用） |
+| match_status | SOTAリスト突合結果（ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched）。`category=review`（`unmatched`）の per-row 確認に使用 |
 | stability | 解析品質（confirmed/unstable/-） |
 | summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A00）または ZZ/ZZ-A00（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
-| summit_name_jp | 日本語山岳名（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` に格納済みの値を引き継ぐ。未取得時は空文字） |
+| summit_name_jp | 日本語山岳名。localStorage に編集値があればそれを優先し（[FR-019](#fr-019-html-ビューア機能仕様) が管理）、なければ [FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` に格納済みの値を引き継ぐ。未取得時は空文字 |
 | peak_lat | ピーク緯度 |
 | peak_lon | ピーク経度 |
 | peak_elev | ピーク標高（m） |
@@ -1704,7 +1704,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
 | 10 | 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
 | 11 | 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
-| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-011](#fr-011-申請書-xlsx-生成) / [FR-019](#fr-019-html-ビューア機能仕様) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映（FR-020 は公開用 HTML 生成時にマージ） |
+| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-011](#fr-011-申請書-xlsx-生成) / [FR-012](#fr-012-サミット一覧申請内容反映版生成) / [FR-019](#fr-019-html-ビューア機能仕様) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映（FR-020 は公開用 HTML 生成時にマージ） |
 
 ### 8.2 内部データ詳細仕様
 
