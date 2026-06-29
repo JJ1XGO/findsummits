@@ -4793,12 +4793,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "カラムを確定し（最低限 peak_lat, peak_lon。追加列があれば明示）、FR-022 出力テーブル備考欄か §7.2.2 に定義セクションを追加する。FR-014 入力備考欄も整合させる。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9",
       "history": [
         {
@@ -4816,6 +4816,14 @@
           "to": "対応完了",
           "comment": "FR-022出力テーブルにカラム定義追加（peak_lat, peak_lon・ヘッダー行あり）。§7.2.1 No.7に保存先パス追加（$DATA_DIR/results/）",
           "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -4830,12 +4838,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-022 説明に「異常系」セクションを追加。「入力 CSV が存在しない場合はエラー終了（FR-023 に伝播）」「ピーク0件（空 CSV）の場合は「ゼロ」を返し正常終了（フェーズ4へ進む）」の方針を確定して記述する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9",
       "history": [
         {
@@ -4853,6 +4861,14 @@
           "to": "対応完了",
           "comment": "FR-022説明に異常系セクション追加（入力CSV不存在→エラー終了・空CSV→ゼロ返し正常終了）",
           "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -4867,12 +4883,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "方針を確定し（推奨: 即時終了・エラー伝播）、FR-023 説明のループ終了条件周辺に「呼び出した FR がエラー終了した場合は FR-023 も即時終了する」旨を追記する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9",
       "history": [
         {
@@ -4890,6 +4906,14 @@
           "to": "対応完了",
           "comment": "FR-023説明にエラー伝播方針追加（フェイルファースト・set -e 等の実装手段はHLD委任）",
           "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -4904,12 +4928,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "NFR-010 のスコープを FR-020 にも明示的に拡張する（「HTML ビューア（FR-013・FR-020）のマーカー描画に適用する」）か、FR-013 と同等の要件が FR-020 に引き継がれることを NFR-010 本文または ADR に明記するかを選択し、RTM の FR-020 行 UR-014 列に ✅ を追記する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9",
       "history": [
         {
@@ -4927,6 +4951,14 @@
           "to": "対応完了",
           "comment": "NFR-010 スコープを FR-013・FR-020 に拡張。RTM の FR-020 行 UR-014 列に ✅ を追記",
           "session_id": "323722bf-eaf2-4deb-911e-9a3122f255b9"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -4941,12 +4973,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "「生成1では北方領土ポリゴンを dissolve 対象に含める（除外は生成3＋FR-001 で完結しているため重複除外は不要）」または「生成3と同一条件で生成1から除外する」どちらかを決定し、FR-017 §生成1 の説明文に明記する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
       "history": [
         {
@@ -4964,6 +4996,14 @@
           "to": "対応完了",
           "comment": "FR-017 §生成1 に『北方領土ポリゴンは dissolve 対象から除外しない（除外は生成3→FR-001 で完結）』を明記した。選択肢B（含める）を採用。",
           "session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -4978,12 +5018,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "「1フィーチャ（MultiPolygon 許容）に集約」として SRS の記述「1地域1ポリゴン」を「1地域1フィーチャ（MultiPolygon 許容）」に更新することを推奨する。離島を含む都府県は必然的に MultiPolygon になるため単一 Polygon への厳密化は現実的でない。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
       "history": [
         {
@@ -5001,6 +5041,14 @@
           "to": "対応完了",
           "comment": "FR-017 §生成1 の『1地域1ポリゴンに集約』を『1地域1フィーチャ（Polygon または MultiPolygon）』に修正。離島を含む地域は MultiPolygon になる旨を明記した。",
           "session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5015,12 +5063,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "SRS に「出力ファイルを手動削除することで再実行できる（詳細は HLD 参照）」程度の一文を追加する方向を推奨する。完全 HLD 委任とする場合は FR-017 §実行タイミングに『再実行はHLD参照』の一文を追記する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3",
       "history": [
         {
@@ -5038,6 +5086,14 @@
           "to": "対応完了",
           "comment": "FR-017 §実行タイミングに『N03 ZIP 差し替え時は出力ファイル群を削除して再実行（操作詳細は HLD 参照）』を追記した。",
           "session_id": "c9b29efa-5496-4a85-b2e1-3482be17c7d3"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5052,12 +5108,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-URD-005 §Consequences から FR-003 への言及（行101）と「北方領土タイルは FR-001 で引き続き取得される」記述（行102–104）を削除し、「FR-001 が HTTP リクエストを発行しないことで除外が完結する」旨に書き換える。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
       "history": [
         {
@@ -5075,6 +5131,14 @@
           "to": "対応完了",
           "comment": "ADR-URD-005 §Consequences を新方式（FR-001 で HTTP スキップ）に書き換え。FR-003 の言及と旧方式の記述を削除し、ADR-SRS-018 参照付きで FR-001 が除外を完結する旨に更新。",
           "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5089,12 +5153,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "ADR-URD-005 あるいは新規 ADR-SRS-XXX で Z14 タイル除外方法を設計決定し、FR-001 説明および §7.2.2.1 に明記する。設計の選択肢: (a) Z15 リストを floor(x/2),floor(y/2) で変換して Z14 タイルも除外 / (b) FR-017 が Z14 リストを別途生成 / (c) 地理院は北方領土の DEM10b タイルを提供しないため取得時に HTTP 404 になるだけで除外不要（実データ確認が先決）。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
       "history": [
         {
@@ -5112,6 +5176,14 @@
           "to": "対応完了",
           "comment": "実データ確認（2026-06-28）で国後島 Z14 タイルが HTTP 200 を返すことを確認。案 A（FR-001 内で Z15→Z14 変換 x//2, y//2）を採用。ADR-SRS-018 に Z14 変換の設計根拠を追記、FR-001 説明に DEM5/DEM10b 別の除外手順を明記、§7.2.2.1 にリスト仕様の補足を追記。竹島注記も同時追記（todo③対応完了）。",
           "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5126,12 +5198,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "SRS の FR-001 説明にリトライ上限超過後の基本方針（エラー終了 or スキップ継続）を明記し、上限回数・バックオフアルゴリズム等の詳細は引き続き HLD に委任する。ユーザーへの影響（全タイル取得失敗か部分取得かで後段解析品質が大きく変わる）を考慮して設計方針を決定すること。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5",
       "history": [
         {
@@ -5149,6 +5221,14 @@
           "to": "対応完了",
           "comment": "FR-001 説明のリトライ箇所を更新。上限超過時はエラー終了（タイル欠損での解析品質劣化を防ぐ方針）とし、上限回数・バックオフの詳細は HLD に委任。",
           "session_id": "4140c31f-8a1c-41c9-8c6f-8d9b7f0249b5"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5183,12 +5263,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "① matchedのdelete_zoneをビューアのトグルレイヤーで表示するか否かを設計決定する。② 表示する場合はFR-019 line 1152の「new / dominant」制限を削除してSRS修正。③ 表示しない場合は「matched を除く」旨を明示し、SRS FR-009 line 1028の「new / dominant のみ」と整合させる。いずれの場合もFR-009 line 1028・FR-019 line 1152の両方を同時修正する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
       "history": [
         {
@@ -5198,6 +5278,14 @@
           "to": "対応完了",
           "comment": "FR-019 line 1152 を修正: delete_zone レイヤーの表示対象を全match_status（matched含む）に拡張。matchedの挙動はADR-SRS-042を参照",
           "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5212,12 +5300,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "FR-006 line 651（海面確定規則）に「col_lat/col_lon=0.0 sentinelを設定する」旨を追記。per-mesh CSV カラム定義（line 689）をkey_col_resolved=falseの場合に加えて「海面確定（key_col_resolved=true + Key Col=0m）の場合もcol_lat=col_lon=0.0」と拡張。FR-018 line 815を「陸地最高峰・島嶼部最高峰（海面確定規則）は」に拡張。ADR-SRS-019の層1説明にもcol座標値を追記する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
       "history": [
         {
@@ -5227,6 +5315,14 @@
           "to": "対応完了",
           "comment": "案A採用: FR-006 line 651・per-mesh CSVカラム定義・FR-018 line 815・ADR-SRS-019の層1説明にcol_lat/col_lon=0.0 sentinelを明記",
           "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5241,12 +5337,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "① 表示文言を「未定義（Keyコルなし）」等の地理的事実に中立な文言に変更する、または ② 現文言「未定義（陸地最高峰）」を維持し「陸地最高峰・島嶼部最高峰を区別せず統一ラベルとして使用」旨を括弧書きで明記する。どちらを選ぶかをユーザーと合意してSRS line 1185を更新する。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
       "history": [
         {
@@ -5256,6 +5352,14 @@
           "to": "対応完了",
           "comment": "FR-019 line 1185 に統一ラベル採用理由を追記: col_lat/col_lon=0.0 sentinelで統一されビューアが区別できる内部属性を持たないため",
           "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5270,12 +5374,12 @@
       "created_date": "2026-06-28",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応完了",
+      "status": "解決済",
       "assignee": null,
       "resolution": "以下のいずれかを決定してFR-009 line 905-910・line 962に反映する。① matchedピークは主ピーク候補から除外する（「AZ内にSOTAサミットがいるピーク（matched）はdelete_zone内に別のサミットがいても主ピークにならない」制約を追加）。② matchedかつ主ピークになるケースを許容し、フィーチャ構成にdeleteサミットPoint・LineStringを追加する記述を加える。",
       "notes": null,
       "resolved_date": "2026-06-28",
-      "verified_date": null,
+      "verified_date": "2026-06-29",
       "created_session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca",
       "history": [
         {
@@ -5285,6 +5389,14 @@
           "to": "対応完了",
           "comment": "案①採用: ADR-SRS-042新規作成・FR-009 line 905-910にmatched除外制約を追記。将来的な案②移行意図をADR-SRS-042に記録",
           "session_id": "6a0563b5-4e03-478e-a786-f3942d2972ca"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
     },
@@ -5299,12 +5411,12 @@
       "created_date": "2026-06-29",
       "stage": "SRS",
       "planned_stage": null,
-      "status": "対応中",
+      "status": "解決済",
       "assignee": null,
       "resolution": "新規 ADR-SRS-043 で ADR-042 を supersede。FR-009 主ピーク特定ロジックの matched 除外を撤回し、matched フィーチャ構成に従属 delete サミット Point/LineString を追加定義する。",
       "notes": null,
-      "resolved_date": null,
-      "verified_date": null,
+      "resolved_date": "2026-06-29",
+      "verified_date": "2026-06-29",
       "created_session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00",
       "history": [
         {
@@ -5313,6 +5425,22 @@
           "from": "未対応",
           "to": "対応中",
           "comment": "",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
+        },
+        {
+          "date": "2026-06-29T09:56:03",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "ADR-SRS-043 新規作成・ADR-SRS-042 supersede・SRS FR-009 反映・todo.md 実装タスク追加。コミット 5e05f17。",
+          "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
+        },
+        {
+          "date": "2026-06-29T09:57:57",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 一括確認済み",
           "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
         }
       ]
