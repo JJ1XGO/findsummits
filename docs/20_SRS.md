@@ -875,7 +875,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - geojson_v{N} の各フィーチャの `name` プロパティは `"JA/XX-NNN(山岳名)"` 形式。SOTAコードで突合し、括弧内の文字列を `summit_name_jp` として matched・delete サミットに付与する。geojsonに存在しないサミットは `summit_name_jp` を空文字とする
   - 突合は各ピークのアクティベーションゾーンポリゴンおよび delete判定ゾーンポリゴン（[FR-016](#fr-016-ピーク域ポリゴン生成) → [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) で確定済み）を用いた point-in-polygon（点が多角形の内側にあるかを判定）で行う。merged_peak.csv と merged_peak.geojson の突合キーは `peak_lat`/`peak_lon`（join キー）であり、[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) が GeoJSON Feature properties として保持する値と merged_peak.csv の列値が完全一致する（[ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）。判定は**座標のみ**で行い、SOTA 登録標高と DEM 標高の前後関係には依存しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) が当該世代の merged_peak.csv に絞り込んだ上で merged_peak.geojson を生成するため（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)）、merged_peak.csv に対応しない孤立ポリゴン（orphan）は merged_peak.geojson に存在せず、本突合で誤って参照されることはない。**merged_peak.geojson にはポリゴン以外（`feature_type="peak"`/`"key_col"`/`"peak_col_link"` 等）のフィーチャも含まれるため、point-in-polygon は `feature_type ∈ {activation_zone, delete_zone}` のポリゴンフィーチャに絞って処理する**（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）
   - マッチング一意性: **プロミネンス最終フィルタ閾値**の制約により、1 つのアクティベーションゾーンポリゴン内に複数 SOTA サミットは数学的に存在しない（delete判定ゾーン内には縦走路上などで複数 SOTA サミットが含まれうるが、主ピーク特定アルゴリズム（[ADR-SRS-008](decisions/ADR-SRS-008-dominant-peak-identification.md)）で各サミットの主ピークが一意に決まる）
-  - **市区町村判定**: 各ピーク（matched/new/dominant）・各コル（`key_col_resolved=true` のもの）・全サミット（delete・unmatched を含む）の座標を [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成した N03 前処理済み市区町村 GeoJSON と照合し、`municipality`（例: "根室市"・"標津町"）を取得する。コルはピークと別の市区町村に位置しうるため、親ピークの継承ではなくコル自身の座標で判定する。rationale 生成（※2・※5 フォーマット）に必要な「都道府県または振興局名」は N03 前処理済み地域 GeoJSON の `region_name` から取得する（仮サミットコード付与処理で参照する地域 GeoJSON を共有する）。取得した各値を merged_summit.geojson の各 Point プロパティ（`municipality`）および merged_summit.xlsx に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
+  - **市区町村・都道府県判定**: 各ピーク（matched/new/dominant）・各コル（`key_col_resolved=true` のもの）・全サミット（delete・unmatched を含む）の座標を [FR-017](#fr-017-n03-行政区域前処理データ準備) が生成した N03 前処理済み市区町村 GeoJSON と照合し、`municipality`（例: "根室市"・"標津町"）を取得する。コルはピークと別の市区町村に位置しうるため、親ピークの継承ではなくコル自身の座標で判定する。rationale 生成（※2・※5 フォーマット）および申請書 B列に必要な「都道府県または振興局名」は N03 前処理済み地域 GeoJSON の `region_name` から取得する（仮サミットコード付与処理で参照する地域 GeoJSON を共有する）。取得した各値（`municipality`・`region_name`）を merged_summit.geojson の各 Point プロパティおよび merged_summit.xlsx に付与する。市区町村ファイルが存在しない場合は空文字を付与して続行する（警告ログ出力）
   - **`peak.match_status` 判定（以下の順に評価）**（用語整理の経緯は [ADR-URD-007](decisions/ADR-URD-007-peak-match-status-terminology.md)、ポリゴン種別変更の経緯は [ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照）:
     1. ピークのアクティベーションゾーン内に既存 SOTA サミット座標が存在する → `matched`
     2. ピークの delete判定ゾーン内に既存 SOTA サミット座標が存在するが、アクティベーションゾーン外 → `dominant`（そのサミットが削除候補となり、このピークが主ピークとなる）
@@ -1000,6 +1000,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `analysis_count` | このピークが含まれた解析回数（重複排除前の出現回数）。[FR-008](#fr-008-per-mesh-csv-統合) 算出値 |
 | `expected_count` | このピークが含まれるべき期待解析回数。日本全土1次メッシュコードリスト基準で [FR-008](#fr-008-per-mesh-csv-統合) が算出。通常モード行のみ（広域モード行は空欄） |
 | `municipality` | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
+| `region_name` | 都道府県名（北海道は振興局名。例: "北海道根室振興局"・"東京都"）。N03 前処理済み地域 GeoJSON の `region_name` から取得。未取得時は空文字 |
 
 **Point: コル**
 
@@ -1014,6 +1015,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `points` | 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出） |
 | `col_margin_px` | コルから解析範囲の端までの最短距離（ピクセル単位）。タイルズームレベルに依存（通常 L15px・広域 L14px）。診断用フィールド（[ADR-SRS-020](decisions/ADR-SRS-020-peak-col-pair-record.md) 参照） |
 | `municipality` | 市区町村名（例: "根室市"・"標津町"）。コル自身の座標を N03 前処理済み市区町村 GeoJSON と照合して取得（親ピークの継承ではない）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
+| `region_name` | 都道府県名（北海道は振興局名）。コル自身の座標を N03 前処理済み地域 GeoJSON と照合して取得（親ピークの継承ではない）。未取得時は空文字 |
 
 **Point: 既存 SOTA サミット**
 
@@ -1029,6 +1031,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `sota_points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m` から算出 |
 | `rationale` | 申請書根拠テキスト（match_status=delete は ※4 フォーマット。[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成。matched は空文字）。HTML ビューアで編集可能 |
 | `municipality` | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字。match_status によらず全サミットに付与 |
+| `region_name` | 都道府県名（北海道は振興局名）。N03 前処理済み地域 GeoJSON の `region_name` から取得。未取得時は空文字。match_status によらず全サミットに付与 |
 | `dominant_peak_code` | 主ピークのサミットコード（delete サミットのみ付与）。主ピークが dominant の場合は仮サミットコード、主ピークが matched の場合は既存 SOTA コード。それ以外は空欄 |
 | `dominant_peak_dist_m` | 主ピークから当該サミット座標までの距離 m（Haversine 公式）。delete サミットのみ付与。人手確認用。それ以外は空欄 |
 
@@ -1262,14 +1265,14 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 削除 | `delete` | 削除 | SummitCode | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 | 空白 |
 | 変更 | `band_change` | 変更 | SummitCode | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 | 空白 |
 
-`no_change`・`review` は XLSX 行を出力しない（`no_change` は変更申請不要。`review` は担当者が手動判断）。
+`no_change`・`review` は XLSX 行を出力しない（`no_change` は変更申請不要。`review` は担当者が手動判断）。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のためエクスポート対象外。
 
   - **※1**: HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-html-ビューア生成)）。山岳名JP は必須・山岳名EN は任意（未入力時は警告のうえ続行可。[FR-019](#fr-019-html-ビューア機能仕様) の山岳名入力 UI・[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md) 参照）
   - **※2**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（追加根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
   - **※3**: summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること
   - **※4**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（削除根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
   - **※5**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（変更根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
-  - **※6**: 都道府県名（北海道は振興局名）。[FR-009](#fr-009-sotaリスト突合match_status-判定) の rationale ※2 フォーマットと同じデータソース（N03 前処理済み市区町村 GeoJSON）から取得する。仮サミットコードは申請書には出力しない（GeoJSON・エビデンス・サミット一覧での内部識別子。正式コードは支部による承認後に採番）。J: MT使用欄は SOTA 日本支部マネジメントチーム記入欄のため全アクション空白
+  - **※6**: 都道府県名（北海道は振興局名）。`merged_summit.geojson` の `region_name` プロパティ（[FR-009](#fr-009-sotaリスト突合match_status-判定) が N03 前処理済み地域 GeoJSON から取得して格納）を転記する。仮サミットコードは申請書には出力しない（GeoJSON・エビデンス・サミット一覧での内部識別子。正式コードは支部による承認後に採番）。J: MT使用欄は SOTA 日本支部マネジメントチーム記入欄のため全アクション空白
 
 #### FR-012: サミット一覧（申請内容反映版）生成
 
@@ -1323,6 +1326,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | sota_points | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`sota_alt_m`（整数 m）でバンド判定（[GLOSSARY 参照](00_GLOSSARY.md#標高バンドpoints-算出表)）。matched・dominant のみ。new は空欄 |
 | is_band_change_candidate | Points バンド遷移フラグ（bool）。`points ≠ sota_points` の場合 true（変更申請対象）。matched のみ。それ以外は空欄 |
 | municipality | 市区町村名（例: "根室市"・"標津町"）。N03 前処理済み市区町村 GeoJSON 未存在時は空文字 |
+| region_name | 都道府県名（北海道は振興局名）。N03 前処理済み地域 GeoJSON の `region_name` から取得。未取得時は空文字 |
 | area_complete | アクティベーションゾーンが解析範囲内で完結しているか（true=完結 / false=途切れ）。ピーク行のみ。既存サミット行は空欄 |
 | dominant_peak_code | 主ピークのサミットコード（delete サミットのみ付与）。主ピークが dominant の場合は仮サミットコード、主ピークが matched の場合は既存 SOTA コード |
 | dominant_peak_dist_m | 主ピークから削除候補サミット座標までの距離 m（Haversine 公式）。delete サミットのみ付与 |
@@ -1700,7 +1704,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
 | 10 | 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
 | 11 | 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
-| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-019](#fr-019-html-ビューア機能仕様) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映（FR-020 は公開用 HTML 生成時にマージ） |
+| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-011](#fr-011-申請書-xlsx-生成) / [FR-019](#fr-019-html-ビューア機能仕様) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映（FR-020 は公開用 HTML 生成時にマージ） |
 
 ### 8.2 内部データ詳細仕様
 
