@@ -88,22 +88,7 @@ def enumerate_jobs(mesh_set, tile_dir):
     jobs = []
 
     for meshcode in sorted(mesh_set):
-        # 3×3最小矩形の計算（隣接が存在する方向のみ拡張）
-        x_min0, x_max0, y_min0, y_max0 = mesh_to_tile_range(meshcode, 15)
-        x_min, x_max, y_min, y_max = x_min0, x_max0, y_min0, y_max0
-
-        for dlat in (-1, 0, 1):
-            for dlon in (-1, 0, 1):
-                if dlat == 0 and dlon == 0:
-                    continue
-                nb = mesh_neighbor(meshcode, dlat, dlon)
-                if nb not in mesh_set:
-                    continue
-                nx0, nx1, ny0, ny1 = mesh_to_tile_range(nb, 15)
-                x_min = min(x_min, nx0)
-                x_max = max(x_max, nx1)
-                y_min = min(y_min, ny0)
-                y_max = max(y_max, ny1)
+        x_min, x_max, y_min, y_max = mesh_to_tile_range(meshcode, 15)
 
         # dem5 タイル (z=15): a→b→c フォールバックのため起点 "a" のみ列挙
         for ty in range(y_min, y_max + 1):

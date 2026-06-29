@@ -118,10 +118,6 @@
   - モックアップで実装した検索機能（サミットコード/山岳名(和英)/緯度経度の部分一致検索・サジェスト・flyTo+ポップアップ）を、本実装フェーズで実 GeoJSON データに対して再現・検証する
   - 仕様詳細: `docs/20_SRS.md` FR-019
 
-- [ ] **(元 ISSUE-013) prefetch_tiles.py 取得範囲を各メッシュの最小範囲に修正**
-  - `enumerate_jobs()` の隣接メッシュ拡張ロジック（`nb not in mesh_set` の分岐）を削除
-  - 各メッシュ単独の `mesh_to_tile_range(meshcode)` のみを取得
-
 - [ ] **(元 ISSUE-016・ADR-SRS-023) merge.py: --mesh-list 指定時の絞り込み（FR-008 追従）**
   - `--mesh-list` 指定時は `load_peaks()` を**通常 per-mesh CSV（`3-<meshcode>.csv`）のみ**に絞り込み、**広域 per-mesh CSV（`4/5/6-<meshcode>-<コーナー>.csv`）は対象外**とする
   - 省略時（デフォルト）は現行の glob 全読み込み（通常+広域）を維持
@@ -168,19 +164,12 @@
 
 以下は仕様確定済み。SRS/ADR は反映済み。実装追従のみ残る。
 
-- [ ] **finding 6: `feature_type="col"` → `"key_col"` への統一（実装追従）**
-  - `scripts/merge.py`: GeoJSON フィーチャ生成時の `feature_type` を `"col"` → `"key_col"` に変更
-  - `scripts/output_geojson.py`（存在する場合）: 同上
-
 - [ ] **finding 5（実装追従）: 不備ゲート発動時の xlsx セット出力**
   - `scripts/merge.py`: FR-009 の不備ゲート判定箇所で xlsx も必ず出力してから exit するよう修正
   - xlsx に `area_complete` 列を追加・`match_status` 値域に delete/unmatched を含める
 
 - [ ] **finding 3（実装追従）: `is_band_change_candidate` を GeoJSON ピーク Point プロパティに追加**
   - `scripts/merge.py`: ピーク Point フィーチャの properties に `is_band_change_candidate` を出力
-
-- [ ] **finding 2（実装追従）: FR-001 での `Last-Modified` → mtime 焼き込み**
-  - `scripts/prefetch_tiles.py`: HTTP 200 取得時に `os.utime()` で `Last-Modified` を mtime に設定
 
 - [ ] **finding 2（実装追従）: FR-009 での `gsi_tile_latest_date` 格納**
   - `scripts/merge.py`: 処理末尾で `$DATA_DIR/tiles/` 全 PNG の mtime 最大値を取得し metadata に格納
