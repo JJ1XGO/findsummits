@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0",
     "last_updated": "2026-06-29",
-    "counter": 155
+    "counter": 156
   },
   "issues": [
     {
@@ -5442,6 +5442,35 @@
           "to": "解決済",
           "comment": "[解決確認] 一括確認済み",
           "session_id": "b497dc69-563f-4d24-9d3e-2b234e97fa00"
+        }
+      ]
+    },
+    {
+      "id": "ISSUE-156",
+      "title": "申請カテゴリをプロパティ化し FR-009 フィーチャ構成表をサミット中心5分類へ再編",
+      "description": "FR-009 の merged_summit.geojson フィーチャ構成表が peak.match_status 軸で書かれており、サミット中心の申請カテゴリ（追加/変更あり/変更なし/削除/要確認）が直読できない。category プロパティを GeoJSON・XLSX・ZIP 全成果物に統一して持たせ、消費側の実行時導出を廃止する。ADR-SRS-035 を supersede する ADR-SRS-044 を新規作成し、FR-009/011/012/013/019/020/021・GLOSSARY を改訂する。",
+      "type": "設計",
+      "priority": "中",
+      "category": null,
+      "reporter": "Sonnet",
+      "created_date": "2026-06-29",
+      "stage": "SRS",
+      "planned_stage": null,
+      "status": "対応中",
+      "assignee": null,
+      "resolution": null,
+      "notes": null,
+      "resolved_date": null,
+      "verified_date": null,
+      "created_session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b",
+      "history": [
+        {
+          "date": "2026-06-29T10:57:52",
+          "actor": "不明",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "86f6fa89-51c1-4b85-a3b7-3645cd8f720b"
         }
       ]
     }

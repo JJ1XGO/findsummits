@@ -957,14 +957,26 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - `is_band_change_candidate = (peak_points ≠ sota_points)`: true の場合、申請書エクスポートで「変更」行として自動出力
     - バンド定義は [`00_GLOSSARY.md` 標高バンド（Points 算出表）](00_GLOSSARY.md#標高バンドpoints-算出表) を参照
   - **`merged_summit.geojson` のフィーチャ構成とプロパティ**（本 FR が生成する中心データの構造定義＝スキーマ正本。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) 準拠。消費側の [FR-013](#fr-013-html-ビューア生成)・[FR-019](#fr-019-html-ビューア機能仕様) はこの定義を参照する）:
-    - **フィーチャ構成**（match_status 別）:
+  - **`category` プロパティの算出**（[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)）: 本 FR は全フィーチャに `category` プロパティを算出・付与する。`match_status`/`feature_type`/`is_band_change_candidate` は廃止せず存続し、`category` はそれらから算出する直交プロパティ。消費側（ビューア・XLSX・ZIP）は `category` を読むことで導出ロジックを持たずに分類できる:
 
-| match_status | フィーチャ |
+| `category` | 表示ラベル | 主語 | 由来条件 |
+|---|---|---|---|
+| `add` | 追加 | 新設サミット | `peak.match_status` ∈ {new, dominant} |
+| `band_change` | 変更あり | 既存サミット | `peak.match_status="matched"` ∧ `is_band_change_candidate=true` |
+| `no_change` | 変更なし | 既存サミット | `peak.match_status="matched"` ∧ `is_band_change_candidate=false` |
+| `delete` | 削除 | 既存サミット | `summit.match_status="delete"` |
+| `review` | 要確認 | 既存サミット | `summit.match_status="unmatched"` |
+
+  per-feature の割り当てルール: peak は上表の由来条件で判定。key_col・activation_zone・delete_zone・LineString（peak→col）は**親ピークの `category` を継承**。matched summit（AZ 内存続）＋LineString（peak→matched summit）は親ピークを継承（`band_change` または `no_change`）。delete summit＋LineString（親ピーク→delete summit）は `delete`（親ピークが add/band_change/no_change いずれでも）。unmatched summit は `review`。
+
+  - **フィーチャ構成**（申請カテゴリ別。`category` と対応するフィーチャの一覧。[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md) 参照）:
+
+| `category` | フィーチャ |
 |---|---|
-| matched | Point（ピーク）+ Point（コル）+ Point（AZ 内存続 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → AZ 内存続 SOTA サミット）＋ Point（従属 delete サミット）× N + LineString（ピーク → 従属 delete サミット）× N（N = delete判定ゾーン内の削除候補サミット数。0 の場合は従属 delete フィーチャなし。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照） |
-| new | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル） |
-| dominant | Point（ピーク）+ Point（コル）+ Point（既存 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → SOTA サミット）※ 既存 SOTA サミット Point とピーク → SOTA サミット LineString は、当該 delete判定ゾーンに含まれる削除候補サミットの数だけ生成される（複数可） |
-| unmatched | Point（既存 SOTA サミット）のみ。どのピークにも従属しない孤立サミットのため、ピーク Point・コル・ポリゴン・LineString は紐付かない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。ビューアの「要確認」カテゴリで表示） |
+| `add` | Point（ピーク）+ Point（コル）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）。new/dominant 両方に適用（構成は同一。`peak.match_status` で区別可能） |
+| `band_change` / `no_change` | Point（ピーク）+ Point（コル）+ Point（AZ 内存続 SOTA サミット）+ Polygon（アクティベーションゾーン）+ Polygon（delete判定ゾーン）+ LineString（ピーク → コル）+ LineString（ピーク → AZ 内存続 SOTA サミット）＋ Point（従属 delete サミット）× N + LineString（ピーク → 従属 delete サミット）× N（N = delete判定ゾーン内の削除候補サミット数。0 の場合は従属 delete フィーチャなし。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照） |
+| `delete` | Point（delete サミット）+ LineString（親ピーク → delete サミット）。親ピーク本体は `add`/`band_change`/`no_change` として存在する（クラスタが2カテゴリに跨る。[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md) 参照） |
+| `review` | Point（孤立既存 SOTA サミット）のみ。どのピークにも従属しない孤立サミットのため、ピーク Point・コル・ポリゴン・LineString は紐付かない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
 ##### 各フィーチャのプロパティ
 
@@ -973,6 +985,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "peak" |
+| `category` | add / band_change / no_change（算出ルールは `category` プロパティの算出を参照） |
 | `match_status` | matched / new / dominant |
 | `summit_code` | サミットコード（matched のみ）または仮サミットコード（new / dominant。`JAx/XX-A00` 形式） |
 | `summit_name` | サミット名（matched / dominant のみ・英語/ローマ字） |
@@ -995,6 +1008,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "key_col" |
+| `category` | 親ピークの `category` を継承（add / band_change / no_change） |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `col_elev` | コル標高（m） |
 | `points` | 対応ピークの `points` と同値（コル自身の標高ではなくピークの標高から算出） |
@@ -1005,6 +1019,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "summit" |
+| `category` | band_change / no_change（matched summit・親ピークから継承）/ delete / review（unmatched summit） |
 | `match_status` | matched / delete / unmatched（unmatched は要確認の孤立サミット。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 | `summit_code` | SOTA サミットコード |
 | `summit_name` | サミット名（summitslist.csv の SummitName、英語/ローマ字） |
@@ -1021,6 +1036,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "activation_zone" |
+| `category` | 親ピークの `category` を継承（add / band_change / no_change） |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `area_complete` | true / false（アクティベーションゾーンが解析範囲内で完結している場合 true、解析範囲外で途切れた場合 false）。FR-009 の不備ゲート（`is_area_incomplete`）が false を検査するため両値に意味を持つ。viewer（FR-013/FR-019）到達時は常に true（false の場合は FR-009 が停止し HTML 生成に至らない） |
 | `points` | 対応ピークの `points` と同値（ビューアでの色付け用） |
@@ -1032,6 +1048,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "delete_zone" |
+| `category` | 親ピークの `category` を継承（add / band_change / no_change） |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 
 **LineString: ピーク → コル**
@@ -1041,6 +1058,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "prominence_range" |
+| `category` | 親ピークの `category` を継承（add / band_change / no_change） |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 
 **LineString: ピーク → SOTA サミット**
@@ -1050,6 +1068,7 @@ matched / dominant のみ。
 | プロパティ名 | 説明 |
 |---|---|
 | `feature_type` | "coord_diff" |
+| `category` | 親ピーク→matched summit の場合は親ピーク継承（band_change / no_change）。親ピーク→delete summit の場合は `delete` |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 | `match_status` | matched / dominant |
 
@@ -1081,7 +1100,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - **前提条件**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が正常終了した場合のみ実行する。[FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートとして異常終了した場合、本 FR は実行をスキップし、HTML は生成しない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）
   - **生成機構**: HTML テンプレートファイル（詳細は HLD）をソースコードに同梱し、`merged_summit.geojson` の GeoJSON データを JavaScript 変数として HTML に埋め込み、`$DATA_DIR/results/merged_viewer.html` として出力する。`file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
   - **GeoJSON メタデータ**: `merged_summit.geojson` のトップレベルの `metadata` オブジェクトの定義は [FR-009](#fr-009-sotaリスト突合match_status-判定) を参照（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する）。本 FR は metadata を含む GeoJSON データをそのまま HTML に埋め込む。ビューアが表示に使うキーの一覧は [FR-019](#fr-019-html-ビューア機能仕様) を参照
-  - **生成するフィーチャ構成・各フィーチャのプロパティの定義**: `merged_summit.geojson` が含むフィーチャ構成（match_status 別）と各フィーチャのプロパティ定義は、生成者である [FR-009](#fr-009-sotaリスト突合match_status-判定) が保持する（スキーマ正本は FR-009。本 FR はその定義に従って生成された GeoJSON を入力として受け取るのみ。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)）
+  - **生成するフィーチャ構成・各フィーチャのプロパティの定義**: `merged_summit.geojson` が含むフィーチャ構成（申請カテゴリ別）と各フィーチャのプロパティ定義（`category` プロパティを含む）は、生成者である [FR-009](#fr-009-sotaリスト突合match_status-判定) が保持する（スキーマ正本は FR-009。本 FR はその定義に従って生成された GeoJSON を入力として受け取るのみ。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)）
 
 #### FR-020: 公開用 HTML ビューア生成
 
@@ -1153,17 +1172,17 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - アクティベーションゾーン（AZ）は半透明の塗りで表示する（外枠線なし・クリック不可）。なお `area_complete=false`（解析範囲内で完結しなかった AZ）を持つピークは上流（[FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_area_incomplete` 不備フラグ）で処理が停止し viewer には到達しないため、viewer 側に不完全 AZ の警告表示の責務は持たない
   - delete判定ゾーンポリゴンを独立したトグルレイヤーとして追加（デフォルト ON・半透明）。new は delete判定ゾーン内に既存サミットが存在しないことを、dominant・matched（従属 delete サミットを持つ場合）は delete判定ゾーン内に削除候補サミットが存在することを可視化する（matched の delete判定ゾーン内に従属 delete サミットが存在しない場合はゾーンのみ表示。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照）
   - delete判定ゾーンは AZ と重なる範囲を除外し、AZ に覆われていない部分のみ表示する（AZ＝活性化範囲を優先。重なり除外の計算方式は HLD に委ねる）
-  - **カテゴリ別表示フィルター**: フィーチャを new / dominant / changed / unchanged の 4 カテゴリに分類し、カテゴリ単位で表示の ON/OFF を切り替えられる（初期は全カテゴリ表示）。カテゴリは配色でも区別する（new=緑系 / dominant=赤系 / changed=橙系 / unchanged=灰系。具体的な配色値は HLD に委ねる）。後述「検索確定時にフィルターを自動 ON」はこのカテゴリ分類に基づく。各カテゴリと [FR-009](#fr-009-sotaリスト突合match_status-判定) のフィーチャ（`feature_type` / `match_status` / `is_band_change_candidate`）の対応は以下のとおり（根拠: [ADR-SRS-035](decisions/ADR-SRS-035-viewer-category-filter-feature-mapping.md)）:
+  - **カテゴリ別表示フィルター**: フィーチャを add / band_change / no_change / delete / review の 5 カテゴリに分類し、カテゴリ単位で表示の ON/OFF を切り替えられる（初期は全カテゴリ表示）。カテゴリは配色でも区別する（add=緑系 / delete=赤系 / band_change=橙系 / no_change=灰系 / review=紫系。具体的な配色値は HLD に委ねる）。後述「検索確定時にフィルターを自動 ON」はこのカテゴリ分類に基づく。各フィーチャのカテゴリは [FR-009](#fr-009-sotaリスト突合match_status-判定) が付与した `category` プロパティを参照する（根拠: [ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)）:
 
-    | カテゴリ | 対象フィーチャ |
-    |---|---|
-    | new | `feature_type="peak"` ∧ `match_status="new"`（および対応する key_col） |
-    | dominant | `feature_type="peak"` ∧ `match_status="dominant"`（および対応する key_col）、ならびに `feature_type="summit"` ∧ `match_status="delete"`（削除候補サミット。主ピークが dominant／matched いずれの場合も含む） |
-    | changed | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=true`（および対応する key_col・matched summit） |
-    | unchanged | `feature_type="peak"` ∧ `match_status="matched"` ∧ `is_band_change_candidate=false`（および対応する key_col）、ならびに `feature_type="summit"` ∧ `match_status="matched"`（バンド変更なし既存サミット） |
+    | `category` | 表示ラベル | 対象フィーチャの概要 |
+    |---|---|---|
+    | `add` | 追加 | new/dominant ピーク・対応するコル・AZ・delete判定ゾーン・ピーク→コル線 |
+    | `band_change` | 変更あり | バンド変更ありの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・各接続線 |
+    | `no_change` | 変更なし | バンド変更なしの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・各接続線 |
+    | `delete` | 削除 | delete サミット・親ピーク→delete サミット接続線（親ピーク本体は add/band_change/no_change として別途存在） |
+    | `review` | 要確認 | unmatched サミット（孤立既存サミット） |
 
-    - **削除候補サミット（`summit.match_status="delete"`）は主ピークの match_status によらず dominant カテゴリに含める**（削除申請対象のサミットを一括して可視化するため同一グループとして扱う。主ピークが matched のケースも含む。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照）
-    - **key_col は独立カテゴリ／独立トグルを持たず、親ピーク（`summit_code` で対応）のカテゴリに追従する**
+    - **key_col は独立カテゴリ／独立トグルを持たず、`category` プロパティで親ピークと同一カテゴリを保持し追従する**
   - **参照線フィーチャの可視化**: `prominence_range`（ピーク〜Keyコルを結ぶプロミネンス基準線）と `coord_diff`（SOTA 登録座標と解析座標の差分線）を破線で表示する（色・太さ等は HLD に委ねる）
   - **全プロパティ折りたたみ表示**: 各フィーチャの popup に、その GeoJSON プロパティ全体を確認できる折りたたみ表示（「全データ」）を設ける。ただし activation_zone / delete判定ゾーンのポリゴンはクリック不可とし対象外とする
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
@@ -1174,7 +1193,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     - 入力に応じてサジェスト候補（最大10件、先頭一致優先）をリアルタイム表示する
     - 候補クリックまたは Enter 確定で該当サミットへ地図ズーム移動しポップアップを開く
     - サジェスト候補はキーボードでも操作できる（↑↓で候補移動・Enter で確定・Esc で閉じる）
-    - 確定時、当該フィーチャが現在フィルターで非表示の場合は対象カテゴリのフィルターを自動的に ON にする（カテゴリ判定は上記カテゴリ別表示フィルターの対応に従う。key_col 確定時は親ピークのカテゴリ、delete サミット確定時は dominant カテゴリを ON にする。[ADR-SRS-035](decisions/ADR-SRS-035-viewer-category-filter-feature-mapping.md)）
+    - 確定時、当該フィーチャが現在フィルターで非表示の場合は対象カテゴリのフィルターを自動的に ON にする（各フィーチャの `category` プロパティを参照する。[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)）
   - 埋め込みデータの `metadata` から以下の情報を画面上に表示する:
     - SOTA サミットリスト基準日（`summitslist_date`）（UTC）
     - 地理院タイル更新日（提供元）（`gsi_tile_latest_date`）（UTC）: パイプラインがローカルキャッシュタイルの mtime 最大値として `merged_summit.geojson` の `metadata` に格納する（根拠: [ADR-SRS-032](decisions/ADR-SRS-032-gsi-tile-latest-date-provenance.md)）。表示時は `(UTC)` を付記する
@@ -1188,22 +1207,22 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - **Keyコル（key_col）popup の表示**: Keyコルのマーカー popup には、Keyコル標高・対応するピークのコード（new の場合は仮コード）・緯度経度を表示する
   - **ピーク↔Keyコル相互ジャンプ**: ピーク popup に「Keyコルへ移動」ボタン（`key_col_resolved=true` のときのみ）、Keyコル popup に「ピークへ移動」ボタンを設け、押下で対応するフィーチャへ地図移動して popup を開く
   - **山岳名入力 UI**:
-    - new（新規）ピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」（必須）「山岳名EN」（任意）入力フィールドを表示する。山岳名JP が未入力の new ピークが存在する状態で申請書（[FR-011](#fr-011-申請書-xlsx-生成)）をエクスポートする場合は、該当ピーク一覧を警告表示する。ただし公式申請の最終判断は SOTA 日本支部担当者が行うため、エクスポートはブロックせず空欄のままの続行も許容する（ソフト必須。[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md)）
-    - matched（既存）ピーク: 入力フィールド不要（名称変更は申請対象外。`is_band_change_candidate=true` の場合は申請書エクスポート時に自動的に「変更」行を出力する）
-    - dominant（差替候補ピーク）: 入力フィールド不要（GeoJSON データを使用）
+    - `category=add` かつ `match_status="new"` のピーク: クリックで開くポップアップまたはサイドパネルに「山岳名JP」（必須）「山岳名EN」（任意）入力フィールドを表示する。山岳名JP が未入力のピークが存在する状態で申請書（[FR-011](#fr-011-申請書-xlsx-生成)）をエクスポートする場合は、該当ピーク一覧を警告表示する。ただし公式申請の最終判断は SOTA 日本支部担当者が行うため、エクスポートはブロックせず空欄のままの続行も許容する（ソフト必須。[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md)）
+    - `category=band_change` / `no_change` のピーク（`match_status="matched"`）: 入力フィールド不要（名称変更は申請対象外。`band_change` の場合は申請書エクスポート時に自動的に「変更」行を出力する）
+    - `category=add` かつ `match_status="dominant"` のピーク: 入力フィールド不要（GeoJSON データを使用）
   - **rationale 編集 UI**:
-    - new / dominant ピーク・match_status=delete サミット・`is_band_change_candidate=true` の matched ピーク: ポップアップまたはサイドパネルに `rationale` プロパティを表示する textarea を設ける
+    - `category` ∈ {add, delete, band_change} のフィーチャ: ポップアップまたはサイドパネルに `rationale` プロパティを表示する textarea を設ける
     - 初期値: `merged_summit.geojson` の `rationale` プロパティ（[FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成したテンプレート文字列）
     - ユーザーが textarea を編集した場合、その内容が申請書 XLSX（[FR-011](#fr-011-申請書-xlsx-生成)）の列 I に反映される
     - 未編集の場合は初期値（自動生成テンプレート）がそのまま使用される
-    - matched（バンド変更なし）: rationale 表示不要（XLSX 列 I は空白）
+    - `category=no_change`: rationale 表示不要（XLSX 列 I は空白）
   - **入力内容の保持（localStorage）**:
     - 入力した山岳名・rationale 編集内容・名称修正はブラウザの localStorage に保存し、再訪時も維持する（localStorage 容量上限を超過した場合の扱いは HLD に委ねる）
     - キー: 埋め込みデータの `metadata.generated_at` を含む文字列
     - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す
   - **エクスポート機能**（エクスポートアイコン展開メニューに 3 ボタンを配置）:
     - **「申請書」ボタン**（[FR-011](#fr-011-申請書-xlsx-生成) 準拠）: SheetJS を使い申請書 XLSX を**単独**ブラウザダウンロードする
-      - 出力行: `追加`（GeoJSON の new・dominant ピーク + 入力山岳名。A列=追加・B列=県名）・`削除`（GeoJSON の delete サミット、すなわち summit feature の `match_status="delete"`）・`変更`（`is_band_change_candidate=true` の matched ピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のため本エクスポートの出力対象外
+      - 出力行: `追加`（`category=add` のピーク + 入力山岳名。A列=追加・B列=県名）・`削除`（`category=delete` の summit フィーチャ）・`変更`（`category=band_change` のピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）。`category=no_change`・`review` は出力しない。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のため本エクスポートの出力対象外
       - XLSX 列 I（根拠）: 各フィーチャの `rationale` プロパティ値（編集済みの場合は編集後の値、未編集の場合は自動生成値）を転記する（詳細は [FR-011 参照](#fr-011-申請書-xlsx-生成)）
     - **「申請エビデンス」ボタン**（[FR-021](#fr-021-申請エビデンス-zip-生成) 準拠）: JSZip を使い申請エビデンス ZIP をブラウザダウンロードする。ZIP には [FR-012](#fr-012-サミット一覧申請内容反映版生成) のサミット一覧（申請内容反映版）`merged_summit_revised.xlsx` を同梱する。詳細は [FR-021 参照](#fr-021-申請エビデンス-zip-生成)
     - **「公開用 HTML」ボタン**（[FR-020](#fr-020-公開用-html-ビューア生成) 準拠）: localStorage の入力内容（山岳名JP/EN・rationale 編集値・名称修正）を埋め込みデータにマージした **閲覧専用 HTML** を**単独**ブラウザダウンロードする。詳細は [FR-020 参照](#fr-020-公開用-html-ビューア生成)
@@ -1233,14 +1252,15 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - テンプレート列構成（`ref/SOTA-Summit-list-revision-request.xlsx` 準拠）:
     - 1シート構成
     - カラム: アクション / 既存山岳ID または県名 / 変更前（山岳名JP・EN・標高m） / 変更後（山岳名JP・EN・標高m） / 変更の根拠 / MT使用欄
-  - アクション別カラムマッピング（テンプレート列 A〜J）:
+  - アクション別カラムマッピング（テンプレート列 A〜J。`category` ← データソース対応）:
 
-| アクション | A: アクション | B: 既存山岳ID/県名 | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 | J: MT使用欄 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 追加（new） | 追加 | 県名 ※6 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | floor(peak_elev) | ※2 | 空白 |
-| 追加（dominant） | 追加 | 県名 ※6 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | floor(peak_elev) | ※2 | 空白 |
-| 削除 | 削除 | SummitCode | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 | 空白 |
-| 変更 | 変更 | SummitCode | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 | 空白 |
+| アクション | `category` | A: アクション | B: 既存山岳ID/県名 | C: 変更前 名JP | D: 変更前 名EN | E: 変更前 標高 | F: 変更後 名JP | G: 変更後 名EN | H: 変更後 標高 | I: 根拠 | J: MT使用欄 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 追加 | `add` | 追加 | 県名 ※6 | 空白 | 空白 | 空白 | 山岳名JP ※1 | 山岳名EN ※1 | floor(peak_elev) | ※2 | 空白 |
+| 削除 | `delete` | 削除 | SummitCode | summit_name_jp ※3 | summit_name | sota_alt_m | 空白 | 空白 | 空白 | ※4 | 空白 |
+| 変更 | `band_change` | 変更 | SummitCode | summit_name_jp | summit_name | sota_alt_m | summit_name_jp（同値） | summit_name（同値） | floor(peak_elev) | ※5 | 空白 |
+
+`no_change`・`review` は XLSX 行を出力しない（`no_change` は変更申請不要。`review` は担当者が手動判断）。
 
   - **※1**: HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-html-ビューア生成)）。山岳名JP は必須・山岳名EN は任意（未入力時は警告のうえ続行可。[FR-019](#fr-019-html-ビューア機能仕様) の山岳名入力 UI・[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md) 参照）
   - **※2**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（追加根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
@@ -1277,7 +1297,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | カラム | 説明 |
 |---|---|
-| match_status | SOTAリスト突合結果（ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched） |
+| category | 申請カテゴリ（add/band_change/no_change/delete/review）。[FR-009](#fr-009-sotaリスト突合match_status-判定) が算出した `category` プロパティの値をそのまま転記（[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)） |
+| match_status | SOTAリスト突合結果（ピーク行: matched/new/dominant、既存サミット行: matched/delete/unmatched）。不備調査用に残存（`unmatched`・`area_complete=false`・`key_col_resolved=false` の per-row 参照に使用） |
 | stability | 解析品質（confirmed/unstable/-） |
 | summit_code | サミットコード（例: JA/TK-001）。matched の場合は正式コード、new / dominant の場合は仮サミットコード（例: JAx/XX-A00）または ZZ/ZZ-A00（海上・未判定） |
 | summit_name | サミット名（SOTA リストから・英語/ローマ字） |
@@ -1331,16 +1352,17 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル名 | 内容 | 判定ロジック |
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
-| `new.geojson` | 新規ピーク候補 | peak の `match_status="new"` |
-| `dominant.geojson` | 差替候補ピークおよびその従属サミット、ならびに matched ピークに従属する削除候補サミット | peak の `match_status="dominant"` ＋ 対応する `match_status="delete"` の summit フィーチャ、加えて `match_status="delete"` の summit フィーチャのうち主ピークが `matched` のもの（＋対応する matched ピーク → delete サミット LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
-| `changed.geojson` | ポイントバンド変更候補 | peak の `match_status="matched"` かつ `is_band_change_candidate=true` ＋ 対応する summit フィーチャ |
-| `unchanged.geojson` | 変更なし既存サミット | peak の `match_status="matched"` かつ `is_band_change_candidate=false` ＋ 対応する summit フィーチャ |
+| `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・prominence_range）|
+| `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て（delete summit・coord_diff LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
+| `changed.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て |
+| `unchanged.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て |
+| `review.geojson` | 要確認サミット（孤立既存サミット） | `category="review"` のフィーチャ全て（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
   - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）
   - 各 GeoJSON の関連フィーチャ（col / activation_zone / delete_zone / prominence_range / coord_diff）は同一 `summit_code` で紐付けて同梱する
   - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う（localStorage を直接読むのではなく、[FR-019](#fr-019-html-ビューア機能仕様) の引き継ぎ確認を経た現在の編集状態のスナップショットを使用する。[FR-020](#fr-020-公開用-html-ビューア生成) と同方式）
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
-  - `unchanged.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
+  - `unchanged.geojson`・`review.geojson` は申請対象外だが、SOTA 日本支部担当者が現行サミット全件の状態をエビデンスとして確認できるよう同梱する
 
 ---
 

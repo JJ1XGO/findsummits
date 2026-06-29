@@ -1,7 +1,12 @@
 # ADR-SRS-035: HTML ビューアのカテゴリ別表示フィルタ4分類とフィーチャの対応定義
 
-| 状態 | 採用・未実装 |
+| 状態 | 廃止（superseded by [ADR-SRS-044](ADR-SRS-044-category-property-summit-centric-5class.md)） |
 | 決定日 | 2026-06-26 |
+
+> **本 ADR は [ADR-SRS-044](ADR-SRS-044-category-property-summit-centric-5class.md) により supersede された。**
+> カテゴリ分類は申請カテゴリ（add/band_change/no_change/delete/review）に再編され、
+> GeoJSON の `category` プロパティとして生成者 FR-009 が算出・付与する方式に変更された。
+> 以下は廃止前の記録として保存する。
 
 ## Context
 

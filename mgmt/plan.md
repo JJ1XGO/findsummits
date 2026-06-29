@@ -1,86 +1,109 @@
-# 計画: シナリオD で matched ピークを Key にした削除申請を自動生成する（ADR-042 見直し）
+# 計画: 申請カテゴリのプロパティ化と FR-009 フィーチャ構成表のサミット中心再編
 
-## Context
+## Context（なぜやるか）
 
-このプロジェクトの主成果物は **削除申請（XLSX）**。SOTA 既存サミット Y を「どのピークに従属しているか」付きで削除申請に自動掲載することが存在意義の中核。
+FR-009 の「フィーチャ構成（match_status 別）」表は、実体は `merged_summit.geojson` の**ジオメトリ在庫表**（各分類にどの Point/Polygon/LineString が何個あるか）で、幾何がピーク周りに群がるため **peak.match_status 軸**で書かれている。しかし:
 
-ところが昨日決定した `ADR-SRS-042`（matched ピークを削除候補サミットの主ピーク候補から除外）は、次のシナリオD で**この主成果物を取りこぼす**ことが判明した。
+- 消費側は既にサミットアクション軸で再グルーピングしている。FR-011 申請書 XLSX は**アクション別**（追加/削除/変更）、FR-019/FR-020 ビューアは**カテゴリ別**（new/dominant/changed/unchanged、`ADR-SRS-035` の実行時導出）。
+- 同一データに分類軸が3つあり、FR-009 の表だけがピーク軸の在庫表で浮いている。表の見出しが「match_status 別」とだけ書かれ、peak 値（new/dominant）と summit 値（unmatched）を黙って混在させていて人間可読でない。
+- FR-009 はピーク中心→サミット中心への転回点であり、ここで中心データを**サミット中心の申請カテゴリ**で表現するのが自然。
 
-- ピーク A の AZ 内に既存サミット X → `peak.match_status = matched`（X は正常存続）
-- 同じ A の delete判定ゾーン内（AZ 外）に既存サミット Y、Y はどのピークの AZ にも入らない
-- ADR-042 では「A は matched なので Y の主ピーク候補から除外」→ Y が `unmatched`（要確認）に降格 → `dominant_peak_code`/`dominant_peak_dist_m` が付かず、**申請書「削除」行に自動掲載されない**（`docs/20_SRS.md` line 886・909・911）
+ユーザー決定（本セッションの Q&A で確定）:
 
-このシナリオD は理論ではなく、過去の九州・四国解析で**実際に1件発生済み**（事前データ: D=1件 / 「AZ0+delete複数」=0件）。`ADR-SRS-042` は viewer 上の `A→Y` 接続線の置き場の曖昧さを避けるために、**XLSX 削除申請に必要なデータ link ごと捨てた過剰補正**だった。
+1. **データ構造も見直す** — 申請カテゴリを GeoJSON の**格納プロパティ `category`** にし、生成者 FR-009 が算出して各フィーチャに刻む（消費側の導出ロジックを廃し、スキーマ正本＝FR-009 の建前と整合）。
+2. **削除を独立カテゴリに昇格** — delete サミットを親ピーククラスタから切り出す（1クラスタが2カテゴリに跨ることを許容）。
+3. **追加に統合（5カテゴリ）** — new と dominant をともに「追加」に。dominant の副作用（削除）は紐づく削除サミット側で表現。
 
-なお `docs/20_SRS.md` line 885 は元々「delete判定ゾーン内・AZ 外の既存サミット = `delete`」と定義しており、ADR-042（line 909/911）がこれを `unmatched` に上書きしている。本修正はその上書きを撤回し、line 885 本来の挙動へ戻すもの。
+## 確定設計
 
-**意図する結果**: シナリオD でも Y を `delete` として扱い、`dominant_peak_code = matched ピーク A の既存 SOTA コード`を付与し、削除申請を自動生成する。A は `matched` のまま（X は正常存続）。
+### 申請カテゴリ（5分類・サミット中心）
 
-## 設計方針（軽量修正）
+格納値は既存 `match_status`/`feature_type` と同様 English キー、表示ラベルは日本語（要確認なら調整可）:
 
-案②（matched→dominant 昇格＝存続/削除のステータス複合）は採らない。A のステータスは単一（`matched`）に保ち、Y を独立した `delete` エンティティとして表現することで、案②の複合フィーチャ仕様整理を回避する。
+| `category`（格納） | 表示ラベル | 主語 | 由来条件 |
+|---|---|---|---|
+| `add` | 追加 | 新設サミット | `peak.match_status` ∈ {new, dominant} |
+| `band_change` | 変更あり | 既存サミット | `peak.match_status="matched"` ∧ `is_band_change_candidate=true` |
+| `no_change` | 変更なし | 既存サミット | `peak.match_status="matched"` ∧ `is_band_change_candidate=false` |
+| `delete` | 削除 | 既存サミット | `summit.match_status="delete"` |
+| `review` | 要確認 | 既存サミット | `summit.match_status="unmatched"` |
 
-- delete候補サミットの主ピーク特定で **matched ピークを候補から除外しない**（ADR-042 の除外を撤回）
-- 主ピークが matched の場合、`dominant_peak_code` は当該 matched ピークの**既存 SOTA コード**（X のコード）
-- `unmatched` は「全 AZ・全 delete判定ゾーンのいずれにも含まれない真の孤立サミット」のみに戻す
-- viewer の `A→Y` 接続線は、matched フィーチャ構成に「従属 delete サミット Point + ピーク→サミット LineString（複数可）」を追加して定義する。X（AZ 存続サミット）と Y（従属 delete サミット）は別 Feature・別 `summit.match_status` で区別され、概念混在（旧 merge.py status 列の轍）には当たらない
+※ `match_status`・`feature_type`・`is_band_change_candidate` は**廃止せず存続**。`category` はそれらから算出する直交プロパティ。
 
-「削除申請の自動生成」という主目的を満たし、案②より波及が小さい。複合構成の汎用的必要性は全国解析の件数を見てから再検討（ADR に明記）。
+### per-feature の `category` 割り当てルール
 
-## タスク
+全フィーチャに `category` を付与する（ビューアは各フィーチャの値を読むだけで導出不要に）:
 
-> 全タスク **Sonnet**（仕様文書の編集。設計判断は本計画で確定済み。残作業は確定方針に沿った文章修正と整合確認で、Opus 継続の必要なし）。
+- peak: 上表の由来条件で `add` / `band_change` / `no_change`
+- key_col・activation_zone・delete_zone・LineString（peak→col）: **親ピークの category を継承**
+- matched summit（AZ 内存続）＋ LineString（peak→matched summit）: 親ピークを継承（`band_change`/`no_change`）
+- delete summit ＋ LineString（親ピーク→delete summit）: `delete`（親が dominant でも matched でも。`ADR-SRS-043`）
+- unmatched summit: `review`
 
-### 1. 課題登録（issue）— Sonnet
+帰結: dominant/matched ピーク本体は `add`/`band_change`/`no_change`、その従属 delete サミットは `delete` となり、山塊クラスタが2カテゴリに跨る（合意済み）。
 
-- 仕様の再決定を伴うため `issue add`（type: 設計）。`venv/bin/python3 mgmt/tracker/track.py issue add`、`--actor` はモデル名（Sonnet）
-- スコープ: 「ADR-042 がシナリオD で削除申請データを取りこぼす問題の再決定（ADR 改訂 + SRS 反映）」
+### フィーチャ構成表（再編後・追加と削除の分離で簡潔化）
 
-### 2. 新規 `ADR-SRS-043`（ADR-042 を supersede）— Sonnet
+delete サミットを `delete` へ外出しした結果、`add` は new/dominant とも同一構成になる:
 
-- 採番は `ls docs/decisions/ | grep ADR-SRS` で最大値を確認して +1（想定 043、要確認）
-- ファイル: `docs/decisions/ADR-SRS-043-<kebab>.md`（例: `matched-peak-as-dominant-reference-for-delete`）
-- 状態: `採用・未実装`
-- 内容:
-  - Context: シナリオD で削除申請を取りこぼす問題（主成果物の欠落）。九州・四国の事前データ（D=1 / AZ0+複数=0）を根拠として記載
-  - Decision: 上記「設計方針（軽量修正）」
-  - Alternatives: ①案②（matched→dominant 昇格・複合構成。重く汎用的だが本軽量案で要件充足のため不採用、全国解析後に再検討）/ ②ADR-042 維持（主目的を取りこぼすため不採用）
-  - Consequences: シナリオD で削除申請が自動生成される / `unmatched` は真の孤立のみに戻る / `ADR-SRS-042` は supersede
+- `add`: Point(ピーク)＋Point(コル)＋Polygon(AZ)＋Polygon(delete判定ゾーン)＋LineString(ピーク→コル)
+- `band_change`/`no_change`: 上記＋Point(AZ 内存続 SOTA サミット)＋LineString(ピーク→AZ 内サミット)
+- `delete`: Point(delete サミット)＋LineString(親ピーク→delete サミット)。親ピークは `add`/`band_change`/`no_change` 行に存在
+- `review`: Point(孤立既存サミット)のみ
 
-### 3. `ADR-SRS-042` を supersede 状態に更新 — Sonnet
+### サミット一覧 XLSX（FR-012 列）への反映
 
-- `docs/decisions/ADR-SRS-042-matched-peak-excluded-from-dominant-candidate.md`
-- 状態欄を `却下・ADR-SRS-043 により supersede` に変更し、冒頭に supersede 注記＋ADR-043 へのリンクを追加（決定経緯は残す）
+`merged_summit.xlsx`（6.2.7・FR-009 生成）と `merged_summit_revised.xlsx`（6.2.3・FR-012 生成）は**列定義を `FR-012` で共用**し、「Point 1個＝1行」のサミット中心一覧。現状その列に `match_status`（`20_SRS.md:1280`、ピーク行 matched/new/dominant・既存サミット行 matched/delete/unmatched）があり、GeoJSON 表と同型の muddiness を抱える。
 
-### 4. `docs/20_SRS.md` FR-009 反映 — Sonnet
+- **`category` 列を追加**（各行が 追加/変更あり/変更なし/削除/要確認 を直読可能に）。
+- **`match_status` 列は残す**（6.2.7 が不備調査で `match_status=unmatched`・`area_complete=false`・`key_col_resolved=false` を per-row 参照する用途を明記）。
+- XLSX は元々ピーク行と既存サミット行が別行なので、削除独立とも自然に整合。
 
-- **主ピーク特定（line 906-909）**: 「ただし `match_status=matched` のピークは候補から除外する（ADR-042）…unmatched として扱う」を削除。「matched ピークも主ピーク候補に含める。主ピークが matched の場合 `dominant_peak_code` は当該ピークの既存 SOTA コードとする」に書き換え。参照を ADR-043 に張り替え
-- **line 911**: 「matched を除外した結果として候補なしになった場合を含む」を削除。`unmatched` を line 886 の定義（全ゾーン外）に統一
-- **line 912**: `dominant_peak_code` 説明に「主ピークが matched の場合は既存 SOTA コード」を補足
-- **※4 削除根拠（line 925-928）**: `{dominant_peak_code}` が既存コードになりうる旨を注記（フォーマット自体は変更不要）
-- **フィーチャ構成 matched 行（line 964）**: 「＋ 従属 delete サミット Point ＋ LineString（ピーク→サミット、当該 delete判定ゾーンの削除候補数だけ・複数可）」を追加。X（AZ 存続）と Y（従属 delete）の区別を注記
-- **line 885/886 整合確認**: 修正後に line 885（delete 定義）と矛盾しないことを確認
+### 申請エビデンス ZIP（FR-021 分割）の再編
 
-### 5. 波及確認（grep + 関連 FR）— Sonnet
+`FR-021` の ZIP 分割（`20_SRS.md:1333-1337`）も旧 match_status ベースの4ファイル（new/dominant/changed/unchanged.geojson、delete は dominant.geojson に同梱）。これを **category ベースに再編（削除独立）** する:
 
-- `grep -rn "ADR-SRS-042" docs/` で残存参照を洗い、撤回した内容を指すものを ADR-043 に整理（または削除）
-- `FR-011`（申請書 XLSX 生成）が delete サミットを自動で削除行に出すこと、matched 由来の除外を持たないことを確認（持てば追従）
-- `FR-019`（HTML ビューア機能仕様）が matched フィーチャに従属 delete サミット/LineString が増えても破綻しないことを確認（必要なら一文追記）
+- `add.geojson` / `changed.geojson` / `unchanged.geojson` / `delete.geojson`（delete サミット＋親ピーク→delete サミット LineString を独立ファイル化）。
+- `review.geojson`（unmatched）の同梱可否は ADR で決める（unchanged も「申請対象外だが参照用に同梱」しているため、要確認も同梱が一貫しうる）。
+- 各ファイルの関連フィーチャ（col/AZ/delete_zone/prominence_range/coord_diff）の同梱ルール（`summit_code` 紐付け）は現行踏襲。
 
-### 5b. todo.md への分解（実装タスク）— Sonnet
+## タスク（各タスクに実行モデルを明記）
 
-- 本件は ADR-042 が「採用・未実装」段階での仕様変更。FR-009 実装コードはまだ存在しないため、実装は将来の FR-009 実装時に追従する。実装観点（主ピーク特定で matched 除外しない／matched の従属 delete サミット feature 生成）を `mgmt/todo.md` に追記し取りこぼしを防ぐ
+0. **issue 起票**（type=設計、actor=モデル名）: 「申請カテゴリをプロパティ化し FR-009 フィーチャ構成表をサミット中心5分類へ再編」。着手時 `--status 対応中`。— プロセス
+1. **`docs/decisions/ADR-SRS-044-*.md` 新規作成** — Sonnet
+   - 決定: `category` プロパティ化＋サミット中心5分類＋per-feature 割り当てルール＋削除独立。`ADR-SRS-035` を supersede。採番・フォーマットは `docs/CLAUDE.md` に従う。
+2. **`docs/decisions/ADR-SRS-035-*.md` を「廃止（superseded by ADR-SRS-044）」に更新** — Sonnet
+3. **`docs/20_SRS.md` FR-009 改訂** — Sonnet（相互参照に注意）
+   - `category` 算出仕様（5分類・by-feature ルール）を追記。フィーチャ構成表を「申請カテゴリ別」に再編（上記）。見出し・アンカー「match_status 判定」は維持しつつ表の軸を変更。
+4. **`docs/20_SRS.md` FR-011 改訂** — Sonnet
+   - アクション別カラムマッピング表は維持。各アクションのデータソース選択を `match_status` 由来から `category` ベースへ（追加←`add`、削除←`delete`、変更←`band_change`）。`no_change`/`review` は XLSX 行なし。
+5. **`docs/20_SRS.md` FR-012 改訂** — Sonnet
+   - 出力カラム表に `category` 列を追加（`match_status` 列は残す）。merged_summit.xlsx（6.2.7）・merged_summit_revised.xlsx（6.2.3）は本列定義を共用するため両方に効く。
+6. **`docs/20_SRS.md` FR-013 改訂** — Sonnet
+   - スキーマ参照文言「フィーチャ構成（match_status 別）」→「申請カテゴリ別」。
+7. **`docs/20_SRS.md` FR-019 改訂** — Sonnet
+   - カテゴリ別フィルターを 4→5 分類（`add`/`band_change`/`no_change`/`delete`/`review`、表示は 追加/変更あり/変更なし/削除/要確認）。各フィーチャの格納 `category` を読む形に変更（導出表は撤去し `ADR-SRS-044` 参照）。配色・「検索確定時フィルタ自動 ON」記述を5分類に更新。
+8. **`docs/20_SRS.md` FR-020 確認** — Sonnet
+   - フィルターは FR-019 を参照継承（line 1109）。ハードコードの旧4分類記述が無いか確認、あれば追従。
+9. **`docs/20_SRS.md` FR-021 改訂** — Sonnet
+   - ZIP 分割を category ベースに再編（add/changed/unchanged/delete.geojson、削除独立。review.geojson 同梱可否は `ADR-SRS-044` の決定に従う）。関連フィーチャ同梱の `summit_code` 紐付けは現行踏襲。
+10. **`docs/00_GLOSSARY.md` に「申請カテゴリ」用語追加** — Sonnet
+11. **検証・コミット** — Sonnet（下記）
+12. **(follow-up・別タスク)** `docs/mockup/viewer_mockup.html` を5分類に更新して視覚検証 — Sonnet
 
-### 6. lint・コミット — Sonnet
+## スコープ外（仕様確定後の別タスク）
 
-- `make lint`（特に `lint-md`）警告ゼロを確認
-- ドキュメント更新ルールに従い**当ターン内に commit**（Conventional Commits、本文日本語）。push は別途指示まで不要
-- `mgmt/plan.md` への移動: 本計画は承認後 `.claude/plans/` から `mgmt/plan.md` へ `mv`（CLAUDE.md 規約）
+- 実装（`merge.py` の `category` 算出・ビューア JS のフィルタ）。本計画は SRS/ADR の仕様確定までを範囲とする（プロジェクトの仕様優先・スキーマ正本＝FR-009 の方針に従い、コードは仕様ロック後に追従）。
 
 ## 検証
 
-- **整合**: `grep -rn "ADR-SRS-042" docs/` で撤回済み内容への参照が残っていないこと。ADR-043 と FR-009 の用語・参照リンクが相互に整合していること
-- **シナリオD トレース（机上）**: 「A=matched(X in AZ) / Y in A.delete_zone, AZ外 / Y は他 AZ になし」で、`summit.match_status(Y)=delete`・`dominant_peak_code(Y)=X の既存コード`・`peak.match_status(A)=matched` になることを SRS 記述で追えること。`unmatched` は「全ゾーン外」のみであること
-- **lint**: `make lint` 警告ゼロ
-- **コード**: 本件は仕様フェーズ（FR-009 未実装）。コード変更・`make`・解析実行は不要。実装追従は todo.md に記録
-- **ドキュメント整合性原則**: ADR-042 の supersede 状態と SRS 記述・他 FR が矛盾しないこと
+- `make lint` 警告ゼロ（`lint-md` 中心。ドキュメントのみの変更）。
+- ADR/SRS 相互リンクの健全性（`ADR-SRS-044`↔FR-009/011/019、`ADR-SRS-035` の supersede 表記、`ADR-SRS-043` との整合）。
+- マッピングの網羅性・排他性チェック: 全 `match_status`×`feature_type`×`is_band_change_candidate` の組合せが必ず1つの `category` に落ち、重複しないことを机上確認。
+- XLSX アクション対応の一致確認: `add`→追加 / `delete`→削除 / `band_change`→変更 / `no_change`・`review`→行なし、が FR-011 と矛盾しないこと。
+- 成果物横断の `category` 一貫性: FR-009（GeoJSON プロパティ）・FR-012（XLSX 列）・FR-021（ZIP ファイル分割）・FR-019/020（ビューアフィルタ）が同一の5カテゴリ定義を参照し、旧4分類（new/dominant/changed/unchanged）の記述が残存しないこと。
+- ドキュメント更新ターン内に commit（push は別途指示まで不要）。
+
+## 実行モデル
+
+design は本セッションで確定済みのため、残作業は相互参照に注意した文書編集が中心。**推奨: Sonnet**。承認後・編集着手前に `/model` 切替を促す。`.claude/plans/` の本ファイルは承認後 `mgmt/plan.md` へ `mv` する。

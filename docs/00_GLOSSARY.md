@@ -157,6 +157,18 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 | delete判定ゾーン | delete-determination zone | 既存 SOTA サミットの削除判定に使用するピーク域ポリゴン。ピーク標高から `min(プロミネンス, delete_zone_max_drop)` 以内の連続エリア（Flood Fill 閾値は `max(col_elev, peak_elev - delete_zone_max_drop)` 以上）。`delete_zone_max_drop`（デフォルト 250m）はデータ辞書「delete_zone 比高上限」として定義（[SRS 2.2.1](20_SRS.md#221-設定可能項目) 参照）。詳細は SRS FR-016・[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照。 |
 | 削除（delete） | — | `summit.match_status` の値。既存 SOTA サミット座標が検出ピークの delete判定ゾーン内に存在するがアクティベーションゾーン外であることを示す（削除候補）。申請書の「削除」アクションに対応する。`deleted`（削除済み）と区別するため命令形を採用。 |
 
+### 申請カテゴリ
+
+FR-009 が `merged_summit.geojson` の全フィーチャに付与する `category` プロパティの5分類。サミット中心の申請アクションに対応し、ビューアのフィルター・XLSX カラム・申請エビデンス ZIP のファイル分割に共通して使用する（[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md) 参照）。
+
+| `category` 値 | 表示ラベル | 主語 | 申請アクション |
+|---|---|---|---|
+| `add` | 追加 | 新設サミット（`peak.match_status` ∈ {new, dominant}） | 追加 |
+| `band_change` | 変更あり | 既存サミット（matched ∧ バンド遷移あり） | 変更 |
+| `no_change` | 変更なし | 既存サミット（matched ∧ バンド遷移なし） | 申請不要 |
+| `delete` | 削除 | 既存サミット（`summit.match_status="delete"`） | 削除 |
+| `review` | 要確認 | 既存サミット（`summit.match_status="unmatched"`） | 担当者手動判断 |
+
 ### データ構造（列名・フラグ・識別子）
 
 per-mesh CSV / GeoJSON の列名・フラグ・コード体系。

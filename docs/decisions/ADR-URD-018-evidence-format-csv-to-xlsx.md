@@ -23,7 +23,7 @@ XLSX には突合結果・サミット座標・標高・Keyコル座標・標高
 ## Alternatives
 
 - **CSV を維持する**: CSV は機械可読性が高いが、ユーザーが直接確認するには XLSX の方が
-  視認性が高く、列名・書式が整っている。さらに GeoJSON 4 件（new/dominant/changed/unchanged）で
+  視認性が高く、列名・書式が整っている。さらに GeoJSON 5 件（add/delete/changed/unchanged/review）で
   地理情報・突合結果を含むため、情報量として CSV に劣らない。採用しない。
 
 ## Consequences
