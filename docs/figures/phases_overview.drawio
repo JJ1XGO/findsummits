@@ -169,7 +169,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="7kW802zkPkAvV46Z_aIt-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-014: 独立峰のコル探索" vertex="1">
+        <mxCell id="7kW802zkPkAvV46Z_aIt-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=11;" value="FR-014: 広域結合解析オーケストレーション" vertex="1">
           <mxGeometry height="80" width="260" x="759.5" y="1108" as="geometry" />
         </mxCell>
         <mxCell id="7kW802zkPkAvV46Z_aIt-35" connectable="0" parent="1" style="group" value="" vertex="1">

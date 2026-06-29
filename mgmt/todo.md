@@ -147,11 +147,6 @@
   - FR-015 周辺は対応済み。残りの SRS/URD 全体分（約 100 件規模）が対象
   - CLAUDE.md フォーマット標準「他 FR/UR/NFR/セクションへの参照は Markdown リンクで記述する」に基づく機械的変換
 
-- [ ] **docs/figures/phases_overview.drawio: FR-014 タイトル追従**
-  - 「FR-014: 独立峰のコル探索」→「FR-014: 広域結合解析オーケストレーション」
-  - 対象: `docs/figures/phases_overview.drawio` および `phases_overview.drawio.svg`（再エクスポート必要）
-  - 根拠: ISSUE-075（2026-06-09 SRS 改訂）
-
 - [ ] **(FR-016 論点5) per-mesh GeoJSON 出力パスの命名整理検討**
   - 現在 `$DATA_DIR/results/csv/<meshcode>_activation.geojson` に出力しているが、csv/ 配下に geojson を置く命名が紛らわしい
   - CSV と GeoJSON で出力先を分けるか、サブディレクトリを設けるか検討する（ADR または todo で決定後に SRS FR-016 と mesh_analyze.c を更新）
