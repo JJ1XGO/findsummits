@@ -290,22 +290,19 @@ const GEOJSON_DATA = {
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.900,35.200],[138.940,35.200],[138.940,35.240],[138.900,35.240],[138.900,35.200]]] },
       properties: { feature_type: "delete_zone", category: "add", summit_code: "JA/ZZ-A02" } },
 
-    // ── no_change: 変更なし（key_col_resolved=true・3776m → 10pt）────────────
+    // ── no_change: 変更なし・陸地最高峰（key_col_resolved=false・3776m → 10pt）──
+    // col_lat/col_lon=0.0 sentinel のため key_col feature・prominence_range を含めない
     { type: "Feature", geometry: { type: "Point", coordinates: [138.73, 35.36] },
       properties: { feature_type: "peak", match_status: "matched", category: "no_change",
                     summit_code: "JA/SO-001", summit_name: "Fuji-san", summit_name_jp: "富士山",
-                    peak_elev: 3776, prominence: 376, stability: "unstable",
-                    key_col_resolved: true,
+                    peak_elev: 3776, prominence: 3776, stability: "unstable",
+                    key_col_resolved: false,
                     is_band_change_candidate: false, points: 10,
                     rationale: "", analysis_count: 4, expected_count: 4, municipality: "静岡県 富士宮市" } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.720,35.350],[138.740,35.350],[138.740,35.370],[138.720,35.370],[138.720,35.350]]] },
       properties: { feature_type: "activation_zone", category: "no_change", summit_code: "JA/SO-001", area_complete: true, points: 10 } },
     { type: "Feature", geometry: { type: "Polygon", coordinates: [[[138.706,35.336],[138.754,35.336],[138.754,35.384],[138.706,35.384],[138.706,35.336]]] },
       properties: { feature_type: "delete_zone", category: "no_change", summit_code: "JA/SO-001" } },
-    { type: "Feature", geometry: { type: "Point", coordinates: [138.78, 35.39] },
-      properties: { feature_type: "key_col", category: "no_change", summit_code: "JA/SO-001", col_elev: 3400, points: 10, col_margin_px: 120 } },
-    { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.78,35.39]] },
-      properties: { feature_type: "prominence_range", category: "no_change", summit_code: "JA/SO-001" } },
     { type: "Feature", geometry: { type: "LineString", coordinates: [[138.73,35.36],[138.7274,35.3606]] },
       properties: { feature_type: "coord_diff", category: "no_change", summit_code: "JA/SO-001", match_status: "matched" } },
 
