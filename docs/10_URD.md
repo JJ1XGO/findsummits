@@ -69,8 +69,8 @@ SOTA日本支部への更新申請に必要な成果物を生成する支援ツ�
 ## 6. スコープ外（対象外）
 
 - 日本以外のSOTA申請
-- 北方領土に所在するサミット候補（SOTA日本支部の管轄外のため。除外方法はSRSで規定。根拠: [ADR-URD-005](decisions/ADR-URD-005-northern-territories-exclusion.md)）
-- 竹島に所在するサミット候補（韓国 SOTA サミット HL/GB-430 として登録済み。SOTA日本支部の管轄外。根拠: [ADR-URD-009](decisions/ADR-URD-009-takeshima-exclusion.md)）
+- 北方領土に所在するピーク（SOTA日本支部の管轄外のため。除外方法はSRSで規定。根拠: [ADR-URD-005](decisions/ADR-URD-005-northern-territories-exclusion.md)）
+- 竹島に所在するピーク（韓国 SOTA サミット HL/GB-430 として登録済み。SOTA日本支部の管轄外。根拠: [ADR-URD-009](decisions/ADR-URD-009-takeshima-exclusion.md)）
 - 新規サミットの山岳名取得（解析結果から自動取得する手段がなく技術的に困難なため対象外。HTML ビューアで OSM・国土地理院地図を参照しながら人間系で確認・記入すること）。既存サミットの山岳名JP は SOTA 山名 GeoJSON（geojson_v{N}）から自動取得する
 - DEM1a（データ量がDEM5の25倍、精度向上が僅少なため採用しない。根拠: [ADR-SRS-002](decisions/ADR-SRS-002-dem-hierarchy-fallback.md)）
 - SOTA申請書の提出・承認プロセス（ツールは申請書生成まで。提出は手動）
