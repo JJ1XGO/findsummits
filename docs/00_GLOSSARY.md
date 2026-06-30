@@ -17,7 +17,7 @@
 | 用語（本書での表記） | 正式名称 | 説明 |
 |---|---|---|
 | SOTA | Summits On The Air | [Summits On The Air](https://www.sota.org.uk/)。アマチュア無線の運用活動。本プロジェクトは[SOTA日本支部](https://www.kawauchi.homeip.mydns.jp/sotajp/)（JA）の山岳リスト更新申請を目的とする。 |
-| サミット | Summit | SOTA に登録されている山岳。本プロジェクトでは `ref/summitslist.csv` に含まれる JA プレフィックスのサミットを指す。GeoJSON では `type="summit"` のフィーチャで表現され、`match_status` は `matched`（存続）・`delete`（削除候補）・`unmatched`（要確認の孤立サミット。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）のいずれかを取る。 |
+| サミット | Summit | SOTA に登録されている山岳。本プロジェクトでは `$DATA_DIR/ref/summitslist.csv` に含まれる JA プレフィックスのサミットを指す。GeoJSON では `type="summit"` のフィーチャで表現され、`match_status` は `matched`（存続）・`delete`（削除候補）・`unmatched`（要確認の孤立サミット。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）のいずれかを取る。 |
 | サミットコード | Summit Code | SOTAが各山岳に付与する識別コード。`JA/YN-001` の形式（`JA`: アソシエーション、`YN`: リージョン、`001`: サミット番号）。`summitslist.csv` の `SummitCode` 列が正式名称。matched サミットに対応。プロパティ名: `summit_code` |
 | アクティベーションゾーン | Activation Zone | SOTAルールにおける山頂での運用可能エリア。山頂の最高地点から標高差 25m 以内の連続エリアをさす。このエリア内での無線運用が「山頂からの運用」として認められる（参照: [SOTA日本支部 FAQ Q12](https://www.kawauchi.homeip.mydns.jp/sotajp/faqs/)）。本プロジェクトではピークと既存SOTAサミットの照合に使用する（FR-016）。本プロジェクトにおける標高差の設定値はデータ辞書の**アクティベーションゾーン標高差**（[SRS 2.2.1](20_SRS.md#221-設定可能項目)）で管理する。 |
 | プロミネンス | 比高 | ピークの独立性を示す指標。ピーク標高とコル標高の差。本プロジェクトでは 150m 以上を申請対象とする。 |
@@ -101,7 +101,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 | 国土地理院淡色地図（pale） | 国土地理院が提供する淡色系の地図タイル。重ね合わせるデータの視認性を高める基図。本プロジェクトでは HTML ビューアの背景地図（基図）として使用する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
 | 基準点 | 国土地理院が位置の基準として全国に設置・管理する測量点。電子基準点・三角点（一等／二等／三等）等の種別がある。本プロジェクトでは HTML ビューアの参照レイヤーとして地理院基準点タイル（ベクトルタイル）を表示し、地形・座標の目視確認の補助に使用する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
 | N03 行政区域データ | 国土交通省 国土数値情報が提供する行政区域ポリゴンデータ（N03 データセット）。都道府県・振興局・市区町村単位の境界 GeoJSON として配布される。本プロジェクトでは SOTA エリアコード自動付与・所在地取得・北方領土除外に使用する（FR-017）。年版ごとにファイルが異なり、[FR-017](20_SRS.md#fr-017-n03-行政区域前処理データ準備) が YYYYMMDD 最大の ZIP を自動採用する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
-| SOTA 既存サミット GeoJSON（geojson_v{N}） | 突合処理（FR-009）で使用する既存 SOTA サミットデータの GeoJSON 形式スナップショット。`ref/geojson_v{N}/ja0.geojson`〜`ja9.geojson`（N は設定可能項目「SOTA 既存サミット GeoJSON バージョン」で指定）に格納する。サミットごとの日本語山岳名取得に使用する。SOTA サミットリスト CSV（`ref/summitslist.csv`）と並行して参照される。 |
+| SOTA 既存サミット GeoJSON（geojson_v{N}） | 突合処理（FR-009）で使用する既存 SOTA サミットデータの GeoJSON 形式スナップショット。`$DATA_DIR/ref/geojson_v{N}/ja0.geojson`〜`ja9.geojson`（N は設定可能項目「SOTA 既存サミット GeoJSON バージョン」で指定）に配置する（git 管理外・ユーザー手動配置）。サミットごとの日本語山岳名取得に使用する。SOTA サミットリスト CSV（`$DATA_DIR/ref/summitslist.csv`）と並行して参照される。 |
 
 ---
 
@@ -121,7 +121,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 
 | 用語 | 説明 |
 |---|---|
-| 外部I/F（外部インターフェース） | システム境界の外に存在するデータ・サービス、またはユーザーが外部で利用するためにシステムが出力する成果物。例: 国土地理院タイルサーバー・SOTA データベース・申請書 XLSX・標高地形図 PNG。SRS セクション6 に記載 |
+| 外部I/F（外部インターフェース） | システム境界の外に存在するデータ・サービス、またはユーザーが外部で利用するためにシステムが出力する成果物。例: 国土地理院タイルサーバー・申請書 XLSX・標高地形図 PNG。SRS セクション6 に記載 |
 | ユーザー入力 | ユーザーがツールに与える入力。例: コマンド引数・HTML ビューア上の編集。SRS §7 に記載 |
 | 内部データ | システムが生成・管理するデータ。メモリ上の中間データ・一時ファイル・永続キャッシュ・ブラウザ永続化を含む。例: ローカルキャッシュ・per-mesh CSV・N03 前処理済み GeoJSON・localStorage 編集内容。SRS §8 に記載 |
 | 内部トランザクション | 特定の解析処理のスコープ内でのみ有効で、処理完了時に破棄される値。永続化されず、後続フェーズや他の解析からは参照されない。SRS §8.1 内部データ一覧の対象外とし、発生する FR の入出力欄に発生元 FR を明示する。例（小規模）: FR-002 出力「採用 DEM の生 RGB ピクセル値」、FR-003 出力「デコード済みピクセル標高値」。例（大規模・スコープローカル）: FR-004 出力「解析範囲標高グリッド」、FR-005 出力「ピーク候補リスト」、FR-006 出力「ピーク候補・コル情報リスト」（根拠: [ADR-SRS-017](decisions/ADR-SRS-017-internal-transaction-category.md)） |

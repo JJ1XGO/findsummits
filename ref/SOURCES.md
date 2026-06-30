@@ -11,6 +11,7 @@
 | タイトル | SOTA山岳リスト |
 | 提供元 | [SOTA Database](https://www.sotadata.org.uk/) |
 | 取得元URL | <https://www.sotadata.org.uk/summitslist.csv> |
+| 配置場所 | `$DATA_DIR/ref/summitslist.csv`（git 管理外・ユーザー手動配置） |
 | 備考 | JAで始まるサミットが日本支部対象。定期的に更新されるため再取得時は日付を確認すること。 |
 
 ---
@@ -28,7 +29,7 @@
 
 ## geojson_v{N}/（バージョン番号付きディレクトリ）
 
-ディレクトリ名はダウンロード時のバージョン番号を含む（例: `geojson_v31/`）。
+配置場所: `$DATA_DIR/ref/geojson_v{N}/`（git 管理外・ユーザー手動配置）。ディレクトリ名はダウンロード時のバージョン番号を含む（例: `geojson_v31/`）。
 更新時は新バージョンのディレクトリを追加し、古いバージョンは削除して運用する。
 
 | 項目 | 内容 |
