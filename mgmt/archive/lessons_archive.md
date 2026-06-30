@@ -6,6 +6,12 @@
 
 ## 解決済みバグ詳細
 
+### analysis_count 期待値（BUG-014修正で確定・2026-05-02確認）
+
+3×3 メッシュ解析の `analysis_count` 期待値はピークがコンビネーション画像に含まれる枚数で決まる。
+コーナーメッシュ = 4、エッジメッシュ = 6、中央メッシュ = 9。
+BUG-014 修正前はフリンジ由来の 2/3 という異常値が混入していた。修正後は正しく計算される。
+
 ### dem10b座標変換バグ（2026-04-25修正・commit: 修正済み）
 
 `elev_fill_nodata_dem10b` および `elev_load_with_overlap_8dir_with_dem10` の z15→z14 ピクセル変換で `* TILE_PIX`（256）を使っていたため、z14タイルの右半分（x奇数）・下半分（y奇数）に対応するNODATAが一切補完されなかった。dem10bは256×256pxなのに512×512pxとして扱っていたのが原因。修正: `* (TILE_PIX/2)` + `(px-1)/2` に変更。これが terrain PNG の格子状パターン（チェッカーボード）の正体だった。
@@ -14,7 +20,7 @@ terrain PNG の格子状（チェッカーボード）・水平垂直線バグ�
 
 ### dem10b URL誤設定（2026-04-24修正）
 
-`prefetch_tiles.py` の `GSI_DEM10B_URL` が `dem10b_png` というサービス名になっていたが、正しくは `dem_png`。参照元: https://maps.gsi.go.jp/development/ichiran.html#dem。修正後 HTTP 200 確認済み。`/data/tiles/14/` に残っていた残骸ファイル（誤URLで取得したエラーXML）は削除済み。次回 prefetch で正しいdem10bタイルが取得される。
+`prefetch_tiles.py` の `GSI_DEM10B_URL` が `dem10b_png` というサービス名になっていたが、正しくは `dem_png`。参照元: <https://maps.gsi.go.jp/development/ichiran.html#dem>。修正後 HTTP 200 確認済み。`/data/tiles/14/` に残っていた残骸ファイル（誤URLで取得したエラーXML）は削除済み。次回 prefetch で正しいdem10bタイルが取得される。
 
 ---
 
