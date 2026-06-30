@@ -88,7 +88,6 @@ docs/         # 設計ドキュメント（git管理・devel/main 両ブラン�
   decisions/                               # アーキテクチャ決定記録（ADR）
     research/                              # ADR 決定前の設計調査資料
 ref/          # 参照データ（git管理）
-  summitslist.csv                          # SOTAの山岳リスト（全サミット）
   SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
   SOURCES.md                               # 参照資料の出典一覧
 tests/        # テスト用プログラム（test_*.c）
@@ -107,6 +106,10 @@ $DATA_DIR/tiles/        # ダウンロード済みタイルのローカルキャ
         └─ {x}
            └─ {y}.png
 $DATA_DIR/logs/         # findsummits・prefetch_tiles のログ
+$DATA_DIR/ref/          # ユーザー手動配置ファイルおよびシステム生成参照データ（git 管理外）
+  summitslist.csv           # SOTA サミットリスト（ユーザー手動ダウンロード・配置）
+  geojson_v{N}/             # SOTA 既存サミット GeoJSON（ユーザー手動ダウンロード・配置）
+  N03-2026_regions.geojson  # N03 行政区域前処理済み（preprocess_pref_boundaries.py が生成）
 ```
 
 ## Python スクリプトの実行

@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
 """
 モックアップ用 SOTAサミット全件データ生成スクリプト。
-ref/geojson_v31/ja*_v31.geojson を読み込み、docs/mockup/summits_data.js を生成する。
-テストデータが揃ったら geojson を差し替えて再実行することで更新できる。
+$DATA_DIR/ref/geojson_v{N}/ の ja*_v{N}.geojson を読み込み、docs/mockup/summits_data.js を生成する。
+geojson_version は params/config.ini の [sota] セクションから読む（デフォルト: 31）。
 """
+import configparser
 import glob
 import json
 import os
 import re
+from pathlib import Path
 
-GEOJSON_GLOB = os.path.join(os.path.dirname(__file__), "../ref/geojson_v31/ja*_v31.geojson")
-OUTPUT_JS = os.path.join(os.path.dirname(__file__), "../docs/mockup/summits_data.js")
+_PROJECT_DIR = Path(__file__).parent.parent
+_CONFIG_PATH = _PROJECT_DIR / "params/config.ini"
+_config = configparser.ConfigParser()
+if _CONFIG_PATH.exists():
+    _config.read(_CONFIG_PATH)
+
+if "DATA_DIR" not in os.environ and _config.has_option("paths", "DATA_DIR"):
+    os.environ["DATA_DIR"] = _config.get("paths", "DATA_DIR")
+_DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
+_GEOJSON_VERSION = _config.getint("sota", "geojson_version", fallback=31)
+
+GEOJSON_GLOB = str(_DATA_DIR / f"ref/geojson_v{_GEOJSON_VERSION}/ja*_v{_GEOJSON_VERSION}.geojson")
+OUTPUT_JS = str(_PROJECT_DIR / "docs/mockup/summits_data.js")
 
 NAME_RE = re.compile(r'^([^(]+)\((.+)\)$')
 

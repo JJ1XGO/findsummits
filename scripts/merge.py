@@ -45,7 +45,7 @@ TILE_PIX = 256
 MIN_PROMINENCE = 150.0
 DEFAULT_TOLERANCE = _config.getint("merge", "tolerance_px", fallback=0)
 DEFAULT_CSV_DIR = _DATA_DIR / "results/csv"
-DEFAULT_SUMMITSLIST = _PROJECT_DIR / "ref/summitslist.csv"
+DEFAULT_SUMMITSLIST = _DATA_DIR / "ref/summitslist.csv"
 DEFAULT_OUTPUT = _DATA_DIR / "results/merged.csv"
 _DEFAULT_REGIONS_FILE = _DATA_DIR / "ref/N03-2026_regions.geojson"
 

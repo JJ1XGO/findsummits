@@ -74,6 +74,10 @@ venv/
 # 国土数値情報 N03 行政区域 GeoJSON（ファイルサイズが大きいため）
 ref/N03-*.geojson
 
+# ユーザー手動配置ファイル（git 管理外・$DATA_DIR/ref/ へ配置）
+ref/summitslist.csv
+ref/geojson_v*/
+
 # LibreOffice lock files
 .~lock.*
 
