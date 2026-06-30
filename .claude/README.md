@@ -46,7 +46,7 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 
 | ファイル | 呼び出し元 | 役割 |
 |---|---|---|
-| `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認） |
+| `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認）。また handover の「学び」「ハマりどころ」「決定事項」から lessons.md に未転記のエッセンスがあれば初回返答時に追記するよう Claude へ指示 |
 
 ### `settings.local.json`
 
