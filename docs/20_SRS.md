@@ -1177,8 +1177,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     | `category` | 表示ラベル | 対象フィーチャの概要 |
     |---|---|---|
     | `add` | 追加 | new/dominant ピーク・対応するコル・AZ・delete判定ゾーン・ピーク→コル線 |
-    | `band_change` | 変更あり | バンド変更ありの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・各接続線 |
-    | `no_change` | 変更なし | バンド変更なしの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・各接続線 |
+    | `band_change` | 変更あり | バンド変更ありの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・ピーク→コル線（`prominence_range`）・ピーク→AZ内サミット線（`coord_diff`） |
+    | `no_change` | 変更なし | バンド変更なしの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・ピーク→コル線（`prominence_range`）・ピーク→AZ内サミット線（`coord_diff`） |
     | `delete` | 削除 | delete サミット・親ピーク→delete サミット接続線（親ピーク本体は add/band_change/no_change として別途存在） |
     | `review` | 要確認 | unmatched サミット（孤立既存サミット） |
 
@@ -1220,7 +1220,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
   - **入力内容の保持（localStorage）**:
     - 入力した山岳名・rationale 編集内容はブラウザの localStorage に保存し、再訪時も維持する（localStorage 容量上限を超過した場合の扱いは HLD に委ねる）
     - キー: 埋め込みデータの `metadata.generated_at` を含む文字列
-    - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す。「引き継がない」を選んだ場合は前回 localStorage を破棄せず保持したまま、今回の `generated_at` キーで初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート）から開始する（確認なしにユーザーの入力成果を削除しない。前回データの破棄・容量上限超過時の扱いは HLD に委ねる）
+    - 新しいパイプライン実行で `generated_at` が変わった場合、前回の入力が残っていれば「前回の入力内容が残っています（解析日時: XXX）。引き継ぎますか？」と警告・選択を促す。「引き継ぐ」を選んだ場合は前回 `generated_at` キーの入力内容を今回の `generated_at` キーに引き継いで使用する（詳細実装は HLD に委ねる）。「引き継がない」を選んだ場合は前回 localStorage を破棄せず保持したまま、今回の `generated_at` キーで初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート）から開始する（確認なしにユーザーの入力成果を削除しない。前回データの破棄・容量上限超過時の扱いは HLD に委ねる）
   - **エクスポート機能**（エクスポートアイコン展開メニューに 3 ボタンを配置）:
     - **「申請書」ボタン**（[FR-011](#fr-011-申請書-xlsx-生成) 準拠）: SheetJS を使い申請書 XLSX を**単独**ブラウザダウンロードする
       - 出力行: `追加`（`category=add` のピーク + 入力山岳名。A列=追加・B列=県名）・`削除`（`category=delete` の summit フィーチャ）・`変更`（`category=band_change` のピーク。列構成は [FR-011 参照](#fr-011-申請書-xlsx-生成)）。`category=no_change`・`review` は出力しない。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のため本エクスポートの出力対象外
@@ -1263,7 +1263,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 `no_change`・`review` は XLSX 行を出力しない（`no_change` は変更申請不要。`review` は担当者が手動判断）。名称変更・座標変更等（[UR-004](10_URD.md#ur-004) の「その他」アクション）は自動識別対象外（[UR-003](10_URD.md#ur-003)）のためエクスポート対象外。
 
-  - **※1**: HTML ビューアの入力フィールドで記入する（[FR-013 参照](#fr-013-html-ビューア生成)）。山岳名JP は必須・山岳名EN は任意（未入力時は警告のうえ続行可。[FR-019](#fr-019-html-ビューア機能仕様) の山岳名入力 UI・[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md) 参照）
+  - **※1**: HTML ビューアの入力フィールドで記入する（[FR-019 参照](#fr-019-html-ビューア機能仕様)）。山岳名JP は必須・山岳名EN は任意（未入力時は警告のうえ続行可。[FR-019](#fr-019-html-ビューア機能仕様) の山岳名入力 UI・[ADR-SRS-036](decisions/ADR-SRS-036-new-peak-name-input-requirement.md) 参照）
   - **※2**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（追加根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
   - **※3**: summit_name_jp（geojson_v{N} から自動取得）。空文字の場合はビューアの入力フィールドで記入すること
   - **※4**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が自動生成する `rationale` プロパティ値（削除根拠）をそのまま転記する。HTML ビューアで編集した場合は編集後の値を使用する。フォーマット定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)
@@ -1355,7 +1355,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル名 | 内容 | 判定ロジック |
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
-| `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・prominence_range）|
+| `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・prominence_range）。※ dominant ピーク→削除候補サミット接続線（`coord_diff`）は `category="delete"` のため `delete.geojson` に分類される |
 | `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て（delete summit・coord_diff LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
 | `band_change.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
 | `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
