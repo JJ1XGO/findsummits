@@ -95,7 +95,11 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 `ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ `/spec-panel mgmt/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
 
-指摘がある場合は計画に反映してから、または確認事項としてユーザーに明示してから `ExitPlanMode` を出す。
+**省略・短縮は禁止**。以下を必ず守ること:
+
+- `/spec-panel` の実行をスキップしない。理由・規模・確信度によらず省略しない
+- `/spec-panel` 実行後、指摘記録ファイル（`mgmt/spec-findings/` 配下）が実際に作成されたことを確認してから `ExitPlanMode` を出す。ファイルの存在確認なしに次へ進まない
+- 指摘がある場合は計画に反映するか、確認事項としてユーザーに明示してから `ExitPlanMode` を出す
 
 ## 計画ファイル・handover の扱い
 
