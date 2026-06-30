@@ -152,9 +152,6 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 ## その他
 
-他のプロジェクトの参考コードは以下の場所にあります：
-@../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。存在しない場合はスキップ。
-
 ### SOTA関連資料
 
 - [SOTAの山岳リスト](https://www.sotadata.org.uk/summitslist.csv)（JAで始まるものが日本支部のサミット）
