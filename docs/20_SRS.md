@@ -786,7 +786,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
       4. 全レコードが `key_col_resolved=false` の場合は `key_col_resolved=false` のまま維持する（プロミネンス未確定のため、[FR-022](#fr-022-コル充足判定) がエスカレーション対象として報告する）
     - 通常 per-mesh では `key_col_resolved=false` だったピークも、広域 per-mesh で `key_col_resolved=true` の結果が得られていれば、本ロジックにより広域モード結果が自動的に代表として採用される
     - `analysis_count`: 重複排除前の出現回数（実際の解析回数）
-    - `expected_count`: **日本全土1次メッシュコードリストを基準**に算出する期待解析回数（`対象1次メッシュコードリスト` で範囲を絞っても本値は変わらない）。通常モード行（`analysis_id` 接頭辞 `3`）のみを対象とし、3×3 隣接カウントで算出する。広域モード行（接頭辞 `4/5/6`）は `expected_count` の算出対象外（空欄）。本リストは常に存在するため、通常モード行で空欄になることはない
+    - `expected_count`: **日本全土1次メッシュコードリストを基準**に算出する期待解析回数（`対象1次メッシュコードリスト` で範囲を絞っても本値は変わらない）。通常モード行（`analysis_id` 接頭辞 `3`）のみを対象とし、3×3 隣接カウントで算出する（ピークの所属 1次メッシュコードを基準に、日本全土 1次メッシュコードリスト内に存在する周辺 1次メッシュ数をカウント。コーナーメッシュ=4・エッジメッシュ=6・中央メッシュ=9 が期待値。周辺メッシュでも存在しない場合はその分だけ減る）。広域モード行（接頭辞 `4/5/6`）は `expected_count` の算出対象外（空欄）。本リストは常に存在するため、通常モード行で空欄になることはない
     - `stability`: 3値で表す。広域モード代表行（`expected_count` 空欄）のピークは `key_col_resolved` のみで判定し、`false` なら `unstable`、`true` なら `-`（通常モード安定性評価なし）を付与する。通常モード代表行（`expected_count` 非空欄）のピークは、`key_col_resolved=false` が 1 件でも含まれるか `analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`。統合範囲を絞った場合（`対象1次メッシュコードリスト` 指定時）は、範囲端メッシュの周辺メッシュが未解析のため `analysis_count < expected_count` となり、自動的に `unstable` と判定される（これは正しい挙動であり、限定範囲統合の結果を過信させない設計である）
   - プロミネンス最終フィルタ: **プロミネンス最終フィルタ閾値**（[データ辞書参照](#221-設定可能項目)）以上（[FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) の一次フィルタ通過済みのレコードに適用）
   - **陸地最高峰の海面確定（[ADR-SRS-027](decisions/ADR-SRS-027-fr022-purification-fr023-pipeline-control.md)）**: `陸地最高峰リスト` と近傍一致（許容距離は HLD で定義）するピークを `key_col_resolved=true`（Key コル = 海面 0m）に更新してから `merged_peak.csv` を出力する。本機能を複数回再実行しても確定値が消えることはない
@@ -801,7 +801,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 必須/任意 | デフォルト（任意時） | 備考 |
 |---|---|---|---|---|
-| per-mesh ピーク候補 GeoJSON | 内部データ | 必須 | — | 通常 per-mesh のみ（広域モード = [FR-014](#fr-014-広域結合解析オーケストレーション) は GeoJSON を生成しない） |
+| per-mesh ピーク候補 GeoJSON | 内部データ | 必須 | — | [FR-016](#fr-016-ピーク域ポリゴン生成) 出力。通常 per-mesh のみ（広域モード = [FR-014](#fr-014-広域結合解析オーケストレーション) は GeoJSON を生成しない） |
 | 統合ピーク候補 work CSV（`merged_peak.csv`） | 内部データ | 必須 | — | その時点（世代）の [FR-008](#fr-008-per-mesh-csv-統合) 出力。`peak_lat`/`peak_lon` でポリゴンの絞り込みに使用 |
 | 1次メッシュコードリスト | ユーザー入力 | 任意 | 日本全土1次メッシュコードリスト（全土） | [7.2.1 参照](#721-1次メッシュコードリスト)。統合対象を絞り込む入力フィルタ。[FR-008](#fr-008-per-mesh-csv-統合) と同名・同役割の入力で、ループ内再実行時は同一値を共有する（[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)） |
 
@@ -917,7 +917,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
       その座標が含まれるピークを候補とする（point-in-polygon 判定）。`match_status=matched` のピークも候補に含む
       （matched ピークの AZ 外・delete判定ゾーン内に存在する delete 候補サミットは、当該 matched ピークを
       主ピークとして削除申請を自動生成する。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照）
-    - 候補が複数の場合は**プロミネンスが最小のピーク**を主ピークとする（プロミネンスが最小のピークは親ピークへ最も早く合流する局所的な隆起であり、delete 候補サミットと同一山塊と見なせる）。プロミネンスが同値の場合は `peak_lat` 降順（北→南）→ `peak_lon` 昇順（西→東）でタイブレークする（採番順序と同方向。[NFR-003](#nfr-003-再現性決定論的出力) が保証する決定論性と整合）
+    - 候補が複数の場合は**プロミネンスが最小のピーク**を主ピークとする（プロミネンスが最小のピークは親ピークへ最も早く合流する局所的な隆起であり、delete 候補サミットと同一山塊と見なせる）。プロミネンスが同値の場合は `peak_lat` 降順（北→南）→ `peak_lon` 昇順（西→東）でタイブレークする（採番順序と同方向。[NFR-003](#nfr-003-再現性決定論的出力) が保証する決定論性と整合）。なお `key_col_resolved=false`（`prominence=null`）のピークは Key コルが解析範囲外に存在する独立峰級（物理的には最大級のプロミネンスを持つ）であるため、最大扱い（`key_col_resolved=true` のピークより後回し）とする。採番順序（仮サミットコード採番）の null=最小扱いとは逆方向になるが、主ピーク特定は「同一山塊を代表する局所隆起」という物理的意味に基づく選択であり、採番の便宜上の順序付けとは異なる。`key_col_resolved=false` のピーク同士のタイブレークは `peak_lat` 降順 → `peak_lon` 昇順で一意に決定する
     - いずれの delete判定ゾーンにも含まれないサミットは `summit.match_status="unmatched"`（要確認）として記録する。主ピークは紐付かず `dominant_peak_code` 等は付与しない。停止はせず、件数しきい値超過時のみ不備ゲートで停止する（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)。自動フォールバック・申請書削除行への自動掲載は行わない）
     - 付与するカラム: `dominant_peak_code`（主ピークのサミットコード。主ピークが `matched` の場合は当該ピークの既存 SOTA コード）、`dominant_peak_dist_m`（主ピークから delete 候補サミット座標までの距離 m。Haversine 公式で計算。人手確認用）
   - **rationale プロパティ生成**（各フィーチャの `rationale` プロパティに格納する申請書根拠テキスト。HTML ビューアで編集可能・[FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に転記）:
@@ -952,7 +952,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - ピーク行で AZ または delete判定ゾーンポリゴンの `area_complete=false` が1件以上存在する（[FR-016](#fr-016-ピーク域ポリゴン生成) で 3×3 完結が想定されているが想定外に発生した場合）
     - ピーク行で `key_col_resolved=false` が1件以上存在する（`is_key_col_unresolved` フラグ。解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）の N=4→5→6 エスカレーションでも解消せず）
     - 不備ゲート発動時は `merged_summit.geojson` および `merged_summit.xlsx` をともに不備エントリを含めて**必ず出力してから停止**する（調査用）。ハードクラッシュ時は出力を保証しない。[FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は本 FR の exit code を見てスキップする（exit code の詳細は HLD 参照）
-    - 不備条件の追加は実装中に随時行ってよい（網羅性が必要）。新規不備種別を発見した場合は本リストに追記する
+    - 実装・運用中に新規不備種別を発見した場合は、ユーザー確認のうえ本リストに追記し、SRS とコードを同期する（片方だけの修正禁止）
   - **metadata 付与**（`merged_summit.geojson` の top-level `metadata` オブジェクトとして格納。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-URD-014](decisions/ADR-URD-014-gsi-tile-attribution-policy.md) 準拠）:
     - `summitslist_date`: `$DATA_DIR/ref/summitslist.csv` 1行目（`SOTA Summits List (Date=DD/MM/YYYY)` 形式）からパースした日付文字列
     - `generated_at`: 本 FR 実行時の ISO 8601 形式の日時文字列（パイプライン最終実行日時）
@@ -1098,7 +1098,7 @@ matched / dominant のみ。
 | `feature_type` | "coord_diff" |
 | `category` | 親ピーク→matched summit の場合は親ピーク継承（band_change / no_change）。親ピーク→delete summit の場合は `delete` |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
-| `match_status` | matched / dominant |
+| `match_status` | matched / dominant（発点ピークの match_status） |
 
 dominant で削除候補サミットが複数の場合、各 `coord_diff` LineString は同一の `summit_code`（ピーク仮コード）を持ち、属性では個別の削除候補を識別しない。対応は各 LineString の終点座標（削除候補サミット座標）で成立する。削除候補ごとの個別識別プロパティは追加しない（実害限定的・地図描画は幾何で完結するため）。
 
