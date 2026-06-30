@@ -46,7 +46,7 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 
 | ファイル | 呼び出し元 | 役割 |
 |---|---|---|
-| `session-start.sh` | SessionStart hook | handover + lessons を注入。`incidents/` の最新ファイル1件が「未解決」状態なら `/log-incident` の環境確認チェックリスト実行を Claude へ指示（古いインシデント全件ではなく最新1件のみ確認） |
+| `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認） |
 
 ### `settings.local.json`
 
@@ -69,7 +69,7 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 | PreToolUse | Write\|Edit | 実装ファイル（`.c/.h/.py`）を Opus で編集しようとすると警告・permission ask |
 | PostToolUse | Write\|Edit | ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
 | PostToolUse | Write\|Edit | `docs/*.md` 編集時に `\| 最終更新日 \|` 行を当日付に自動書き換え |
-| SessionStart | startup/resume/clear | `hooks/session-start.sh` を呼び出す。handover + lessons を自動注入し、未解決インシデントがあれば環境確認チェックリスト実行を指示 |
+| SessionStart | startup/resume/clear | `hooks/session-start.sh` を呼び出す。handover + lessons を自動注入し、未解決インシデントまたは前handoverに環境異常記録があれば環境確認チェックリスト実行を指示 |
 
 `.claude/` 構成ファイル変更時の README.md 更新リマインドはグローバル hook（`~/.claude/settings.json`）で対応。
 
