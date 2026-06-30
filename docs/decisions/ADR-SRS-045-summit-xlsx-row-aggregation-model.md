@@ -68,10 +68,10 @@ SRS 未定義だった。本 ADR はその欠落を補完する。
 
 ## Consequences
 
-- FR-009 スキーマ正本（`merged_summit.xlsx` の行生成モデル）に本 ADR の規則を追記する（SRS 更新）
-- FR-012 の「Point フィーチャのみが行に変換される」の文言を本 ADR を参照する記述へ修正する（SRS 更新）
-- FR-012 カラム表の `sota_*` 注記を「matched のみ（band_change/no_change）」へ修正する（SRS 更新）
+- [FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定) スキーマ正本（`merged_summit.xlsx` の行生成モデル）に本 ADR の規則を追記する（SRS 更新）
+- [FR-012](../20_SRS.md#fr-012-サミット一覧申請内容反映版生成) の「Point フィーチャのみが行に変換される」の文言を本 ADR を参照する記述へ修正する（SRS 更新）
+- [FR-012](../20_SRS.md#fr-012-サミット一覧申請内容反映版生成) カラム表の `sota_*` 注記を「matched のみ（band_change/no_change）」へ修正する（SRS 更新）
 - 6.2.7（サミット一覧（突合後））の「含む情報」を本 ADR に整合する文言へ修正する（SRS 更新）
 - `ADR-SRS-041` の Consequences（「`merged_summit.xlsx` のカラム統一が維持される」）は本 ADR の
   行モデルが前提として成立する（相互補完関係。既存 ADR の本文変更は不要）
-- FR-009・FR-012 の実装は本 ADR の規則に従って行集約を実装する（実装フェーズ）
+- [FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)・[FR-012](../20_SRS.md#fr-012-サミット一覧申請内容反映版生成) の実装は本 ADR の規則に従って行集約を実装する（実装フェーズ）

@@ -5,13 +5,13 @@
 
 ## Context
 
-FR-013 レビューで、現状設計の3つの問題が明らかになった。
+[FR-013](../20_SRS.md#fr-013-html-ビューア生成) レビューで、現状設計の3つの問題が明らかになった。
 
 ### 問題 1: geojson metadata の boolean 不備フラグに消費者がいない
 
 [ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md) は不備フラグ（`is_unmatched_summit`/`is_area_incomplete`/`is_key_col_unresolved`）を `merged_summit.geojson` の top-level `metadata` に格納すると規定した。しかし実際の消費者がいない状態になっている:
 
-- **FR-013 のスキップ判定**: FR-009 の exit code を使う（SRS L914）。boolean フラグは参照しない
+- **[FR-013](../20_SRS.md#fr-013-html-ビューア生成) のスキップ判定**: [FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定) の exit code を使う（SRS L914）。boolean フラグは参照しない
 - **地図上の可視化（警告色）**: per-feature プロパティ（`key_col_resolved`・`area_complete`）が担う。boolean サマリーは地図描画に寄与しない
 
 結果として、top-level boolean フラグは「成功時は全 false（無意味）、失敗時は geojson の調査用」として格納されているが、失敗時の調査は **geojson のフィーチャ属性（per-feature プロパティ）** を見れば行えるため、boolean サマリーは vestigial（遺物）化している。
@@ -45,7 +45,7 @@ per-feature プロパティ（`key_col_resolved`・`area_complete`）は維持�
 
 **列の追加**:
 
-- `area_complete`（bool）: activation zone が解析範囲内で完結しているか。FR-016 出力の `area_complete` を per-row で格納
+- `area_complete`（bool）: activation zone が解析範囲内で完結しているか。[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) 出力の `area_complete` を per-row で格納
 
 **match_status 値域の拡張**:
 
@@ -58,7 +58,7 @@ per-feature プロパティ（`key_col_resolved`・`area_complete`）は維持�
 
 ### 3. 不備ゲート発動時の出力保証
 
-FR-009 の異常終了制御（SRS L914）を以下のように書き換える:
+[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定) の異常終了制御（SRS L914）を以下のように書き換える:
 
 **変更前**:
 > `merged_summit.geojson` は不備フィーチャも含めて必ず出力してから停止する（調査用）
@@ -82,9 +82,9 @@ geojson のみに持ち、xlsx には追加しない案。問題 2・3 が解消
 
 ## Consequences
 
-- **SRS FR-009**: 不備フラグの定義箇所（L910-915）を改訂。①metadata の boolean フラグ削除、②異常終了制御に xlsx セット出力を追記、③ハードクラッシュとの区別を明記
-- **SRS FR-012（xlsx カラム定義）**: `area_complete` 列を追加、`match_status` 値域に `delete`/`unmatched` を追記
+- **SRS [FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)**: 不備フラグの定義箇所（L910-915）を改訂。①metadata の boolean フラグ削除、②異常終了制御に xlsx セット出力を追記、③ハードクラッシュとの区別を明記
+- **SRS [FR-012](../20_SRS.md#fr-012-サミット一覧申請内容反映版生成)（xlsx カラム定義）**: `area_complete` 列を追加、`match_status` 値域に `delete`/`unmatched` を追記
 - **SRS 6.5（サミット一覧（突合後）仕様）**: 同上の変更を反映
-- **SRS FR-013（metadata 一覧）**: boolean 不備フラグ群の記述を削除（per-feature プロパティは残す）
+- **SRS [FR-013](../20_SRS.md#fr-013-html-ビューア生成)（metadata 一覧）**: boolean 不備フラグ群の記述を削除（per-feature プロパティは残す）
 - **ADR-SRS-011 Consequences**: 「不備フラグは `merged_summit.geojson` のメタデータプロパティに格納」を本 ADR 決定に更新
 - **ADR-SRS-013**: 「不備フラグを metadata に」という旧決定を本 ADR 決定で上書きと追記

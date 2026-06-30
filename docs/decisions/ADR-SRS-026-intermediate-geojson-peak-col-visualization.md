@@ -5,9 +5,9 @@
 
 ## Context
 
-UR-013（[ADR-URD-016](ADR-URD-016-observability-intermediate-visualization-ur.md)）は、解析パイプラインの
+[UR-013](../10_URD.md#ur-013)（[ADR-URD-016](ADR-URD-016-observability-intermediate-visualization-ur.md)）は、解析パイプラインの
 中間成果物 GeoJSON を生成タイミングで地図上に可視化し、**ピーク・コル・ゾーンの対応関係**を目視確認できることを要求する。
-これを受けた NFR-009 は中間 GeoJSON を地理院地図へのドラッグ&ドロップで確認できることを仕様化したが、
+これを受けた [NFR-009](../20_SRS.md#nfr-009-観測可能性中間成果物の可視化) は中間 GeoJSON を地理院地図へのドラッグ&ドロップで確認できることを仕様化したが、
 「ピーク・コルの対応関係の精密な可視化（コル位置の地図表示）は保証範囲外」と明示し、本 ADR に委ねていた（[ADR-SRS-025](ADR-SRS-025-observability-nfr-ur013-srs-scope.md) 参照）。
 
 現行の中間 GeoJSON（ADR-SRS-022 の join 方式）は以下のフィーチャのみを持つ:
@@ -17,23 +17,23 @@ UR-013（[ADR-URD-016](ADR-URD-016-observability-intermediate-visualization-ur.m
 
 コル座標・ピーク位置・接続線を持たないため、地図に表示しても**どのピークとどのコルが対応するかが判別できない**。
 
-UR-013 が要求する可視化の具体的な内容（ユーザー確認済み）:
+[UR-013](../10_URD.md#ur-013) が要求する可視化の具体的な内容（ユーザー確認済み）:
 
-- **FR-016 出力（per-mesh）**: FR-007 で検出したピーク位置・（コル確定済みの場合）コル位置・ゾーンポリゴン
-- **FR-018 出力（統合）**: merged_peak.csv のピーク位置・（col_lat/col_lon があれば）コル位置・ゾーンポリゴン
-- 確認方法: 地理院地図へのドラッグ&ドロップ（NFR-009 方式を維持）
+- **[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) 出力（per-mesh）**: [FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用) で検出したピーク位置・（コル確定済みの場合）コル位置・ゾーンポリゴン
+- **[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合) 出力（統合）**: merged_peak.csv のピーク位置・（col_lat/col_lon があれば）コル位置・ゾーンポリゴン
+- 確認方法: 地理院地図へのドラッグ&ドロップ（[NFR-009](../20_SRS.md#nfr-009-観測可能性中間成果物の可視化) 方式を維持）
 
 ## Decision
 
 ### 追加フィーチャ
 
-FR-016（per-mesh GeoJSON）・FR-018（merged_peak.geojson）の両出力に、既存のゾーンポリゴンに加えて
+[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)（per-mesh GeoJSON）・[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合)（merged_peak.geojson）の両出力に、既存のゾーンポリゴンに加えて
 以下のフィーチャを**加算的に追加**する（既存の 4 プロパティ・ポリゴン設計は変更しない）。
 
 | feature_type | geometry | 追加条件 |
 |---|---|---|
 | `"peak"` | Point（ピーク座標） | 常に生成（全採用ピーク） |
-| `"key_col"` | Point（コル座標） | key_col_resolved=true のピークのみ（FR-016）／col_lat が存在するピークのみ（FR-018） |
+| `"key_col"` | Point（コル座標） | key_col_resolved=true のピークのみ（[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)）／col_lat が存在するピークのみ（[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合)） |
 | `"peak_col_link"` | LineString（ピーク→コル） | key_col がある場合に生成 |
 
 凡例は [ADR-SRS-013](ADR-SRS-013-merged-geojson-as-central-data.md)（`merged_summit.geojson`）の規約を踏襲する
@@ -41,8 +41,8 @@ FR-016（per-mesh GeoJSON）・FR-018（merged_peak.geojson）の両出力に、
 
 ### コル座標の入手元
 
-- **FR-016**: FR-007「フィルタ後ピーク候補・コル情報リスト」の `col_lat`/`col_lon`（`key_col_resolved=true` のピークのみ。独立峰は key_col Point・LineString なし）
-- **FR-018**: merged_peak.csv の `col_lat`/`col_lon`（広域解析で確定した独立峰のコルも含む）
+- **[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)**: [FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用)「フィルタ後ピーク候補・コル情報リスト」の `col_lat`/`col_lon`（`key_col_resolved=true` のピークのみ。独立峰は key_col Point・LineString なし）
+- **[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合)**: merged_peak.csv の `col_lat`/`col_lon`（広域解析で確定した独立峰のコルも含む）
 
 ### 地理院地図スタイル属性
 
@@ -60,7 +60,7 @@ FR-016（per-mesh GeoJSON）・FR-018（merged_peak.geojson）の両出力に、
 ### FR-009 への帰結
 
 merged_peak.geojson が非ポリゴンフィーチャ（Point・LineString）を含むようになるため、
-FR-009 の point-in-polygon 処理は `feature_type ∈ {activation_zone, delete_zone}` のポリゴンフィーチャに
+[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 処理は `feature_type ∈ {activation_zone, delete_zone}` のポリゴンフィーチャに
 絞って実行する（Point・LineString を誤って評価しない）。
 
 ### ADR-SRS-022 との関係
@@ -73,7 +73,7 @@ ADR-SRS-022 の 4 プロパティ（`peak_lat`/`peak_lon`/`feature_type`/`area_c
 
 **A: HTML ビューアで中間 GeoJSON を描画（アイコン厳密一致）**
 
-merged_viewer.html を拡張し、FR-016/FR-018 の中間 GeoJSON を読み込んで
+merged_viewer.html を拡張し、[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)/[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合) の中間 GeoJSON を読み込んで
 `peakIcon`/`colIcon` で描画する案。`▲`/`▽` が最終成果物と完全一致する。
 ビューア拡張コストが高い上、ユーザーはドラッグ&ドロップを選択したため却下。
 
@@ -89,11 +89,11 @@ GeoJSON の properties に `col_lat`/`col_lon` を追加するだけで点・線
 
 ## Consequences
 
-- **FR-016**: per-mesh ピーク候補 GeoJSON（`3-<meshcode>.geojson`）に peak/key_col Point・peak_col_link LineString を追加
+- **[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)**: per-mesh ピーク候補 GeoJSON（`3-<meshcode>.geojson`）に peak/key_col Point・peak_col_link LineString を追加
   （コルは key_col_resolved=true のみ。地理院地図スタイル属性付き）。コード追従: mesh_analyze.c の GeoJSON 出力拡張（HLD/COD）
-- **FR-018**: merged_peak.geojson に merged_peak.csv 由来の peak/key_col Point・peak_col_link LineString を追加
+- **[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合)**: merged_peak.geojson に merged_peak.csv 由来の peak/key_col Point・peak_col_link LineString を追加
   （独立峰の確定コルも含む）。コード追従: merge.py の GeoJSON 統合処理追従（HLD/COD）
-- **FR-009**: point-in-polygon を `feature_type ∈ {activation_zone, delete_zone}` のポリゴンに絞る注記を追加。コード追従: HLD/COD
-- **NFR-009**: 「保証範囲外」の記述を削除し、本 ADR を参照してスコープ内に改訂
+- **[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)**: point-in-polygon を `feature_type ∈ {activation_zone, delete_zone}` のポリゴンに絞る注記を追加。コード追従: HLD/COD
+- **[NFR-009](../20_SRS.md#nfr-009-観測可能性中間成果物の可視化)**: 「保証範囲外」の記述を削除し、本 ADR を参照してスコープ内に改訂
 - **ADR-SRS-022**: Consequences に本 ADR への前方リンクを追加
-- コード追従（mesh_analyze.c・merge.py・FR-009 のポリゴン絞り込み）は HLD/COD ステージ（todo.md 転記済み）
+- コード追従（mesh_analyze.c・merge.py・[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定) のポリゴン絞り込み）は HLD/COD ステージ（todo.md 転記済み）

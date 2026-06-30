@@ -7,7 +7,7 @@
 
 ### 削除判定方式の課題（旧方針: コル等高線ポリゴン）
 
-ピーク域ポリゴン生成（FR-016）で生成していた「コル等高線ポリゴン」（Flood Fill 閾値 = `col_elev` 以上）を削除判定に用いる旧方針には、以下の課題があった。
+ピーク域ポリゴン生成（[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)）で生成していた「コル等高線ポリゴン」（Flood Fill 閾値 = `col_elev` 以上）を削除判定に用いる旧方針には、以下の課題があった。
 
 1. **独立峰問題**: プロミネンス 500m 超の独立峰（富士山・利尻岳・大雪山等）では、コル等高線が遠方の山域まで連続し、ポリゴンが日本全土規模に膨張する
 2. **ガード条件の恣意性**: 上記回避のため「既存 SOTA プロミネンス > 500m なら削除除外」のガード条件が必要となるが、500m 値に技術的根拠がない
@@ -63,7 +63,7 @@ delete_zone_max_drop = 150 + ceil(max_abs_diff / 50) * 50
 | `delete` | いずれかのピークの delete判定ゾーン内かつ AZ 外に存在 |
 | `unmatched` | いずれにも該当しない（要確認の孤立サミット。件数しきい値超過時のみ停止） |
 
-`unmatched` は、噴火・山体崩壊・カルデラ陥没で山が消失・大幅低下した場合（＝削除すべきサミット）と、`delete_zone_max_drop` の値が小さすぎる等の不備（＝システム不備）の両方で発生しうる。座標だけでは両者を機械区別できないため、本 ADR 制定時に想定した「本来発生しないべき不備・即停止」から、[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) により「**担当者の確認を要する状態（要確認）として続行**」へ方針を改めた。`unmatched` 単独では停止せず（`merged_summit.xlsx`・HTML ビューアの「要確認」カテゴリで提示）、件数が **要確認サミット件数しきい値**（`unmatched_review_threshold`）を超えた場合のみ解析異常の疑いとして merge.py が non-zero exit で停止し、後続の FR-013（GeoJSON/HTML 生成）をスキップする。
+`unmatched` は、噴火・山体崩壊・カルデラ陥没で山が消失・大幅低下した場合（＝削除すべきサミット）と、`delete_zone_max_drop` の値が小さすぎる等の不備（＝システム不備）の両方で発生しうる。座標だけでは両者を機械区別できないため、本 ADR 制定時に想定した「本来発生しないべき不備・即停止」から、[ADR-SRS-037](ADR-SRS-037-unmatched-summit-needs-review.md) により「**担当者の確認を要する状態（要確認）として続行**」へ方針を改めた。`unmatched` 単独では停止せず（`merged_summit.xlsx`・HTML ビューアの「要確認」カテゴリで提示）、件数が **要確認サミット件数しきい値**（`unmatched_review_threshold`）を超えた場合のみ解析異常の疑いとして merge.py が non-zero exit で停止し、後続の [FR-013](../20_SRS.md#fr-013-html-ビューア生成)（GeoJSON/HTML 生成）をスキップする。
 
 ### コル等高線ポリゴンの廃止
 
@@ -73,7 +73,7 @@ delete_zone_max_drop = 150 + ceil(max_abs_diff / 50) * 50
 
 - **独立峰問題の自然解消**: 250m キャップによりポリゴンが日本全土規模に膨張しない
 - **ガード条件不要**: 500m のような恣意的な閾値が不要に
-- **広域再解析のトリガー縮小**: AZ（標高差 25m）・delete判定ゾーン（250m 上限キャップ）はいずれも複数の 3×3 メッシュ解析を統合する段階で完結ポリゴンが見つかる想定のため、FR-014（広域結合解析オーケストレーション）のトリガーは `key_col_resolved=false` のみに限定できる。`area_complete=false` が想定外に発生した場合は merge.py の `is_area_incomplete` 不備フラグで処理停止する
+- **広域再解析のトリガー縮小**: AZ（標高差 25m）・delete判定ゾーン（250m 上限キャップ）はいずれも複数の 3×3 メッシュ解析を統合する段階で完結ポリゴンが見つかる想定のため、[FR-014](../20_SRS.md#fr-014-広域結合解析オーケストレーション)（広域結合解析オーケストレーション）のトリガーは `key_col_resolved=false` のみに限定できる。`area_complete=false` が想定外に発生した場合は merge.py の `is_area_incomplete` 不備フラグで処理停止する
 - **削除判定のシンプル化**: 座標のみで判定するため、SOTA 登録標高と DEM 標高の前後関係に依存しない
 
 ## Alternatives
@@ -100,10 +100,10 @@ Union-Find を拡張し、暫定 `col_elev` で暫定ポリゴンを生成する
 
 - **ADR-URD-007** (peak-match-status-terminology): 「コル等高線内」表記を「delete判定ゾーン内」に更新
 - **ADR-SRS-008** (dominant-peak-identification): 「コル等高線ポリゴン」「feature_type=key_col_boundary」表記を delete判定ゾーン関連に更新（アルゴリズム本体は維持）
-- **FR-016**: コル等高線ポリゴン仕様を削除し、delete判定ゾーンポリゴン仕様を追加
-- **FR-009**: `summit.match_status` に `unmatched` 追加、エラー停止仕様追加
-- **FR-013**: dominant/new フィーチャ構成のポリゴン種別を変更
-- **FR-014**: 再解析トリガーを `key_col_resolved=false` のみに限定（AZ・delete判定ゾーンの `area_complete=false` はトリガー対象外）。広域モードでは Key コル特定のみ行い、ポリゴン生成（FR-016）は実行しない。出力は広域 per-mesh CSV のみで GeoJSON は出力しない
+- **[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)**: コル等高線ポリゴン仕様を削除し、delete判定ゾーンポリゴン仕様を追加
+- **[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)**: `summit.match_status` に `unmatched` 追加、エラー停止仕様追加
+- **[FR-013](../20_SRS.md#fr-013-html-ビューア生成)**: dominant/new フィーチャ構成のポリゴン種別を変更
+- **[FR-014](../20_SRS.md#fr-014-広域結合解析オーケストレーション)**: 再解析トリガーを `key_col_resolved=false` のみに限定（AZ・delete判定ゾーンの `area_complete=false` はトリガー対象外）。広域モードでは Key コル特定のみ行い、ポリゴン生成（[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)）は実行しない。出力は広域 per-mesh CSV のみで GeoJSON は出力しない
 - **GLOSSARY**: 「delete判定ゾーン」用語追加、「コル等高線ポリゴン」用語削除
 - **C エンジン** (`src/analyze.c`, `src/mesh_analyze.c`): Flood Fill 閾値とポリゴン種別の変更
 - **merge.py**: AZ / delete判定ゾーンの point-in-polygon 実装、不備フラグ格納、exit code 制御

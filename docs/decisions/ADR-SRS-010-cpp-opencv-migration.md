@@ -10,11 +10,11 @@
 
 ## Context
 
-FR-016（アクティベーションゾーン計算）の実装方法を検討する中で、より広範な技術判断が必要であることが明らかになった。
+[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成)（アクティベーションゾーン計算）の実装方法を検討する中で、より広範な技術判断が必要であることが明らかになった。
 
 ### FR-016 が要求する処理
 
-FR-016 はピーク位置を起点とした Flood Fill によりアクティベーションゾーン（標高差 25m 以内の連続エリア）を抽出し、その外周輪郭を GeoJSON Polygon として出力する。同じ Flood Fill を `max(col_elev, peak_elev - delete_zone_max_drop)` 閾値で実行して delete判定ゾーンポリゴンも生成する（[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)）。これらはいずれも**画像処理の典型タスク**（領域塗りつぶし・輪郭抽出）であり、自前実装すると以下のコストが発生する:
+[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) はピーク位置を起点とした Flood Fill によりアクティベーションゾーン（標高差 25m 以内の連続エリア）を抽出し、その外周輪郭を GeoJSON Polygon として出力する。同じ Flood Fill を `max(col_elev, peak_elev - delete_zone_max_drop)` 閾値で実行して delete判定ゾーンポリゴンも生成する（[ADR-SRS-011](ADR-SRS-011-delete-zone-polygon.md)）。これらはいずれも**画像処理の典型タスク**（領域塗りつぶし・輪郭抽出）であり、自前実装すると以下のコストが発生する:
 
 - BFS による Flood Fill（4 連結／8 連結の選択、訪問配列管理）
 - 境界追跡アルゴリズム（Moore-neighbor / Suzuki-Abe 等）の実装とエッジケース対応
@@ -22,18 +22,18 @@ FR-016 はピーク位置を起点とした Flood Fill によりアクティベ�
 
 これらは OpenCV の `cv::floodFill`・`cv::findContours` で枯れた実装が提供されている。
 
-なお、FR-009 の point-in-polygon 突合精度を確保するため、ポリゴンの**形状を変える簡略化（Douglas-Peucker 等）は採用しない**。`cv::findContours` の `CHAIN_APPROX_SIMPLE` モード（直線上にある冗長な中間頂点のみを削除する lossless 圧縮）で出力する。
+なお、[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合精度を確保するため、ポリゴンの**形状を変える簡略化（Douglas-Peucker 等）は採用しない**。`cv::findContours` の `CHAIN_APPROX_SIMPLE` モード（直線上にある冗長な中間頂点のみを削除する lossless 圧縮）で出力する。
 
 ### OpenCV 適用範囲は FR-016 だけにとどまらない
 
-OpenCV を導入する場合、FR-016 単独ではなく以下にも統一的に適用するのが自然である:
+OpenCV を導入する場合、[FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) 単独ではなく以下にも統一的に適用するのが自然である:
 
 | 現状処理 | OpenCV 代替 | 該当機能 |
 |---|---|---|
-| libpng で標高タイル PNG をデコード | `cv::imread(path, IMREAD_UNCHANGED)` | FR-003 |
-| RGB→標高変換 `(R*65536+G*256+B)/100` | cv::Mat の split + 行列演算 | FR-003 |
-| 標高地形図 PNG（色分け・縮小・出力） | `cv::applyColorMap` / LUT + `cv::resize` + `cv::imwrite` | FR-015 |
-| Flood Fill・輪郭抽出（lossless） | `cv::floodFill` / `cv::findContours`（`CHAIN_APPROX_SIMPLE`） | FR-016 |
+| libpng で標高タイル PNG をデコード | `cv::imread(path, IMREAD_UNCHANGED)` | [FR-003](../20_SRS.md#fr-003-標高デコードnodata-処理) |
+| RGB→標高変換 `(R*65536+G*256+B)/100` | cv::Mat の split + 行列演算 | [FR-003](../20_SRS.md#fr-003-標高デコードnodata-処理) |
+| 標高地形図 PNG（色分け・縮小・出力） | `cv::applyColorMap` / LUT + `cv::resize` + `cv::imwrite` | [FR-015](../20_SRS.md#fr-015-標高地形図出力) |
+| Flood Fill・輪郭抽出（lossless） | `cv::floodFill` / `cv::findContours`（`CHAIN_APPROX_SIMPLE`） | [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) |
 
 ### C++ 化の必然性
 
@@ -71,10 +71,10 @@ ADR-SRS-002（DEM 階層フォールバック）・ADR-SRS-004（L14 max pooling
 |---|---|---|---|
 | Phase 1 | ビルド基盤の C++ 化（Makefile を g++ + pkg-config 化）<br>`elevation.c` を C++ + `cv::imread` 化 | 中 | **タイル PNG デコード後の標高 float 値が現行 libpng 実装と完全一致**すること |
 | Phase 2 | `mesh.c`, `unionfind.c`, `analyze.c`, `mesh_analyze.c`, `main.c` および tests/ を C++ 翻訳<br>（malloc → std::vector、構造体 → class への機械的変換主体） | 大 | 既存テスト（`test_mesh_analyze`, `test_analyze`）が全通過 + 既知メッシュの per-mesh CSV が現行と完全一致 |
-| Phase 3 | FR-015 標高地形図を `cv::applyColorMap` + `cv::resize` + `cv::imwrite` で書き直し | 小 | 既存出力との視覚比較（同等の可読性であれば可） |
-| Phase 4 | FR-016 を `cv::floodFill` + `cv::findContours` で新規実装 | 中 | per-mesh `<meshcode>.geojson` を実メッシュで出力し、地理院地図上で目視確認 |
+| Phase 3 | [FR-015](../20_SRS.md#fr-015-標高地形図出力) 標高地形図を `cv::applyColorMap` + `cv::resize` + `cv::imwrite` で書き直し | 小 | 既存出力との視覚比較（同等の可読性であれば可） |
+| Phase 4 | [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) を `cv::floodFill` + `cv::findContours` で新規実装 | 中 | per-mesh `<meshcode>.geojson` を実メッシュで出力し、地理院地図上で目視確認 |
 
-Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加は伴わない。Phase 3 は内部実装の置換のみで仕様変更なし。Phase 4 で初めて FR-016 として新機能を追加する。
+Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加は伴わない。Phase 3 は内部実装の置換のみで仕様変更なし。Phase 4 で初めて [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) として新機能を追加する。
 
 ### C++ 利用の方針（複雑機能の意図的回避）
 
@@ -88,8 +88,8 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 
 | 案 | 却下理由 |
 |---|---|
-| C のまま自前実装で FR-016 を完成させる | 境界追跡・輪郭抽出のエッジケース実装コストが高く、バグリスクも大。FR-014 や将来の画像処理拡張のたびに同様の自作が必要になる |
-| FR-016 のみを C++ モジュール化（折衷案） | C から呼ぶための `extern "C"` ラッパーが煩雑。OpenCV の戻り値型（`std::vector<std::vector<cv::Point>>` 等）を C 側で扱うのが現実的でない。結局フル C++ 化したくなる |
+| C のまま自前実装で [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) を完成させる | 境界追跡・輪郭抽出のエッジケース実装コストが高く、バグリスクも大。[FR-014](../20_SRS.md#fr-014-広域結合解析オーケストレーション) や将来の画像処理拡張のたびに同様の自作が必要になる |
+| [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) のみを C++ モジュール化（折衷案） | C から呼ぶための `extern "C"` ラッパーが煩雑。OpenCV の戻り値型（`std::vector<std::vector<cv::Point>>` 等）を C 側で扱うのが現実的でない。結局フル C++ 化したくなる |
 | Python 単体実装に回帰（findsummits4sotaja 方式） | 大規模メッシュでのメモリ・速度要件を満たせない懸念から ADR-SRS-001 で却下済み。本判断でもその前提は維持 |
 | OpenCV を採用せず別の C++ 画像処理ライブラリ（CImg, GIL 等）を採用 | 採用例・コミュニティ規模・ドキュメント量で OpenCV が圧倒的。Terrain-RGB の用途で他ライブラリを選ぶ理由がない |
 
@@ -100,12 +100,12 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 - **メモリ管理の構造的安全化**: malloc/free 漏れが物理的に発生しない（RAII による自動解放）
 - **画像処理のバグリスク低減**: OpenCV は数十年の運用実績があり、自前実装より圧倒的に堅牢
 - **コード量の削減**: Flood Fill・輪郭追跡・PNG デコード・色変換・リサイズが OpenCV API 呼び出しに置き換わる
-- **将来の拡張性**: FR-014（L14 max pooling 広域再解析）や、将来検討される画像処理機能（地形分類・等高線抽出・自動カラーマップ調整等）の追加コストが下がる
+- **将来の拡張性**: [FR-014](../20_SRS.md#fr-014-広域結合解析オーケストレーション)（L14 max pooling 広域再解析）や、将来検討される画像処理機能（地形分類・等高線抽出・自動カラーマップ調整等）の追加コストが下がる
 - **テスト可能性向上**: cv::Mat はファイル入出力・ピクセル比較が容易で、回帰テストの整備が現行より楽になる
 
 ### Negative
 
-- **移行期間中の FR-016 着手遅延**: Phase 1〜2 で実装 1〜2 週間 + 検証 1 週間 = 計 2〜3 週間程度を見込む必要があり、その間 FR-016 は着手できない
+- **移行期間中の [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) 着手遅延**: Phase 1〜2 で実装 1〜2 週間 + 検証 1 週間 = 計 2〜3 週間程度を見込む必要があり、その間 [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) は着手できない
 - **OpenCV 依存追加**: コンテナイメージサイズが ~100 MB 増加。`libopencv-dev` のインストールが必要
 - **Phase 1 の同値性検証リスク**: cv::imread と libpng の PNG デコード結果が microscopic に異なると、既存解析結果との完全一致が崩れる可能性がある。検証手順は調査資料で詳述
 - **ビルド時間の増加**: C++ コンパイル + OpenCV ヘッダの取り込みで現行より遅くなる（数倍程度の想定）

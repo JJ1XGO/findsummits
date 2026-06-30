@@ -5,7 +5,7 @@
 
 ## Context
 
-FR-007（per-mesh CSV 出力）レビューで、出力カラムに以下の3点の設計問題が発見された。
+[FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用)（per-mesh CSV 出力）レビューで、出力カラムに以下の3点の設計問題が発見された。
 
 **問題1: `center_mesh` の名称誤りと広域非対応**
 
@@ -23,25 +23,25 @@ FR-007（per-mesh CSV 出力）レビューで、出力カラムに以下の3点
 
 `points`（標高バンドに基づくポイント数）は `peak_elev` からの純粋な派生値である。
 
-- FR-008（CSV統合）は `points` 列を読み込まず、`merged_peak.csv` に出力しない
-- FR-009（SOTA突合）は `peak_points = band(floor(peak_elev))` として `peak_elev` から再計算する
+- [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合)（CSV統合）は `points` 列を読み込まず、`merged_peak.csv` に出力しない
+- [FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)（SOTA突合）は `peak_points = band(floor(peak_elev))` として `peak_elev` から再計算する
 - GeoJSON・申請書 xlsx の `points` 列もすべて `peak_elev` / `sota_alt_m` から算出する
 
-FR-007 で書いても FR-008 で即座に捨てられるデッドカラムである。
+[FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用) で書いても [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合) で即座に捨てられるデッドカラムである。
 
 ## Decision
 
 **`center_mesh` と `zoom_level` を廃止し、`analysis_id`（解析識別子）1列に集約する。**
-**`points` を FR-007 出力カラムから削除し、消費する段（FR-009・出力生成）で `peak_elev` から算出する。**
+**`points` を [FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用) 出力カラムから削除し、消費する段（[FR-009](../20_SRS.md#fr-009-sotaリスト突合match_status-判定)・出力生成）で `peak_elev` から算出する。**
 
-`analysis_id` の値は FR-004/FR-014 が内部トランザクションとして FR-007 に渡す解析識別子と同じ文字列とする:
+`analysis_id` の値は [FR-004](../20_SRS.md#fr-004-33メッシュ結合解析オーケストレーション)/[FR-014](../20_SRS.md#fr-014-広域結合解析オーケストレーション) が内部トランザクションとして [FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用) に渡す解析識別子と同じ文字列とする:
 
 - 通常モード: `3-<中心メッシュコード>`（例: `3-5239`）
 - 広域モード: `<N>-<対象メッシュコード>-<コーナー>`（例: `4-5239-NW`）
 
 これにより mode（通常/広域）・meshcode・corner・zoom の全情報が1トークンに内包され、
 後段が必要な情報を接頭辞・分解によって取得できる。
-通常/広域の判別（接頭辞 `3` vs `4/5/6`）はすでに SRS FR-008 が規定する既存の規約であり、
+通常/広域の判別（接頭辞 `3` vs `4/5/6`）はすでに SRS [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合) が規定する既存の規約であり、
 追加の解釈コストはない。
 
 ## Alternatives
@@ -68,8 +68,8 @@ col_margin_px はズームレベル依存（通常=L15px・広域=L14px）であ
 
 ## Consequences
 
-- FR-007 出力カラム表: `points`・`center_mesh`・`zoom_level` を削除、`analysis_id` (str) を追加
-- FR-007 説明: 広域モード出力動作の `analysis_id` 参照箇所を整合
-- FR-008 説明: `analysis_id` 接頭辞で通常/広域を判別する旨・広域行の `expected_count` スキップを追記
+- [FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用) 出力カラム表: `points`・`center_mesh`・`zoom_level` を削除、`analysis_id` (str) を追加
+- [FR-007](../20_SRS.md#fr-007-per-mesh-csv-出力プロミネンス閾値適用) 説明: 広域モード出力動作の `analysis_id` 参照箇所を整合
+- [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合) 説明: `analysis_id` 接頭辞で通常/広域を判別する旨・広域行の `expected_count` スキップを追記
 - データ表（7.2節）: per-mesh CSV カラム定義への参照箇所を更新
 - コード追従（別タスク）: `mesh_analyze.c` CSV 出力・`merge.py` の `analysis_id` 対応

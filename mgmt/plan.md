@@ -1,93 +1,87 @@
-# `.claude/` カスタマイズ整理 README 作成計画
+# 計画: docs/ 内 FR/UR/NFR 裸参照の一括リンク化と lint 検査追加
 
 ## Context
 
-Claude Code を長期間カスタマイズして使ってきた結果、ある機能が「グローバル（全プロジェクト共通）」のものか「このプロジェクト固有」のものか把握しづらくなっている。グローバル `/home/node/.claude/` とプロジェクト `/workspace/.claude/` の両方に commands・hooks・settings・rules 等が分散しており、対応関係が一覧化されていない。
+`docs/CLAUDE.md` L108 のルール: 本文中の FR/UR/NFR 参照は Markdown リンクで記述する。
+現状 ~250-350 件の違反が存在し `make lint` で検出されていない。
+対策は2段階: ①既存違反を一括修正、② lint 検査D 追加で以降の違反を機械的に防ぐ。
+以後は既存の PostToolUse hook + `make lint` パイプラインが自動強制する。
 
-そこで、両ディレクトリ直下にそれぞれ `README.md` を新設し、カスタマイズ要素のインベントリと「グローバル ↔ プロジェクトの役割分担」を可視化する。新規ユーザーや将来の自分が構造を素早く追えるようにすることが目的。
+## 調査で確認した事実
 
-## 方針（確定事項）
+- FR 22件・NFR 10件: `docs/20_SRS.md` に `#### FR-NNN: タイトル` / `### NFR-NNN: タイトル` 形式
+- UR 13件: `docs/10_URD.md` に HTML アンカー `<a id="ur-NNN">` 形式 → スラッグは単に `#ur-NNN`
+- 既存リンク形式（53件確認済み）:
+  - `docs/decisions/*.md` → SRS: `../20_SRS.md#fr-nnn-スラッグ` 形式
+  - `docs/20_SRS.md` 内: 同一ファイルアンカー `#fr-nnn-スラッグ` 形式
+  - UR 参照: `#ur-nnn` または `../10_URD.md#ur-nnn` 形式
+- コードブロック（` ``` `）内の俯瞰図は除外、コードブロック外はリンク化対象とする
 
-- 配置: 両方に1つずつ（グローバル `/home/node/.claude/README.md` ＋ プロジェクト `/workspace/.claude/README.md`）
-- プロジェクト側 README.md は git コミット対象に含める（グローバル側はホーム配下のため git 対象外）
-- `incidents/` の記述は `handovers/` と同様に「概要＋件数のみ」とし、個別ファイル名は列挙しない
-- 実装モデル: **Sonnet**
+## GitHub slug 変換ルール
 
-## 調査で判明した現状インベントリ（README 記載の元データ）
+```python
+s = heading_text.lower()
+s = re.sub(r'[^\w\s-]', '', s, flags=re.UNICODE)  # 日本語は残す、:（）× 等を除去
+s = re.sub(r'\s+', '-', s)
+s = re.sub(r'-+', '-', s).strip('-')
+# 例: "FR-004: 3×3メッシュ結合解析オーケストレーション" → "fr-004-33メッシュ結合解析オーケストレーション"
+```
 
-### グローバル `/home/node/.claude/`
+## タスク一覧
 
-- `commands/`（3件）
-  - `claude-md-panel.md` — CLAUDE.md を4視点でレビューし指摘を一覧化
-  - `handover.md` — セッション引き継ぎノート生成
-  - `log-incident.md` — 環境異常を `.claude/incidents/` へ即時記録
-- `hooks/`（4件）
-  - `injection-guard.sh` — SessionStart で commands 許可リスト確認・注入署名スキャン
-  - `edit-pre.sh` — Edit 前処理（CLAUDE.md 編集時に panel pending マーカー設定）
-  - `edit-verify.sh` — Edit 後にファイル実在・サイズ検証
-  - `write-verify.sh` — Write 後にファイル実在・サイズ検証
-- `settings.json` — permissions（defaultMode: default）＋ hooks 設定 ＋ statusLine ＋ language(日本語) ＋ effortLevel(high) ＋ theme(auto)
-  - hooks: PreToolUse(Edit), PostToolUse(Write|Edit / Write / Edit), Stop(claude-md-panel 強制), SessionStart(injection-guard)
-- `CLAUDE.md` — 全プロジェクト共通ガイドライン（計画優先・検証徹底・モデル使い分け・メモリ無効化 等）
-- `plugins/` — インストール済みプラグインなし
+### T1: 一括修正スクリプト作成・実行（Sonnet）
 
-### プロジェクト `/workspace/.claude/`
+新規: `scripts/fix_bare_refs.py`
 
-- `commands/`（1件）
-  - `spec-panel.md` — 仕様文書を4視点でレビューし指摘を一覧化
-- `rules/`（1件）
-  - `architecture.md` — 本プロジェクト（標高解析 SOTA 申請支援ツール）のアーキテクチャ・モジュール設計
-- `incidents/` — 環境異常記録（日時タイムスタンプのファイル群、`/log-incident` で自動生成）※ handovers と同様に概要＋件数のみ記述
-- `handovers/` — セッション引き継ぎノート（日時タイムスタンプのファイル群、`/handover` で自動生成、git 管理外）
-- `settings.json` — 空（`{}`、設定は settings.local.json へ委譲）
-- `settings.local.json` — permissions.allow リスト ＋ hooks
-  - hooks: PreToolUse(Write|Edit / 実装ファイルの Opus 編集ガード), PostToolUse(Write|Edit / Lint 実行), SessionStart(handover+lessons 注入)
-- プロジェクト CLAUDE.md は `.claude/` 直下に無く、リポジトリルートの `/workspace/CLAUDE.md` に存在
+処理フロー:
 
-## 作業タスク
+1. `docs/20_SRS.md` から FR/NFR 見出しをパースし slug マップを生成
+2. `docs/10_URD.md` から `<a id="ur-NNN">` をパースし UR マップを生成
+3. `docs/` 配下の全 .md を処理（`mgmt/archive/` 除外と同様に archive 系は除外）
+4. 各ファイルで「リンクプレフィックス」を決定:
+   - `docs/decisions/research/*.md` → SRS: `../../20_SRS.md`, URD: `../../10_URD.md`
+   - `docs/decisions/*.md` → SRS: `../20_SRS.md`, URD: `../10_URD.md`
+   - `docs/*.md`（SRS/URD 自身以外）→ SRS: `20_SRS.md`, URD: `10_URD.md`
+   - `docs/20_SRS.md` 内の FR/NFR → プレフィックスなし（同一ファイルアンカー）
+   - `docs/20_SRS.md` 内の UR 参照 → `10_URD.md#ur-nnn`
+   - `docs/10_URD.md` 内の UR → プレフィックスなし（同一ファイルアンカー）
+   - `docs/10_URD.md` 内の FR/NFR 参照 → `20_SRS.md#fr-nnn-スラッグ`
+5. 行単位処理:
+   - フェンスコードブロック（` ``` `）内はスキップ
+   - 見出し行（`#` で始まる）はスキップ
+   - 各行をトークン分割: `[TEXT](URL)` / `` `code` `` / それ以外 の3種
+   - 「それ以外」部分のみ bare ref を置換
+6. スラッシュ連鎖の処理:
+   - `FR-NNN/MMM/PPP`（prefix なし後続）→ 各要素に prefix を補完してから個別リンク化
+   - `FR-NNN/FR-MMM`（prefix あり）→ 各要素を個別にリンク化
 
-すべて **Sonnet**。
+dry-run オプション（`--dry-run`）で変更プレビュー後に本実行。
 
-### T1. グローバル README 作成 — `/home/node/.claude/README.md`
+### T2: lint 検査D を `scripts/lint_docs.py` に追加（Sonnet）
 
-構成:
+`check_file()` に検査D を追加（T1 と同じトークン分割ロジックを共有関数化）:
 
-1. 冒頭1〜2行: このファイルが何か（グローバル `.claude/` カスタマイズの目録）
-2. **役割分担マトリクス**（グローバル vs プロジェクトの対比表）: CLAUDE.md / settings / commands / rules / hooks / incidents / handovers の各行で「グローバルに何があるか」「プロジェクトに何があるか」「使い分けポリシー」を示す
-3. グローバル要素インベントリ: `commands/`(3)・`hooks/`(4)・`settings.json`・`CLAUDE.md`・`plugins/` を上記調査データのとおり記述
-   - `commands/` の説明に「`.md` はスラッシュコマンド（`/<name>` で起動する skill）として現れる」旨を1行添え、commands と skills が別物と誤読されるのを防ぐ
-4. 冒頭に「この環境のスナップショット（更新日: 作成時に `date` で取得）」を1行記し、global README が git 管理外で追従が必要な点を明示
-5. プロジェクト側 README (`/workspace/.claude/README.md`) への参照リンク
+```text
+{file}:{line}: BARE-REF: {ID} はリンク化してください（docs/CLAUDE.md L108）
+```
 
-### T2. プロジェクト README 作成 — `/workspace/.claude/README.md`
+- 検査対象: docs/ 配下のみ（既存の `_apply_check_c` 条件と同じ）
+- 除外: フェンスコードブロック内・見出し行・インラインコード内・既存リンク内
+- スラッシュ連鎖も検出対象（分割後の各 ID が未リンクなら違反）
 
-構成:
+### T3: 検証・コミット（Sonnet）
 
-1. 冒頭1〜2行: このファイルが何か（このプロジェクトの `.claude/` カスタマイズの目録）
-2. **役割分担マトリクス**: T1 と同じ対比表を共有（プロジェクト視点の導線として冒頭に再掲）
-3. プロジェクト要素インベントリ: `commands/`(1=spec-panel)・`rules/`(1=architecture)・`settings.local.json`(permissions/hooks)・`settings.json`(空) を記述
-   - `commands/` の説明に「`.md` はスラッシュコマンド（`/<name>` で起動する skill）として現れる」旨を1行添える（T1 と同趣旨）
-4. `incidents/` と `handovers/` は **同じ書式**で「概要＋件数＋生成元コマンド＋git 管理状況」のみ記述（個別ファイル名は列挙しない）
-5. プロジェクト CLAUDE.md は `/workspace/CLAUDE.md`（ルート）にある旨を明記
-6. グローバル側 README への参照
+1. `--dry-run` で変更サンプルを確認（10件程度）
+2. 本実行
+3. `make lint` 警告ゼロを確認
+4. `git add -A && git commit`（docs/ と scripts/ を含む）
 
-### T3. lint・コミット
+## 実行モデル
 
-- `make lint`（特に `lint-md`）でプロジェクト README の警告ゼロを確認
-- グローバル側 README はプロジェクト Makefile の lint 対象外（手動で Markdown 体裁を整える）
-- プロジェクト README を `git add` → Conventional Commits でコミット（例: `docs: .claude/ カスタマイズ整理の README を追加`）
-- グローバル側 README はホーム配下のためコミット不要
+全タスク **Sonnet**（直線的なファイル処理・正規表現実装で設計判断不要）
 
 ## 検証
 
-- `make lint` が警告ゼロで通る（`lint-md` がプロジェクト README を検査）
-- 両 README の役割分担マトリクスが調査インベントリと一致しているか目視確認（commands 件数・hooks 種別・settings 構成）
-- `incidents/` と `handovers/` が同一書式・個別ファイル非列挙になっているか確認
-- 相互参照リンク（グローバル ⇄ プロジェクト）が双方向に張られているか確認
-- `git status` で意図したファイルのみがステージされているか確認
-
-## 備考
-
-- マトリクスは「コードや git で追える事実の複製」ではなく「分散した構造の地図」が目的。各要素の中身を全文転記せず、役割1行＋件数に留める
-- 役割分担マトリクスは両 README に掲載するが、グローバル側 README を正本とし、プロジェクト側はプロジェクト視点で必要な範囲に絞りつつ正本へ相互参照を張る（重複による不整合を抑える）
-- グローバル `.claude/` は他プロジェクトにも影響するため、README はこの環境のスナップショットである旨を1行添える（将来 commands を増減したら追従が必要）
+- `make lint` 0 violations
+- git diff で変更ファイル数・行数を確認し意図外の変更がないこと
+- 変更後の SRS・代表的 ADR を開いてリンクの見た目を確認

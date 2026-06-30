@@ -41,7 +41,7 @@ cv::floodFill(elev_mat, mask, seed_point,
 
 ### 輪郭の頂点表現（lossless 方針）
 
-FR-009 の point-in-polygon 突合精度を保つため、**ポリゴンの形状を変える簡略化（`cv::approxPolyDP` 等の Douglas-Peucker、等間隔抽出）は採用しない**。`cv::findContours` のモード選択で lossless に出力する:
+[FR-009](../../20_SRS.md#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合精度を保つため、**ポリゴンの形状を変える簡略化（`cv::approxPolyDP` 等の Douglas-Peucker、等間隔抽出）は採用しない**。`cv::findContours` のモード選択で lossless に出力する:
 
 | `cv::findContours` モード | 挙動 | 形状保持 | 採用 |
 |---|---|---|---|
@@ -87,8 +87,8 @@ FR-009 の point-in-polygon 突合精度を保つため、**ポリゴンの形�
 
 | 追加配列 | サイズ |
 |---|---|
-| FR-016 floodFill mask cv::Mat (CV_8UC1, H+2 x W+2) | ~4 GB |
-| 各 FR-016 一時バッファ（contour 等） | 数 MB（領域サイズ依存・小さい） |
+| [FR-016](../../20_SRS.md#fr-016-ピーク域ポリゴン生成) floodFill mask cv::Mat (CV_8UC1, H+2 x W+2) | ~4 GB |
+| 各 [FR-016](../../20_SRS.md#fr-016-ピーク域ポリゴン生成) 一時バッファ（contour 等） | 数 MB（領域サイズ依存・小さい） |
 | **合計増加** | **約 4 GB → 60.9 GB / 62.72 GB マシン** |
 
 mask は全ピーク間で使い回し（`cv::Mat::setTo(0)` または `mask = 0`）するため、ピーク数に対して線形には増えない。
@@ -222,7 +222,7 @@ C → C++ 翻訳は「機械的変換」を基本とする:
 
 ユーザーが ADR-SRS-010 を採用する判断材料:
 
-- [ ] 移行期間（2〜3 週間）に FR-016 着手が遅延することを許容できるか
+- [ ] 移行期間（2〜3 週間）に [FR-016](../../20_SRS.md#fr-016-ピーク域ポリゴン生成) 着手が遅延することを許容できるか
 - [ ] OpenCV 依存（コンテナイメージ +100 MB）を許容できるか
 - [ ] Phase 1 の標高値同値性検証で失敗するリスクを許容できるか（実用上ほぼ起きないと想定）
 - [ ] C++ 採用後の長期保守を許容できるか
