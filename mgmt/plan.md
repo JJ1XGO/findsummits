@@ -1,111 +1,93 @@
-# geojson_v{N}・summitslist の「ユーザー入力」再分類と `$DATA_DIR/ref/` 移設
+# `.claude/` カスタマイズ整理 README 作成計画
 
 ## Context
 
-`SOTA 既存サミット GeoJSON（geojson_v{N}）` と `SOTA サミットリスト CSV（summitslist.csv）` は、現状 SRS §6（外部I/F）に分類されている。しかし両者ともシステムが自動取得せず、ユーザーが手動で `ref/` 配下に配置・差し替えする入力ファイルである。これは ADR-SRS-016 の前例（N03 行政区域 ZIP を「ユーザーが手動配置するファイルはツールへの入力」として §7 ユーザー入力へ分類）と同性質であり、外部I/F に置くのは不整合。
+Claude Code を長期間カスタマイズして使ってきた結果、ある機能が「グローバル（全プロジェクト共通）」のものか「このプロジェクト固有」のものか把握しづらくなっている。グローバル `/home/node/.claude/` とプロジェクト `/workspace/.claude/` の両方に commands・hooks・settings・rules 等が分散しており、対応関係が一覧化されていない。
 
-ユーザー合意により以下を確定:
+そこで、両ディレクトリ直下にそれぞれ `README.md` を新設し、カスタマイズ要素のインベントリと「グローバル ↔ プロジェクトの役割分担」を可視化する。新規ユーザーや将来の自分が構造を素早く追えるようにすることが目的。
 
-1. **再分類**: geojson_v{N}・summitslist.csv の両方を §6 外部I/F → §7 ユーザー入力 へ移す。
-2. **配置統一**: 保存先を N03 と揃えて `$DATA_DIR/ref/` 直下に統一し、git 管理外とする。`ref/summitslist.csv` → `$DATA_DIR/ref/summitslist.csv`、`ref/geojson_v{N}/` → `$DATA_DIR/ref/geojson_v{N}/`。
+## 方針（確定事項）
 
-この (2) は過去 lessons（「DATA_DIR 配下にソースコード付属データを置くのは誤り」）と逆向きだが、当時の前提「ソースコード付属データ＝git 管理すべき小データ」を「ユーザー入力＝ユーザーが手動で用意するもの」へ変更する方針転換に伴う正当な更新（lessons も更新する）。
+- 配置: 両方に1つずつ（グローバル `/home/node/.claude/README.md` ＋ プロジェクト `/workspace/.claude/README.md`）
+- プロジェクト側 README.md は git コミット対象に含める（グローバル側はホーム配下のため git 対象外）
+- `incidents/` の記述は `handovers/` と同様に「概要＋件数のみ」とし、個別ファイル名は列挙しない
+- 実装モデル: **Sonnet**
 
-### スコープ方針（重要）
+## 調査で判明した現状インベントリ（README 記載の元データ）
 
-- **生きた仕様（SRS・GLOSSARY・`docs/CLAUDE.md`・`ref/SOURCES.md`）はパス・分類を更新する。**
-- **ADR は時点記録のため、過去の `ref/summitslist.csv` 等の記述を一括書き換えしない。** 新しい分類・配置の正規記録は ADR-SRS-016 の改訂注記に集約する。
-- **コード（C/Python）・`fetch_config.ini`・`params/` のパス追従は本計画の対象外**（仕様確定後に `mgmt/todo.md` へ登録）。
+### グローバル `/home/node/.claude/`
 
-## タスク
+- `commands/`（3件）
+  - `claude-md-panel.md` — CLAUDE.md を4視点でレビューし指摘を一覧化
+  - `handover.md` — セッション引き継ぎノート生成
+  - `log-incident.md` — 環境異常を `.claude/incidents/` へ即時記録
+- `hooks/`（4件）
+  - `injection-guard.sh` — SessionStart で commands 許可リスト確認・注入署名スキャン
+  - `edit-pre.sh` — Edit 前処理（CLAUDE.md 編集時に panel pending マーカー設定）
+  - `edit-verify.sh` — Edit 後にファイル実在・サイズ検証
+  - `write-verify.sh` — Write 後にファイル実在・サイズ検証
+- `settings.json` — permissions（defaultMode: default）＋ hooks 設定 ＋ statusLine ＋ language(日本語) ＋ effortLevel(high) ＋ theme(auto)
+  - hooks: PreToolUse(Edit), PostToolUse(Write|Edit / Write / Edit), Stop(claude-md-panel 強制), SessionStart(injection-guard)
+- `CLAUDE.md` — 全プロジェクト共通ガイドライン（計画優先・検証徹底・モデル使い分け・メモリ無効化 等）
+- `plugins/` — インストール済みプラグインなし
 
-全タスク機械的なドキュメント整合修正のため既定 **Sonnet**。
+### プロジェクト `/workspace/.claude/`
 
-### T1: SRS §7 へ geojson・summitslist を移設（モデル: Sonnet）
+- `commands/`（1件）
+  - `spec-panel.md` — 仕様文書を4視点でレビューし指摘を一覧化
+- `rules/`（1件）
+  - `architecture.md` — 本プロジェクト（標高解析 SOTA 申請支援ツール）のアーキテクチャ・モジュール設計
+- `incidents/` — 環境異常記録（日時タイムスタンプのファイル群、`/log-incident` で自動生成）※ handovers と同様に概要＋件数のみ記述
+- `handovers/` — セッション引き継ぎノート（日時タイムスタンプのファイル群、`/handover` で自動生成、git 管理外）
+- `settings.json` — 空（`{}`、設定は settings.local.json へ委譲）
+- `settings.local.json` — permissions.allow リスト ＋ hooks
+  - hooks: PreToolUse(Write|Edit / 実装ファイルの Opus 編集ガード), PostToolUse(Write|Edit / Lint 実行), SessionStart(handover+lessons 注入)
+- プロジェクト CLAUDE.md は `.claude/` 直下に無く、リポジトリルートの `/workspace/CLAUDE.md` に存在
 
-- `docs/20_SRS.md` §6.2.1（SOTA 既存サミット GeoJSON）と §6.2.11（SOTA サミットリスト CSV）の詳細小節を §7.2 末尾へ移動（churn 最小化のため末尾追加）:
-  - 新 §7.2.4 SOTA サミットリスト CSV
-  - 新 §7.2.5 SOTA 既存サミット GeoJSON（geojson_v{N}）
-- 移動した小節内のファイルパスを `$DATA_DIR/ref/summitslist.csv` / `$DATA_DIR/ref/geojson_v{N}/...` に更新し、「git 管理外・ユーザー手動配置」を明記（省略時の動作等の既存仕様記述は維持する）
-- **§7.1 ユーザー入力一覧を §7.2 小節登場順に並び替え、No. を振り直した上で2行追加**:
+## 作業タスク
 
-  現在の §7.1（No. 順が §7.2 小節順と不一致）:
-  | No. | 名前 | §7.2 小節 |
-  |---|---|---|
-  | 1 | N03 行政区域 ZIP | §7.2.3 |
-  | 2 | 1次メッシュコードリスト | §7.2.1 |
-  | 3 | HTML ビューア上のユーザー入力 | §7.2.2 |
+すべて **Sonnet**。
 
-  変更後（§7.2 登場順に並び替え＋2行追加）:
-  | No. | 名前 | §7.2 小節 |
-  |---|---|---|
-  | 1 | 1次メッシュコードリスト | §7.2.1 |
-  | 2 | HTML ビューア上のユーザー入力 | §7.2.2 |
-  | 3 | N03 行政区域 ZIP | §7.2.3 |
-  | 4 | SOTA サミットリスト CSV | §7.2.4（新設）|
-  | 5 | SOTA 既存サミット GeoJSON（geojson_v{N}）| §7.2.5（新設）|
+### T1. グローバル README 作成 — `/home/node/.claude/README.md`
 
-  ※ 既存3行（No.1〜3）の「補足」列アンカーは §7.2.x 番号が変わらないため更新不要
-  ※ 新規追加行（No.4 summitslist / No.5 geojson）の「補足」列アンカーは最初から `[7.2.4 参照](#724-...)` / `[7.2.5 参照](#725-...)` として設定する（T3 での別途張り替え不要）
-- 既存 §7.2.1〜7.2.3（メッシュ・HTMLビューア・N03）の小節番号・アンカーは変更しない
+構成:
 
-### T2: SRS §6 から2件を除去し §6.2.x を採番繰り上げ（モデル: Sonnet）
+1. 冒頭1〜2行: このファイルが何か（グローバル `.claude/` カスタマイズの目録）
+2. **役割分担マトリクス**（グローバル vs プロジェクトの対比表）: CLAUDE.md / settings / commands / rules / hooks / incidents / handovers の各行で「グローバルに何があるか」「プロジェクトに何があるか」「使い分けポリシー」を示す
+3. グローバル要素インベントリ: `commands/`(3)・`hooks/`(4)・`settings.json`・`CLAUDE.md`・`plugins/` を上記調査データのとおり記述
+   - `commands/` の説明に「`.md` はスラッシュコマンド（`/<name>` で起動する skill）として現れる」旨を1行添え、commands と skills が別物と誤読されるのを防ぐ
+4. 冒頭に「この環境のスナップショット（更新日: 作成時に `date` で取得）」を1行記し、global README が git 管理外で追従が必要な点を明示
+5. プロジェクト側 README (`/workspace/.claude/README.md`) への参照リンク
 
-- §6.1 外部I/F一覧表から No.1（geojson）・No.11（summitslist）の行を削除し、残り行の No. を 1〜11 に振り直す
-  - 削除後の §6.1 順は §6.2 小節登場順と一致するため並び替え不要
-- §6.2 詳細小節を 6.2.2〜6.2.10 → 6.2.1〜6.2.9 に繰り上げ（見出し番号）
-- §6 内のアンカー参照を全張り替え:
-  - `#622-…`→`#621-…`、`#623`→`#622`、`#624`→`#623`、`#625`→`#624`、`#626`→`#625`、`#627`→`#626`、`#628`→`#627`、`#629`→`#628`、`#6210-地理院標高タイル`→`#629-地理院標高タイル`
-- 完了後 `grep -oE "#62[0-9]+-" docs/20_SRS.md` で旧番号アンカー（#6210・#6211・#621-sota 等）が残存しないことを確認
+### T2. プロジェクト README 作成 — `/workspace/.claude/README.md`
 
-### T3: SRS 本文の参照・分類・パスの追従修正（モデル: Sonnet）
+構成:
 
-- §6.2.1/§6.2.11 へのリンク（geojson・summitslist）を新 §7.2.5/§7.2.4 アンカー（`#725-…`・`#724-…`）へ張り替え（目次・本文 l.125・l.865・l.876・FR-009 本文リンクを含む）
-  - ※ l.1489（§6.1 No.1）・l.1499（§6.1 No.11）は T2 で削除される行なので対象外
-- FR-009 入出力表（l.862・l.865）の種別を `外部I/F` → `ユーザー入力` に変更
-- `grep -n "外部I/F" docs/20_SRS.md` で geojson/summitslist に紐づく `外部I/F` ラベルが残る箇所を洗い出し修正
-- §10 制約・前提（l.1805-1806）: summitslist/geojson の「git 管理（`ref/` 配下）」記述を「git 管理外・`$DATA_DIR/ref/` 直下」に修正
-- §10 外部システム依存表の SOTA データベース行: 「`ref/summitslist.csv` として配置」→「`$DATA_DIR/ref/summitslist.csv`」、参照リンクを新 §7.2 アンカーへ、誤記「（詳細: §10）」→「（詳細: §7.2）」に修正
-- 目次（TOC）の §6.2.x / §7.2.x 項目を実際の見出しと一致させる
+1. 冒頭1〜2行: このファイルが何か（このプロジェクトの `.claude/` カスタマイズの目録）
+2. **役割分担マトリクス**: T1 と同じ対比表を共有（プロジェクト視点の導線として冒頭に再掲）
+3. プロジェクト要素インベントリ: `commands/`(1=spec-panel)・`rules/`(1=architecture)・`settings.local.json`(permissions/hooks)・`settings.json`(空) を記述
+   - `commands/` の説明に「`.md` はスラッシュコマンド（`/<name>` で起動する skill）として現れる」旨を1行添える（T1 と同趣旨）
+4. `incidents/` と `handovers/` は **同じ書式**で「概要＋件数＋生成元コマンド＋git 管理状況」のみ記述（個別ファイル名は列挙しない）
+5. プロジェクト CLAUDE.md は `/workspace/CLAUDE.md`（ルート）にある旨を明記
+6. グローバル側 README への参照
 
-### T4: ADR-SRS-016 へ改訂注記を追加（モデル: Sonnet）
+### T3. lint・コミット
 
-- `docs/decisions/ADR-SRS-016-data-classification-external-user-internal.md` に改訂注記を追記:
-  - geojson_v{N}・summitslist.csv を「ユーザーが手動配置する入力」として外部I/F → ユーザー入力（§7）へ再分類（N03 前例と同基準）
-  - 配置を `$DATA_DIR/ref/` 直下・git 管理外へ統一
-  - 結果、§6 外部I/F は「実行時取得リモート資源＋出力成果物」に純化された旨を明記
-
-### T5: GLOSSARY・docs/CLAUDE.md の分類例を整合（モデル: Sonnet）
-
-- `docs/00_GLOSSARY.md`:
-  - l.124 外部I/F 定義の例から「SOTA データベース」を外す
-  - l.104 geojson_v{N} 用語・l.20/l.21 等の `ref/...` パスを `$DATA_DIR/ref/...` に追従
-- `docs/CLAUDE.md` l.82 分類ルール表の外部I/F 例から「SOTA データベース」を外す
-
-### T6: `ref/SOURCES.md` のパス追従・SRS から参照先明記（モデル: Sonnet）
-
-- summitslist.csv / geojson_v{N} の配置パス記述（`ref/` 起点）を `$DATA_DIR/ref/` に追従
-- **geojson_v{N} の取得元は `ref/SOURCES.md` l.37 に記載済み**（`little-ctc.com`）。新 §7.2.5 の詳細仕様内に取得元として `（出典・利用規約: ref/SOURCES.md）` 等の参照を追記する
-  - ※ summitslist（§7.2.4）は `取得元` 列に URL を直接記載する形式で `ref/SOURCES.md` 参照なし。geojson はそれとは別に `ref/SOURCES.md` 参照を新規追記する
-
-### T7: lessons.md 更新（モデル: Sonnet）
-
-- `mgmt/lessons.md` の「パスはプロジェクトディレクトリからの相対で」項に方針変更を追記:
-  - geojson_v{N}・summitslist.csv は「ユーザー入力」に再分類したため `$DATA_DIR/ref/` 配下・git 管理外へ移した（N03 等のユーザー入力ファイルには当該レッスンを適用しない）
+- `make lint`（特に `lint-md`）でプロジェクト README の警告ゼロを確認
+- グローバル側 README はプロジェクト Makefile の lint 対象外（手動で Markdown 体裁を整える）
+- プロジェクト README を `git add` → Conventional Commits でコミット（例: `docs: .claude/ カスタマイズ整理の README を追加`）
+- グローバル側 README はホーム配下のためコミット不要
 
 ## 検証
 
-- `make lint` 警告ゼロ（特に BROKEN-LINK・見出し整合）
-- `grep -oE "#62[0-9]+-[^)]*" docs/20_SRS.md | sort -u` で §6.2 アンカーが新採番（#621〜#629）のみ、geojson/summitslist の旧アンカーが残っていないこと
-- `grep -rn "ref/summitslist.csv\|ref/geojson_v{N}" docs/20_SRS.md docs/00_GLOSSARY.md docs/CLAUDE.md ref/SOURCES.md` で生きた仕様側に旧パス（`$DATA_DIR` なし）が残っていないこと
-- §6 外部I/F一覧が出力成果物＋実行時取得リモート資源のみで構成されていること
-- §7 ユーザー入力一覧に geojson・summitslist・N03 の3手動配置ファイルが揃い、§7.2 小節登場順に並んでいること
+- `make lint` が警告ゼロで通る（`lint-md` がプロジェクト README を検査）
+- 両 README の役割分担マトリクスが調査インベントリと一致しているか目視確認（commands 件数・hooks 種別・settings 構成）
+- `incidents/` と `handovers/` が同一書式・個別ファイル非列挙になっているか確認
+- 相互参照リンク（グローバル ⇄ プロジェクト）が双方向に張られているか確認
+- `git status` で意図したファイルのみがステージされているか確認
 
-## コミット方針
+## 備考
 
-SRS＋ADR＋GLOSSARY＋CLAUDE＋lessons を整合した1〜2コミットにまとめる（Conventional Commits、`docs(srs): …` 等）。push は別途指示まで行わない。
-
-## 実装後の follow-up（本計画の対象外・todo.md へ）
-
-- コード（C/Python）・`fetch_config.ini`・`params/` の summitslist/geojson 読み込みパスを `$DATA_DIR/ref/` へ追従
-- `.gitignore` から `ref/summitslist.csv`・`ref/geojson_v{N}/` の git 追跡を外す対応（git 管理外化）
+- マトリクスは「コードや git で追える事実の複製」ではなく「分散した構造の地図」が目的。各要素の中身を全文転記せず、役割1行＋件数に留める
+- 役割分担マトリクスは両 README に掲載するが、グローバル側 README を正本とし、プロジェクト側はプロジェクト視点で必要な範囲に絞りつつ正本へ相互参照を張る（重複による不整合を抑える）
+- グローバル `.claude/` は他プロジェクトにも影響するため、README はこの環境のスナップショットである旨を1行添える（将来 commands を増減したら追従が必要）
