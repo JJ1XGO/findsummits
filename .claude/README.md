@@ -24,13 +24,14 @@ Claude Code カスタマイズの一覧です。
 
 ## プロジェクト要素インベントリ
 
-### `commands/`（1件）
+### `commands/`（2件）
 
 `commands/*.md` はスラッシュコマンド（`/<name>` で起動する skill）として Claude Code に現れます。
 
 | ファイル | スラッシュコマンド | 役割 |
 |---|---|---|
 | `spec-panel.md` | `/spec-panel` | 仕様文書（URD/SRS/HLD/LLD/ADR/テスト仕様）をアーキテクト・仕様レビュアー・データ/アルゴリズム・申請者の4視点でレビューし指摘を一覧化 |
+| `update-best-practices.md` | `/update-best-practices` | `lessons.md` の蓄積内容を Opus で再分析し `best_practices.md` を再合成する。ウォーターマーク（`best_practices_watermark`）を更新し lint・コミットまで実行 |
 
 ### `rules/`（1件）
 
@@ -46,7 +47,7 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 
 | ファイル | 呼び出し元 | 役割 |
 |---|---|---|
-| `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認）。また handover の「## 学び」セクション項目を lessons.md と突き合わせ、未転記のものを全件初回返答時に追記するよう Claude へ指示 |
+| `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認）。また handover の「## 学び」セクション項目を lessons.md と突き合わせ、未転記のものを全件初回返答時に追記するよう Claude へ指示。さらに lessons.md の件数増加をウォーターマーク（`best_practices_watermark`）と比較し、+10件以上で `/update-best-practices` 実行を推奨 |
 
 ### `settings.local.json`
 
