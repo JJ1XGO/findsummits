@@ -93,7 +93,7 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画の自動レビュー（plan self-review）
 
-`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、必ず `/spec-panel mgmt/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。
+`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ `/spec-panel mgmt/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
 
 指摘がある場合は計画に反映してから、または確認事項としてユーザーに明示してから `ExitPlanMode` を出す。
 
@@ -126,7 +126,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 ## 機械的チェック（lint / LSP 等）
 
-`make lint` で全警告ゼロを保つ（グローバル CLAUDE.md の原則 #7）。
+`make lint` で全警告ゼロを保つ（グローバル CLAUDE.md の原則 #6）。
 
 - 現在の構成:
   - `lint-md`: pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外（対象: `*.md`）

@@ -11,14 +11,14 @@ Claude Code カスタマイズの一覧です。
 
 | 要素 | グローバル `~/.claude/` | このプロジェクト `.claude/` |
 |---|---|---|
-| **CLAUDE.md** | 全プロジェクト共通ガイドライン | `/workspace/CLAUDE.md`（リポジトリルート）に配置 |
-| **settings.json** | 基盤設定一式 | 空 `{}`（`settings.local.json` へ委譲） |
-| **settings.local.json** | 存在しない | プロジェクト固有の permissions + hooks |
-| **commands/** | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel） |
-| **rules/** | 存在しない | アーキテクチャ定義（`architecture.md`） |
-| **hooks/** | 汎用保護（Write/Edit 検証・注入防止） | `settings.local.json` に統合（Lint・model ガード・handover 注入） |
-| **incidents/** | 存在しない | 環境異常記録（このプロジェクト配下） |
-| **handovers/** | 存在しない | セッション引き継ぎノート（このプロジェクト配下） |
+| [**CLAUDE.md**](../CLAUDE.md) | 全プロジェクト共通ガイドライン | リポジトリルートに配置 |
+| [**settings.json**](settings.json) | 基盤設定一式 | 空 `{}`（`settings.local.json` へ委譲） |
+| **settings.local.json** | 存在しない | プロジェクト固有の permissions + hooks（git 管理外） |
+| [**commands/**](commands/) | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel） |
+| [**rules/**](rules/) | 存在しない | アーキテクチャ定義（`architecture.md`） |
+| [**hooks/**](hooks/) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.local.json`（Lint・model ガード） |
+| [**incidents/**](incidents/) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
+| [**handovers/**](handovers/) | 存在しない | セッション引き継ぎノート（このプロジェクト配下・git 管理外） |
 
 ---
 
@@ -39,6 +39,14 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 | ファイル | 役割 |
 |---|---|
 | `architecture.md` | 本プロジェクトのアーキテクチャ・モジュール設計・ディレクトリ構成・`$DATA_DIR` 配置ルールを定義 |
+
+### `hooks/`（1件）
+
+`settings.local.json` の SessionStart フックから呼び出されるスクリプト群です。
+
+| ファイル | 呼び出し元 | 役割 |
+|---|---|---|
+| `session-start.sh` | SessionStart hook | handover + lessons を注入。`incidents/` に「未解決」マーカーがあれば `/log-incident` の環境確認チェックリスト実行を Claude へ指示 |
 
 ### `settings.local.json`
 
@@ -61,7 +69,7 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 | PreToolUse | Write\|Edit | 実装ファイル（`.c/.h/.py`）を Opus で編集しようとすると警告・permission ask |
 | PostToolUse | Write\|Edit | ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
 | PostToolUse | Write\|Edit | `docs/*.md` 編集時に `\| 最終更新日 \|` 行を当日付に自動書き換え |
-| SessionStart | startup/resume/clear | 最新 handover と `mgmt/lessons.md` を自動注入（参考情報として提供） |
+| SessionStart | startup/resume/clear | `hooks/session-start.sh` を呼び出す。handover + lessons を自動注入し、未解決インシデントがあれば環境確認チェックリスト実行を指示 |
 
 `.claude/` 構成ファイル変更時の README.md 更新リマインドはグローバル hook（`~/.claude/settings.json`）で対応。
 
@@ -85,5 +93,5 @@ git 管理対象（リポジトリに含める）。
 
 ## CLAUDE.md の位置
 
-このプロジェクトの CLAUDE.md はリポジトリルートの `/workspace/CLAUDE.md` に配置されています。
+このプロジェクトの CLAUDE.md はリポジトリルート（[CLAUDE.md](../CLAUDE.md)）に配置されています。
 `.claude/` 直下には置いていません。
