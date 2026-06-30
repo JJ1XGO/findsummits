@@ -54,15 +54,16 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 | `Bash(git status\|log\|diff\|show\|ls-files ...)` | Git 読み取り |
 | `Bash(date\|ls\|grep\|find\|wc *)` | 標準ツール |
 
-**hooks（5件）:**
+**hooks（4件）:**
 
 | トリガー | Matcher | 役割 |
 |---|---|---|
 | PreToolUse | Write\|Edit | 実装ファイル（`.c/.h/.py`）を Opus で編集しようとすると警告・permission ask |
 | PostToolUse | Write\|Edit | ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
 | PostToolUse | Write\|Edit | `docs/*.md` 編集時に `\| 最終更新日 \|` 行を当日付に自動書き換え |
-| PostToolUse | Write\|Edit | `commands/`・`rules/`・`settings.local.json` 変更時に README.md 更新を Claude へリマインド |
 | SessionStart | startup/resume/clear | 最新 handover と `mgmt/lessons.md` を自動注入（参考情報として提供） |
+
+`.claude/` 構成ファイル変更時の README.md 更新リマインドはグローバル hook（`~/.claude/settings.json`）で対応。
 
 ### `settings.json`
 
