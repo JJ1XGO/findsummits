@@ -96,3 +96,4 @@ mgmt/bug-system/reports/bug_tracker.xlsx
 
 # spec-panel 指摘記録（作業用メモ、git 管理対象外）
 mgmt/spec-findings/
+mgmt/lessons.md

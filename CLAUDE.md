@@ -22,7 +22,7 @@
 - **コードと URD/SRS の乖離は意図的かつ正常**。コードを正にしてはならない
 - **仕様を決めてからコードを書く**。SRS/HLD/LLD レビュー中は実装に手を入れない
 
-※ この原則が有効なフェーズ: HLD/LLD 完成まで（完成後は「ドキュメント・実装整合性原則」が主となる）。
+※ 現在この原則は有効（HLD/LLD 未完成）。完成後は「ドキュメント・実装整合性原則」が主となる。
 
 ## ドキュメント・実装整合性原則
 
@@ -122,7 +122,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 - `docs/` 配下のすべてのファイル（URD/SRS/HLD/LLD/UT/IT/ST/OPS/GLOSSARY/environment）
 - `docs/decisions/` 配下の ADR と research 資料
 - `ref/SOURCES.md` などの参照資料
-- `mgmt/plan.md`・`mgmt/lessons.md`（devel ブランチ運用ファイル）
+- `mgmt/plan.md`（devel ブランチ運用ファイル）
 
 更新が完了したターン内に: ① `make lint` 警告ゼロを確認 → ② 意図した変更ファイルを個別に `git add`（全対象を確認済みなら `git add -A` 可）→ ③ Conventional Commits でコミット → ④ push は別途指示まで行わない。
 
@@ -130,7 +130,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 ## 機械的チェック（lint / LSP 等）
 
-`make lint` で全警告ゼロを保つ（グローバル CLAUDE.md の原則 #6）。
+`make lint` で全警告ゼロを保つ。
 
 - 現在の構成:
   - `lint-md`: pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外（対象: `*.md`）
@@ -153,7 +153,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 ## その他
 
 他のプロジェクトの参考コードは以下の場所にあります：
-@../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。
+@../findsummits4sotaja/ # 以前、pythonで開発した時のプロジェクト。九州・四国を解析してSOTA日本支部に申請した時のもの。存在しない場合はスキップ。
 
 ### SOTA関連資料
 
