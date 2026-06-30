@@ -6,9 +6,15 @@ H=$(ls -t /workspace/.claude/handovers/*.md 2>/dev/null | head -1)
 echo '# セッション開始ルーティン（自動注入: handover + lessons）'
 echo '※ 開始ルーティンを満たすため自動注入。関連レッスンがあれば作業前にユーザーへ共有すること。'
 
-# 未解決インシデントがあれば環境チェック実行を命令（DATAブロックの外に置く）
-UNRESOLVED=$(grep -rl '未解決' /workspace/.claude/incidents/ 2>/dev/null \
+# 最新インシデントが未解決なら環境チェック実行を命令（全件ではなく最新1件のみ確認）
+# 古いインシデントは後続セッションで確認済みとみなし、最新1件のみをトリガーとする
+LATEST_INCIDENT=$(ls -t /workspace/.claude/incidents/*.md 2>/dev/null \
   | grep -v '\.raw\.txt$' | head -1)
+UNRESOLVED=""
+if [ -n "$LATEST_INCIDENT" ] && \
+   grep -qE '^\s*[-*]?\s*\*{0,2}状態\*{0,2}\s*[:：]\s*未解決|^未解決' "$LATEST_INCIDENT" 2>/dev/null; then
+  UNRESOLVED="$LATEST_INCIDENT"
+fi
 if [ -n "$UNRESOLVED" ]; then
   echo ''
   echo '⚠️ 【環境確認チェックリスト実行指示】未解決インシデントがあります。'
