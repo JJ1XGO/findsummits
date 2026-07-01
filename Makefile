@@ -28,10 +28,17 @@ $(BUILDDIR)/test_analyze: $(BUILDDIR)/test_analyze.o $(CORE_OBJS)
 $(BUILDDIR)/test_terrain_image: $(BUILDDIR)/test_terrain_image.o $(CORE_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
+# 試作用ターゲット（analysis/ 配下・本番パイプライン外）
+$(BUILDDIR)/terrain_colormap_demo: $(BUILDDIR)/terrain_colormap_demo.o $(CORE_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
 $(BUILDDIR)/%.o: src/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/test_%.o: tests/test_%.c | $(BUILDDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/terrain_colormap_demo.o: analysis/terrain_colormap_demo.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # 短縮エイリアス
@@ -39,6 +46,7 @@ findsummits: $(BUILDDIR)/findsummits
 test_mesh_analyze: $(BUILDDIR)/test_mesh_analyze
 test_analyze: $(BUILDDIR)/test_analyze
 test_terrain_image: $(BUILDDIR)/test_terrain_image
+terrain_colormap_demo: $(BUILDDIR)/terrain_colormap_demo
 clean:
 	rm -rf $(BUILDDIR)
 
@@ -105,4 +113,4 @@ lint-latest: venv
 	venv/bin/pip install --upgrade ruff djlint geojson-validator pymarkdownlnt
 	@$(MAKE) lint
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze test_terrain_image venv venv-rebuild lint-md lint-py lint-geojson lint-html lint-latest
+.PHONY: all clean findsummits test_mesh_analyze test_analyze test_terrain_image terrain_colormap_demo venv venv-rebuild lint-md lint-py lint-geojson lint-html lint-latest
