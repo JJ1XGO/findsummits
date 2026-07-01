@@ -151,8 +151,6 @@
   - 現在 `$DATA_DIR/results/csv/<meshcode>_activation.geojson` に出力しているが、csv/ 配下に geojson を置く命名が紛らわしい
   - CSV と GeoJSON で出力先を分けるか、サブディレクトリを設けるか検討する（ADR または todo で決定後に SRS FR-016 と mesh_analyze.c を更新）
 
-- [ ] **(元 ISSUE-053) docs/figures/context.drawio: ラベル大文字統一**
-
 - [ ] **(元 ISSUE-065) モックアップ「変更あり」フィルターを is_band_change_cand に変更**
 
 ### FR-013レビュー決着の機械反映（finding 3/4/6/7・用語変更）
