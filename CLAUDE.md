@@ -93,7 +93,7 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画の自動レビュー（plan self-review）
 
-`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ `/spec-panel .claude/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
+`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ、自セッションの計画ファイル（ファイル名の命名規則は下記「計画ファイル・handover の扱い」節の `.claude/plan-<slug>.md` を参照）に対して `/spec-panel` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
 
 **省略・短縮は禁止**。以下を必ず守ること:
 
@@ -103,10 +103,11 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画ファイル・handover の扱い
 
-- **plan.md の置き場**: プロジェクトの `.claude/plan.md` とする。`/plan` コマンドはシステムの都合で `~/.claude/plans/`（ホーム配下・グローバル）に自動生成するため、ExitPlanMode 承認後・ファイル編集を始める前にプロジェクトの `.claude/plan.md`（リポジトリ配下）へ `mv` で移動する。両者は同じ `.claude` という名前を含むが別の場所なので、`mv` 実行時は必ずフルパスで確認すること。
-- **plan.md 内のファイル参照はコード表記にする**: `.claude/plan.md` 内で `docs/...` 等のリポジトリ内ファイルを参照するときは、Markdown リンク `[..](..)` ではなく**コード表記（バッククォート）**で書く。`mv` 元（`~/.claude/plans/`）でも移動先（`.claude/plan.md`）でも相対リンクが解決せず broken-link になるため、リンクにしないことで構造的に回避する。`.claude/plan.md` は lint 対象に含めたまま運用する（隠さない）。
+- **plan ファイルの置き場・命名規則**: プロジェクトの `.claude/plan-<slug>.md` とする。`<slug>` は `/plan` コマンドが `~/.claude/plans/<slug>.md`（ホーム配下・グローバル、例: `precious-tinkering-origami.md`）に自動生成する際のファイル名をそのまま流用し、`plan-` プレフィックスは他の運用ファイルとの視認性のためにつける。ExitPlanMode 承認後・ファイル編集を始める前に `mv ~/.claude/plans/<slug>.md .claude/plan-<slug>.md` で移動する（両者は同じ `.claude` という名前を含むが別の場所なので、`mv` 実行時は必ずフルパスで確認すること）。セッションごとに `<slug>` が異なるため、同一リポジトリで複数セッションが同時に Plan Mode を使っても plan ファイルが衝突しない。
+- **plan ファイル内のファイル参照はコード表記にする**: `.claude/plan-<slug>.md` 内で `docs/...` 等のリポジトリ内ファイルを参照するときは、Markdown リンク `[..](..)` ではなく**コード表記（バッククォート）**で書く。`mv` 元（`~/.claude/plans/`）でも移動先（`.claude/plan-<slug>.md`）でも相対リンクが解決せず broken-link になるため、リンクにしないことで構造的に回避する。`.claude/plan-<slug>.md` は lint 対象に含めたまま運用する（隠さない）。
 - **計画の各タスクに実行モデルを明記する**: グローバル CLAUDE.md「モデルを使い分ける」節の3条件に該当し Opus/Fable サブエージェントへの委譲が想定されるタスクには理由を付記する（既定は Sonnet 直接対応のため無印でよい）。
 - **handover ファイル名の日時**: ファイル名に使う日時は必ず `date '+%Y-%m-%d_%H%M'` コマンドで実時刻を取得すること。会話履歴や記憶から日付を推測してはならない（同日別セッションとの衝突を防ぐため）。
+- **plan ファイルの完了時の扱い**: 計画の実装が完了し区切りがついたら `.claude/plan-<slug>.md` を `git rm` で削除しコミットする（役目を終えた計画は残さない。履歴は git で追える）。ただし作業が中断・持ち越しになり handover を書いて次セッションへ引き継ぐ場合は削除せず残す。次セッションは `.claude/lessons.md`「中断したセッションの作業は plan ファイル名とタイムスタンプで特定して再開する」のとおり、`<slug>` を含むファイル名とタイムスタンプで対象を特定して再開する。
 
 ## handover 実行時のルール
 
@@ -122,7 +123,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 - `docs/` 配下のすべてのファイル（URD/SRS/HLD/LLD/UT/IT/ST/OPS/GLOSSARY/environment）
 - `docs/decisions/` 配下の ADR と research 資料
 - `ref/SOURCES.md` などの参照資料
-- `.claude/plan.md`（devel ブランチ運用ファイル）
+- `.claude/plan-*.md`（devel ブランチ運用ファイル。命名規則は「計画ファイル・handover の扱い」節参照）
 
 ※ `.claude/best_practices.md` は例外: 上記の手動手順ではなく `/update-best-practices` 実行時にコマンド内で完結する（詳細は「Best Practices（教訓蒸留）運用ルール」参照）。
 
