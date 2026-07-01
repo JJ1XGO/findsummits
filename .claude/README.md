@@ -14,7 +14,7 @@ Claude Code カスタマイズの一覧です。
 | [**CLAUDE.md**](#claudemd-の位置) | 全プロジェクト共通ガイドライン | リポジトリルートに配置 |
 | [**settings.json**](#settingsjson) | 基盤設定一式 | 空 `{}`（`settings.local.json` へ委譲） |
 | [**settings.local.json**](#settingslocaljson) | 存在しない | プロジェクト固有の permissions + hooks（git 管理外） |
-| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel）+ 運用 skill（update-best-practices） |
+| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel / update-best-practices） | ドメイン固有 skill（spec-panel） |
 | [**rules/**](#rules) | 存在しない | アーキテクチャ定義（`architecture.md`） |
 | [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.local.json`（Lint・model ガード） |
 | [**incidents/**](#incidents) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
@@ -31,7 +31,6 @@ Claude Code カスタマイズの一覧です。
 | No. | ファイル | スラッシュコマンド | 役割 |
 |---|---|---|---|
 | 1 | `spec-panel.md` | `/spec-panel` | 仕様文書（URD/SRS/HLD/LLD/ADR/テスト仕様）をアーキテクト・仕様レビュアー・データ/アルゴリズム・申請者の4視点でレビューし指摘を一覧化 |
-| 2 | `update-best-practices.md` | `/update-best-practices` | `lessons.md` の蓄積内容を Opus で再分析し `best_practices.md` を再合成する。ウォーターマーク（`best_practices_watermark`）を更新し lint・コミットまで実行 |
 
 ### `rules/`
 

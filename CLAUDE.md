@@ -124,9 +124,22 @@ handover を書く前に git をクリーンにする（コミットを先に済
 - `ref/SOURCES.md` などの参照資料
 - `mgmt/plan.md`（devel ブランチ運用ファイル）
 
+※ `mgmt/best_practices.md` は例外: 上記の手動手順ではなく `/update-best-practices` 実行時にコマンド内で完結する（詳細は「Best Practices（教訓蒸留）運用ルール」参照）。
+
 更新が完了したターン内に: ① `make lint` 警告ゼロを確認 → ② 意図した変更ファイルを個別に `git add`（全対象を確認済みなら `git add -A` 可）→ ③ Conventional Commits でコミット → ④ push は別途指示まで行わない。
 
 例外: 同一作業内でコードと一緒に更新したドキュメントは、コードのコミットに含めて構わない。
+
+## Best Practices（教訓蒸留）運用ルール
+
+- 学びは `mgmt/lessons.md` に随時記録する（git 管理外・コミット不要）
+- `/update-best-practices`（グローバルコマンド、Opus 実行）が `mgmt/lessons.md` を再分析し、
+  `mgmt/best_practices.md`（git 管理対象）を再合成する
+  - 蒸留観点: 手戻り防止 / 判断コスト削減 / 信頼性の担保 / コンテキスト継続 / 仕様と実装の整合
+  - 原則数目安: 14〜18件（増えすぎたら統合する）
+  - 除外: プロジェクト固有の技術詳細（dem10b 解像度・openpyxl API 等）は原則に含めない
+  - 実行後、`mgmt/best_practices.md` と `.claude/best_practices_watermark` はコマンド内でコミットまで完結する
+- lessons.md が一定量増えるとセッション開始時に実行が自動的に推奨される（hooks 側で検知）
 
 ## 機械的チェック（lint / LSP 等）
 
