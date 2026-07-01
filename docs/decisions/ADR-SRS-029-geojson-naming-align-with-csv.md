@@ -50,4 +50,4 @@
 1. **SRS・関連 ADR の記述を更新**: ファイル名・和名の全参照箇所を新命名に置換する
 2. **[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合) の SRS 見出しが変わる**: 「[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合): per-mesh activation.geojson 統合」→「[FR-018](../20_SRS.md#fr-018-per-mesh-ピーク候補-geojson-統合): per-mesh ピーク候補 GeoJSON 統合」（Markdown アンカーの更新が必要）
 3. **`feature_type` は変更なし**: `activation_zone` / `delete_zone` という値は生きており、SRS・コードで引き続き使用する
-4. **実装への影響**: コード内のファイル名ハードコードを変更が必要。詳細は `mgmt/todo.md`
+4. **実装への影響**: コード内のファイル名ハードコードを変更が必要

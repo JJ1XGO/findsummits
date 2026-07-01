@@ -91,7 +91,7 @@ ref/          # 参照データ（git管理）
   SOTA-Summit-list-revision-request.xlsx   # SOTA日本支部への申請書テンプレート
   SOURCES.md                               # 参照資料の出典一覧
 tests/        # テスト用プログラム（test_*.c）
-mgmt/          # 管理ドキュメント（lessons.md, plan.md, tracker/）※ devel ブランチのみ・main には含めない
+mgmt/          # 課題管理（tracker/）※ devel ブランチのみ・main には含めない
 .claude-container  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
 
 # 以下のパスは params/config.ini の DATA_DIR で設定する
@@ -125,7 +125,6 @@ make venv-rebuild                                                  # venv をク
 venv/bin/python3 scripts/prefetch_tiles.py ...                    # タイル取得
 venv/bin/python3 scripts/merge.py ...                             # CSV 統合・出力
 venv/bin/python3 scripts/preprocess_pref_boundaries.py ...        # 都道府県境界前処理
-venv/bin/python3 mgmt/tracker/track.py issue list                 # 課題管理
 ```
 
 venv は `/workspace/venv/`（ホストマウント下）に作られるためコンテナリビルド後も消えない。

@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-06-25 |
+| 最終更新日 | 2026-07-01 |
 | ステータス | ドラフト |
 
 ## ホスト環境
@@ -53,7 +53,6 @@ make venv          # venv 作成 + 依存パッケージインストール（初
 venv/bin/python3 scripts/prefetch_tiles.py ...
 venv/bin/python3 scripts/merge.py ...
 venv/bin/python3 scripts/preprocess_pref_boundaries.py ...
-venv/bin/python3 mgmt/tracker/track.py ...
 ```
 
 ## Python パッケージ（`requirements.txt` で管理）

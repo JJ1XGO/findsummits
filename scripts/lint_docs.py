@@ -22,8 +22,10 @@ LINK_RE = re.compile(r'\]\(([^)#\s]+\.md)(?:#[^)]*)?\)')
 # 検査C: 内部トラッカーID（コードブロック内は除外対象外のためシンプルに全行検査）
 TRACKER_ID_RE = re.compile(r'\b(?:ISSUE|BUG)-\d+\b')
 
-# 検査C: mgmt/ へのリンクパス（末尾 / も含む）
-MGMT_LINK_RE = re.compile(r'\]\([^)]*mgmt/[^)]*\)')
+# 検査C: mgmt/ への具体的パス参照（リンク形式・コードスパン形式・裸表記のいずれも対象）。
+# 「mgmt/」の後にパスセグメントが続く場合のみ検出し、`mgmt/` 単体の言及（ルール説明文等）は除外する。
+# インラインコード除去前の生の行に対して検査する（コードスパン内の参照を拾うため）。
+MGMT_PATH_RE = re.compile(r'mgmt/[^\s`)\]]+')
 
 # 検査D: 裸参照パターン（FR/UR/NFR-NNN）
 BARE_REF_RE = re.compile(r'\b((?:FR|UR|NFR)-\d+)\b')
@@ -32,6 +34,13 @@ _TOKEN_RE = re.compile(r'\[[^\]]*\]\([^)]*\)|`[^`\n]+`')
 
 # 検査D: 既知 ID キャッシュ（SRS の FR/NFR 見出し・URD の UR アンカーから収集）
 _known_refs_cache = None
+
+# 検査C・D 対象外ファイル（ルール自体の経緯を記録したメタドキュメント）。
+# ADR-SRS-040 は「ISSUE-ID/mgmt/ 参照禁止ルール」の導入決定そのものを記録しており、
+# 本文中でルール対象の概念（ISSUE-ID・mgmt/tracker/）に言及するのが趣旨のため対象外とする。
+CHECK_CD_EXEMPT_FILES = {
+    'ADR-SRS-040-remove-internal-tracker-id-from-docs.md',
+}
 
 
 def _get_known_refs():
@@ -78,8 +87,12 @@ def check_file(filepath):
     violations = []
     abs_filepath = os.path.abspath(filepath)
     base_dir = os.path.dirname(abs_filepath)
-    # 検査C・D は docs/ 配下のみ適用（mgmt/ 等の内部管理ファイルは除外）
-    _apply_check_cd = os.sep + 'docs' + os.sep in abs_filepath or abs_filepath.endswith(os.sep + 'docs')
+    # 検査C・D は docs/ 配下のみ適用（mgmt/ 等の内部管理ファイルは除外）。
+    # ただし CHECK_CD_EXEMPT_FILES に該当するメタドキュメントは対象外。
+    _apply_check_cd = (
+        (os.sep + 'docs' + os.sep in abs_filepath or abs_filepath.endswith(os.sep + 'docs'))
+        and os.path.basename(abs_filepath) not in CHECK_CD_EXEMPT_FILES
+    )
 
     try:
         with open(filepath, encoding='utf-8') as f:
@@ -126,9 +139,10 @@ def check_file(filepath):
                     f"（経緯は日付・ADR リンクで残す。根拠: ADR-SRS-040）"
                 )
 
-            for m in MGMT_LINK_RE.finditer(line_no_inline_code):
+            # 検査C: mgmt/ パス参照はコードスパン内も対象のため、生の行で検査する
+            for m in MGMT_PATH_RE.finditer(line):
                 violations.append(
-                    f"{filepath}:{i + 1}: MGMT-LINK: "
+                    f"{filepath}:{i + 1}: MGMT-PATH: "
                     f"mgmt/ への参照「{m.group()}」は docs に書かないでください"
                     f"（main ブランチで参照不能。根拠: docs/CLAUDE.md）"
                 )
