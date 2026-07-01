@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-06-30 |
+| 最終更新日 | 2026-07-01 |
 | ステータス | ドラフト（[FR-022](#fr-022-コル充足判定) 純化・[FR-023](#fr-023-解析パイプライン制御) 解析パイプライン制御新設・N 扱い再設計・phase 番号統一。ADR-SRS-027） |
 | 参照 URD | [`10_URD.md`](10_URD.md) |
 
@@ -1085,7 +1085,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | プロパティ名 | 説明 |
 |---|---|
-| `feature_type` | "prominence_range" |
+| `feature_type` | "peak_col_link" |
 | `category` | 親ピークの `category` を継承（add / band_change / no_change） |
 | `summit_code` | 対応ピークのサミットコード（ピーク Point との対応付け用） |
 
@@ -1148,7 +1148,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | HTML ビューア上のユーザー入力 | ユーザー入力 | 必須 | — | [7.2.2 参照](#722-html-ビューア上のユーザー入力) |
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | 必須 | — | 作業用 HTML ビューアに埋め込み済み（[FR-013](#fr-013-html-ビューア生成) 出力） |
 | 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.2.5](#625-作業用-html-ビューア) 参照）。ブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
-| 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | — | 等高線オーバーレイ／基準点レイヤー ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
+| 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | デフォルト OFF（レイヤー非表示時は取得しない） | 等高線オーバーレイ／基準点レイヤー ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 | localStorage 編集内容 | 内部データ | 任意 | 初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート） | 再訪時に読み込む。未編集（localStorage 空）の場合は初期値を使用 |
 
 **出力**:
@@ -1177,13 +1177,13 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
     | `category` | 表示ラベル | 対象フィーチャの概要 |
     |---|---|---|
     | `add` | 追加 | new/dominant ピーク・対応するコル・AZ・delete判定ゾーン・ピーク→コル線 |
-    | `band_change` | 変更あり | バンド変更ありの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・ピーク→コル線（`prominence_range`）・ピーク→AZ内サミット線（`coord_diff`） |
-    | `no_change` | 変更なし | バンド変更なしの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・ピーク→コル線（`prominence_range`）・ピーク→AZ内サミット線（`coord_diff`） |
+    | `band_change` | 変更あり | バンド変更ありの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・ピーク→コル線（`peak_col_link`）・ピーク→AZ内サミット線（`coord_diff`） |
+    | `no_change` | 変更なし | バンド変更なしの matched ピーク・対応するコル・AZ・delete判定ゾーン・AZ 内 matched サミット・ピーク→コル線（`peak_col_link`）・ピーク→AZ内サミット線（`coord_diff`） |
     | `delete` | 削除 | delete サミット・親ピーク→delete サミット接続線（親ピーク本体は add/band_change/no_change として別途存在） |
     | `review` | 要確認 | unmatched サミット（孤立既存サミット） |
 
     - **key_col は独立カテゴリ／独立トグルを持たず、`category` プロパティで親ピークと同一カテゴリを保持し追従する**
-  - **参照線フィーチャの可視化**: `prominence_range`（ピーク〜Keyコルを結ぶプロミネンス基準線）と `coord_diff`（SOTA 登録座標と解析座標の差分線）を破線で表示する（色・太さ等は HLD に委ねる）
+  - **参照線フィーチャの可視化**: `peak_col_link`（ピーク〜Keyコルを結ぶプロミネンス基準線）と `coord_diff`（SOTA 登録座標と解析座標の差分線）を破線で表示する（色・太さ等は HLD に委ねる）
   - **全プロパティ折りたたみ表示**: 各フィーチャの popup に、その GeoJSON プロパティ全体を確認できる折りたたみ表示（「全データ」）を設ける。ただし activation_zone / delete判定ゾーンのポリゴンはクリック不可とし対象外とする
   - ローカル（`file://` 直接開く）・GitHub Pages（静的ホスティング）の両方で動作する
   - **サミット検索機能**:
@@ -1356,14 +1356,14 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | ファイル名 | 内容 | 判定ロジック |
 |---|---|---|
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
-| `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・prominence_range）。※ dominant ピーク→削除候補サミット接続線（`coord_diff`）は `category="delete"` のため `delete.geojson` に分類される |
+| `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・peak_col_link）。※ dominant ピーク→削除候補サミット接続線（`coord_diff`）は `category="delete"` のため `delete.geojson` に分類される |
 | `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て（delete summit・coord_diff LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
 | `band_change.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
 | `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
 | `review.geojson` | 要確認サミット（孤立既存サミット） | `category="review"` のフィーチャ全て（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
   - 各 GeoJSON には `metadata`（`summitslist_date` / `gsi_tile_latest_date` / `generated_at` / `attribution` / `source_url` / `license_url`）を複製する（`attribution` 等は [UR-011](10_URD.md#ur-011) 準拠の固定値。定義は [FR-009 メタデータ付与](#fr-009-sotaリスト突合match_status-判定) を参照）
-  - 各 GeoJSON は [FR-009](#fr-009-sotaリスト突合match_status-判定) で定義した category 別フィーチャ構成に基づき、関連フィーチャ（col・activation_zone・delete_zone・prominence_range・coord_diff）を同一 `summit_code` で紐付けて格納する（category によって含まれるフィーチャ種類は異なる）
+  - 各 GeoJSON は [FR-009](#fr-009-sotaリスト突合match_status-判定) で定義した category 別フィーチャ構成に基づき、関連フィーチャ（col・activation_zone・delete_zone・peak_col_link・coord_diff）を同一 `summit_code` で紐付けて格納する（category によって含まれるフィーチャ種類は異なる）
   - 対象 category のフィーチャが 0 件の場合も空 FeatureCollection（`{"type":"FeatureCollection","features":[]}`）として ZIP に同梱する（5 ファイルを常に出力し、エビデンスの完全性を保つ）
   - GeoJSON の生成は localStorage の編集内容（山岳名JP/EN・rationale 編集値）を埋め込みデータにマージしたうえで行う（localStorage を直接読むのではなく、[FR-019](#fr-019-html-ビューア機能仕様) の引き継ぎ確認を経た現在の編集状態のスナップショットを使用する。[FR-020](#fr-020-公開用-html-ビューア生成) と同方式）
   - JSZip ライブラリを使用して ZIP をブラウザ内で生成する
