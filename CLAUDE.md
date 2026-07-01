@@ -93,7 +93,9 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画の自動レビュー（plan self-review）
 
-`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ、自セッションの計画ファイル（ファイル名の命名規則は下記「計画ファイル・handover の扱い」節の `.claude/plan-<slug>.md` を参照）に対して `/spec-panel` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
+`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ、自セッションの計画ファイルに対して `/spec-panel` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
+
+**対象パスの注意**: この時点（`ExitPlanMode` 承認前）では、下記「計画ファイル・handover の扱い」節の `.claude/plan-<slug>.md` への `mv` はまだ行われていない（`mv` は承認後の作業）。そのため `/spec-panel` の対象は `mv` 前の実パスである `~/.claude/plans/<slug>.md` を指定する。
 
 **省略・短縮は禁止**。以下を必ず守ること:
 
