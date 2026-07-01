@@ -1555,7 +1555,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 **モックアップ**:
 
-（標高地形図サンプル画像は実装段階で `docs/figures/` に配置予定）
+サンプル画像: [`docs/figures/5338_terrain.png`](figures/5338_terrain.png)（富士山を含む1次メッシュ5338中心の3×3結合。閲覧用に長辺1600pxへ再縮小）
 
 #### 6.2.4 突合済み統合 GeoJSON
 
