@@ -19,6 +19,7 @@ Claude Code カスタマイズの一覧です。
 | [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.local.json`（Lint・model ガード） |
 | [**incidents/**](#incidents) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
 | [**handovers/**](#handovers) | 存在しない | セッション引き継ぎノート（このプロジェクト配下・git 管理外） |
+| [**`mgmt/plan.md`・`mgmt/todo.md`**](#mgmtplanmdmgmttodomd) | 存在しない | devel 運用ファイル（`.claude/` 直下ではなく `mgmt/` 配下・git 管理対象） |
 
 ---
 
@@ -89,6 +90,17 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 セッション終了時に `/handover` コマンドで自動生成される引き継ぎノートのファイル群。
 日時タイムスタンプ付きファイル。
 `.gitignore` 対象（git 管理外）。
+
+### `mgmt/plan.md`・`mgmt/todo.md`
+
+`.claude/` 直下ではなく `mgmt/` 配下に置かれている devel 専用の運用ファイル（`git rm -r mgmt/` でリリース時に main から除外される）。
+
+| ファイル | 役割 |
+|---|---|
+| `mgmt/plan.md` | Plan Mode で承認された計画の保存先。`/plan` コマンドがシステムの都合で `~/.claude/plans/`（ホーム配下・グローバル）に自動生成するため、`ExitPlanMode` 承認後に `mv` でここへ移動する（CLAUDE.md「計画ファイル・handover の扱い」参照） |
+| `mgmt/todo.md` | 仕様議論を伴わない実装タスクの管理リスト（CLAUDE.md「ToDo リスト運用ルール」参照） |
+
+いずれも git 管理対象。
 
 ---
 

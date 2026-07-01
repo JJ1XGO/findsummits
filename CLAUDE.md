@@ -83,7 +83,7 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 ## ToDo リスト運用ルール
 
-**作業リスト（仕様議論を伴わない実装タスク等）は `mgmt/todo.md` で管理する。**
+**作業リスト（仕様議論を伴わない実装タスク等）は `.claude/todo.md` で管理する。**
 
 - **用途**: 文書・仕様の議論を伴わない作業の保管庫（実装タスク・ファイル名追従・ログ整備・運用作業・チェックリスト等）
 - **管理方法**: 完了したものは消す（履歴は git で追える）。長期保留中のものは「保留」セクションへ
@@ -93,7 +93,7 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画の自動レビュー（plan self-review）
 
-`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ `/spec-panel mgmt/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
+`ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ `/spec-panel .claude/plan.md` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
 
 **省略・短縮は禁止**。以下を必ず守ること:
 
@@ -103,8 +103,8 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画ファイル・handover の扱い
 
-- **plan.md の置き場**: プロジェクトの `mgmt/plan.md` とする。`/plan` コマンドはシステムの都合でグローバルの `.claude/plans/` に自動生成するため、ExitPlanMode 承認後・ファイル編集を始める前に `mv` で移動する。
-- **plan.md 内のファイル参照はコード表記にする**: `mgmt/plan.md` 内で `docs/...` 等のリポジトリ内ファイルを参照するときは、Markdown リンク `[..](..)` ではなく**コード表記（バッククォート）**で書く。`mv` 元（`.claude/plans/`）でも移動先（`mgmt/`）でも相対リンクが解決せず broken-link になるため、リンクにしないことで構造的に回避する。`mgmt/plan.md` は lint 対象に含めたまま運用する（隠さない）。
+- **plan.md の置き場**: プロジェクトの `.claude/plan.md` とする。`/plan` コマンドはシステムの都合で `~/.claude/plans/`（ホーム配下・グローバル）に自動生成するため、ExitPlanMode 承認後・ファイル編集を始める前にプロジェクトの `.claude/plan.md`（リポジトリ配下）へ `mv` で移動する。両者は同じ `.claude` という名前を含むが別の場所なので、`mv` 実行時は必ずフルパスで確認すること。
+- **plan.md 内のファイル参照はコード表記にする**: `.claude/plan.md` 内で `docs/...` 等のリポジトリ内ファイルを参照するときは、Markdown リンク `[..](..)` ではなく**コード表記（バッククォート）**で書く。`mv` 元（`~/.claude/plans/`）でも移動先（`.claude/plan.md`）でも相対リンクが解決せず broken-link になるため、リンクにしないことで構造的に回避する。`.claude/plan.md` は lint 対象に含めたまま運用する（隠さない）。
 - **計画の各タスクに実行モデルを明記する**: グローバル CLAUDE.md「モデルを使い分ける」節の3条件に該当し Opus/Fable サブエージェントへの委譲が想定されるタスクには理由を付記する（既定は Sonnet 直接対応のため無印でよい）。
 - **handover ファイル名の日時**: ファイル名に使う日時は必ず `date '+%Y-%m-%d_%H%M'` コマンドで実時刻を取得すること。会話履歴や記憶から日付を推測してはならない（同日別セッションとの衝突を防ぐため）。
 
@@ -122,7 +122,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 - `docs/` 配下のすべてのファイル（URD/SRS/HLD/LLD/UT/IT/ST/OPS/GLOSSARY/environment）
 - `docs/decisions/` 配下の ADR と research 資料
 - `ref/SOURCES.md` などの参照資料
-- `mgmt/plan.md`（devel ブランチ運用ファイル）
+- `.claude/plan.md`（devel ブランチ運用ファイル）
 
 ※ `.claude/best_practices.md` は例外: 上記の手動手順ではなく `/update-best-practices` 実行時にコマンド内で完結する（詳細は「Best Practices（教訓蒸留）運用ルール」参照）。
 

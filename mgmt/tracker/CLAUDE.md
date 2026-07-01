@@ -16,7 +16,7 @@
 | 設計 | 実装方針・アーキテクチャの判断 | フェーズ配置、アルゴリズム選定 |
 
 > ⚠️ **「機能追加」type は廃止。再追加禁止。**
-> SRS 確定済み FR の実装タスクは issue ではなく `mgmt/todo.md` で管理する（ISSUE-120 参照）。
+> SRS 確定済み FR の実装タスクは issue ではなく `.claude/todo.md` で管理する（ISSUE-120 参照）。
 
 ### Bug（バグ）
 
@@ -28,9 +28,9 @@
 - **中**: 結果は正しいが効率や使い勝手に支障
 - **低**: ログ・コメント・命名等の品質改善余地
 
-### 登録すべきでない例（→ `mgmt/todo.md` へ）
+### 登録すべきでない例（→ `.claude/todo.md` へ）
 
-以下は **issue にも bug にも登録しない**。`mgmt/todo.md` で管理する:
+以下は **issue にも bug にも登録しない**。`.claude/todo.md` で管理する:
 
 - 単独のファイル修正（関数名リネーム・コメント整理 等）
 - ログ書式の統一・ログ追記・ファイル名追従（仕様議論を伴わないもの）
@@ -40,7 +40,7 @@
 **判定基準: 残作業に文書・仕様の議論が必要か？（出自ではなく残作業で判定）**
 
 - Yes → `issue` / `bug`
-- No  → `mgmt/todo.md`（レビュー由来でも、残りが実装追従・コメント修正等だけなら todo.md）
+- No  → `.claude/todo.md`（レビュー由来でも、残りが実装追従・コメント修正等だけなら todo.md）
 
 詳細は `/workspace/CLAUDE.md` の「課題管理ルール」「ToDo リスト運用ルール」を参照。
 
@@ -138,7 +138,7 @@ venv/bin/python3 mgmt/tracker/track.py issue list --stage IT
 # 課題の詳細（履歴つき）
 venv/bin/python3 mgmt/tracker/track.py issue show ISSUE-001
 
-# 登録前チェック: 残作業に文書・仕様の議論が必要か？ No なら mgmt/todo.md へ（冒頭の『登録すべきでない例』参照）
+# 登録前チェック: 残作業に文書・仕様の議論が必要か？ No なら .claude/todo.md へ（冒頭の『登録すべきでない例』参照）
 # 課題を登録（非対話）
 venv/bin/python3 mgmt/tracker/track.py issue add --title "..." --priority 高 --type 改善 \
   --stage COD --category merge.py \
