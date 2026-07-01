@@ -62,6 +62,8 @@ build/
 # 環境設定（個人のパス等を含むため）
 params/config.ini
 .claude-container
+# claude-container 利用者個人のコンテナ依存パッケージ指定（プロジェクト共通仕様ではない）
+.claude-container.d/
 
 # fetch 設定（メールアドレス等の個人情報を含むため）
 params/fetch_config.ini
