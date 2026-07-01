@@ -26,6 +26,7 @@ import sys
 import threading
 from pathlib import Path
 
+import requests
 from PIL import Image
 
 # scripts/prefetch_tiles.py からフェッチロジックを流用
@@ -174,6 +175,9 @@ def fetch_missing_tiles(ja_summits, tile_dir, repo_root):
 
     counters = {"ok": 0, "304": 0, "404": 0, "err": 0}
     lock = threading.Lock()
+    # Session はワーカースレッド間で共有する。urllib3 の接続プールはスレッドセーフで、
+    # 共有することでリクエストごとのTCP/TLSハンドシェイクを避けコネクションを再利用できる。
+    session = requests.Session()
 
     def worker():
         while True:
@@ -182,7 +186,7 @@ def fetch_missing_tiles(ja_summits, tile_dir, repo_root):
             except queue.Empty:
                 break
             if z == 15:
-                attempts = fetch_dem5_with_fallback(tx, ty, tile_dir, user_agent, interval_ms, backoff_initial)
+                attempts = fetch_dem5_with_fallback(session, tx, ty, tile_dir, user_agent, interval_ms, backoff_initial)
                 with lock:
                     for _, status, msg in attempts:
                         bucket = status if status in counters else "err"
@@ -191,7 +195,7 @@ def fetch_missing_tiles(ja_summits, tile_dir, repo_root):
                             print(f"    [ERR] {msg}", file=sys.stderr)
             else:
                 path = os.path.join(tile_dir, "14", str(tx), f"{ty}_b.png")
-                status, msg = fetch_one(14, tx, ty, "b", path, user_agent, interval_ms, backoff_initial)
+                status, msg = fetch_one(session, 14, tx, ty, "b", path, user_agent, interval_ms, backoff_initial)
                 with lock:
                     bucket = status if status in counters else "err"
                     counters[bucket] += 1

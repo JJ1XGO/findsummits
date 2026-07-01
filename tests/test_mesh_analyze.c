@@ -28,6 +28,7 @@ static void load_dotenv(const char *path)
         for (int i = klen - 1; i >= 0 && (key[i] == ' ' || key[i] == '\t'); i--) key[i] = '\0';
         char val[256];
         char *vstart = eq + 1;
+        while (*vstart == ' ' || *vstart == '\t') vstart++;
         int vlen = (int)strlen(vstart);
         if (vlen >= (int)sizeof(val)) vlen = (int)sizeof(val) - 1;
         memcpy(val, vstart, vlen);

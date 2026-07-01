@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-05-19",
-    "counter": 14
+    "last_updated": "2026-07-01",
+    "counter": 16
   },
   "bugs": [
     {
@@ -423,6 +423,100 @@
           "from": "対応完了",
           "to": "解決済",
           "comment": "[解決確認] 対応完了日と同日付で一括解決済設定"
+        }
+      ]
+    },
+    {
+      "id": "BUG-015",
+      "title": "load_dotenv()がINI値の先頭空白をトリムせずDATA_DIR未設定環境でパスが壊れる",
+      "description": "params/config.iniは「DATA_DIR = /data」(等号の後に半角スペース)と記述されている。load_dotenv()は値の先頭空白をトリムしない(末尾のみトリム)ため、環境変数DATA_DIRが未設定の環境で実行するとdata_dirが\" /data\"(先頭スペース付き)になり、以降構築される全パス(tile_dir/img_dir/result_dir)が壊れる。9メッシュ結合(5237-5439)でのtest_terrain_image実行時に、(a) elev_fill_nodata_dem10b()のtile_dem10b_is_cached()が実在する13683件を含む全15481件を「未キャッシュ」と誤判定、(b) save_terrain_rgb_image()のfopen()が存在しないパスへの書き込みを試み失敗(地形図PNG未生成)、として発覚。setenv(...,0)で既存の環境変数を優先するため、環境変数DATA_DIRが別途正しく設定されている運用環境では顕在化しない可能性がある。",
+      "reporter": "Sonnet",
+      "found_date": "2026-07-01",
+      "found_stage": "COD",
+      "category": "その他",
+      "found_in": "src/main.c,tests/test_mesh_analyze.c,tests/test_terrain_image.c",
+      "repro": "DATA_DIR環境変数が未設定の状態で実行すると毎回",
+      "severity": "高",
+      "status": "解決済",
+      "assignee": null,
+      "stage": "COD",
+      "cause": "src/main.c",
+      "resolution": "load_dotenv()のvalパース処理(vstart = eq + 1の直後)に先頭空白/タブのスキップを追加する。main.c/test_mesh_analyze.c/test_terrain_image.cの3箇所に同一ロジックが重複実装されているため、修正は3箇所全てに適用する。",
+      "notes": null,
+      "resolved_date": "2026-07-01",
+      "verified_date": "2026-07-01",
+      "created_session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e",
+      "history": [
+        {
+          "date": "2026-07-01T14:26:45",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
+        },
+        {
+          "date": "2026-07-01T14:27:28",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "load_dotenv()のvalパース(vstart = eq + 1の直後)に先頭空白/タブスキップを追加。src/main.c, tests/test_mesh_analyze.c, tests/test_terrain_image.cの3箇所に適用。make clean && make all test_mesh_analyze test_terrain_imageで警告ゼロを確認。単体検証プログラムでDATA_DIR未設定環境でも先頭スペースなしで\"/data\"が取得できることを確認済み。",
+          "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
+        },
+        {
+          "date": "2026-07-01T14:55:52",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 修正確認OK",
+          "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
+        }
+      ]
+    },
+    {
+      "id": "BUG-016",
+      "title": "prefetch_tiles.pyの進捗表示がdem5フォールバック試行分を含み100%を超える",
+      "description": "進捗表示(進捗: X/Y (Z%))の分子X(_total_done()の集計)はdem5フォールバック試行数(a→b→cで1ジョブが最大3回カウントされ得る)を含むが、分母Y(total_jobs)はジョブ数のまま。実測で9メッシュ(5237-5439)分の実行時に92899/77131(120.4%相当)まで進捗が到達し、表示上「進捗率」がユーザーに誤解を与える。実処理自体は正常完了しており(エラー0件)、機能的な欠陥ではなく表示のみの問題。",
+      "reporter": "Sonnet",
+      "found_date": "2026-07-01",
+      "found_stage": "COD",
+      "category": "prefetch",
+      "found_in": "scripts/prefetch_tiles.py",
+      "repro": "dem5aが404となるタイルを多く含むメッシュリストで実行すると毎回",
+      "severity": "低",
+      "status": "解決済",
+      "assignee": null,
+      "stage": "COD",
+      "cause": "scripts/prefetch_tiles.py",
+      "resolution": "進捗表示の分母を実際のフォールバック試行込みの総カウント数に変更する、または分子をジョブ完了数(job_queueのtask_done基準)に変更するなど、分子分母の基準を揃える。",
+      "notes": null,
+      "resolved_date": "2026-07-01",
+      "verified_date": "2026-07-01",
+      "created_session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e",
+      "history": [
+        {
+          "date": "2026-07-01T14:26:45",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
+        },
+        {
+          "date": "2026-07-01T14:37:35",
+          "actor": "Sonnet",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "worker()にジョブ完了数カウンタ(jobs_done)を追加し、進捗表示の分子をdem5フォールバック試行数を含まないジョブ完了数に変更。_total_done()は不要になったため削除。5238メッシュ(8686ジョブ、フォールバック試行込み合計12228件)で動作確認し、進捗%が最後まで100%を超えないことを確認済み。make lint-py通過。",
+          "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
+        },
+        {
+          "date": "2026-07-01T14:55:52",
+          "actor": "JJ1XGO",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 修正確認OK",
+          "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
         }
       ]
     }

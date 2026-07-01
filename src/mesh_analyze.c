@@ -94,7 +94,7 @@ static void elev_to_rgb(float elev, uint8_t *r, uint8_t *g, uint8_t *b)
  * 標高カラーマップ PNG を出力する（長辺6000px縮小）
  * 低地=緑 → 中地=黄茶 → 高山=白、NODATA/海=青
  */
-static void save_terrain_rgb_image(const ElevTile *big, const char *path, FILE *logfp)
+void save_terrain_rgb_image(const ElevTile *big, const char *path, FILE *logfp)
 {
     mlog(logfp, "  標高カラーマップ PNG 出力中: %s\n", path);
 

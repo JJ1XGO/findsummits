@@ -115,7 +115,7 @@ def enumerate_jobs(mesh_set, tile_dir):
 
 # ---- HTTP 取得 ----
 
-def fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial):
+def fetch_one(session, z, x, y, dem, path, user_agent, interval_ms, backoff_initial):
     """
     1タイルを取得する。
 
@@ -133,7 +133,7 @@ def fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial):
     for attempt in range(5):
         time.sleep(interval_ms / 1000.0)
         try:
-            resp = requests.get(url, headers=headers, timeout=30)
+            resp = session.get(url, headers=headers, timeout=30)
             if resp.status_code == 304:
                 return ("304", None)
             if resp.status_code == 404:
@@ -169,7 +169,7 @@ def fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial):
 
 # ---- dem5 フォールバック取得 ----
 
-def fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_initial):
+def fetch_dem5_with_fallback(session, x, y, tile_dir, user_agent, interval_ms, backoff_initial):
     """
     dem5a → dem5b → dem5c の順に試みる。
     戻り値: [(dem, status, msg), ...] 試行した全ステップのリスト
@@ -177,7 +177,7 @@ def fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_in
     attempts = []
     for dem in ("a", "b", "c"):
         path = tile_path(tile_dir, 15, x, y, dem)
-        status, msg = fetch_one(15, x, y, dem, path, user_agent, interval_ms, backoff_initial)
+        status, msg = fetch_one(session, 15, x, y, dem, path, user_agent, interval_ms, backoff_initial)
         attempts.append((dem, status, msg))
         if status in ("ok", "304"):
             break
@@ -191,7 +191,7 @@ def fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_in
 PROGRESS_INTERVAL = 1000
 
 def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initial,
-           lock, counters, start_time, total_jobs):
+           lock, counters, start_time, total_jobs, session, jobs_done):
     while True:
         try:
             job = job_queue.get_nowait()
@@ -199,7 +199,7 @@ def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initia
             break
         z, x, y, dem, path = job
         if z == 15:
-            attempts = fetch_dem5_with_fallback(x, y, tile_dir, user_agent, interval_ms, backoff_initial)
+            attempts = fetch_dem5_with_fallback(session, x, y, tile_dir, user_agent, interval_ms, backoff_initial)
             with lock:
                 for dem_tried, status, msg in attempts:
                     key = f"dem5{dem_tried}"
@@ -207,20 +207,18 @@ def worker(job_queue, results, tile_dir, user_agent, interval_ms, backoff_initia
                     counters[key][bucket] += 1
                     if status == "err":
                         print(f"  [ERR] {msg}", file=sys.stderr)
-                _print_progress_if_needed(counters, start_time, total_jobs)
+                jobs_done[0] += 1
+                _print_progress_if_needed(counters, start_time, total_jobs, jobs_done[0])
         else:
-            status, msg = fetch_one(z, x, y, dem, path, user_agent, interval_ms, backoff_initial)
+            status, msg = fetch_one(session, z, x, y, dem, path, user_agent, interval_ms, backoff_initial)
             with lock:
                 bucket = status if status in ("ok", "304", "404") else "err"
                 counters["dem10b"][bucket] += 1
                 if status == "err":
                     print(f"  [ERR] {msg}", file=sys.stderr)
-                _print_progress_if_needed(counters, start_time, total_jobs)
+                jobs_done[0] += 1
+                _print_progress_if_needed(counters, start_time, total_jobs, jobs_done[0])
         job_queue.task_done()
-
-
-def _total_done(counters):
-    return sum(sum(c.values()) for c in counters.values())
 
 
 def _fmt_hms(seconds):
@@ -230,8 +228,7 @@ def _fmt_hms(seconds):
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
-def _print_progress_if_needed(counters, start_time, total_jobs):
-    done = _total_done(counters)
+def _print_progress_if_needed(counters, start_time, total_jobs, done):
     if done % PROGRESS_INTERVAL == 0:
         ok  = sum(c["ok"]  for c in counters.values())
         s304= sum(c["304"] for c in counters.values())
@@ -353,12 +350,19 @@ def main():
         "dem10b": {"ok": 0, "304": 0, "404": 0, "err": 0},
     }
 
+    # Session はワーカースレッド間で共有する。urllib3 の接続プールはスレッドセーフで、
+    # 共有することでリクエストごとのTCP/TLSハンドシェイクを避けコネクションを再利用できる。
+    session = requests.Session()
+
+    # ジョブ完了数（dem5フォールバック試行数を含まない）。進捗表示の分子はこれを使う。
+    jobs_done = [0]
+
     threads = []
     for _ in range(max_parallel):
         t = threading.Thread(
             target=worker,
             args=(job_queue, None, args.tile_dir, user_agent, interval_ms, backoff_init,
-                  lock, counters, start_time, total_jobs),
+                  lock, counters, start_time, total_jobs, session, jobs_done),
             daemon=True,
         )
         t.start()

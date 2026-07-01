@@ -25,6 +25,9 @@ $(BUILDDIR)/test_mesh_analyze: $(BUILDDIR)/test_mesh_analyze.o $(CORE_OBJS)
 $(BUILDDIR)/test_analyze: $(BUILDDIR)/test_analyze.o $(CORE_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
+$(BUILDDIR)/test_terrain_image: $(BUILDDIR)/test_terrain_image.o $(CORE_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
 $(BUILDDIR)/%.o: src/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -35,6 +38,7 @@ $(BUILDDIR)/test_%.o: tests/test_%.c | $(BUILDDIR)
 findsummits: $(BUILDDIR)/findsummits
 test_mesh_analyze: $(BUILDDIR)/test_mesh_analyze
 test_analyze: $(BUILDDIR)/test_analyze
+test_terrain_image: $(BUILDDIR)/test_terrain_image
 clean:
 	rm -rf $(BUILDDIR)
 
@@ -101,4 +105,4 @@ lint-latest: venv
 	venv/bin/pip install --upgrade ruff djlint geojson-validator pymarkdownlnt
 	@$(MAKE) lint
 
-.PHONY: all clean findsummits test_mesh_analyze test_analyze venv venv-rebuild lint-md lint-py lint-geojson lint-html lint-latest
+.PHONY: all clean findsummits test_mesh_analyze test_analyze test_terrain_image venv venv-rebuild lint-md lint-py lint-geojson lint-html lint-latest
