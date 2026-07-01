@@ -79,15 +79,32 @@
       "found_in": "scripts/prefetch_tiles.py",
       "repro": "毎回",
       "severity": "低",
-      "status": "未対応",
+      "status": "解決済",
       "assignee": "JJ1XGO",
       "stage": "COD",
       "cause": "scripts/prefetch_tiles.py",
       "resolution": "scripts/prefetch_tiles.py のログファイル名生成部分で datetime.utcnow() を datetime.now() に変更して JST ベースのファイル名にする。または UTC 使用のままとしてコメント・ドキュメントに UTC 前提である旨を明記する",
       "notes": null,
-      "resolved_date": null,
-      "verified_date": null,
-      "history": []
+      "resolved_date": "2026-07-01",
+      "verified_date": "2026-07-01",
+      "history": [
+        {
+          "date": "2026-07-01T17:01:20",
+          "actor": "Sonnet",
+          "from": "未対応",
+          "to": "対応完了",
+          "comment": "scripts/prefetch_tiles.py は datetime.now() を使用（utcnow() は git 全履歴で一度も使用されておらず前提が現状と不一致）。コンテナTZはAsia/Tokyoで ls -l 表示とファイル名は一致しズレなし。ユーザー確認の上クローズ。",
+          "session_id": "5b630bac-742d-4067-b02a-3d1f526f50a7"
+        },
+        {
+          "date": "2026-07-01T17:02:23",
+          "actor": "jj1xgo",
+          "from": "対応完了",
+          "to": "解決済",
+          "comment": "[解決確認] 現状コードで前提不成立であることを確認。",
+          "session_id": "5b630bac-742d-4067-b02a-3d1f526f50a7"
+        }
+      ]
     },
     {
       "id": "BUG-005",
