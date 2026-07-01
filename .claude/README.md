@@ -14,9 +14,9 @@ Claude Code カスタマイズの一覧です。
 | [**CLAUDE.md**](#claudemd-の位置) | 全プロジェクト共通ガイドライン | リポジトリルートに配置 |
 | [**settings.json**](#settingsjson) | 基盤設定一式 | 空 `{}`（`settings.local.json` へ委譲） |
 | [**settings.local.json**](#settingslocaljson) | 存在しない | プロジェクト固有の permissions + hooks（git 管理外） |
-| [**commands/**](#commands2件) | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel） |
-| [**rules/**](#rules1件) | 存在しない | アーキテクチャ定義（`architecture.md`） |
-| [**hooks/**](#hooks1件) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.local.json`（Lint・model ガード） |
+| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel） |
+| [**rules/**](#rules) | 存在しない | アーキテクチャ定義（`architecture.md`） |
+| [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.local.json`（Lint・model ガード） |
 | [**incidents/**](#incidents) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
 | [**handovers/**](#handovers) | 存在しない | セッション引き継ぎノート（このプロジェクト配下・git 管理外） |
 
@@ -24,30 +24,30 @@ Claude Code カスタマイズの一覧です。
 
 ## プロジェクト要素インベントリ
 
-### `commands/`（2件）
+### `commands/`
 
 `commands/*.md` はスラッシュコマンド（`/<name>` で起動する skill）として Claude Code に現れます。
 
-| ファイル | スラッシュコマンド | 役割 |
-|---|---|---|
-| `spec-panel.md` | `/spec-panel` | 仕様文書（URD/SRS/HLD/LLD/ADR/テスト仕様）をアーキテクト・仕様レビュアー・データ/アルゴリズム・申請者の4視点でレビューし指摘を一覧化 |
-| `update-best-practices.md` | `/update-best-practices` | `lessons.md` の蓄積内容を Opus で再分析し `best_practices.md` を再合成する。ウォーターマーク（`best_practices_watermark`）を更新し lint・コミットまで実行 |
+| No. | ファイル | スラッシュコマンド | 役割 |
+|---|---|---|---|
+| 1 | `spec-panel.md` | `/spec-panel` | 仕様文書（URD/SRS/HLD/LLD/ADR/テスト仕様）をアーキテクト・仕様レビュアー・データ/アルゴリズム・申請者の4視点でレビューし指摘を一覧化 |
+| 2 | `update-best-practices.md` | `/update-best-practices` | `lessons.md` の蓄積内容を Opus で再分析し `best_practices.md` を再合成する。ウォーターマーク（`best_practices_watermark`）を更新し lint・コミットまで実行 |
 
-### `rules/`（1件）
+### `rules/`
 
 Claude Code が自動的に読み込むプロジェクトルール定義です。
 
-| ファイル | 役割 |
-|---|---|
-| `architecture.md` | 本プロジェクトのアーキテクチャ・モジュール設計・ディレクトリ構成・`$DATA_DIR` 配置ルールを定義 |
+| No. | ファイル | 役割 |
+|---|---|---|
+| 1 | `architecture.md` | 本プロジェクトのアーキテクチャ・モジュール設計・ディレクトリ構成・`$DATA_DIR` 配置ルールを定義 |
 
-### `hooks/`（1件）
+### `hooks/`
 
 `settings.local.json` の SessionStart フックから呼び出されるスクリプト群です。
 
-| ファイル | 呼び出し元 | 役割 |
-|---|---|---|
-| `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認）。また handover の「## 学び」セクション項目を lessons.md と突き合わせ、未転記のものを全件初回返答時に追記するよう Claude へ指示。さらに lessons.md の件数増加をウォーターマーク（`best_practices_watermark`）と比較し、+10件以上で `/update-best-practices` 実行を推奨 |
+| No. | ファイル | 呼び出し元 | 役割 |
+|---|---|---|---|
+| 1 | `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認）。また handover の「## 学び」セクション項目を lessons.md と突き合わせ、未転記のものを全件初回返答時に追記するよう Claude へ指示。さらに lessons.md の件数増加をウォーターマーク（`best_practices_watermark`）と比較し、+10件以上で `/update-best-practices` 実行を推奨 |
 
 ### `settings.local.json`
 
