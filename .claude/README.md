@@ -14,7 +14,7 @@ Claude Code カスタマイズの一覧です。
 | [**CLAUDE.md**](#claudemd-の位置) | 全プロジェクト共通ガイドライン | リポジトリルートに配置 |
 | [**settings.json**](#settingsjson) | 基盤設定一式 | 空 `{}`（`settings.local.json` へ委譲） |
 | [**settings.local.json**](#settingslocaljson) | 存在しない | プロジェクト固有の permissions + hooks（git 管理外） |
-| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel） |
+| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel） | ドメイン固有 skill（spec-panel）+ 運用 skill（update-best-practices） |
 | [**rules/**](#rules) | 存在しない | アーキテクチャ定義（`architecture.md`） |
 | [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.local.json`（Lint・model ガード） |
 | [**incidents/**](#incidents) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
@@ -81,13 +81,14 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 ### `incidents/`
 
 環境異常（Opus の捏造・hallucination・plan mode 動作不正など）を記録するファイル群。
-`/log-incident` コマンドで自動生成される日時タイムスタンプ付きファイル（現在 21 件）。
-git 管理対象（リポジトリに含める）。
+`/log-incident` コマンドで自動生成される日時タイムスタンプ付きファイル、および
+セッション異常時に生成されるセッションID付きファイル（`.md` + `.raw.txt` ペア）が混在。
+`.gitignore` 対象（git 管理外）。
 
 ### `handovers/`
 
 セッション終了時に `/handover` コマンドで自動生成される引き継ぎノートのファイル群。
-日時タイムスタンプ付きファイル（現在 280 件）。
+日時タイムスタンプ付きファイル。
 `.gitignore` 対象（git 管理外）。
 
 ---
