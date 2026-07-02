@@ -57,7 +57,10 @@ echo '追記する場合は処方形の記述規約（「〜する」形）に�
 
 # best_practices.md 更新チェック（lessons.md の増加件数をウォーターマークと比較）
 WATERMARK_FILE="$ROOT/.claude/best_practices_watermark"
-CURRENT_COUNT=$(grep -c '^- ' "$ROOT"/.claude/lessons.md 2>/dev/null || echo 0)
+# grep -c はマッチ0件でも「0」を出力して exit 1 になるため || で既定値を足すと2行になる。
+# 出力をそのまま受け、ファイル不在等で空になった場合のみ既定値 0 を入れる
+CURRENT_COUNT=$(grep -c '^- ' "$ROOT"/.claude/lessons.md 2>/dev/null)
+CURRENT_COUNT=${CURRENT_COUNT:-0}
 WATERMARK_COUNT=$(cat "$WATERMARK_FILE" 2>/dev/null || echo 0)
 DELTA=$((CURRENT_COUNT - WATERMARK_COUNT))
 THRESHOLD=10
