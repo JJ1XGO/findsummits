@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # SessionStart hook: handover + lessons 注入 + インシデント検知
 
-H=$(ls -t /workspace/.claude/handovers/*.md 2>/dev/null | head -1)
+# リポジトリルートをスクリプト位置から自己解決（コンテナ /workspace・ローカル両対応）
+ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+
+H=$(ls -t "$ROOT"/.claude/handovers/*.md 2>/dev/null | head -1)
 
 echo '# セッション開始ルーティン（自動注入: handover + lessons）'
 echo '※ 開始ルーティンを満たすため自動注入。関連レッスンがあれば作業前にユーザーへ共有すること。'
 
 # 最新インシデントが未解決なら環境チェック実行を命令（全件ではなく最新1件のみ確認）
 # 古いインシデントは後続セッションで確認済みとみなし、最新1件のみをトリガーとする
-LATEST_INCIDENT=$(ls -t /workspace/.claude/incidents/*.md 2>/dev/null \
+LATEST_INCIDENT=$(ls -t "$ROOT"/.claude/incidents/*.md 2>/dev/null \
   | grep -v '\.raw\.txt$' | head -1)
 UNRESOLVED=""
 if [ -n "$LATEST_INCIDENT" ] && \
@@ -45,7 +48,7 @@ echo "## 最新 handover: ${H##*/}"
 cat "$H" 2>/dev/null
 echo ''
 echo '## .claude/lessons.md'
-cat /workspace/.claude/lessons.md 2>/dev/null
+cat "$ROOT"/.claude/lessons.md 2>/dev/null
 echo '<<<END AUTO-INJECTED REFERENCE>>>'
 echo ''
 echo '## handover → lessons.md 転記（自律実行）'
@@ -53,8 +56,8 @@ echo '上記 handover の「## 学び」セクションの項目を lessons.md �
 echo '追記する場合は処方形の記述規約（「〜する」形）に従い make lint を実行する。転記済みまたは該当なしの場合は一行で述べること。'
 
 # best_practices.md 更新チェック（lessons.md の増加件数をウォーターマークと比較）
-WATERMARK_FILE="/workspace/.claude/best_practices_watermark"
-CURRENT_COUNT=$(grep -c '^- ' /workspace/.claude/lessons.md 2>/dev/null || echo 0)
+WATERMARK_FILE="$ROOT/.claude/best_practices_watermark"
+CURRENT_COUNT=$(grep -c '^- ' "$ROOT"/.claude/lessons.md 2>/dev/null || echo 0)
 WATERMARK_COUNT=$(cat "$WATERMARK_FILE" 2>/dev/null || echo 0)
 DELTA=$((CURRENT_COUNT - WATERMARK_COUNT))
 THRESHOLD=10
