@@ -16,7 +16,7 @@ Claude Code カスタマイズの一覧です。
 | [**settings.local.json**](#settingslocaljson) | 存在しない | 個人環境の permissions allow リスト（git 管理外） |
 | [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel / update-best-practices） | ドメイン固有 skill（spec-panel） |
 | [**rules/**](#rules) | 存在しない | アーキテクチャ定義（`architecture.md`） |
-| [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`（SessionStart）+ `settings.json`（Lint・model ガード） |
+| [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`・`hooks/model-guard.sh`・`hooks/lint-posttool.sh`・`hooks/docs-date-check.sh`・`hooks/spec-panel-gate.sh`（いずれも `settings.json` から呼び出し） |
 | [**incidents/**](#incidents) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
 | [**handovers/**](#handovers) | 存在しない | セッション引き継ぎノート（このプロジェクト配下・git 管理外） |
 | [**`plan-*.md`・`todo.md`**](#plan-mdtodomd) | 存在しない | devel 運用ファイル（`.claude/` 直下・git 管理対象） |
@@ -52,10 +52,11 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 | 2 | `model-guard.sh` | PreToolUse(Write\|Edit) hook | 実装ファイル（`.c/.h/.py/.html`）を Opus/Fable で編集しようとすると警告・permission ask |
 | 3 | `lint-posttool.sh` | PostToolUse(Write\|Edit) hook | `$CLAUDE_PROJECT_DIR` 配下のファイルのみ対象。ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
 | 4 | `docs-date-check.sh` | PostToolUse(Write\|Edit) hook | `docs/` 配下（3階層まで）の `*.md` 編集時に `\| 最終更新日 \|` 行が当日付でなければ更新指示を additionalContext で返送（ファイルは直接書き換えない） |
+| 5 | `spec-panel-gate.sh` | PreToolUse(ExitPlanMode) hook | 計画本文が `docs/` に言及し、かつ `mgmt/spec-findings/` に直近（2時間以内）の指摘記録がなければ `/spec-panel` 未実施の可能性ありとして permission ask（CLAUDE.md「計画の自動レビュー」節。ブロックはせず確認のみ） |
 
 ### `settings.json`
 
-プロジェクト共通の hooks（4件）を定義します（git 管理対象。クローン先でも同じ自動化が効く）。
+プロジェクト共通の hooks（5件）を定義します（git 管理対象。クローン先でも同じ自動化が効く）。
 各 hook は対応する `hooks/*.sh` を呼び出すのみで、ロジック本体はスクリプト側に置く。
 hook 内のパスは実行時に Claude Code が設定する `$CLAUDE_PROJECT_DIR` で解決し、
 実行環境（ローカル / コンテナ）に依存しない。
@@ -63,6 +64,7 @@ hook 内のパスは実行時に Claude Code が設定する `$CLAUDE_PROJECT_DI
 | トリガー | Matcher | 呼び出すスクリプト |
 |---|---|---|
 | PreToolUse | Write\|Edit | `hooks/model-guard.sh` |
+| PreToolUse | ExitPlanMode | `hooks/spec-panel-gate.sh` |
 | PostToolUse | Write\|Edit | `hooks/lint-posttool.sh` |
 | PostToolUse | Write\|Edit | `hooks/docs-date-check.sh` |
 | SessionStart | startup/resume/clear/compact | `hooks/session-start.sh` |

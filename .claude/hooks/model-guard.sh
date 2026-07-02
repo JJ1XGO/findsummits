@@ -3,6 +3,10 @@
 # 実装ファイル（.c/.h/.py/.html）を Opus/Fable で編集しようとした場合に警告し承認を求める
 # （CLAUDE.md 原則#4: 実装は Sonnet 推奨）。
 set +e
+if ! command -v jq >/dev/null 2>&1; then
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"[hook警告] jq が見つからないため model-guard.sh のモデルガードが機能していません。環境異常の可能性があります。続行してよいか確認してください。"}}'
+  exit 0
+fi
 in=$(cat)
 f=$(printf '%s' "$in" | jq -r '.tool_input.file_path // empty')
 case "$f" in

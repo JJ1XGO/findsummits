@@ -3,6 +3,10 @@
 # $CLAUDE_PROJECT_DIR 配下のファイルのみ対象。ファイル種別に応じて Lint を実行し
 # 結果を additionalContext で返送する。
 set +e
+if ! command -v jq >/dev/null 2>&1; then
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"[hook警告] jq が見つからないため lint-posttool.sh の検証をスキップしました。環境異常の可能性があります。"}}'
+  exit 0
+fi
 f=$(jq -r '.tool_input.file_path // empty')
 case "$f" in
   "$CLAUDE_PROJECT_DIR"/*) ;;
