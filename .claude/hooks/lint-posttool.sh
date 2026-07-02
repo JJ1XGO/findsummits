@@ -9,6 +9,15 @@ case "$f" in
   *) exit 0 ;;
 esac
 case "$f" in
+  *.md|*.py|*.geojson|*.html) ;;
+  *) exit 0 ;;
+esac
+if [ ! -x "$CLAUDE_PROJECT_DIR"/venv/bin/python3 ]; then
+  jq -n --arg ctx "[lint hook error] $CLAUDE_PROJECT_DIR/venv/bin/python3 が見つかりません。lint は実行されていません。venv セットアップ（requirements.txt）を確認してください。" \
+    '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":$ctx}}'
+  exit 0
+fi
+case "$f" in
   *.md)
     case "$f" in
       */.claude/incidents/*|*/.claude/handovers/*) exit 0 ;;

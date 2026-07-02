@@ -11,11 +11,13 @@ echo '※ 開始ルーティンを満たすため自動注入。関連レッス�
 
 # 最新インシデントが未解決なら環境チェック実行を命令（全件ではなく最新1件のみ確認）
 # 古いインシデントは後続セッションで確認済みとみなし、最新1件のみをトリガーとする
+# フェイルセーフ設計: 「解決済」を明示検出できた場合のみ非警告とする（fail-closed）。
+# 状態行の欠落・表記ゆれ・見出し形式など未知フォーマットは全て警告側に倒し、見逃しを構造的に防ぐ。
 LATEST_INCIDENT=$(ls -t "$ROOT"/.claude/incidents/*.md 2>/dev/null \
   | grep -v '\.raw\.txt$' | head -1)
 UNRESOLVED=""
 if [ -n "$LATEST_INCIDENT" ] && \
-   grep -qE '^\s*[-*]?\s*\*{0,2}状態\*{0,2}\s*[:：]\s*未解決|^未解決' "$LATEST_INCIDENT" 2>/dev/null; then
+   ! grep -qE '^\s*[-*]?\s*\*{0,2}状態\*{0,2}\s*[:：]\s*\*{0,2}解決済' "$LATEST_INCIDENT" 2>/dev/null; then
   UNRESOLVED="$LATEST_INCIDENT"
 fi
 if [ -n "$UNRESOLVED" ]; then

@@ -18,12 +18,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-posttool.sh\" 2>/dev/null || true",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-posttool.sh\"",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/docs-date-check.sh\" 2>/dev/null || true",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/docs-date-check.sh\"",
             "timeout": 10
           }
         ]
