@@ -135,6 +135,10 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 ## Best Practices（教訓蒸留）運用ルール
 
+@.claude/best_practices.md
+
+上記は `@` インポートによりセッション開始時に毎回自動でコンテキストへ読み込まれる。lessons.md 側は全文注入せず、必要な場面（学び転記の重複チェック等）で都度 Read する運用とする。
+
 - 学びは `.claude/lessons.md` に随時記録する（git 管理外・コミット不要）
 - `/update-best-practices`（グローバルコマンド、Opus 実行）が `.claude/lessons.md` を再分析し、
   `.claude/best_practices.md`（git 管理対象）を再合成する
