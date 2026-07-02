@@ -43,24 +43,29 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 
 ### `hooks/`
 
-`settings.json` の SessionStart フックから呼び出されるスクリプト群です。
+`settings.json` の各フックから呼び出されるスクリプト群です（1フック1ファイル。
+巨大なワンライナーを settings.json に直書きせず、外出しして可読性・diff の追いやすさを確保する）。
 
 | No. | ファイル | 呼び出し元 | 役割 |
 |---|---|---|---|
 | 1 | `session-start.sh` | SessionStart hook | handover + lessons を注入。以下2条件のいずれかで `/log-incident` の環境確認チェックリスト実行を Claude へ指示: ①最新インシデントファイルが「未解決」状態、②最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録がある（解決済みインシデントも直後の1セッションで要確認）。また handover の「## 学び」セクション項目を lessons.md と突き合わせ、未転記のものを全件初回返答時に追記するよう Claude へ指示。さらに lessons.md の件数増加をウォーターマーク（`best_practices_watermark`）と比較し、+10件以上で `/update-best-practices` 実行を推奨 |
+| 2 | `model-guard.sh` | PreToolUse(Write\|Edit) hook | 実装ファイル（`.c/.h/.py/.html`）を Opus/Fable で編集しようとすると警告・permission ask |
+| 3 | `lint-posttool.sh` | PostToolUse(Write\|Edit) hook | `$CLAUDE_PROJECT_DIR` 配下のファイルのみ対象。ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
+| 4 | `docs-date-check.sh` | PostToolUse(Write\|Edit) hook | `docs/` 配下（3階層まで）の `*.md` 編集時に `\| 最終更新日 \|` 行が当日付でなければ更新指示を additionalContext で返送（ファイルは直接書き換えない） |
 
 ### `settings.json`
 
 プロジェクト共通の hooks（4件）を定義します（git 管理対象。クローン先でも同じ自動化が効く）。
+各 hook は対応する `hooks/*.sh` を呼び出すのみで、ロジック本体はスクリプト側に置く。
 hook 内のパスは実行時に Claude Code が設定する `$CLAUDE_PROJECT_DIR` で解決し、
 実行環境（ローカル / コンテナ）に依存しない。
 
-| トリガー | Matcher | 役割 |
+| トリガー | Matcher | 呼び出すスクリプト |
 |---|---|---|
-| PreToolUse | Write\|Edit | 実装ファイル（`.c/.h/.py/.html`）を Opus/Fable で編集しようとすると警告・permission ask |
-| PostToolUse | Write\|Edit | ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
-| PostToolUse | Write\|Edit | `docs/*.md` 編集時に `\| 最終更新日 \|` 行が当日付でなければ更新指示を additionalContext で返送（ファイルは直接書き換えない） |
-| SessionStart | startup/resume/clear | `hooks/session-start.sh` を呼び出す。handover + lessons を自動注入し、未解決インシデントまたは前handoverに環境異常記録があれば環境確認チェックリスト実行を指示 |
+| PreToolUse | Write\|Edit | `hooks/model-guard.sh` |
+| PostToolUse | Write\|Edit | `hooks/lint-posttool.sh` |
+| PostToolUse | Write\|Edit | `hooks/docs-date-check.sh` |
+| SessionStart | startup/resume/clear/compact | `hooks/session-start.sh` |
 
 `.claude/` 構成ファイル変更時の README.md 更新リマインドはグローバル hook（`~/.claude/settings.json`）で対応。
 
