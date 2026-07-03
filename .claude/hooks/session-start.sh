@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# SessionStart hook: handover + lessons 注入 + インシデント検知
+# SessionStart hook: handover 注入 + インシデント検知
 
 # リポジトリルートをスクリプト位置から自己解決（コンテナ /workspace・ローカル両対応）
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 
 H=$(ls -t "$ROOT"/.claude/handovers/*.md 2>/dev/null | head -1)
 
-echo '# セッション開始ルーティン（自動注入: handover + lessons）'
+echo '# セッション開始ルーティン（自動注入: handover）'
 echo '※ 開始ルーティンを満たすため自動注入。関連レッスンがあれば作業前にユーザーへ共有すること。'
 
 # 全インシデント（.raw.txt除く）を走査し、各ファイルの「最後にマッチした状態行」で未解決を判定する。
@@ -59,12 +59,10 @@ else
   echo '## 最新 handover: なし'
 fi
 echo ''
-echo '## .claude/lessons.md'
-cat "$ROOT"/.claude/lessons.md 2>/dev/null
 echo '<<<END AUTO-INJECTED REFERENCE>>>'
 echo ''
 echo '## handover → lessons.md 転記（自律実行）'
-echo '上記 handover の「## 学び」セクションの項目を lessons.md と突き合わせ、未転記のものは全件このセッションの最初の返答時に lessons.md へ追記すること。'
+echo '.claude/lessons.md を Read し、上記 handover の「## 学び」セクションの項目と突き合わせ、未転記のものは全件このセッションの最初の返答時に lessons.md へ追記すること。'
 echo '追記する場合は処方形の記述規約（「〜する」形）に従い make lint を実行する。転記済みまたは該当なしの場合は一行で述べること。'
 
 # best_practices.md 更新チェック（lessons.md の増加件数をウォーターマークと比較）
