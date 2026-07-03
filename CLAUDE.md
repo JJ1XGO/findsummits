@@ -99,7 +99,7 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
    対応不要」と判明した場合は、対応側（claude-container）が説明コメント付きでクローズすることがある
 2. 動作確認は稼働中コンテナでは不十分になりうるため、リビルド（`-b`）後に行う
 3. AI が起票・コメント・クローズする場合は、本文の**末尾にモデル名のみを署名**として記入する
-   （例: `— Sonnet 4.5`）。ユーザーアカウントでの投稿が自問自答に見えるのを防ぐため。
+   （現在のセッションのモデル名を使う。例: `— Sonnet 5`）。ユーザーアカウントでの投稿が自問自答に見えるのを防ぐため。
    経緯の説明文（「findsummits の作業中に起票」等）は書かない
 4. 起票先リポジトリ名・仕様は推測せず、不明な場合はユーザーに確認してから起票する
 5. 1 issue 1 論点（上記「課題管理ルール」の「1 項目 1 課題」と同じ）
@@ -149,7 +149,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 対象ドキュメント:
 
-- `docs/` 配下のすべてのファイル（URD/SRS/HLD/LLD/UT/IT/ST/OPS/GLOSSARY/environment）
+- `docs/` 配下のすべてのファイル
 - `docs/decisions/` 配下の ADR と research 資料
 - `ref/SOURCES.md` などの参照資料
 - `.claude/plan-*.md`（devel ブランチ運用ファイル。命名規則は「計画ファイル・handover の扱い」節参照）
@@ -199,7 +199,4 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 ## その他
 
-### SOTA関連資料
-
-- [SOTAの山岳リスト](https://www.sotadata.org.uk/summitslist.csv)（JAで始まるものが日本支部のサミット）
-- [SOTA日本支部への山岳リスト更新申請書](https://www.kawauchi.homeip.mydns.jp/sotajp/wp-content/uploads/2024/03/SOTA-Summit-list-revision-request.xlsx)
+- SOTA 関連資料（山岳リスト summitslist.csv・申請書テンプレート）の出典 URL・備考は [`ref/SOURCES.md`](ref/SOURCES.md) を参照
