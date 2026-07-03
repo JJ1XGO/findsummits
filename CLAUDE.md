@@ -75,7 +75,7 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 - **1 項目 1 課題**: 複数の課題を1件に詰め込まない
 - **issue のスコープ**: 「問い＋決着（決定＋ADR/SRS への記録）」まで。記録完了 = 対応完了
-- **impersonation 禁止**: AI 登録の課題・バグは `報告者`・`--actor` ともにモデル名（Sonnet/Opus 等）。ユーザー名を充ててはならない
+- **impersonation 禁止**: AI 登録の課題・バグは `報告者`・`--actor` ともにモデル名（Sonnet/Fable/Opus 等）。ユーザー名を充ててはならない
 
 登録フロー: `issue add` → 作業開始時 `issue update --status 対応中` → `issue close` → ユーザーが `issue verify`
 
