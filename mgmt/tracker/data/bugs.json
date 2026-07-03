@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "1.0",
-    "last_updated": "2026-07-01",
-    "counter": 16
+    "last_updated": "2026-07-03",
+    "counter": 17
   },
   "bugs": [
     {
@@ -534,6 +534,45 @@
           "to": "解決済",
           "comment": "[解決確認] 修正確認OK",
           "session_id": "f67a998c-1f40-4124-ab4f-e513a82cae8e"
+        }
+      ]
+    },
+    {
+      "id": "BUG-017",
+      "title": "docs-date-check hook がコードフェンス内の最終更新日プレースホルダに誤検知する",
+      "description": "docs/CLAUDE.md はヘッダーテーブルを持たないが、フォーマット標準のコードフェンス内テンプレート（| 最終更新日 | YYYY-MM-DD |）が grep に一致し、編集のたびに当日付への更新を誤要求する。テンプレートを日付に書き換えると仕様例示が壊れるため従えない指示になる",
+      "reporter": "Fable 5",
+      "found_date": "2026-07-03",
+      "found_stage": "OPS",
+      "category": "その他",
+      "found_in": ".claude/hooks/docs-date-check.sh",
+      "repro": "毎回",
+      "severity": "低",
+      "status": "対応完了",
+      "assignee": null,
+      "stage": "OPS",
+      "cause": ".claude/hooks/docs-date-check.sh",
+      "resolution": "実ヘッダーを持たない docs/CLAUDE.md を検査対象から除外する（case 節で早期 exit）",
+      "notes": null,
+      "resolved_date": "2026-07-03",
+      "verified_date": null,
+      "created_session_id": "ce52eec0-a7ba-4366-977a-4f6a1b060f65",
+      "history": [
+        {
+          "date": "2026-07-03T21:49:38",
+          "actor": "Fable 5",
+          "from": "未対応",
+          "to": "対応中",
+          "comment": "",
+          "session_id": "ce52eec0-a7ba-4366-977a-4f6a1b060f65"
+        },
+        {
+          "date": "2026-07-03T21:51:14",
+          "actor": "Fable 5",
+          "from": "対応中",
+          "to": "対応完了",
+          "comment": "docs-date-check.sh に docs/CLAUDE.md の早期 exit を追加。除外動作と既存警告動作（10_URD.md）の両方を実行テストで確認済み",
+          "session_id": "ce52eec0-a7ba-4366-977a-4f6a1b060f65"
         }
       ]
     }

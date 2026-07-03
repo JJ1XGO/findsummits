@@ -51,7 +51,7 @@ Claude Code が自動的に読み込むプロジェクトルール定義です�
 | 1 | `session-start.sh` | SessionStart hook | handover を注入（best_practices.md は CLAUDE.md の `@import` で常時注入、lessons.md は都度 Read）。`.claude/incidents/*.md` を全件走査し、各ファイルの最後にマッチした状態行が「解決済」と明示検出できないものを未解決として件数・ファイル名一覧を常時表示（fail-closed。未知フォーマット・状態行欠落も警告側に倒す）。未解決が0件のときのみ、最新handoverの「環境異常・インシデント」セクションに「なし」以外の記録があれば追加で環境確認チェックリスト実行を指示（解決済みインシデントも直後の1セッションで要確認）。また handover の「## 学び」セクション項目を lessons.md と突き合わせ、未転記のものを全件初回返答時に追記するよう Claude へ指示。さらに lessons.md の件数増加をウォーターマーク（`best_practices_watermark`）と比較し、+10件以上で `/update-best-practices` 実行を推奨 |
 | 2 | `model-guard.sh` | PreToolUse(Write\|Edit) hook | 実装ファイル（`.c/.h/.py/.html`）を Opus/Fable で編集しようとすると警告・permission ask |
 | 3 | `lint-posttool.sh` | PostToolUse(Write\|Edit) hook | `$CLAUDE_PROJECT_DIR` 配下のファイルのみ対象。ファイル種別に応じて Lint 実行（Markdown/Python/GeoJSON/HTML）し結果を返送 |
-| 4 | `docs-date-check.sh` | PostToolUse(Write\|Edit) hook | `docs/` 配下（3階層まで）の `*.md` 編集時に `\| 最終更新日 \|` 行が当日付でなければ更新指示を additionalContext で返送（ファイルは直接書き換えない） |
+| 4 | `docs-date-check.sh` | PostToolUse(Write\|Edit) hook | `docs/` 配下（3階層まで）の `*.md` 編集時に `\| 最終更新日 \|` 行が当日付でなければ更新指示を additionalContext で返送（ファイルは直接書き換えない）。実ヘッダーを持たずテンプレート例示に誤検知する `docs/CLAUDE.md` は除外 |
 | 5 | `spec-panel-gate.sh` | PreToolUse(ExitPlanMode) hook | 計画本文が `docs/` に言及し、かつ `mgmt/spec-findings/` に直近（2時間以内）の指摘記録がなければ `/spec-panel` 未実施の可能性ありとして permission ask（CLAUDE.md「計画の自動レビュー」節。ブロックはせず確認のみ） |
 
 ### `settings.json`

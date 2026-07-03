@@ -8,6 +8,8 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 0
 fi
 f=$(jq -r '.tool_input.file_path // empty')
+# docs/CLAUDE.md は実ヘッダーを持たず、フォーマット標準のコードフェンス内テンプレートに誤検知するため除外（BUG-017）
+[ "$f" = "$CLAUDE_PROJECT_DIR/docs/CLAUDE.md" ] && exit 0
 case "$f" in
   "$CLAUDE_PROJECT_DIR"/docs/*.md|"$CLAUDE_PROJECT_DIR"/docs/*/*.md|"$CLAUDE_PROJECT_DIR"/docs/*/*/*.md)
     grep -q '| 最終更新日 |' "$f" 2>/dev/null || exit 0
