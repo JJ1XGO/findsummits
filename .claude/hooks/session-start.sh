@@ -77,7 +77,7 @@ THRESHOLD=10
 if [ "$DELTA" -ge "$THRESHOLD" ]; then
   echo ''
   echo "💡 【best_practices.md 更新推奨】lessons.md が ${WATERMARK_COUNT} → ${CURRENT_COUNT} 件に増加（+${DELTA} 件）。"
-  echo '/update-best-practices の実行を検討してください。'
+  echo 'このセッションの最初の返答時に AskUserQuestion で /update-best-practices を今すぐ実行するか確認すること（省略・先送り不可）。'
 fi
 
 # claude-container への起票 issue の状態確認（gh があるコンテナ内セッションのみ。フェイルソフト）
