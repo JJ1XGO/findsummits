@@ -104,13 +104,13 @@ LINT_HTML_PATHS ?=
 lint-html: venv
 	@if [ -n "$(LINT_HTML_PATHS)" ]; then targets="$(LINT_HTML_PATHS)"; \
 	else targets=$$(git ls-files '*.html' ':!:mgmt/archive/**'); fi; \
-	venv/bin/djlint $$targets --lint --profile html
+	venv/bin/python3 -m djlint $$targets --lint --profile html
 
 # lint ツールを最新版へ上げてからチェック（手動更新確認 + CI 用）。
 # requirements.txt の固定は変えない＝ローカルの再現性は維持。
 # ローカルで実行すると venv が固定版とズレるため、確認後は make venv-rebuild で復元すること。
 lint-latest: venv
-	venv/bin/pip install --upgrade ruff djlint geojson-validator pymarkdownlnt
+	venv/bin/python3 -m pip install --upgrade ruff djlint geojson-validator pymarkdownlnt
 	@$(MAKE) lint
 
 .PHONY: all clean findsummits test_mesh_analyze test_analyze test_terrain_image terrain_colormap_demo venv venv-rebuild lint-md lint-py lint-geojson lint-html lint-latest
