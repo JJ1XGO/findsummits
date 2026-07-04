@@ -171,7 +171,7 @@
 
 ## 保留
 
-（現在なし）
+- [ ] plan self-review（`/spec-panel`）の強制を CLAUDE.md の強調文から hook へ移行する検討（ExitPlanMode 前に `mgmt/spec-findings/` の指摘記録存在を検査する）
 
 ---
 

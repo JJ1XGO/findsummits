@@ -22,7 +22,7 @@
 - **コードと URD/SRS の乖離は意図的かつ正常**。コードを正にしてはならない
 - **仕様を決めてからコードを書く**。SRS/HLD/LLD レビュー中は実装に手を入れない
 
-※ 現在この原則は有効（HLD/LLD 未完成）。完成後は「ドキュメント・実装整合性原則」が主となる。
+※ HLD/LLD が未完成の間はこの原則が主となり、完成後は「ドキュメント・実装整合性原則」が主となる。
 
 ## ドキュメント・実装整合性原則
 
@@ -100,7 +100,9 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
 2. 動作確認は稼働中コンテナでは不十分になりうるため、リビルド（`-b`）後に行う
 3. AI が起票・コメント・クローズする場合は、本文の**末尾にモデル名のみを署名**として記入する
    （現在のセッションのモデル名を使う。例: `— Sonnet 5`）。ユーザーアカウントでの投稿が自問自答に見えるのを防ぐため。
-   経緯の説明文（「findsummits の作業中に起票」等）は書かない
+   経緯の説明文（「findsummits の作業中に起票」等）は書かない。
+   **この署名ルールはユーザー所有リポジトリへの投稿に限る**。外部プロジェクト（他者所有リポジトリ等）への
+   issue・コメント投稿には署名を付けない
 4. 起票先リポジトリ名・仕様は推測せず、不明な場合はユーザーに確認してから起票する
 5. 1 issue 1 論点（上記「課題管理ルール」の「1 項目 1 課題」と同じ）
 
@@ -132,11 +134,12 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画ファイル・handover の扱い
 
-- **plan ファイルの置き場・命名規則**: プロジェクトの `.claude/plan-<slug>.md` とする。`<slug>` は `/plan` コマンドが `~/.claude/plans/<slug>.md`（ホーム配下・グローバル、例: `precious-tinkering-origami.md`）に自動生成する際のファイル名をそのまま流用し、`plan-` プレフィックスは他の運用ファイルとの視認性のためにつける。ExitPlanMode 承認後・ファイル編集を始める前に `mv ~/.claude/plans/<slug>.md .claude/plan-<slug>.md` で移動する（両者は同じ `.claude` という名前を含むが別の場所なので、`mv` 実行時は必ずフルパスで確認すること）。セッションごとに `<slug>` が異なるため、同一リポジトリで複数セッションが同時に Plan Mode を使っても plan ファイルが衝突しない。
-- **plan ファイル内のファイル参照はコード表記にする**: `.claude/plan-<slug>.md` 内で `docs/...` 等のリポジトリ内ファイルを参照するときは、Markdown リンク `[..](..)` ではなく**コード表記（バッククォート）**で書く。`mv` 元（`~/.claude/plans/`）でも移動先（`.claude/plan-<slug>.md`）でも相対リンクが解決せず broken-link になるため、リンクにしないことで構造的に回避する。`.claude/plan-<slug>.md` は lint 対象に含めたまま運用する（隠さない）。
-- **計画の各タスクに実行モデルを明記する**: グローバル CLAUDE.md「モデルを使い分ける」節の3条件に該当し上位モデル（Fable、不可時 Opus）サブエージェントへの委譲が想定されるタスクには理由を付記する（既定は Sonnet 直接対応のため無印でよい）。
-- **handover ファイル名の日時**: ファイル名に使う日時は必ず `date '+%Y-%m-%d_%H%M'` コマンドで実時刻を取得すること。会話履歴や記憶から日付を推測してはならない（同日別セッションとの衝突を防ぐため）。
-- **plan ファイルの完了時の扱い**: 計画の実装が完了し区切りがついたら `.claude/plan-<slug>.md` を `git rm` で削除しコミットする（役目を終えた計画は残さない。履歴は git で追える）。ただし作業が中断・持ち越しになり handover を書いて次セッションへ引き継ぐ場合は削除せず残す。次セッションは `.claude/lessons.md`「中断したセッションの作業は plan ファイル名とタイムスタンプで特定して再開する」のとおり、`<slug>` を含むファイル名とタイムスタンプで対象を特定して再開する。
+- **置き場・命名**: `.claude/plan-<slug>.md`。`<slug>` は `/plan` が `~/.claude/plans/<slug>.md`（ホーム配下・グローバル）に自動生成するファイル名を流用する（セッションごとに異なるため、複数セッションが同時に Plan Mode を使っても衝突しない）。`plan-` プレフィックスは他の運用ファイルとの視認性のため
+- **移動手順**: ExitPlanMode 承認後・ファイル編集を始める前に `mv ~/.claude/plans/<slug>.md .claude/plan-<slug>.md`（両者は同じ `.claude` を含む別の場所。必ずフルパスで確認する）
+- **plan ファイル内のファイル参照はコード表記（バッククォート）にする**: Markdown リンクは `mv` 元でも移動先でも相対リンクが解決せず broken-link になるため。plan ファイルは lint 対象に含めたまま運用する（隠さない）
+- **計画の各タスクに実行モデルを明記する**: グローバル CLAUDE.md「モデルを使い分ける」の3条件に該当し上位モデル（Fable、不可時 Opus）委譲が想定されるタスクに理由を付記する（既定は Sonnet 直接対応のため無印でよい）
+- **handover ファイル名の日時**: 必ず `date '+%Y-%m-%d_%H%M'` で実時刻を取得する（推測しない。同日別セッションとの衝突防止）
+- **完了時の扱い**: 実装が完了し区切りがついたら `.claude/plan-<slug>.md` を `git rm` で削除しコミットする（履歴は git で追える）。中断・持ち越しで handover を書く場合は残し、次セッションは `<slug>` を含むファイル名とタイムスタンプで対象を特定して再開する
 
 ## handover 実行時のルール
 
@@ -168,22 +171,16 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 - 学びは `.claude/lessons.md` に随時記録する（git 管理外・コミット不要）
 - `/update-best-practices`（グローバルコマンド、Fable 実行・利用不可時は Opus）が `.claude/lessons.md` を再分析し、
-  `.claude/best_practices.md`（git 管理対象）を再合成する
-  - 蒸留観点: 手戻り防止 / 判断コスト削減 / 信頼性の担保 / コンテキスト継続 / 仕様と実装の整合
-  - 原則数目安: 14〜18件（増えすぎたら統合する）
-  - 除外: プロジェクト固有の技術詳細（dem10b 解像度・openpyxl API 等）は原則に含めない
-  - 実行後、`.claude/best_practices.md` と `.claude/best_practices_watermark` はコマンド内でコミットまで完結する
+  `.claude/best_practices.md`（git 管理対象）を再合成する。蒸留観点・原則数の既定と
+  watermark 更新・コミットはコマンド側で完結する
+  - 本プロジェクトの除外例: dem10b 解像度・openpyxl API 等の技術詳細は原則に含めない
 - lessons.md が一定量増えるとセッション開始時に実行が自動的に推奨される（hooks 側で検知）
 
 ## 機械的チェック（lint / LSP 等）
 
 `make lint` で全警告ゼロを保つ。
 
-- 現在の構成:
-  - `lint-md`: pymarkdown + `scripts/lint_docs.py`、`mgmt/archive/` 除外（対象: `*.md`）
-  - `lint-py`: ruff（設定: `ruff.toml`）、`mgmt/archive/` 除外（対象: `*.py`）
-  - `lint-geojson`: `scripts/lint_geojson.py`（geojson-validator ラッパー）、`mgmt/archive/` 除外（対象: `*.geojson`）
-  - `lint-html`: djlint（設定: `.djlintrc`）、`mgmt/archive/` 除外（対象: `*.html`）
+- target 構成（対象拡張子・使用ツール・設定ファイル・除外）は `Makefile` を参照
 - チェック対象を追加するとき（LSP の CLI チェック・C コンパイラ警告・Python 型チェック等）は、CLAUDE.md に個別ルールを増やさず `make lint` の依存へ target を足す
 - 編集時は PostToolUse hook が該当ファイルの違反を自動提示する。提示された違反はそのターン内で解消する
 - lint ツールのバージョンは `requirements.txt` で固定（ローカルの再現性維持）。最新版での通過確認は `make lint-latest`（手動）と GitHub Actions（月1自動・main の workflow）で監視する
