@@ -2,8 +2,8 @@
 
 > このファイルは **作業リスト** の保管庫。
 > 文書・仕様の議論を伴うもの（SRS/HLD/LLD/ADR 等の改訂が必要なもの）は
-> `venv/bin/python3 mgmt/tracker/track.py issue` で管理する。
-> 詳細は `/workspace/CLAUDE.md` の「ToDo リスト運用ルール」を参照。
+> GitHub Issues（`jj1xgo/findsummits`、`gh issue create`）で管理する。
+> 詳細は `/workspace/CLAUDE.md` の「ToDo リスト運用ルール」「課題管理ルール」を参照。
 
 ## 運用ルール（要約）
 

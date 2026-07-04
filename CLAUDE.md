@@ -57,16 +57,25 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 **バグ・欠陥を発見しても、すぐに修正を始めてはならない。必ず以下のフローを守ること。**
 
 1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する
-2. ユーザーに確認を取ってから `venv/bin/python3 mgmt/tracker/track.py bug add` で登録する
+2. ユーザーに確認を取ってから `gh issue create --repo jj1xgo/findsummits --label bug --label priority:高`（優先度は高・中・低から選択）で登録する
 3. 登録完了後、修正作業の承認を得てから着手する
 
-詳細な運用手順・コマンド一覧（close/verify 等）は `mgmt/tracker/CLAUDE.md` を参照。
+詳細な運用手順・ラベル体系は「課題管理ルール」節を参照。
 
 ## 課題管理ルール
 
-**課題管理（`mgmt/tracker/` issue）はプロジェクトの仕様・設計・調査に特化する。**
+**課題管理は GitHub Issues（`jj1xgo/findsummits`）で行う。** 運用の共通定義はグローバル CLAUDE.md
+「GitHub Issues による課題管理（opt-in）」を参照し、以下は findsummits 固有の定義。
 
-- **issue type は 改善・調査・設計 の 3 種のみ**。「機能追加」は廃止済み（ISSUE-120）。FR 確定済みの実装タスクは `todo.md` で管理する
+**対象**: プロジェクトの仕様・設計・調査、および欠陥管理ルールで登録するバグ。
+
+**ラベル体系**:
+
+- **type**（issue のみ・3種）: `type:改善` / `type:調査` / `type:設計`。「機能追加」は使わない。
+  FR 確定済みの実装タスクは `todo.md` で管理する
+- **priority**（issue・bug 共通）: `priority:高` / `priority:中` / `priority:低`
+- **bug**（バグのみ）: GitHub デフォルトの `bug` ラベル
+- **on-hold**: 保留。再検討トリガーを本文に明記した上で付与する
 
 **判定基準: 残作業に文書・仕様の議論が必要か？（出自ではなく残作業で判定）**
 
@@ -75,20 +84,24 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 - **1 項目 1 課題**: 複数の課題を1件に詰め込まない
 - **issue のスコープ**: 「問い＋決着（決定＋ADR/SRS への記録）」まで。記録完了 = 対応完了
-- **impersonation 禁止**: AI 登録の課題・バグは `報告者`・`--actor` ともにモデル名（Sonnet/Fable/Opus 等）。ユーザー名を充ててはならない
+- **impersonation 禁止**: 署名ルールは「環境課題の連携」節のルール3と同じ（末尾にモデル名のみ、経緯説明は書かない）
+- **クローズは `gh issue close` を正とする**（コミットの `fixes #N` は push まで閉じないため使わない）
 
-登録フロー: `issue add` → 作業開始時 `issue update --status 対応中` → `issue close` → ユーザーが `issue verify`
+**フロー**: `gh issue create` で登録 → 作業開始時に対応方針コメント → 実装 → 対応完了コメント →
+**ユーザーが動作確認後に `gh issue close`**。調査の結果「仕様どおり・対応不要」と判明した場合は
+対応側が説明コメント付きでクローズしてよい。
 
-詳細な運用手順・判定基準・コマンド一覧は `mgmt/tracker/CLAUDE.md` を参照。
+session-start hook が `jj1xgo/findsummits` の open issue 一覧を自動確認・注入する
+（フェイルソフト。`gh` 不在・API 失敗時は一行メッセージのみでスキップする）。
 
 ## 環境課題の連携（claude-container への issue 起票）
 
 findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-container）に起因する問題・要望は、
-`mgmt/tracker` ではなく `jj1xgo/claude-container` への GitHub issue で起票する。
+`jj1xgo/findsummits` ではなく `jj1xgo/claude-container` への GitHub issue で起票する。
 
 **判定基準（上記「課題管理ルール」の issue/todo 判定より前に適用）**: 問題の原因・対応先が
 コンテナ環境側にある → claude-container への `gh issue`。findsummits 自身の仕様・実装の問題
-→ 従来どおり `mgmt/tracker` / `todo.md`。
+→ 従来どおり `jj1xgo/findsummits` の issue または `todo.md`。
 
 **フロー**: 起票 → （claude-container 側が調査・実装・対応完了コメント）→ 対応待ち →
 **リビルド後**に動作確認 → 確認内容をコメントに付記してクローズ。
@@ -106,9 +119,8 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
 4. 起票先リポジトリ名・仕様は推測せず、不明な場合はユーザーに確認してから起票する
 5. 1 issue 1 論点（上記「課題管理ルール」の「1 項目 1 課題」と同じ）
 
-**注記**: `gh` はコンテナ内セッションのみ利用可能（ホストセッションには無い）。session-start hook が
-起票済み open issue の状態を自動確認し注入する（フェイルソフト。`gh` 不在・API 失敗時は
-一行メッセージのみでスキップする）。
+**注記**: `gh` はコンテナ内セッションのみ利用可能（ホストセッションには無い）。挙動は「課題管理ルール」
+節の hook 説明と同じ（対象リポジトリが `jj1xgo/claude-container` である点のみ異なる）。
 
 ## ToDo リスト運用ルール
 
