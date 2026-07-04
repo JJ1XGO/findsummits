@@ -136,7 +136,7 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 `ExitPlanMode` でユーザーへ計画を提示する**前**（承認を得る前）に、計画が `docs/` 配下のファイル（URD/SRS/HLD/LLD/ADR 等）の作成・更新を含む場合のみ、自セッションの計画ファイルに対して `/spec-panel` を実行してセルフレビューを行う（視点の詳細は `.claude/commands/spec-panel.md` 参照）。`docs/` を伴わない計画（コード修正・ツール整備・運用作業等）はスキップする。
 
-**対象パスの注意**: この時点（`ExitPlanMode` 承認前）では、下記「計画ファイル・handover の扱い」節の `.claude/plan-<slug>.md` への `mv` はまだ行われていない（`mv` は承認後の作業）。そのため `/spec-panel` の対象は `mv` 前の実パスである `~/.claude/plans/<slug>.md` を指定する。
+**対象パス**: `/spec-panel` の対象は `.claude/plans/<slug>.md`（下記「計画ファイル・handover の扱い」節参照）。
 
 **省略・短縮は禁止**。以下を必ず守ること:
 
@@ -146,12 +146,11 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 ## 計画ファイル・handover の扱い
 
-- **置き場・命名**: `.claude/plan-<slug>.md`。`<slug>` は `/plan` が `~/.claude/plans/<slug>.md`（ホーム配下・グローバル）に自動生成するファイル名を流用する（セッションごとに異なるため、複数セッションが同時に Plan Mode を使っても衝突しない）。`plan-` プレフィックスは他の運用ファイルとの視認性のため
-- **移動手順**: ExitPlanMode 承認後・ファイル編集を始める前に `mv ~/.claude/plans/<slug>.md .claude/plan-<slug>.md`（両者は同じ `.claude` を含む別の場所。必ずフルパスで確認する）
-- **plan ファイル内のファイル参照はコード表記（バッククォート）にする**: Markdown リンクは `mv` 元でも移動先でも相対リンクが解決せず broken-link になるため。plan ファイルは lint 対象に含めたまま運用する（隠さない）
+- **置き場・命名**: `.claude/plans/<slug>.md`。`.claude/settings.json` の `plansDirectory: ".claude/plans"` により plan ファイルは最初からリポジトリ内に生成されるため、**承認後の `mv` は不要**。万一 `~/.claude/plans/`（ホーム配下・グローバル）に生成された場合は設定が効いていないサインなので、異常として報告した上で `mv` で `.claude/plans/<slug>.md` へ移動する。`<slug>` はセッションごとに異なるため、複数セッションが同時に Plan Mode を使っても衝突しない。承認に至らず放棄された下書きが未追跡ファイルとして残っていたら、気づいた時点で削除してよい
+- **plan ファイル内のファイル参照はコード表記（バッククォート）にする**: plan ファイルの位置からの相対リンクは閲覧環境によって解決されず broken-link になるため。plan ファイルは lint 対象に含めたまま運用する（隠さない）
 - **計画の各タスクに実行モデルを明記する**: グローバル CLAUDE.md「モデルを使い分ける」の3条件に該当し上位モデル（Fable、不可時 Opus）委譲が想定されるタスクに理由を付記する（既定は Sonnet 直接対応のため無印でよい）
 - **handover ファイル名の日時**: 必ず `date '+%Y-%m-%d_%H%M'` で実時刻を取得する（推測しない。同日別セッションとの衝突防止）
-- **完了時の扱い**: 実装が完了し区切りがついたら `.claude/plan-<slug>.md` を `git rm` で削除しコミットする（履歴は git で追える）。中断・持ち越しで handover を書く場合は残し、次セッションは `<slug>` を含むファイル名とタイムスタンプで対象を特定して再開する
+- **完了時の扱い**: 実装が完了し区切りがついたら `.claude/plans/<slug>.md` を `git rm` で削除しコミットする（履歴は git で追える）。中断・持ち越しで handover を書く場合は残し、次セッションは `<slug>` を含むファイル名とタイムスタンプで対象を特定して再開する
 
 ## handover 実行時のルール
 
@@ -167,7 +166,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 - `docs/` 配下のすべてのファイル
 - `docs/decisions/` 配下の ADR と research 資料
 - `ref/SOURCES.md` などの参照資料
-- `.claude/plan-*.md`（devel ブランチ運用ファイル。命名規則は「計画ファイル・handover の扱い」節参照）
+- `.claude/plans/*.md`（devel ブランチ運用ファイル。命名規則は「計画ファイル・handover の扱い」節参照）
 
 ※ `.claude/best_practices.md` は例外: 上記の手動手順ではなく `/update-best-practices` 実行時にコマンド内で完結する（詳細は「Best Practices（教訓蒸留）運用ルール」参照）。
 
