@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-07-01 |
+| 最終更新日 | 2026-07-05 |
 | ステータス | ドラフト（[FR-022](#fr-022-コル充足判定) 純化・[FR-023](#fr-023-解析パイプライン制御) 解析パイプライン制御新設・N 扱い再設計・phase 番号統一。ADR-SRS-027） |
 | 参照 URD | [`10_URD.md`](10_URD.md) |
 
@@ -725,7 +725,7 @@
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| per-mesh ピーク候補 GeoJSON | 内部データ | GeoJSON | 2 種類のゾーンポリゴン・ピーク/コル Point・peak→col 接続線を同一ファイルに収録。ファイル: `$DATA_DIR/results/csv/<解析識別子>.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。各ポリゴン Feature のプロパティは下記「詳細」共通仕様参照。Point/LineString の仕様は下記「可視化フィーチャ」参照 |
+| per-mesh ピーク候補 GeoJSON | 内部データ | GeoJSON | 2 種類のゾーンポリゴン・ピーク/コル Point・peak→col 接続線を同一ファイルに収録。ファイル: `$DATA_DIR/results/csv/<解析識別子>.geojson`（CSV と同 basename に統一。[ADR-SRS-029](decisions/ADR-SRS-029-geojson-naming-align-with-csv.md) 参照）、RFC 7946、座標参照系: WGS84（EPSG:4326）。各ポリゴン Feature のプロパティは下記「詳細」共通仕様参照。Point/LineString の仕様は下記「可視化フィーチャ」参照 |
 
 **説明**:
 
@@ -789,7 +789,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - `expected_count`: **日本全土1次メッシュコードリストを基準**に算出する期待解析回数（`対象1次メッシュコードリスト` で範囲を絞っても本値は変わらない）。通常モード行（`analysis_id` 接頭辞 `3`）のみを対象とし、3×3 隣接カウントで算出する（ピークの所属 1次メッシュコードを基準に、日本全土 1次メッシュコードリスト内に存在する周辺 1次メッシュ数をカウント。コーナーメッシュ=4・エッジメッシュ=6・中央メッシュ=9 が期待値。周辺メッシュでも存在しない場合はその分だけ減る）。広域モード行（接頭辞 `4/5/6`）は `expected_count` の算出対象外（空欄）。本リストは常に存在するため、通常モード行で空欄になることはない
     - `stability`: 3値で表す。広域モード代表行（`expected_count` 空欄）のピークは `key_col_resolved` のみで判定し、`false` なら `unstable`、`true` なら `-`（通常モード安定性評価なし）を付与する。通常モード代表行（`expected_count` 非空欄）のピークは、`key_col_resolved=false` が 1 件でも含まれるか `analysis_count ≠ expected_count` の場合 `unstable`、それ以外は `confirmed`。統合範囲を絞った場合（`対象1次メッシュコードリスト` 指定時）は、範囲端メッシュの周辺メッシュが未解析のため `analysis_count < expected_count` となり、自動的に `unstable` と判定される（これは正しい挙動であり、限定範囲統合の結果を過信させない設計である）
   - プロミネンス最終フィルタ: **プロミネンス最終フィルタ閾値**（[データ辞書参照](#221-設定可能項目)）以上（[FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) の一次フィルタ通過済みのレコードに適用）
-  - **陸地最高峰の海面確定（[ADR-SRS-027](decisions/ADR-SRS-027-fr022-purification-fr023-pipeline-control.md)）**: `陸地最高峰リスト` と近傍一致（許容距離は HLD で定義）するピークを `key_col_resolved=true`（Key コル = 海面 0m）に更新してから `merged_peak.csv` を出力する。本機能を複数回再実行しても確定値が消えることはない
+  - **陸地最高峰の海面確定（[ADR-SRS-027](decisions/ADR-SRS-027-fr022-purification-fr023-pipeline-control.md)）**: `陸地最高峰リスト` と近傍一致（許容距離は HLD で定義）するピークを `key_col_resolved=true`（Key コル = 海面 0m）に更新してから `merged_peak.csv` を出力する。本機能を複数回再実行しても確定値が消えることはない。**`stability` は本更新の対象外**: `stability` は上記の代表採用ロジックの時点（本更新の前）で確定済みの値をそのまま維持する。陸地最高峰リスト対象ピーク（富士山・旭岳・中岳）は自動走査では `key_col_resolved=false` のまま推移するため（[ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照）、`key_col_resolved=true` 確定後も `stability=unstable` のまま出力される。これは意図的な挙動であり、「自動解析では確定できず手動リストで確定した」ことを読み手に伝える診断情報として機能する（`key_col_resolved` は申請可否判定に使用する確定値、`stability` は解析プロセスの信頼性指標という役割分担）
   - **再入可能性**: 本機能は解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）から複数回呼び出され、その都度 merged_peak.csv（内部 work CSV）が再生成される。詳細・設計判断: [ADR-SRS-023](decisions/ADR-SRS-023-fr008-merge-input-mesh-list-semantics.md)
 
 #### FR-018: per-mesh ピーク候補 GeoJSON 統合
@@ -809,7 +809,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 統合ピーク候補 GeoJSON（merged_peak.geojson） | 内部データ | GeoJSON | 内部中間ファイル。ファイル: `$DATA_DIR/results/merged_peak.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。ゾーンポリゴン・ピーク/コル Point・peak→col 接続線を収録。[FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合（ポリゴンのみ使用）および地理院地図上での中間確認（全フィーチャ）に使用。同一ファイルを世代ごとに上書き再生成する（世代別履歴は保存しない）。デバッグ・差分検査用として物理出力は残す。詳細: [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)・[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md) |
+| 統合ピーク候補 GeoJSON（merged_peak.geojson） | 内部データ | GeoJSON | 内部中間ファイル。ファイル: `$DATA_DIR/results/merged_peak.geojson`、RFC 7946、座標参照系: WGS84（EPSG:4326）。ゾーンポリゴン・ピーク/コル Point・peak→col 接続線を収録。[FR-009](#fr-009-sotaリスト突合match_status-判定) の point-in-polygon 突合（ポリゴンのみ使用）および地理院地図上での中間確認（全フィーチャ）に使用。同一ファイルを世代ごとに上書き再生成する（世代別履歴は保存しない）。デバッグ・差分検査用として物理出力は残す。詳細: [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-SRS-024](decisions/ADR-SRS-024-fr018-loop-reentry-and-peak-filter.md)・[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)・[ADR-SRS-029](decisions/ADR-SRS-029-geojson-naming-align-with-csv.md)（ファイル名の由来） |
 
 **説明**:
 
@@ -875,7 +875,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 | データ名 | 種別 | 形式 | 備考 |
 |---|---|---|---|
-| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・metadata（出典・基準日等）を含む |
+| 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | GeoJSON | フェーズ4 末尾の中心データ。全フィーチャ・rationale・metadata（出典・基準日等）を含む。ファイル名の由来: [ADR-SRS-030](decisions/ADR-SRS-030-rename-central-geojson-merged-summit.md) |
 | サミット一覧（突合後）（`merged_summit.xlsx`） | 外部I/F | XLSX | バッチ生成時点の確認用。HTML ビューア編集内容は反映しない |
 
 **説明**:
@@ -1003,6 +1003,8 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     | review | 孤立既存サミット | unmatched summit Point | 空 | 空 | この孤立サミット | 空 | 空 | 空 |
 
 ##### 各フィーチャのプロパティ
+
+`col_margin_px`・`analysis_count`・`expected_count`・`municipality`・`dominant_peak_code`・`dominant_peak_dist_m` の6プロパティは、[FR-012](#fr-012-サミット一覧申請内容反映版生成) がバッチ側 CSV を介さず本 GeoJSON のみから全出力カラムを生成できるようにするため追加されたもの（[ADR-SRS-041](decisions/ADR-SRS-041-merged-geojson-schema-extension-for-fr012.md) 参照）。
 
 **Point: ピーク**
 
@@ -1148,7 +1150,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | HTML ビューア上のユーザー入力 | ユーザー入力 | 必須 | — | [7.2.2 参照](#722-html-ビューア上のユーザー入力) |
 | 突合済み統合 GeoJSON（`merged_summit.geojson`） | 外部I/F | 必須 | — | 作業用 HTML ビューアに埋め込み済み（[FR-013](#fr-013-html-ビューア生成) 出力） |
 | 背景タイル（国土地理院標準地図・国土地理院淡色地図・OSM・OpenTopoMap） | 外部I/F | 必須 | — | 基図としていずれか1つを常時表示し切替可（既定: 国土地理院標準地図。[6.2.5](#625-作業用-html-ビューア) 参照）。ブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
-| 地理院標高タイル（dem5a/5b/5c/10b）・地理院基準点タイル | 外部I/F | 任意 | デフォルト OFF（レイヤー非表示時は取得しない） | 等高線オーバーレイ／基準点レイヤー ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
+| 地理院標高タイル（dem5a/5b/5c/10b） | 外部I/F | 任意 | デフォルト OFF（レイヤー非表示時は取得しない） | 等高線オーバーレイ ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
+| 地理院基準点タイル | 外部I/F | 任意 | デフォルト OFF（レイヤー非表示時は取得しない） | 基準点レイヤー ON 時にブラウザから実行時取得（出典・利用形態: [SOURCES.md](../ref/SOURCES.md)） |
 | localStorage 編集内容 | 内部データ | 任意 | 初期値（[FR-009](#fr-009-sotaリスト突合match_status-判定) 自動生成テンプレート） | 再訪時に読み込む。未編集（localStorage 空）の場合は初期値を使用 |
 
 **出力**:
