@@ -92,7 +92,7 @@ ref/          # 参照データ（git管理）
   SOURCES.md                               # 参照資料の出典一覧
 tests/        # テスト用プログラム（test_*.c）
 mgmt/          # 課題管理（tracker/）※ devel ブランチのみ・main には含めない
-.claude-container  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
+.claude-container.d/env  # 実設定（gitignore）: EXTRA_MOUNT でホストの /mnt/findsummits をコンテナ内にマウント
 
 # 以下のパスは params/config.ini の DATA_DIR で設定する
 # - claude-container 使用時: DATA_DIR = /data（コンテナ内パス）
