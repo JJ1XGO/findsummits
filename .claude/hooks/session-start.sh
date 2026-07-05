@@ -4,6 +4,7 @@
 # リポジトリルートをスクリプト位置から自己解決（コンテナ /workspace・ローカル両対応）
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 
+# shellcheck disable=SC2012 # handover ファイル名は /handover が生成する日時形式のみで空白・改行を含まない
 H=$(ls -t "$ROOT"/.claude/handovers/*.md 2>/dev/null | head -1)
 
 echo '# セッション開始ルーティン（自動注入: handover）'
@@ -13,9 +14,11 @@ echo '※ 開始ルーティンを満たすため自動注入。関連レッス�
 # 最新1件のみを見る旧方式は、複数件の未解決が蓄積すると検知漏れになるため全件走査に変更。
 # フェイルセーフ設計: 「解決済」を明示検出できた場合のみ非警告とする（fail-closed）。
 # 状態行の欠落・表記ゆれ・見出し形式など未知フォーマットは全て警告側に倒し、見逃しを構造的に防ぐ。
+# glob は known-patterns.md 等の非インシデントファイル（YYYY-MM-DD形式のファイル名でない）を
+# 誤って「状態行なし＝未解決」と検知しないよう [0-9]*.md に限定する。
 UNRESOLVED_LIST=""
 UNRESOLVED_COUNT=0
-for f in "$ROOT"/.claude/incidents/*.md; do
+for f in "$ROOT"/.claude/incidents/[0-9]*.md; do
   [ -e "$f" ] || continue
   LAST_STATUS=$(grep -E '^\s*[-*]?\s*\*{0,2}状態\*{0,2}\s*[:：]' "$f" 2>/dev/null | tail -1)
   if ! echo "$LAST_STATUS" | grep -qE '\*{0,2}解決済'; then
@@ -59,6 +62,24 @@ else
   echo '## 最新 handover: なし'
 fi
 echo ''
+
+# プロジェクト外層（ホスト層/Anthropic層）の既知パターン台帳ダイジェスト（グローバル共有、フェイルソフト）
+# パターン見出し行＋再発ログ件数のみを注入する（全文は注入しない。コンテキスト浪費防止）。
+GLOBAL_LEDGER="$HOME/.claude/global-incidents/known-patterns.md"
+if [ -f "$GLOBAL_LEDGER" ]; then
+  GLOBAL_LEDGER_DIGEST=$(awk '
+    /^## パターン/{ if (name!="") printf "  - %s（再発ログ%d件）\n", name, count; name=$0; sub(/^## /,"",name); count=0; insec=0; next }
+    /^### 再発ログ/{ insec=1; next }
+    /^##/{ insec=0 }
+    insec && /^- /{ count++ }
+    END{ if (name!="") printf "  - %s（再発ログ%d件）\n", name, count }
+  ' "$GLOBAL_LEDGER")
+  if [ -n "$GLOBAL_LEDGER_DIGEST" ]; then
+    echo '## プロジェクト外層 既知パターン台帳（~/.claude/global-incidents/known-patterns.md、ダイジェストのみ）'
+    printf '%s' "$GLOBAL_LEDGER_DIGEST"
+    echo 'ホスト層/Anthropic層由来と疑われる異常を検知したら、新規フルインシデントの前にこの台帳を確認すること（詳細は /log-incident 参照）。'
+  fi
+fi
 echo '<<<END AUTO-INJECTED REFERENCE>>>'
 echo ''
 echo '## handover → lessons.md 転記（自律実行）'
