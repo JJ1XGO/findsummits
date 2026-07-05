@@ -1,4 +1,5 @@
 {
+  "skipDangerousModePermissionPrompt": true,
   "plansDirectory": ".claude/plans",
   "hooks": {
     "PreToolUse": [
