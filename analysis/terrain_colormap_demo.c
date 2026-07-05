@@ -275,6 +275,49 @@ static void elev_to_rgb_landscape(float elev, uint8_t *r, uint8_t *g, uint8_t *b
     }
 }
 
+/*
+ * matplotlib 'terrain' カラーマップの移植版。
+ * venv (matplotlib 3.11.0) で `matplotlib.colormaps['terrain']` を実測した
+ * 折れ点(t=0.00/0.15/0.25/0.50/0.75/1.00)のRGB値をそのまま使用。
+ * 21点サンプリングで各区間が線形補間と一致することを確認済み（この6点で完全再現可能）。
+ * 標高マッピングは landscape 版と同じレンジ(0m=海面, 3776m=富士山頂)を採用。
+ */
+static void elev_to_rgb_terrain(float elev, uint8_t *r, uint8_t *g, uint8_t *b)
+{
+    static const double stops[] = {
+        -6000.0, 0.0, 300.0, 1500.0, 2700.0, 3776.0,
+    };
+    static const int colors[][3] = {
+        { 51,  51, 153},  /* -6000m: 深い青 (t=0.00) */
+        {  0, 152, 254},  /*     0m: 明るい青 (t=0.15) */
+        {  1, 204, 102},  /*   300m: 緑 (t=0.25)      */
+        {254, 254, 152},  /*  1500m: 黄色 (t=0.50)    */
+        {129,  94,  86},  /*  2700m: 茶色 (t=0.75)    */
+        {255, 255, 255},  /*  3776m: 白 (t=1.00)      */
+    };
+    static const int n = 6;
+
+    double e = (double)elev;
+
+    if (e < -9000.0) {
+        *r = colors[0][0]; *g = colors[0][1]; *b = colors[0][2]; return;
+    }
+    if (e <= 0.0) e = -1.0;
+
+    if (e >= stops[n - 1]) {
+        *r = colors[n-1][0]; *g = colors[n-1][1]; *b = colors[n-1][2]; return;
+    }
+    for (int i = 0; i < n - 1; i++) {
+        if (e >= stops[i] && e < stops[i + 1]) {
+            double t = (e - stops[i]) / (stops[i + 1] - stops[i]);
+            *r = (uint8_t)(colors[i][0] + t * (colors[i+1][0] - colors[i][0]) + 0.5);
+            *g = (uint8_t)(colors[i][1] + t * (colors[i+1][1] - colors[i][1]) + 0.5);
+            *b = (uint8_t)(colors[i][2] + t * (colors[i+1][2] - colors[i][2]) + 0.5);
+            return;
+        }
+    }
+}
+
 /* save_terrain_rgb_image と同じ縮小・出力ロジックだが、カラーマップ関数を差し替え可能にしたもの */
 static void save_with_colormap(const ElevTile *big, const char *path,
                                 void (*colormap)(float, uint8_t *, uint8_t *, uint8_t *))
@@ -418,13 +461,14 @@ int main(int argc, char *argv[])
     const char *data_dir = getenv("DATA_DIR");
     if (!data_dir || data_dir[0] == '\0') data_dir = "/data";
 
-    char tile_dir[512], out_current[512], out_monotone[512], out_landscape[512], out_ref15[512], out_ref15sw[512], cache_path[512];
+    char tile_dir[512], out_current[512], out_monotone[512], out_landscape[512], out_ref15[512], out_ref15sw[512], out_terrain[512], cache_path[512];
     snprintf(tile_dir, sizeof(tile_dir), "%s/tiles", data_dir);
     snprintf(out_current, sizeof(out_current), "%s/images/%d_cmp_current.png", data_dir, center_meshcode);
     snprintf(out_monotone, sizeof(out_monotone), "%s/images/%d_cmp_monotone.png", data_dir, center_meshcode);
     snprintf(out_landscape, sizeof(out_landscape), "%s/images/%d_cmp_landscape.png", data_dir, center_meshcode);
     snprintf(out_ref15, sizeof(out_ref15), "%s/images/%d_cmp_ref15.png", data_dir, center_meshcode);
     snprintf(out_ref15sw, sizeof(out_ref15sw), "%s/images/%d_cmp_ref15_swapped.png", data_dir, center_meshcode);
+    snprintf(out_terrain, sizeof(out_terrain), "%s/images/%d_cmp_terrain.png", data_dir, center_meshcode);
     snprintf(cache_path, sizeof(cache_path), "%s/images/%d_cmp_bigtile.cache", data_dir, center_meshcode);
 
     printf("=== カラーマップ比較試作ツール ===\n");
@@ -433,6 +477,7 @@ int main(int argc, char *argv[])
     printf("地物準拠版出力先: %s\n", out_landscape);
     printf("参考15段階版出力先: %s\n", out_ref15);
     printf("参考15段階(緑茶交換)版出力先: %s\n", out_ref15sw);
+    printf("matplotlib terrain版出力先: %s\n", out_terrain);
 
     MeshTileRange combined;
     if (mesh_to_tile_range(meshcodes[0], 15, &combined) != 0) {
@@ -469,6 +514,8 @@ int main(int argc, char *argv[])
     printf("参考15段階版出力完了\n");
     save_with_colormap(big, out_ref15sw, elev_to_rgb_ref15_swapped);
     printf("参考15段階(緑茶交換)版出力完了\n");
+    save_with_colormap(big, out_terrain, elev_to_rgb_terrain);
+    printf("matplotlib terrain版出力完了\n");
 
     elev_destroy(big);
     printf("\n完了\n");
