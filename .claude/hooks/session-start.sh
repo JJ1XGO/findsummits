@@ -121,15 +121,22 @@ if [ "$CHAIN_BROKEN_COUNT" -gt 0 ]; then
 fi
 
 # プロジェクト外層（ホスト層/Anthropic層）の既知パターン台帳ダイジェスト（グローバル共有、フェイルソフト）
-# パターン見出し行＋再発ログ件数のみを注入する（全文は注入しない。コンテキスト浪費防止）。
+# パターン見出し行＋再発ログ件数＋最終再発日のみを注入する（全文は注入しない。コンテキスト浪費防止）。
+# 件数だけでは偏りが出た際に「まだ活性か」が読めないため、最終再発日を軽量に添える
+# （Fableへの設計評価依頼で、件数飽和時の活性判定に有効と判断）。
 GLOBAL_LEDGER="$HOME/.claude/global-incidents/known-patterns.md"
 if [ -f "$GLOBAL_LEDGER" ]; then
   GLOBAL_LEDGER_DIGEST=$(awk '
-    /^## パターン/{ if (name!="") printf "  - %s（再発ログ%d件）\n", name, count; name=$0; sub(/^## /,"",name); count=0; insec=0; next }
+    function emit() {
+      if (name == "") return;
+      if (count > 0) printf "  - %s（再発ログ%d件、最終%s）\n", name, count, lastdate;
+      else printf "  - %s（再発ログ%d件）\n", name, count;
+    }
+    /^## パターン/{ emit(); name=$0; sub(/^## /,"",name); count=0; insec=0; lastdate=""; next }
     /^### 再発ログ/{ insec=1; next }
     /^##/{ insec=0 }
-    insec && /^- /{ count++ }
-    END{ if (name!="") printf "  - %s（再発ログ%d件）\n", name, count }
+    insec && /^- /{ count++; d=$0; sub(/^- /,"",d); sub(/_.*/,"",d); lastdate=d }
+    END{ emit() }
   ' "$GLOBAL_LEDGER")
   if [ -n "$GLOBAL_LEDGER_DIGEST" ]; then
     echo '## プロジェクト外層 既知パターン台帳（~/.claude/global-incidents/known-patterns.md、ダイジェストのみ）'
