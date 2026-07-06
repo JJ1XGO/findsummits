@@ -32,7 +32,7 @@ OpenCV を導入する場合、[FR-016](../20_SRS.md#fr-016-ピーク域ポリ�
 |---|---|---|
 | libpng で標高タイル PNG をデコード | `cv::imread(path, IMREAD_UNCHANGED)` | [FR-003](../20_SRS.md#fr-003-標高デコードnodata-処理) |
 | RGB→標高変換 `(R*65536+G*256+B)/100` | cv::Mat の split + 行列演算 | [FR-003](../20_SRS.md#fr-003-標高デコードnodata-処理) |
-| 標高地形図 PNG（色分け・縮小・出力） | `cv::applyColorMap` / LUT + `cv::resize` + `cv::imwrite` | [FR-015](../20_SRS.md#fr-015-標高地形図出力) |
+| 標高地形図 PNG（色分け・縮小・出力） | `cv::applyColorMap` / LUT + `cv::resize` + `cv::imwrite`（陰影起伏(hillshade)は LUT 方式ではカバーされず自前実装が必要。[ADR-SRS-047](ADR-SRS-047-terrain-color-scheme-gist-earth-hillshade.md)参照） | [FR-015](../20_SRS.md#fr-015-標高地形図出力) |
 | Flood Fill・輪郭抽出（lossless） | `cv::floodFill` / `cv::findContours`（`CHAIN_APPROX_SIMPLE`） | [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) |
 
 ### C++ 化の必然性
@@ -71,10 +71,10 @@ ADR-SRS-002（DEM 階層フォールバック）・ADR-SRS-004（L14 max pooling
 |---|---|---|---|
 | Phase 1 | ビルド基盤の C++ 化（Makefile を g++ + pkg-config 化）<br>`elevation.c` を C++ + `cv::imread` 化 | 中 | **タイル PNG デコード後の標高 float 値が現行 libpng 実装と完全一致**すること |
 | Phase 2 | `mesh.c`, `unionfind.c`, `analyze.c`, `mesh_analyze.c`, `main.c` および tests/ を C++ 翻訳<br>（malloc → std::vector、構造体 → class への機械的変換主体） | 大 | 既存テスト（`test_mesh_analyze`, `test_analyze`）が全通過 + 既知メッシュの per-mesh CSV が現行と完全一致 |
-| Phase 3 | [FR-015](../20_SRS.md#fr-015-標高地形図出力) 標高地形図を `cv::applyColorMap` + `cv::resize` + `cv::imwrite` で書き直し | 小 | 既存出力との視覚比較（同等の可読性であれば可） |
+| Phase 3 | [FR-015](../20_SRS.md#fr-015-標高地形図出力) 標高地形図を gist_earth 相当 LUT + 自前 hillshade 実装（matplotlib `LightSource.shade` 互換アルゴリズム、仕様は [ADR-SRS-047](ADR-SRS-047-terrain-color-scheme-gist-earth-hillshade.md) / [SRS 6.2.3](../20_SRS.md#623-標高地形図)）+ `cv::resize` + `cv::imwrite` で書き直し | 中 | matplotlib リファレンス出力との画素単位数値照合（許容誤差付き） |
 | Phase 4 | [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) を `cv::floodFill` + `cv::findContours` で新規実装 | 中 | per-mesh `<meshcode>.geojson` を実メッシュで出力し、地理院地図上で目視確認 |
 
-Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加は伴わない。Phase 3 は内部実装の置換のみで仕様変更なし。Phase 4 で初めて [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) として新機能を追加する。
+Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加は伴わない。Phase 3 は改訂後の [FR-015](../20_SRS.md#fr-015-標高地形図出力)（[ADR-SRS-047](ADR-SRS-047-terrain-color-scheme-gist-earth-hillshade.md) で確定した gist_earth + 陰影起伏方式）を実装するものであり、視覚仕様の変更を伴う（旧 Japan Topo スキームからの置換）。現行の C 実装（`elev_to_rgb()`）は Phase 3 着手まで旧スキームのまま残り、SRS との意図的な乖離が生じる。Phase 4 で初めて [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) として新機能を追加する。
 
 ### C++ 利用の方針（複雑機能の意図的回避）
 
@@ -92,6 +92,7 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 | [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) のみを C++ モジュール化（折衷案） | C から呼ぶための `extern "C"` ラッパーが煩雑。OpenCV の戻り値型（`std::vector<std::vector<cv::Point>>` 等）を C 側で扱うのが現実的でない。結局フル C++ 化したくなる |
 | Python 単体実装に回帰（findsummits4sotaja 方式） | 大規模メッシュでのメモリ・速度要件を満たせない懸念から ADR-SRS-001 で却下済み。本判断でもその前提は維持 |
 | OpenCV を採用せず別の C++ 画像処理ライブラリ（CImg, GIL 等）を採用 | 採用例・コミュニティ規模・ドキュメント量で OpenCV が圧倒的。Terrain-RGB の用途で他ライブラリを選ぶ理由がない |
+| matplotlib を C++ から呼ぶ（Python embedding / `matplotlib-cpp`） | ADR-SRS-001 のハイブリッド分担原則（性能要求は C/C++、出力フォーマットは Python）に反する。実行時に Python + matplotlib が必須という依存を C++ エンジンに持ち込むことになり、`matplotlib-cpp` は内部で Python インタプリタを起動する仕組み（`plot()` 等のグラフ描画 API のラッパー）で `LightSource` のような陰影合成 API には対応していない |
 
 ## Consequences
 
@@ -110,6 +111,18 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 - **Phase 1 の同値性検証リスク**: cv::imread と libpng の PNG デコード結果が microscopic に異なると、既存解析結果との完全一致が崩れる可能性がある。検証手順は調査資料で詳述
 - **ビルド時間の増加**: C++ コンパイル + OpenCV ヘッダの取り込みで現行より遅くなる（数倍程度の想定）
 - **チーム規模が小さいプロジェクトでの C++ 採用は学習コスト**: ただし本プロジェクトは個人開発であり、ユーザーが C++ 採用を許容している前提
+- **OpenCV に hillshade 相当の API はなく、自前実装は意図的な設計判断である**（`cv::applyColorMap` は 8bit 入力の LUT 方式で陰影合成機能を持たない。後続セッションでの誤読防止のため明記する）
+
+### Phase 3 実装時の技術的注意点
+
+以下は [ADR-SRS-047](ADR-SRS-047-terrain-color-scheme-gist-earth-hillshade.md) で確定した matplotlib
+アルゴリズム（勾配→法線→内積→overlay合成）を OpenCV へ移植する際の落とし穴。詳細は
+`research/terrain-colormap-hillshade-research.md` に記録し、Phase 3 実装 ISSUE 化時に参照する。
+
+- `cv::Sobel` は `np.gradient` と非等価（3×3 平滑化・スケール係数が異なる）。中心差分での再実装が必要
+- 8bit 量子化は LUT 適用・overlay 合成を float のまま行い、最終出力のみ 8bit 化する
+- 画像の y 軸方向と光源ベクトルの符号を誤ると陰影が南北反転する
+- 縮小してから shade する順序と `dx`/`dy` の追従を維持する（実距離換算を誤ると陰影が二極化する既知問題の再発防止）
 
 ### Migration Plan（実装時）
 
