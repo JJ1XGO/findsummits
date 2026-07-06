@@ -20,18 +20,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LightSource, LinearSegmentedColormap, to_rgba
 
-CACHE_PATH = "/data/images/5338_cmp_bigtile.cache"
-OUT_DIR = "/workspace/analysis/colormap_test"
+CACHE_PATH = "/mnt/findsummits/images/5338_cmp_bigtile.cache"
+OUT_DIR = "analysis/colormap_test"
 STRIDE = 12
 PIXEL_RESOLUTION_M = 3.8812 * STRIDE
 
-# Fable 試作案(中明度・色相主体、頂上も白にしない)
+# gist_earth(vmin=-t0*vmax/(1-t0), t0=0.25)から9ストップ抽出した色に置き換え。
+# 元のFable試作案は1000-2000m帯で明度が谷型に落ち込み(L=0.537→0.412)暗い赤褐色に
+# 潰れる問題があったため、gist_earthの単調増加する明度カーブを踏襲する。
 LAND_STOPS_M = [0.0, 100.0, 300.0, 600.0, 1000.0, 1500.0, 2000.0, 2700.0, 3800.0]
 LAND_COLORS_HEX = [
-    "#5e8c5a", "#82a95c", "#b0a45e", "#bd9455",
-    "#a97544", "#96603f", "#8a5a48", "#8c766a", "#c2bab0",
+    "#6b6b62", "#b59449", "#89b260", "#5cbc8d",
+    "#7cc483", "#aecc98", "#d2d9af", "#e8dec8", "#f9f4f4",
 ]
-OCEAN_COLOR_HEX = "#1a4f72"
+OCEAN_COLOR_HEX = "#B7E5FA"
 VMAX = LAND_STOPS_M[-1]
 
 positions = [s / VMAX for s in LAND_STOPS_M]

@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,7 +22,7 @@ elev = np.clip(elev, 0, None)
 
 candidates = ['terrain', 'gist_earth']
 fig, axes = plt.subplots(1, len(candidates), figsize=(10, 5))
-for ax, name in zip(axes, candidates):
+for ax, name in zip(axes, candidates, strict=True):
     im = ax.imshow(elev, cmap=plt.get_cmap(name), vmin=0, vmax=3800)
     ax.set_title(name)
     ax.axis('off')

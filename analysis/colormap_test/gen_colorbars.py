@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +17,7 @@ candidates = [
 fig, axes = plt.subplots(len(candidates), 1, figsize=(8, len(candidates) * 0.6))
 gradient = np.linspace(0, 1, 256).reshape(1, -1)
 
-for ax, name in zip(axes, candidates):
+for ax, name in zip(axes, candidates, strict=True):
     ax.imshow(gradient, aspect='auto', cmap=plt.get_cmap(name))
     ax.set_yticks([])
     ax.set_xticks([])

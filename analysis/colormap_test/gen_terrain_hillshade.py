@@ -10,10 +10,11 @@ gist_earth は深海〜高山という地球規模の標高レンジを想定し
 しかし標高 0m 以下を固定色（マスク）で塗りつぶす方式により、gist_earth のカラーマップ・陰影を
 海面から完全に切り離せることが分かり、方針転換した。
 
-現時点（2026-07-05）の採用サンプルは `5338_hillshade_gist_earth_ve8_alt77.7_t0-0.00_mask-purple.png`
-（gist_earth + LightSource(azdeg=180, altdeg=77.7) + vert_exag=8 + 標高0m以下を薄紫 `#E6D9F5` で
-マスク）。ただし SRS（`docs/20_SRS.md` 6.2.3節）への正式反映は保留中（さらに検討を重ねた上で
-再度試みる方針。詳細は `.claude/handovers/` の該当セッションの引き継ぎノートを参照）。
+採用決定（2026-07-06、ADR-SRS-047）: `5338_hillshade_gist_earth_ve8_alt77.7_t0-0.25_mask-white.png`
+（gist_earth + LightSource(azdeg=180, altdeg=77.7) + vert_exag=8 + t0=0.25（vmaxは解析範囲の
+実測最大標高を使う相対値）+ 標高0m以下を白 `#FFFFFF` でマスク）。生成スクリプトは
+`gen_terrain_gistearth_ocean_variants.py`。SRS（`docs/20_SRS.md` 6.2.3節）への反映は
+`ADR-SRS-047-terrain-color-scheme-gist-earth-hillshade.md` を参照。
 """
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
