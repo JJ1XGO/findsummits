@@ -92,7 +92,7 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 | [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) のみを C++ モジュール化（折衷案） | C から呼ぶための `extern "C"` ラッパーが煩雑。OpenCV の戻り値型（`std::vector<std::vector<cv::Point>>` 等）を C 側で扱うのが現実的でない。結局フル C++ 化したくなる |
 | Python 単体実装に回帰（findsummits4sotaja 方式） | 大規模メッシュでのメモリ・速度要件を満たせない懸念から ADR-SRS-001 で却下済み。本判断でもその前提は維持 |
 | OpenCV を採用せず別の C++ 画像処理ライブラリ（CImg, GIL 等）を採用 | 採用例・コミュニティ規模・ドキュメント量で OpenCV が圧倒的。Terrain-RGB の用途で他ライブラリを選ぶ理由がない |
-| matplotlib を C++ から呼ぶ（Python embedding / `matplotlib-cpp`） | ADR-SRS-001 のハイブリッド分担原則（性能要求は C/C++、出力フォーマットは Python）に反する。実行時に Python + matplotlib が必須という依存を C++ エンジンに持ち込むことになり、`matplotlib-cpp` は内部で Python インタプリタを起動する仕組み（`plot()` 等のグラフ描画 API のラッパー）で `LightSource` のような陰影合成 API には対応していない |
+| matplotlib を C++ から呼ぶ（Python embedding / `matplotlib-cpp`） | ADR-SRS-001 のハイブリッド分担原則（C エンジンと Python スクリプトは別プロセスとして分離する）に反する。`matplotlib-cpp` は C エンジンのプロセス内部に Python インタプリタを embedding する仕組みであり、性能要求のある処理を担うはずの C エンジンのプロセス境界を壊す。加えて `plot()` 等のグラフ描画 API のラッパーに過ぎず、`LightSource` のような陰影合成 API には対応していない |
 
 ## Consequences
 
