@@ -859,7 +859,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 
 #### FR-009: SOTAリスト突合・match_status 判定
 
-- **対応 UR**: [UR-003](10_URD.md#ur-003)
+- **対応 UR**: [UR-003](10_URD.md#ur-003), [UR-006](10_URD.md#ur-006)
 - **概要**: merged_peak.csv（ピーク中心の内部 work CSV）と SOTA サミットリストを point-in-polygon 突合し（ポリゴン形状はピーク候補 GeoJSON `merged_peak.geojson` から取得、その他の属性は merged_peak.csv から join; [ADR-SRS-022](decisions/ADR-SRS-022-per-mesh-geojson-property-design.md)）、全 Point/Polygon/LineString フィーチャ・rationale プロパティを含む `merged_summit.geojson`（中心データ）と `merged_summit.xlsx`（サミット中心の確認用 XLSX）を出力する。本 FR はデータ概念が「ピーク中心 → サミット中心」へ切り替わる節目である。
 
 **入力**:
