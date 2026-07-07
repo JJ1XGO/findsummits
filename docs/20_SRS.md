@@ -1033,7 +1033,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 | `summit_name` | サミット名（matched / dominant のみ・英語/ローマ字） |
 | `summit_name_jp` | 日本語山岳名（matched / dominant のみ・本 FR が geojson_v{N} から取得し格納。未取得時は空文字） |
 | `peak_elev` | 検出標高（m） |
-| `prominence` | プロミネンス（m）。`key_col_resolved=false`（Key コル未確定）の場合は `null`（キーは常に存在し値のみ null）。ビューア表示は `prominence ?? '未定義'` で対応可能 |
+| `prominence` | プロミネンス（m）。`key_col_resolved=false`（Key コル未確定）の場合は `null`（キーは常に存在し値のみ null）。ビューア表示は未確定時に「未定義」と表示する |
 | `stability` | confirmed / unstable / -（`-` = 広域モード確定ピーク・通常モード安定性評価なし。定義は [FR-008](#fr-008-per-mesh-csv-統合) 参照） |
 | `key_col_resolved` | コル確定フラグ（true=確定 / false=未確定） |
 | `points` | 標高バンドに基づくポイント数（1/2/4/6/8/10）。`peak_elev` から算出。出力プロパティ名は `points`（[FR-009](#fr-009-sotaリスト突合match_status-判定) 内部変数 `peak_points` とは別） |
