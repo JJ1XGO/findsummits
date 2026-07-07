@@ -1378,7 +1378,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | `merged_summit_revised.xlsx` | サミット一覧（申請内容反映版）（[FR-012](#fr-012-サミット一覧申請内容反映版生成) 準拠） | — |
 | `add.geojson` | 追加申請候補ピーク（new/dominant）および関連フィーチャ | `category="add"` のフィーチャ全て（peak・key_col・activation_zone・delete_zone・peak_col_link）。※ dominant ピーク→削除候補サミット接続線（`coord_diff`）は `category="delete"` のため `delete.geojson` に分類される |
 | `delete.geojson` | 削除申請候補サミットおよび親ピーク→サミット接続線 | `category="delete"` のフィーチャ全て（delete summit・coord_diff LineString）。[ADR-SRS-043](decisions/ADR-SRS-043-matched-peak-as-delete-reference.md) 参照 |
-| `band_change.geojson` | ポイントバンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
+| `band_change.geojson` | バンド変更候補ピークおよび関連フィーチャ | `category="band_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
 | `no_change.geojson` | 変更なし既存サミットおよび関連フィーチャ | `category="no_change"` のフィーチャ全て（フィーチャ構成は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)） |
 | `review.geojson` | 要確認サミット（孤立既存サミット） | `category="review"` のフィーチャ全て（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)） |
 
