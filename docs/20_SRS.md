@@ -802,7 +802,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - プロミネンス最終フィルタ: **プロミネンス最終フィルタ閾値**（[データ辞書参照](#221-設定可能項目)）以上（[FR-007](#fr-007-per-mesh-csv-出力プロミネンス閾値適用) の一次フィルタ通過済みのレコードに適用）
   - **陸地最高峰の海面確定（[ADR-SRS-027](decisions/ADR-SRS-027-fr022-purification-fr023-pipeline-control.md)）**: `陸地最高峰リスト` と近傍一致（許容距離は HLD で定義）するピークを `key_col_resolved=true`（Key コル = 海面 0m）に更新してから `merged_peak.csv` を出力する。本機能を複数回再実行しても確定値が消えることはない。**`stability` は本更新の対象外**: `stability` は上記の代表採用ロジックの時点（本更新の前）で確定済みの値をそのまま維持する。陸地最高峰リスト対象ピーク（富士山・旭岳・中岳）は自動走査では `key_col_resolved=false` のまま推移するため（[ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照）、`key_col_resolved=true` 確定後も `stability=unstable` のまま出力される。これは意図的な挙動であり、「自動解析では確定できず手動リストで確定した」ことを読み手に伝える診断情報として機能する（`key_col_resolved` は申請可否判定に使用する確定値、`stability` は解析プロセスの信頼性指標という役割分担）
   - **再入可能性**: 本機能は解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）から複数回呼び出され、その都度 merged_peak.csv（内部 work CSV）が再生成される。詳細・設計判断: [ADR-SRS-023](decisions/ADR-SRS-023-fr008-merge-input-mesh-list-semantics.md)
-  - **異常系**: per-mesh ピーク候補 CSV が 1 件も存在しない場合、または陸地最高峰リスト・日本全土1次メッシュコードリストが読み取れない場合はエラー終了する（[FR-023](#fr-023-解析パイプライン制御) に伝播）
+  - **異常系**: per-mesh ピーク候補 CSV が 1 件も存在しない場合、または陸地最高峰リスト・日本全土1次メッシュコードリストが存在しない、または読み取りエラーの場合はエラー終了する（[FR-023](#fr-023-解析パイプライン制御) に伝播）
 
 #### FR-018: per-mesh ピーク候補 GeoJSON 統合
 
