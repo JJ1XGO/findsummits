@@ -13,7 +13,7 @@ Claude Code カスタマイズの一覧です。
 |---|---|---|
 | [**CLAUDE.md**](#claudemd-の位置) | 全プロジェクト共通ガイドライン | リポジトリルートに配置 |
 | [**settings.json**](#settingsjson) | 基盤設定一式 | プロジェクト共通 hooks（Lint・model ガード・SessionStart、git 管理対象） |
-| [**settings.local.json**](#settingslocaljson) | 存在しない | 個人環境の permissions allow リスト（git 管理外） |
+| [**settings.local.json**](#settingslocaljson) | 存在しない | 個人環境の permissions allow リスト・`skipDangerousModePermissionPrompt`（git 管理外） |
 | [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel / update-best-practices） | ドメイン固有 skill（spec-panel） |
 | [**rules/**](#rules) | 存在しない | アーキテクチャ定義（`architecture.md`） |
 | [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`・`hooks/model-guard.sh`・`hooks/lint-posttool.sh`・`hooks/docs-date-check.sh`・`hooks/spec-panel-gate.sh`（いずれも `settings.json` から呼び出し） |
@@ -73,7 +73,9 @@ hook 内のパスは実行時に Claude Code が設定する `$CLAUDE_PROJECT_DI
 
 ### `settings.local.json`
 
-個人環境の permissions allow リスト（実行許可ホワイトリスト）のみを定義します（git 管理外）。
+個人環境の permissions allow リスト（実行許可ホワイトリスト）と `skipDangerousModePermissionPrompt` を定義します（git 管理外）。
+
+`skipDangerousModePermissionPrompt` は claude-container 経由のコンテナ内実行（`--dangerously-skip-permissions` 前提）と整合させるための設定。Claude Code はこのキーを `userSettings`・`localSettings`・`flagSettings`・`policySettings` からのみ読み取り、`projectSettings`（`.claude/settings.json`、共有・git 管理下）は判定対象に含まれない（バイナリ実装で確認済み、2026-07-07）。git 管理下の設定だけで危険モードのダイアログを無効化できると悪用リスクがあるための意図的な仕様と考えられる。そのため `settings.local.json` に置く。
 
 | 許可対象 | 目的 |
 |---|---|
