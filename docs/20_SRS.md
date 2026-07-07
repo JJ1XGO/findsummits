@@ -1717,7 +1717,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 用途 | SOTA サミットリスト突合（[FR-009](#fr-009-sotaリスト突合match_status-判定)）のための現役サミット一覧 |
 | 取得方法 | ユーザーが <https://www.sotadata.org.uk/summitslist.csv> から手動ダウンロードして配置する（ツールは自動取得しない） |
 | 配置場所 | `$DATA_DIR/ref/summitslist.csv` |
-| 形式 | CSV。git 管理外 |
+| 形式 | CSV（1行目: メタデータ行 `SOTA Summits List (Date=DD/MM/YYYY)` 形式。2行目以降: ヘッダー行+データ行）。git 管理外 |
 | 対象レコード | SummitCode が `JA` で始まるもの |
 | 使用カラム | SummitCode, SummitName, AltM, Latitude, Longitude, ValidTo（その他は無視） |
 | 有効レコード絞り込み | `ValidTo`（`DD/MM/YYYY` 形式）を解析し、**実行日以降**のレコードのみを突合対象とする（`ValidTo` < 実行日のサミットは廃止済みとして除外する） |
