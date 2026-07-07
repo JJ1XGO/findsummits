@@ -137,10 +137,10 @@
 | タイトル | 国土数値情報 行政区域データ（N03-2026） |
 | 提供元 | [国土交通省 国土数値情報ダウンロードサービス](https://nlftp.mlit.go.jp/) |
 | URL | <https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2026.html> |
-| ファイル形式 | GeoJSON（全国版、約 765MB） |
-| 主要属性 | `N03_001`=都道府県名、`N03_002`=北海道振興局名 |
+| ファイル形式 | ZIP（`N03-YYYYMMDD_GML.zip`、全国版・約766MB）。GML・Shapefile・GeoJSON を同梱、うち市区町村単位 GeoJSON は約580MB |
+| 主要属性 | `N03_001`=都道府県名、`N03_002`=北海道振興局名、`N03_007`=行政区域コード（北方領土除外 01695〜01700 の判定に使用） |
 | 利用規約 | 国土数値情報利用規約（https://nlftp.mlit.go.jp/ksj/other/agreement.html） |
-| 本プロジェクトでの利用形態 | merge.py での新規ピーク都道府県/振興局判定に使用。`scripts/preprocess_pref_boundaries.py` で都道府県/振興局単位に dissolve してから参照（`$DATA_DIR/ref/N03-2026_regions.geojson`）。ファイルサイズが大きいため git 管理外（.gitignore）。 |
+| 本プロジェクトでの利用形態 | [FR-017](../docs/20_SRS.md#fr-017-n03-行政区域前処理データ準備)（N03 行政区域前処理）の入力。`$DATA_DIR/ref/` 直下に配置し、前処理で N03 前処理済み地域 GeoJSON（60地域）・市区町村 GeoJSON・北方領土除外タイルリストを生成する。ファイルサイズが大きいため git 管理外（.gitignore）。 |
 
 ---
 
