@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-30 |
-| 最終更新日 | 2026-07-01 |
+| 最終更新日 | 2026-07-07 |
 | ステータス | ドラフト |
 
 ## ホスト環境
@@ -13,6 +13,7 @@
 | OS | Debian GNU/Linux testing (x86_64、最新化運用) |
 | CPU | AMD Ryzen 7 2700（16スレッド）@ 3.20 GHz |
 | メモリ | 62.72 GiB |
+| スワップ | 48 GiB（`/swapfile` 32 GiB + `/dev/zram0` 16 GiB） |
 | データディスク (`/mnt/findsummits`) | 457.38 GiB ext4 |
 | Shell | bash 5.3.9 |
 
@@ -26,6 +27,7 @@
 | OS | Debian GNU/Linux trixie (x86_64、コンテナ・リビルドで最新化) |
 | CPU | AMD Ryzen 7 2700（16スレッド）@ 3.20 GHz |
 | メモリ | 62.72 GiB |
+| スワップ | 48 GiB（`/swapfile` 32 GiB + `/dev/zram0` 16 GiB） |
 | データディスク (`/data`) | ホストの `/mnt/findsummits` をマウント（457.38 GiB ext4） |
 | Shell | bash 5.3.9 |
 
