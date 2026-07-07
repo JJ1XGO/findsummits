@@ -1335,7 +1335,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | col_elev | コル標高（m） |
 | prominence | プロミネンス（m） |
 | key_col_resolved | コル確定フラグ（true=確定 / false=未確定、[FR-006 参照](#fr-006-コル検出プロミネンス計算)） |
-| col_margin_px | コルのメッシュ端マージン（px） |
+| col_margin_px | コルから解析範囲の端までの最短距離（px） |
 | analysis_count | このピークが含まれた解析回数 |
 | expected_count | このピークが含まれるべき期待解析回数 |
 | sota_lat | SOTA リスト登録緯度。matched（band_change/no_change）: SOTA 登録値。delete/review: 削除・孤立サミット自身の値。new/dominant: 空欄 |
