@@ -106,7 +106,8 @@ def check_file(filepath):
         line = raw.rstrip('\n')
 
         # フェンスコードブロックの追跡（検査D の除外判定に使用）
-        if line.startswith('```'):
+        # リスト項目内などインデントされたフェンスも検出するため、行頭空白を除いて判定する
+        if line.lstrip().startswith('```'):
             in_code_block = not in_code_block
 
         # 検査A: 相対リンク実在チェック
