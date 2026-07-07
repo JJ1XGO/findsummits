@@ -1140,10 +1140,10 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 **説明**:
 
-  - **異常系**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートとして異常終了した場合、本 FR は実行をスキップし、HTML は生成しない（前提条件: [FR-009](#fr-009-sotaリスト突合match_status-判定) の正常終了。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）
   - **生成機構**: HTML テンプレートファイル（詳細は HLD）をソースコードに同梱し、`merged_summit.geojson` の GeoJSON データを JavaScript 変数として HTML に埋め込み、`$DATA_DIR/results/merged_viewer.html` として出力する。`file://` プロトコルで直接開いても CORS エラーが発生しないため、ローカル HTTP サーバが不要
   - **GeoJSON メタデータ**: `merged_summit.geojson` のトップレベルの `metadata` オブジェクトの定義は [FR-009](#fr-009-sotaリスト突合match_status-判定) を参照（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する）。本 FR は metadata を含む GeoJSON データをそのまま HTML に埋め込む。ビューアが表示に使うキーの一覧は [FR-019](#fr-019-html-ビューア機能仕様) を参照
   - **生成するフィーチャ構成・各フィーチャのプロパティの定義**: `merged_summit.geojson` が含むフィーチャ構成（申請カテゴリ別）と各フィーチャのプロパティ定義（`category` プロパティを含む）は、生成者である [FR-009](#fr-009-sotaリスト突合match_status-判定) が保持する（スキーマ正本は [FR-009](#fr-009-sotaリスト突合match_status-判定)。本 FR はその定義に従って生成された GeoJSON を入力として受け取るのみ。[ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md)・[ADR-SRS-044](decisions/ADR-SRS-044-category-property-summit-centric-5class.md)）
+  - **異常系**: [FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートとして異常終了した場合、本 FR は実行をスキップし、HTML は生成しない（前提条件: [FR-009](#fr-009-sotaリスト突合match_status-判定) の正常終了。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)・[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）
 
 ---
 
