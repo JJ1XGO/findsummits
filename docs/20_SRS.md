@@ -1580,6 +1580,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 |---|---|
 | 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心データ。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#626-サミット一覧突合後)）も生成） |
 | ファイル | `$DATA_DIR/results/merged_summit.geojson` |
+| 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
 | メタデータ | トップレベルに `metadata` オブジェクトを付与。定義は [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（`summitslist_date` / `generated_at` / `gsi_tile_latest_date` / `attribution` / `source_url` / `license_url`） |
 | フィーチャ構成 | [FR-009 参照](#fr-009-sotaリスト突合match_status-判定)（Point / Polygon / LineString 全フィーチャ含む） |
