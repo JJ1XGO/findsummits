@@ -5,6 +5,7 @@
 検査B: 太字ラベル直前の空行欠落（レイアウト崩れ）検出
 検査C: 内部トラッカーID（ISSUE-NNN/BUG-NNN）および mgmt/ パス参照の混入検出
 検査D: FR/UR/NFR 裸参照（リンクでもコード表記でもない参照）の検出
+検査E: 表記ガード（spec-panelレビューで修正した表記揺れの再発防止）
 """
 import os
 import re
@@ -34,6 +35,22 @@ _TOKEN_RE = re.compile(r'\[[^\]]*\]\([^)]*\)|`[^`\n]+`')
 
 # 検査D: 既知 ID キャッシュ（SRS の FR/NFR 見出し・URD の UR アンカーから収集）
 _known_refs_cache = None
+
+# 検査E: 表記ガード規則（spec-panelレビューで修正した表記揺れの再発防止）
+# scope: パスにこの部分文字列を含むファイルのみ適用（None = docs/ 配下の全 .md）
+NOTATION_RULES = [
+    # (規則名, scope, コンパイル済み正規表現, メッセージ)
+    ('E1', None, re.compile('−9999'),
+     '全角マイナスの「−9999」は半角ハイフンの「-9999」に統一してください'),
+    ('E2', None, re.compile('[Ａ-Ｚａ-ｚ０-９]'),
+     '全角英数字は半角に統一してください'),
+    ('E3', '20_SRS.md', re.compile(r'\bPhase\b'),
+     '「Phase」は「フェーズ」に統一してください（ADR-SRS-010等の固有名は対象外のためSRS限定）'),
+    ('E4', '20_SRS.md', re.compile('(?<!国土地理院)淡色地図'),
+     '「淡色地図」はGLOSSARY正式名称「国土地理院淡色地図」に統一してください'),
+    ('E5', None, re.compile('ポイントバンド変更候補'),
+     '「ポイントバンド変更候補」は「バンド変更候補」に統一してください'),
+]
 
 # 検査C・D 対象外ファイル（ルール自体の経緯を記録したメタドキュメント）。
 # ADR-SRS-040 は「ISSUE-ID/mgmt/ 参照禁止ルール」の導入決定そのものを記録しており、
@@ -87,11 +104,14 @@ def check_file(filepath):
     violations = []
     abs_filepath = os.path.abspath(filepath)
     base_dir = os.path.dirname(abs_filepath)
-    # 検査C・D は docs/ 配下のみ適用（mgmt/ 等の内部管理ファイルは除外）。
+    # docs/ 配下かどうか（mgmt/ 等の内部管理ファイルは除外）。検査Eはこの判定のみ使う。
+    _in_docs = (
+        os.sep + 'docs' + os.sep in abs_filepath or abs_filepath.endswith(os.sep + 'docs')
+    )
+    # 検査C・D は docs/ 配下のみ適用。
     # ただし CHECK_CD_EXEMPT_FILES に該当するメタドキュメントは対象外。
     _apply_check_cd = (
-        (os.sep + 'docs' + os.sep in abs_filepath or abs_filepath.endswith(os.sep + 'docs'))
-        and os.path.basename(abs_filepath) not in CHECK_CD_EXEMPT_FILES
+        _in_docs and os.path.basename(abs_filepath) not in CHECK_CD_EXEMPT_FILES
     )
 
     try:
@@ -158,6 +178,16 @@ def check_file(filepath):
                             f"{filepath}:{i + 1}: BARE-REF: "
                             f"「{ref_id}」はリンク化してください（docs/CLAUDE.md L108）"
                         )
+
+        # 検査E: 表記ガード（docs/ 配下全体が対象。CHECK_CD_EXEMPT_FILES の除外は適用しない）
+        if _in_docs:
+            for rule_name, scope, pattern, message in NOTATION_RULES:
+                if scope is not None and scope not in abs_filepath:
+                    continue
+                if pattern.search(line):
+                    violations.append(
+                        f"{filepath}:{i + 1}: NOTATION-{rule_name}: {message}"
+                    )
 
     return violations
 

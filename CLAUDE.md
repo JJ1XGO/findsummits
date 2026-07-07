@@ -199,6 +199,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 - チェック対象を追加するとき（LSP の CLI チェック・C コンパイラ警告・Python 型チェック等）は、CLAUDE.md に個別ルールを増やさず `make lint` の依存へ target を足す
 - 編集時は PostToolUse hook が該当ファイルの違反を自動提示する。提示された違反はそのターン内で解消する
 - lint ツールのバージョンは `requirements.txt` で固定（ローカルの再現性維持）。最新版での通過確認は `make lint-latest`（手動）と GitHub Actions（月1自動・main の workflow）で監視する
+- docs の表記揺れ（記号・用語・書式）を修正するときは、`scripts/lint_docs.py` の検査E規則テーブルへの追加を検討する（機械化できる揺れはレビューでなく lint に拾わせる）
 
 ## ブランチ運用ルール
 
