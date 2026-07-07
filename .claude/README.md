@@ -14,7 +14,7 @@ Claude Code カスタマイズの一覧です。
 | [**CLAUDE.md**](#claudemd-の位置) | 全プロジェクト共通ガイドライン | リポジトリルートに配置 |
 | [**settings.json**](#settingsjson) | 基盤設定一式 | プロジェクト共通 hooks（Lint・model ガード・SessionStart、git 管理対象） |
 | [**settings.local.json**](#settingslocaljson) | 存在しない | 個人環境の permissions allow リスト・`skipDangerousModePermissionPrompt`（git 管理外） |
-| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel / update-best-practices） | ドメイン固有 skill（spec-panel） |
+| [**commands/**](#commands) | 汎用 skill（handover / log-incident / claude-md-panel / update-best-practices） | ドメイン固有 skill（spec-panel / claude-container-issue） |
 | [**rules/**](#rules) | 存在しない | アーキテクチャ定義（`architecture.md`） |
 | [**hooks/**](#hooks) | 汎用保護（Write/Edit 検証・注入防止） | `hooks/session-start.sh`・`hooks/model-guard.sh`・`hooks/lint-posttool.sh`・`hooks/docs-date-check.sh`・`hooks/spec-panel-gate.sh`（いずれも `settings.json` から呼び出し） |
 | [**incidents/**](#incidents) | 存在しない | 環境異常記録（このプロジェクト配下・git 管理外） |
@@ -32,6 +32,7 @@ Claude Code カスタマイズの一覧です。
 | No. | ファイル | スラッシュコマンド | 役割 |
 |---|---|---|---|
 | 1 | `spec-panel.md` | `/spec-panel` | 仕様文書（URD/SRS/HLD/LLD/ADR/テスト仕様）をアーキテクト・仕様レビュアー・データ/アルゴリズム・申請者の4視点でレビューし指摘を一覧化 |
+| 2 | `claude-container-issue.md` | `/claude-container-issue` | claude-container への GitHub issue 起票・対応完了確認・クローズの詳細フロー（起票先の判定基準は `CLAUDE.md`「環境課題の連携」節） |
 
 ### `rules/`
 
