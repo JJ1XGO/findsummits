@@ -1547,7 +1547,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `merged_summit_revised.xlsx`（[FR-021](#fr-021-申請エビデンス-zip-生成) の ZIP に同梱してダウンロード（単独ダウンロードしない）） |
-| 生成元 | HTML ビューア（[FR-012](#fr-012-サミット一覧申請内容反映版生成) が `merged_summit.geojson` の Point フィーチャからブラウザ内で生成。[FR-019](#fr-019-html-ビューア機能仕様) でのユーザー編集内容を反映） |
+| 生成方式 | HTML ビューア（[FR-012](#fr-012-サミット一覧申請内容反映版生成) が `merged_summit.geojson` の Point フィーチャからブラウザ内で生成。[FR-019](#fr-019-html-ビューア機能仕様) でのユーザー編集内容を反映） |
 | フォーマット | XLSX（単一シート・データ表） |
 | 含む情報 | 1 行 = 1 サミット（行集約規則は [FR-009 行生成モデル参照](#fr-009-sotaリスト突合match_status-判定)。Polygon / LineString は行を生まない。`rationale` 列は含めない） |
 | カラム | [FR-012 参照](#fr-012-サミット一覧申請内容反映版生成) |
@@ -1583,7 +1583,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | 項目 | 仕様 |
 |---|---|
-| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心データ。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#626-サミット一覧突合後)）も生成） |
+| 生成タイミング | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が生成する中心データ。同時に `merged_summit.xlsx`（[サミット一覧（突合後）](#626-サミット一覧突合後)）も生成） |
 | ファイル | `$DATA_DIR/results/merged_summit.geojson` |
 | 形式 | GeoJSON（RFC 7946） |
 | 座標参照系 | WGS84（EPSG:4326） |
@@ -1599,7 +1599,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 | 項目 | 仕様 |
 |---|---|
-| 生成 FR | [FR-013](#fr-013-html-ビューア生成) |
+| 生成タイミング | [FR-013](#fr-013-html-ビューア生成) の実行時 |
 | ファイル | `$DATA_DIR/results/merged_viewer.html` |
 | 用途 | 山岳名入力・目視確認・申請書 / 申請エビデンス / 公開用 HTML のエクスポートを行うローカル作業用ビューア |
 | HTML テンプレート | 作業用テンプレートファイル（詳細は HLD） |
@@ -1614,7 +1614,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 | 項目 | 仕様 |
 |---|---|
 | ファイル | `$DATA_DIR/results/merged_summit.xlsx` |
-| 生成 | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` と**同時に必ず生成**。不備ゲート（データ品質による意図的な異常終了）発動時も出力保証。ハードクラッシュ時は保証なし。[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)） |
+| 生成タイミング | フェーズ4 末尾（[FR-009](#fr-009-sotaリスト突合match_status-判定) が `merged_summit.geojson` と**同時に必ず生成**。不備ゲート（データ品質による意図的な異常終了）発動時も出力保証。ハードクラッシュ時は保証なし。[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)） |
 | 用途 | バッチ生成時点（ユーザー編集前）のサミット一覧を確認するための XLSX。不備ゲート発動時の不備調査にも使用（`match_status=unmatched` 行・`area_complete=false` 行・`key_col_resolved=false` 行を per-row で確認）。[サミット一覧（申請内容反映版）](#622-サミット一覧申請内容反映版) はユーザー編集内容を反映した版 |
 | フォーマット | XLSX（単一シート・データ表） |
 | 含む情報 | 1 行 = 1 サミット（行集約規則は [FR-009 行生成モデル参照](#fr-009-sotaリスト突合match_status-判定)。Polygon / LineString は行を生まない。`rationale` 列は含めない） |
