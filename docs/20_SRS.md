@@ -127,16 +127,16 @@
 
 | 項目名 | 意味 | デフォルト値 | 許容範囲 |
 |---|---|---|---|
-| プロミネンス一次フィルタ閾値 | フェーズ2 で per-mesh CSV に出力するピーク候補の最低プロミネンス | 130m | 100〜150m（最終フィルタ閾値 ‐ 20m 程度を推奨） |
+| プロミネンス一次フィルタ閾値 | フェーズ2 で per-mesh CSV に出力するピーク候補の最低プロミネンス | 130m | 100m 以上、プロミネンス最終フィルタ閾値未満（現行 150m 未満。境界近傍のプロミネンス過小評価を吸収するマージンのため、最終フィルタ閾値と同値は不可。‐20m 程度を推奨） |
 | プロミネンス最終フィルタ閾値 | 統合時（[FR-008](#fr-008-per-mesh-csv-統合)）に採用するピーク候補の最低プロミネンス | 150m | 150m（SOTA日本支部規定値） |
 | アクティベーションゾーン標高差 | アクティベーションゾーン Flood Fill のピーク標高からの標高差上限。SOTA ルールで山頂運用可能とされる範囲 | 25m | 25m（SOTA日本支部規定値） |
-| delete_zone 比高上限 | delete判定ゾーン Flood Fill の比高上限（`delete_zone_max_drop`）。Key コルとの標高差と本値の小さい方が Flood Fill の下限閾値となる（変更は ADR 判断を要する。デフォルト 250m は解析実測値。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照） | 250m | 200〜300m |
+| delete判定ゾーン比高上限 | delete判定ゾーン Flood Fill の比高上限。Key コルとの標高差と本値の小さい方が Flood Fill の下限閾値となる（変更は ADR 判断を要する。デフォルト 250m は解析実測値。[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md) 参照） | 250m | 200〜300m |
 | タイル取得の最大並列数 | 標高タイルの HTTP 取得を並行して行う最大リクエスト数 | 4 | 1〜16（地理院サーバー負荷に配慮した上限） |
 | タイル取得のリクエスト間隔 | タイル取得リクエスト間の最短待機時間（具体値は HLD で定義） | — | 0〜5000ms |
 | User-Agent 識別子 | タイル取得 HTTP リクエストの送信元識別子。ツール名と連絡先メールアドレスを含む（地理院側での問い合わせ対応のため必須） | — | `<ツール名>/<バージョン> (mailto:<メールアドレス>)` 形式 |
 | SOTA 既存サミット GeoJSON バージョン | 突合に使用する既存 SOTA サミット GeoJSON データのバージョン番号 N（`$DATA_DIR/ref/geojson_v{N}/` に対応） | — | 正の整数 |
 | 仮サミットコード連番上限 | 採番する仮コードの prefix の上限アルファベット（例: `A` なら A00〜A99 の 100 件、`Z` なら A00〜Z99 の最大 2,600 件まで許容）。上限を超えたら異常終了（[FR-009](#fr-009-sotaリスト突合match_status-判定) 参照） | A | A〜Z |
-| 要確認サミット件数しきい値 | `summit.match_status="unmatched"`（どのピークにも紐付かない孤立サミット）の許容件数。本値以下なら要確認として続行、超過したら解析異常の疑いとして [FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートで停止する（`unmatched_review_threshold`。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md) 参照） | 10 | 0 以上の整数（デフォルト10は暫定値。初回全国解析の実データで見直す） |
+| 要確認サミット件数しきい値 | `summit.match_status="unmatched"`（どのピークにも紐付かない孤立サミット）の許容件数。本値以下なら要確認として続行、超過したら解析異常の疑いとして [FR-009](#fr-009-sotaリスト突合match_status-判定) が不備ゲートで停止する（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md) 参照） | 10 | 0 以上の整数（デフォルト10は暫定値。初回全国解析の実データで見直す） |
 
 ---
 
@@ -237,6 +237,7 @@
 統合・突合コンポーネント   SOTA突合・中心データ生成
        ├─ merged_summit.geojson     ($DATA_DIR/results/merged_summit.geojson) ← 中心データ（全フィーチャ + rationale）
        └─ merged_summit.xlsx        ($DATA_DIR/results/merged_summit.xlsx) ← サミット一覧（突合後）
+       ↓
 可視化生成コンポーネント   HTML ビューア生成
        └─ merged_viewer.html        ← 編集可能なローカル HTML ビューア（GeoJSON 埋め込み・rationale 編集機能付き）
        ↓ ユーザーが HTML ビューアで確認・rationale 編集後にエクスポートを実行
@@ -290,6 +291,7 @@
 - **生成 2: N03 前処理済み市区町村 GeoJSON（約 2,000 件）**:
   - 市区町村ポリゴンをそのまま流用
   - プロパティを `prefecture`・`municipality`・`code`（N03_007）の 3 つに最小化
+  - 北方領土の市町村ポリゴンも除外せずそのまま含める（生成1と同様、除外は [FR-001](#fr-001-標高タイル事前取得) のタイル取得段階で完結しており、本生成での重複除外は不要）
 - **生成 3: 北方領土除外タイルリスト**:
   - N03_007（行政区域コード）が 01695〜01700 に一致するポリゴン（択捉・国後・色丹の北方領土 6 村。詳細: [ADR-URD-005](decisions/ADR-URD-005-northern-territories-exclusion.md)）を抽出
   - 各ポリゴンの bounding box 内のズームレベル 15 Web Mercator タイル（地理的に約 1.2km 四方）について、タイル中心点がポリゴン内に含まれるタイルを列挙（取り逃し評価: [ADR-URD-005](decisions/ADR-URD-005-northern-territories-exclusion.md)）
@@ -720,7 +722,7 @@
 #### FR-016: ピーク域ポリゴン生成
 
 - **対応 UR**: [UR-003](10_URD.md#ur-003), [UR-006](10_URD.md#ur-006), [UR-013](10_URD.md#ur-013)
-- **概要**: 各ピークについてアクティベーションゾーン（ピークから **アクティベーションゾーン標高差**（[データ辞書参照](#221-設定可能項目)）以内）と delete判定ゾーン（プロミネンスと **delete_zone 比高上限** の小さい方）のポリゴンを Flood Fill で生成し、per-mesh GeoJSON として出力する。
+- **概要**: 各ピークについてアクティベーションゾーン（ピークから **アクティベーションゾーン標高差**（[データ辞書参照](#221-設定可能項目)）以内）と delete判定ゾーン（プロミネンスと **delete判定ゾーン比高上限** の小さい方）のポリゴンを Flood Fill で生成し、per-mesh GeoJSON として出力する。
 
 **入力**:
 
@@ -750,10 +752,10 @@
     - **Flood Fill 閾値**: `peak_elev − アクティベーションゾーン標高差` 以上
     - **area_complete の扱い**: 共通仕様の通り。アクティベーションゾーン標高差以内のため、いずれかの 3×3 解析で必ず完結する想定
   - **delete判定ゾーンポリゴン**（`feature_type="delete_zone"`）:
-    - **定義**: 既存 SOTA サミットの削除判定に使用する。ピーク頂上から、プロミネンスと **delete_zone 比高上限**（[データ辞書参照](#221-設定可能項目)）のどちらか小さい方の標高差以内の連続エリア（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
-    - **Flood Fill 閾値**: Key コルの標高と「ピーク標高 − **delete_zone 比高上限**」のどちらか高い方以上を対象として Flood Fill する。`key_col_resolved=false`（Key コルの標高が未確定）のピークでは「ピーク標高 − **delete_zone 比高上限**」を下限として使用する（上限キャップにより、プロミネンス未確定でもポリゴン生成が可能）
-    - **コル確定後の再生成は行わない**（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）: `key_col_resolved=false` のピークが [FR-014](#fr-014-広域結合解析オーケストレーション) 広域解析で後に Key コル確定（`key_col_resolved=true`）しても、delete判定ゾーンは通常 per-mesh で生成済みのものを使用し再生成しない。`key_col_resolved=false` になるのは 3×3 解析範囲（中心メッシュ＋隣接で約 20km 四方）内でコルが見つからない独立峰級＝実質プロミネンスが **delete_zone 比高上限** を大きく超えるピークであり、上限キャップが実効的に効くため確定後もゾーンは過大化しない。低プロミネンスのピークが本 FR に到達しても [FR-009](#fr-009-sotaリスト突合match_status-判定) の申請判断には影響しない: ①広域解析でコル確定後にプロミネンス < 150m ならば [FR-008](#fr-008-per-mesh-csv-統合) 最終フィルタで `merged_peak.csv` から除外され [FR-009](#fr-009-sotaリスト突合match_status-判定) が参照しない、②N=6 でも未解決ならば [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_key_col_unresolved` 不備ゲートで異常終了するため。過大な delete 判定ゾーンは中間 GeoJSON 上の診断用オーバーレイにのみ影響する
-    - **area_complete の扱い**: 共通仕様の通り。**delete_zone 比高上限** 上限キャップにより、いずれかの 3×3 解析で必ず完結する想定
+    - **定義**: 既存 SOTA サミットの削除判定に使用する。ピーク頂上から、プロミネンスと **delete判定ゾーン比高上限**（[データ辞書参照](#221-設定可能項目)）のどちらか小さい方の標高差以内の連続エリア（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）
+    - **Flood Fill 閾値**: Key コルの標高と「ピーク標高 − **delete判定ゾーン比高上限**」のどちらか高い方以上を対象として Flood Fill する。`key_col_resolved=false`（Key コルの標高が未確定）のピークでは「ピーク標高 − **delete判定ゾーン比高上限**」を下限として使用する（上限キャップにより、プロミネンス未確定でもポリゴン生成が可能）
+    - **コル確定後の再生成は行わない**（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）: `key_col_resolved=false` のピークが [FR-014](#fr-014-広域結合解析オーケストレーション) 広域解析で後に Key コル確定（`key_col_resolved=true`）しても、delete判定ゾーンは通常 per-mesh で生成済みのものを使用し再生成しない。`key_col_resolved=false` になるのは 3×3 解析範囲（中心メッシュ＋隣接で約 20km 四方）内でコルが見つからない独立峰級＝実質プロミネンスが **delete判定ゾーン比高上限** を大きく超えるピークであり、上限キャップが実効的に効くため確定後もゾーンは過大化しない。低プロミネンスのピークが本 FR に到達しても [FR-009](#fr-009-sotaリスト突合match_status-判定) の申請判断には影響しない: ①広域解析でコル確定後にプロミネンス < 150m ならば [FR-008](#fr-008-per-mesh-csv-統合) 最終フィルタで `merged_peak.csv` から除外され [FR-009](#fr-009-sotaリスト突合match_status-判定) が参照しない、②N=6 でも未解決ならば [FR-009](#fr-009-sotaリスト突合match_status-判定) の `is_key_col_unresolved` 不備ゲートで異常終了するため。過大な delete 判定ゾーンは中間 GeoJSON 上の診断用オーバーレイにのみ影響する
+    - **area_complete の扱い**: 共通仕様の通り。**delete判定ゾーン比高上限** 上限キャップにより、いずれかの 3×3 解析で必ず完結する想定
   - **可視化フィーチャ（[ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）**: [UR-013](10_URD.md#ur-013)（[NFR-009](#nfr-009-観測可能性中間成果物の可視化)）を満たすため、ゾーンポリゴンに加えて以下の Point・LineString を同一ファイルに出力する。地理院地図へのドラッグ&ドロップで位置・ピーク↔コル対応を目視確認できる（地理院地図スタイル属性を `properties` に付与。色スキームは HLD で規定）:
     - `feature_type="peak"`（Point）: フィルタ後ピーク候補リストの全採用ピーク座標
     - `feature_type="key_col"`（Point）: `key_col_resolved=true` かつ `col_lat`/`col_lon` が 0.0 以外（有意なコル座標）のピークのみ出力する。独立峰（[FR-006](#fr-006-コル検出プロミネンス計算) 海面確定規則により `key_col_resolved=true`・`col_lat`/`col_lon`=0.0 sentinel となったピーク）は出力しない
@@ -905,7 +907,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
   - **`summit.match_status` 判定**（peak.match_status とは独立した値。ピーク中心 → サミット中心へ視点が切り替わる基点。以下の順に評価し、AZ 内が最優先）:
     - `matched`: 既存 SOTA サミット座標がいずれかのピークのアクティベーションゾーン内に存在する（正常存続）
     - `delete`: 既存 SOTA サミット座標がいずれかのピークの delete判定ゾーン内かつアクティベーションゾーン外に存在する（削除候補）
-    - `unmatched`: 既存 SOTA サミット座標がいずれのピークの AZ・delete判定ゾーンにも含まれない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。**担当者の確認を要する孤立サミット**であり、噴火・山体崩壊・カルデラ陥没で山が消失・大幅低下した場合（＝削除すべきサミット）と、`delete_zone_max_drop` 値の不備・解析欠落（＝システム不備）の両方が同一症状を示すため、座標だけでは機械区別できない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）。ログ警告を出力する。**`unmatched` 単独では停止しない**（要確認として続行し、`merged_summit.xlsx` と HTML ビューアの「要確認」カテゴリで担当者に提示）。ただし件数が **要確認サミット件数しきい値**（[データ辞書参照](#221-設定可能項目)・`unmatched_review_threshold`）を超えた場合は解析異常の疑いとして不備ゲートで停止する。申請書の「削除」行には自動掲載せず、担当者が地形変化を確認のうえ手動で削除申請に回す
+    - `unmatched`: 既存 SOTA サミット座標がいずれのピークの AZ・delete判定ゾーンにも含まれない（[ADR-SRS-011](decisions/ADR-SRS-011-delete-zone-polygon.md)）。**担当者の確認を要する孤立サミット**であり、噴火・山体崩壊・カルデラ陥没で山が消失・大幅低下した場合（＝削除すべきサミット）と、`delete_zone_max_drop` 値の不備・解析欠落（＝システム不備）の両方が同一症状を示すため、座標だけでは機械区別できない（[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）。ログ警告を出力する。**`unmatched` 単独では停止しない**（要確認として続行し、`merged_summit.xlsx` と HTML ビューアの「要確認」カテゴリで担当者に提示）。ただし件数が **要確認サミット件数しきい値**（[データ辞書参照](#221-設定可能項目)）を超えた場合は解析異常の疑いとして不備ゲートで停止する。申請書の「削除」行には自動掲載せず、担当者が地形変化を確認のうえ手動で削除申請に回す
   - **仮サミットコード割り当て**（`new` および `dominant` ピーク）:
     - match_status=new・dominant 両方のピークに、[FR-017](#fr-017-n03-行政区域前処理データ準備) で前処理した地域データを用いて仮サミットコードを付与する
     - フォーマット: `JAx/XX-A00`
@@ -961,7 +963,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
     - `key_col_resolved=false` のピークは `col_elev`・`prominence` が確定していないため、※2 の該当箇所を「未確定」と表示する
     - rationale はビューア上の textarea で**編集可能**。編集後の値が [FR-011](#fr-011-申請書-xlsx-生成) の XLSX 列 I に反映される（編集前は上記フォーマットの自動生成値が初期値）。永続化方式・編集値マージロジックの詳細は HLD 範疇
   - **異常系**: 不備ゲートと異常終了制御（[ADR-SRS-033](decisions/ADR-SRS-033-defect-confirmation-via-xlsx.md)）。本 FR は**全サミット評価完了後**に以下の不備条件を検査し、いずれかに該当する場合は**不備ゲート**として**意図的に異常終了**する（即時停止ではなく全判定後にまとめて検査。入力欠落・例外によるハードクラッシュとは区別する）:
-    - 既存サミット行で `summit.match_status="unmatched"` の件数が **要確認サミット件数しきい値**（[データ辞書参照](#221-設定可能項目)・`unmatched_review_threshold`）を超える（解析異常の疑い。しきい値以下の `unmatched` は要確認として続行し停止しない。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）
+    - 既存サミット行で `summit.match_status="unmatched"` の件数が **要確認サミット件数しきい値**（[データ辞書参照](#221-設定可能項目)）を超える（解析異常の疑い。しきい値以下の `unmatched` は要確認として続行し停止しない。[ADR-SRS-037](decisions/ADR-SRS-037-unmatched-summit-needs-review.md)）
     - ピーク行で AZ または delete判定ゾーンポリゴンの `area_complete=false` が1件以上存在する（[FR-016](#fr-016-ピーク域ポリゴン生成) で 3×3 完結が想定されているが想定外に発生した場合）
     - ピーク行で `key_col_resolved=false` が1件以上存在する（`is_key_col_unresolved` フラグ。解析パイプライン制御（[FR-023](#fr-023-解析パイプライン制御)）の N=4→5→6 エスカレーションでも解消せず）
     - 不備ゲート発動時は `merged_summit.geojson` および `merged_summit.xlsx` をともに不備エントリを含めて**必ず出力してから停止**する（調査用）。ハードクラッシュ時は出力を保証しない。[FR-013](#fr-013-html-ビューア生成)（HTML ビューア生成）は本 FR の exit code を見てスキップする（exit code の詳細は HLD 参照）
