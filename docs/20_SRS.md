@@ -255,6 +255,8 @@
 
 ### 4.1 行政区域前処理コンポーネント
 
+都道府県・振興局境界 GeoJSON を解析用形式に変換する初回限定のデータ準備コンポーネント。
+
 #### FR-017: N03 行政区域前処理（データ準備）
 
 - **対応 UR**: [UR-001](10_URD.md#ur-001), [UR-003](10_URD.md#ur-003), [UR-004](10_URD.md#ur-004)
@@ -308,6 +310,8 @@
 ---
 
 ### 4.2 タイル取得コンポーネント
+
+国土地理院標高タイルを取得しローカルキャッシュとして保存するコンポーネント。
 
 #### FR-001: 標高タイル事前取得
 
@@ -1125,6 +1129,8 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 
 ### 4.6 可視化生成コンポーネント
 
+突合済み統合 GeoJSON（`merged_summit.geojson`）から編集可能な作業用 HTML ビューアを生成するコンポーネント。
+
 #### FR-013: HTML ビューア生成
 
 - **対応 UR**: [UR-006](10_URD.md#ur-006)
@@ -1500,7 +1506,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 - 解析パイプラインが各段階で生成する中間成果物（per-mesh ピーク候補 GeoJSON（[FR-016](#fr-016-ピーク域ポリゴン生成)）・統合ピーク候補 GeoJSON `merged_peak.geojson`（[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合)））を、生成されたタイミングで物理ファイルとして出力し、地理院地図等の地図ソフトにドラッグ&ドロップして、ピーク・コル・ゾーン（アクティベーション/削除判定）の位置とそれらの**対応関係**の妥当性を目視確認できること
 - 中間 GeoJSON は申請エビデンス（[UR-006](10_URD.md#ur-006)）ではなく、開発・テスト・運用時の妥当性検証を目的とする。デバッグ・差分検査のため物理出力を残す（[FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) の `merged_peak.geojson` は世代ごとに上書き再生成）
 - 各中間 GeoJSON にはゾーンポリゴンに加え、ピーク Point（`feature_type="peak"`）・コル Point（`feature_type="key_col"`・コル確定済みのみ）・peak→col 接続線（`feature_type="peak_col_link"`）を同梱する。地理院地図スタイル属性を付与し、ドラッグ&ドロップ 1 回で全フィーチャを確認できる（凡例規約は [ADR-SRS-013](decisions/ADR-SRS-013-merged-geojson-as-central-data.md) を踏襲。設計詳細: [ADR-SRS-026](decisions/ADR-SRS-026-intermediate-geojson-peak-col-visualization.md)）
-- 本 NFR の設計判断詳細: [ADR-SRS-025](decisions/ADR-SRS-025-observability-nfr-ur013-srs-scope.md)
+- 詳細・設計判断: [ADR-SRS-025](decisions/ADR-SRS-025-observability-nfr-ur013-srs-scope.md)
 
 ### NFR-010: 描画応答性・連続操作の滑らかさ
 
@@ -1508,7 +1514,7 @@ dominant で削除候補サミットが複数の場合、各 `coord_diff` LineSt
 - 本 NFR は HTML ビューア（[FR-013](#fr-013-html-ビューア生成)・[FR-020](#fr-020-公開用-html-ビューア生成)）のマーカー描画に適用する。対象規模の基準は全日本サミット候補（現行 JA サミット約 7,000 件 + 新規候補を含む最大 1 万件規模）の一括表示とする。[NFR-008](#nfr-008-ui-レスポンス)（単発 UI 応答 1 秒）を補完し、連続操作のフレームレートを規定する
 - パン・ズーム等の連続操作中は **60fps（フレーム ≤16ms）** を目標とする（RAIL "Animation"）
 - マーカークリック・レイヤー表示切替等の個別入力に対し、入力処理 **≤50ms**・可視応答 **≤100ms** を目標とする（RAIL "Response"。現行 Core Web Vitals INP "good" ≤200ms とも整合）
-- 根拠・設計判断: [ADR-URD-017](decisions/ADR-URD-017-viewer-marker-rendering-performance.md)
+- 詳細・設計判断: [ADR-URD-017](decisions/ADR-URD-017-viewer-marker-rendering-performance.md)
 - 出典: [Measure performance with the RAIL model - web.dev](https://web.dev/articles/rail)
 
 ---
@@ -1834,6 +1840,7 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 国土地理院 タイル配信（`cyberjapandata.gsi.go.jp`） | DEM5a/5b/5c/DEM10b タイル取得（[FR-001](#fr-001-標高タイル事前取得)）・HTML ビューアの背景地図（国土地理院標準地図・国土地理院淡色地図）・等高線オーバーレイ・基準点レイヤー（[FR-019](#fr-019-html-ビューア機能仕様)） |
 | SOTA データベース（`sotadata.org.uk`） | サミットリスト CSV 取得（[7.2.4](#724-sota-サミットリスト-csv)）。ユーザーが手動ダウンロード・`$DATA_DIR/ref/summitslist.csv` として配置。ツールは自動取得しない（詳細: §7.2.4） |
 | 国土数値情報 N03（国土交通省） | 行政区域データ取得（[FR-017](#fr-017-n03-行政区域前処理データ準備)）。ユーザーが手動ダウンロード・`$DATA_DIR/ref/` に配置。ツールは自動取得しない（詳細: §7.2.3） |
+| ジオサミットでひとこえ（`little-ctc.com`） | SOTA 既存サミット GeoJSON 取得（[FR-009](#fr-009-sotaリスト突合match_status-判定)）。ユーザーが手動ダウンロード・`$DATA_DIR/ref/geojson_v{N}/` に配置。ツールは自動取得しない（詳細: §7.2.5） |
 | 地図タイル配信（OSM・OpenTopoMap） | HTML ビューアの背景地図（[6.2.5](#625-作業用-html-ビューア)） |
 | CDN（Leaflet・SheetJS・JSZip） | HTML ビューアの地図・XLSX エクスポート・ZIP 生成ライブラリ（[6.2.5](#625-作業用-html-ビューア)） |
 
@@ -1851,7 +1858,7 @@ URD セクション 5 に基づき（SRS で詳細化）:
 - 竹島（島根県）に所在するピークは SOTA 日本支部の管轄外（韓国 SOTA サミット HL/GB-430 として登録済み）のため解析対象外とする。具体的には日本全土1次メッシュコードリスト [`params/mesh_list_japan.txt`](../params/mesh_list_japan.txt) から竹島が含まれるメッシュ 5531 をコメントアウトすることで除外する（根拠: [ADR-URD-009](decisions/ADR-URD-009-takeshima-exclusion.md)）
 - 以下の参照データはツールが自動取得しない。ユーザーが手動で管理することが前提:
   - N03 行政区域 ZIP（[7.2.3 参照](#723-n03-行政区域-zip)）— サイズが大きいため git 管理外。国土交通省 国土数値情報サイトから ZIP 形式で手動ダウンロードして `$DATA_DIR/ref/` 直下に配置する
-  - `$DATA_DIR/ref/summitslist.csv` / `$DATA_DIR/ref/geojson_v{N}/` — git 管理外・ユーザー手動配置。SOTA データベースの更新に合わせてユーザーが手動で差し替える（[7.2.4 参照](#724-sota-サミットリスト-csv)・[7.2.5 参照](#725-sota-既存サミット-geojsongeojson_vn)）
+  - `$DATA_DIR/ref/summitslist.csv`（SOTA データベース由来）/ `$DATA_DIR/ref/geojson_v{N}/`（ジオサミットでひとこえ由来）— git 管理外・ユーザー手動配置。それぞれの提供元データの更新に合わせてユーザーが手動で差し替える（[7.2.4 参照](#724-sota-サミットリスト-csv)・[7.2.5 参照](#725-sota-既存サミット-geojsongeojson_vn)）
 - タイル取得時はインターネット接続が必要（解析・出力生成はオフライン可）
 - 地理院サーバへのアクセスは[国土地理院コンテンツ利用規約](https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html)に従い、サーバへの過度な負荷を避けること
 - 本ツールは [`01_environment.md`](01_environment.md) に定める仕様と同等以上の環境での動作を前提とする
