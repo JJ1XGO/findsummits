@@ -3,7 +3,7 @@
 | 状態 | 採用・未実装 |
 | 決定日 | 2026-06-18 |
 
-> ※ 本 ADR は [ADR-SRS-004](ADR-SRS-004-level14-max-pooling-isolated-peaks.md)（エスカレーション責務を [FR-022](../20_SRS.md#fr-022-コル充足判定) に置いていた箇所）および [ADR-SRS-019](ADR-SRS-019-land-summit-highest-peak-handling.md)（陸地最高峰確定を [FR-022](../20_SRS.md#fr-022-コル充足判定) が行うとしていた箇所）の該当部分を supersede する。
+> ※ 本 ADR は [ADR-SRS-004](ADR-SRS-004-level14-max-pooling-isolated-peaks.md)（エスカレーション責務を [FR-022](../20_SRS.md#fr-022-コル充足判定) に置いていた箇所）、[ADR-SRS-019](ADR-SRS-019-land-summit-highest-peak-handling.md)（陸地最高峰確定を [FR-022](../20_SRS.md#fr-022-コル充足判定) が行うとしていた箇所）および [ADR-SRS-023](ADR-SRS-023-fr008-merge-input-mesh-list-semantics.md)（ループ内 [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合) 再実行の主体を [FR-022](../20_SRS.md#fr-022-コル充足判定) とし、`対象1次メッシュコードリスト` 非指定を [FR-022](../20_SRS.md#fr-022-コル充足判定) 本文に明記するとしていた箇所。当該規定自体は有効で、現行の記載先は [FR-008](../20_SRS.md#fr-008-per-mesh-csv-統合) 本文）の該当部分を supersede する。
 
 ---
 
