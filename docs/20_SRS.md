@@ -242,6 +242,7 @@
        └─ merged_viewer.html        ← 編集可能なローカル HTML ビューア（GeoJSON 埋め込み・rationale 編集機能付き）
        ↓ ユーザーが HTML ビューアで確認・rationale 編集後にエクスポートを実行
 【フェーズ5: 申請書生成（ローカル HTML ビューア上のユーザー操作）】
+申請書生成 UI             ユーザー操作に応じて成果物を生成
        ├─ 申請書 XLSX               （ブラウザダウンロード）
        ├─ サミット一覧（申請内容反映版）  merged_summit_revised.xlsx（申請エビデンス ZIP に同梱）
        ├─ 公開用 HTML               （ブラウザダウンロード）
@@ -772,7 +773,7 @@ per-mesh 出力（通常モード・広域モード）を全国スケールで�
 #### FR-008: per-mesh CSV 統合
 
 - **対応 UR**: [UR-003](10_URD.md#ur-003)
-- **概要**: per-mesh CSV を同一ピーク座標で重複排除し、**プロミネンス最終フィルタ閾値**（デフォルト150m）以上を適用した内部 work CSV を生成する。
+- **概要**: per-mesh CSV を同一ピーク座標で重複排除し、**プロミネンス最終フィルタ閾値**（[データ辞書参照](#221-設定可能項目)・デフォルト150m）以上を適用した内部 work CSV を生成する。
 
 **入力**:
 
@@ -1770,8 +1771,9 @@ FR が生成・参照する内部データ。メモリ上・一時ファイル�
 | 9 | per-mesh ピーク候補 GeoJSON | 一時ファイル。ファイル名: `$DATA_DIR/results/csv/3-<meshcode>.geojson` | [FR-016](#fr-016-ピーク域ポリゴン生成) | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | AZ + delete 判定ゾーン。通常 per-mesh のみ（広域モードは GeoJSON を生成しない） |
 | 10 | 陸地最高峰リスト | `params/` 直下（ファイル名は HLD で定義） | — | [FR-008](#fr-008-per-mesh-csv-統合) | テキストファイル（1行1件。ヘッダー行あり。列: `name,peak_lat,peak_lon`）。初期リスト: 富士山・旭岳・中岳＝九重の 3 件。`merged_peak.csv` 生成時に陸地最高峰の海面確定（`key_col_resolved=true`・Key コル = 0m）に使用。検証方針は [ADR-SRS-019](decisions/ADR-SRS-019-land-summit-highest-peak-handling.md) 参照 |
 | 11 | 統合ピーク候補 GeoJSON（`merged_peak.geojson`） | 内部中間ファイル。ファイル名: `$DATA_DIR/results/merged_peak.geojson` | [FR-018](#fr-018-per-mesh-ピーク候補-geojson-統合) | [FR-009](#fr-009-sotaリスト突合match_status-判定) | デバッグ・差分検査用に物理出力を残す |
-| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-011](#fr-011-申請書-xlsx-生成) / [FR-012](#fr-012-サミット一覧申請内容反映版生成) / [FR-019](#fr-019-html-ビューア機能仕様) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | ZIP エクスポート時にマージして反映（[FR-020](#fr-020-公開用-html-ビューア生成) は公開用 HTML 生成時にマージ） |
+| 12 | localStorage 編集内容 | ブラウザ localStorage（JSON） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-019](#fr-019-html-ビューア機能仕様)（再訪時に読み込む） | 詳細仕様は [8.2.2](#822-localstorage-編集内容詳細仕様) 参照 |
 | 13 | 解析済みウィンドウメッシュ集合 | `$DATA_DIR/results/csv/<解析識別子>.meshset`（物理形式は HLD で定義） | [FR-004](#fr-004-33メッシュ結合解析オーケストレーション) / [FR-014](#fr-014-広域結合解析オーケストレーション) | [FR-014](#fr-014-広域結合解析オーケストレーション) | 各ウィンドウの存在メッシュコードのソート済みリスト。[FR-014](#fr-014-広域結合解析オーケストレーション) の無効パターンスキップ判定（部分集合判定）に使用（[ADR-SRS-046](decisions/ADR-SRS-046-analyzed-window-meshset-skip.md)） |
+| 14 | ビューア上の表示・編集状態 | ブラウザ上のインタラクティブ状態（メモリ上、永続化されない） | [FR-019](#fr-019-html-ビューア機能仕様) | [FR-011](#fr-011-申請書-xlsx-生成) / [FR-012](#fr-012-サミット一覧申請内容反映版生成) / [FR-020](#fr-020-公開用-html-ビューア生成) / [FR-021](#fr-021-申請エビデンス-zip-生成) | 各エクスポート時点のスナップショット。localStorage を直接読むのではなく本項目（メモリ上の現在の編集状態）を参照する |
 
 ### 8.2 内部データ詳細仕様
 
