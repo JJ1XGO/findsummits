@@ -1,6 +1,6 @@
 # 調査資料: Rust/C++ 言語選定と大規模 Union-Find 分割の検討
 
-開発言語が C++（[ADR-SRS-010](../ADR-SRS-010-cpp-opencv-migration.md)）で良いかを Claude に相談した際のやりとりを整理した記録。
+開発言語が C++（[ADR-SRS-010](../ADR-SRS-010-cpp-opencv-migration.md)）で良いかを、2026-07-09 に Claude に相談した際のやりとりを整理した記録。
 **本資料は会話内容の整理のみを目的とし、設計判断は行わない。** ADR-SRS-010（C++/OpenCV 移行）・
 [ADR-SRS-003](../ADR-SRS-003-3x3-mesh-analysis.md)（3×3 メッシュ解析）の見直し要否は別途検討する。
 本資料は意思決定のための生の検討資料であり、整形・章立てを優先しない。
