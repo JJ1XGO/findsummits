@@ -3,8 +3,9 @@
 | 項目 | 内容 |
 |---|---|
 | 状態 | 採用・未実装 |
-| 決定日 | 2026-05-17 |
+| 決定日 | 2026-05-17（2026-07-11 Rust代替案を検討し C++ 維持を確認） |
 | 調査資料 | [`research/cpp-opencv-migration-research.md`](research/cpp-opencv-migration-research.md) |
+| 調査資料 | [`research/rust-cpp-and-scalable-analysis-research.md`](research/rust-cpp-and-scalable-analysis-research.md) |
 
 ---
 
@@ -93,6 +94,7 @@ Phase 1〜2 は既存機能の動作維持が目的であり、新機能追加�
 | Python 単体実装に回帰（findsummits4sotaja 方式） | 大規模メッシュでのメモリ・速度要件を満たせない懸念から ADR-SRS-001 で却下済み。本判断でもその前提は維持 |
 | OpenCV を採用せず別の C++ 画像処理ライブラリ（CImg, GIL 等）を採用 | 採用例・コミュニティ規模・ドキュメント量で OpenCV が圧倒的。Terrain-RGB の用途で他ライブラリを選ぶ理由がない |
 | matplotlib を C++ から呼ぶ（Python embedding / `matplotlib-cpp`） | ADR-SRS-001 のハイブリッド分担原則（C エンジンと Python スクリプトは別プロセスとして分離する）に反する。`matplotlib-cpp` は C エンジンのプロセス内部に Python インタプリタを embedding する仕組みであり、性能要求のある処理を担うはずの C エンジンのプロセス境界を壊す。加えて `plot()` 等のグラフ描画 API のラッパーに過ぎず、`LightSource` のような陰影合成 API には対応していない |
+| Rust への移行（`opencv` クレートまたは Rust ネイティブ画像処理。2026-07-11 検討・却下） | 実行性能は C++ と同等でありパフォーマンス面の移行動機がない。OpenCV 利用は FFI バインディング（`opencv` クレート）経由となり、ビルド複雑性（clang/bindgen 依存・OpenCV 本体とのバージョン整合）を抱える。Rust ネイティブ代替（image/imageproc 等）は [FR-016](../20_SRS.md#fr-016-ピーク域ポリゴン生成) が要求する lossless 輪郭抽出の同値性が未検証。将来の解析方式転換（[URD 将来スコープ](../10_URD.md#7-将来スコープv20-候補)・[ADR-SRS-003](ADR-SRS-003-3x3-mesh-analysis.md) の 2026-07-11 追記参照）も C++ で成立し（タイル分割＋境界マージの先行実装 RichDEM は C++）、言語切替を強制されるシナリオがない。メモリ安全性の主要な痛点（malloc/free 手動管理）は本 ADR の RAII 限定方針で解消済み。個人開発における borrow checker の学習コストも大きい。gccrs は 2026-07 時点で実用段階になく判断に影響しない。詳細: [`research/rust-cpp-and-scalable-analysis-research.md`](research/rust-cpp-and-scalable-analysis-research.md) §A〜C |
 
 ## Consequences
 
