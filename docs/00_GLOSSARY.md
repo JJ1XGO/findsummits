@@ -112,7 +112,7 @@ SOTA 日本支部参照マニュアル（2025年7月改定版）に基づく全�
 | 国土地理院淡色地図（pale） | 国土地理院が提供する淡色系の地図タイル。重ね合わせるデータの視認性を高める基図。本プロジェクトでは HTML ビューアの背景地図（基図）として使用する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
 | 基準点 | 国土地理院が位置の基準として全国に設置・管理する測量点。電子基準点・三角点（一等／二等／三等）等の種別がある。本プロジェクトでは HTML ビューアの参照レイヤーとして地理院基準点タイル（ベクトルタイル）を表示し、地形・座標の目視確認の補助に使用する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
 | N03 行政区域データ | 国土交通省 国土数値情報が提供する行政区域ポリゴンデータ（N03 データセット）。都道府県・振興局・市区町村単位の境界 GeoJSON として配布される。本プロジェクトでは SOTA エリアコード自動付与・所在地取得・北方領土除外に使用する（[FR-017](20_SRS.md#fr-017-n03-行政区域前処理データ準備)）。年版ごとにファイルが異なり、[FR-017](20_SRS.md#fr-017-n03-行政区域前処理データ準備) が YYYYMMDD 最大の ZIP を自動採用する。出典詳細は [`ref/SOURCES.md`](../ref/SOURCES.md) 参照。 |
-| SOTA 既存サミット GeoJSON（geojson_v{N}） | 突合処理（[FR-009](20_SRS.md#fr-009-sotaリスト突合match_status-判定)）で使用する既存 SOTA サミットデータの GeoJSON 形式スナップショット。`$DATA_DIR/ref/geojson_v{N}/ja0.geojson`〜`ja9.geojson`（N は設定可能項目「SOTA 既存サミット GeoJSON バージョン」で指定）に配置する（git 管理外・ユーザー手動配置）。サミットごとの日本語山岳名取得に使用する。SOTA サミットリスト CSV（`$DATA_DIR/ref/summitslist.csv`）と並行して参照される。 |
+| SOTA 既存サミット GeoJSON（geojson_v{N}） | 突合処理（[FR-009](20_SRS.md#fr-009-sotaリスト突合match_status-判定)）で使用する既存 SOTA サミットデータの GeoJSON 形式スナップショット。`$DATA_DIR/ref/geojson_v{N}/ja0_v{N}.geojson`〜`ja9_v{N}.geojson`（N は設定可能項目「SOTA 既存サミット GeoJSON バージョン」で指定）に配置する（git 管理外・ユーザー手動配置）。サミットごとの日本語山岳名取得に使用する。SOTA サミットリスト CSV（`$DATA_DIR/ref/summitslist.csv`）と並行して参照される。 |
 
 ---
 
