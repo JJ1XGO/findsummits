@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-04-28 |
-| 最終更新日 | 2026-07-11 |
+| 最終更新日 | 2026-07-12 |
 | ステータス | ドラフト |
 
 本プロジェクトで使用する用語の定義。本書を参照先として、各ドキュメント（URD/SRS/HLD/LLD等）内では略称・通称を使用してよい。
@@ -207,7 +207,7 @@ per-mesh CSV / GeoJSON の列名・フラグ・コード体系。
 | COD | Coding | 実装フェーズ。成果物: `src/*.c`・`scripts/*.py` |
 | UT | Unit Test | 単体テスト（`docs/50_UT.md`、未作成） |
 | IT | Integration Test | 結合テスト（`docs/60_IT.md`、未作成） |
-| ST | System Test | システムテスト（`docs/70_ST.md`、未作成） |
+| ST | System Test | システムテスト（`docs/70_ST.md`） |
 | OPS | Operations | 運用フェーズ（`docs/80_OPS.md`、未作成） |
 
 ### バージョン呼称
