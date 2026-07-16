@@ -116,6 +116,13 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
 
 起票・対応完了確認・クローズの詳細フロー（署名書式・リビルド確認手順等）は `/claude-container-issue` を参照。
 
+**クロスリポジトリ操作の手段**: claude-container・dotclaude-ops など他リポジトリへの issue
+起票・コメント・クローズは GitHub 公式 MCP サーバー（`.mcp.json` の `github` サーバー定義）経由を
+第一とし、MCP が使えない場合（未配線環境・接続失敗時）は gh CLI＋セカンダリトークン
+（`GH_TOKEN_SECONDARY_FILE`）にフォールバックする。hooks（`session-start.sh` 等）はシェル
+スクリプトのため MCP を呼び出せず、従来どおり gh CLI＋非 export トークン読み取りを維持する。
+自リポジトリ（`jj1xgo/findsummits`）への操作は従来どおり gh CLI（プライマリトークン）を使う。
+
 ## ToDo リスト運用ルール
 
 **作業リスト（仕様議論を伴わない実装タスク等）は `.claude/todo.md` で管理する。**

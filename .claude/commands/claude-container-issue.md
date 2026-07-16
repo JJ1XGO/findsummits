@@ -27,3 +27,7 @@ description: claude-container への GitHub issue 起票・対応完了確認・
 
 `gh` はコンテナ内セッションのみ利用可能（ホストセッションには無い）。挙動は `CLAUDE.md`
 「課題管理ルール」節の hook 説明と同じ（対象リポジトリが `jj1xgo/claude-container` である点のみ異なる）。
+
+起票・コメント・クローズは GitHub 公式 MCP サーバー経由を第一とし、使えない場合は gh CLI＋
+セカンダリトークンへフォールバックする（詳細は `CLAUDE.md`「環境課題の連携」節「クロスリポジトリ
+操作の手段」を参照）。

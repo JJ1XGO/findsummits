@@ -1,5 +1,6 @@
 {
   "plansDirectory": ".claude/plans",
+  "enabledMcpjsonServers": ["github"],
   "hooks": {
     "PreToolUse": [
       {

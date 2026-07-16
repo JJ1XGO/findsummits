@@ -72,6 +72,10 @@ hook 内のパスは実行時に Claude Code が設定する `$CLAUDE_PROJECT_DI
 
 `.claude/` 構成ファイル変更時の README.md 更新リマインドはグローバル hook（`~/.claude/settings.json`）で対応。
 
+`"enabledMcpjsonServers": ["github"]` は `.mcp.json` の `github` サーバー（クロスリポジトリ issue
+操作用 GitHub 公式 MCP、詳細は `CLAUDE.md`「環境課題の連携」節）を事前承認し、接続時の確認プロンプトを
+機構的に省略する設定。
+
 ### `settings.local.json`
 
 個人環境の permissions allow リスト（実行許可ホワイトリスト）と `skipDangerousModePermissionPrompt` を定義します（git 管理外）。
