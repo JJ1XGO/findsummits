@@ -76,6 +76,12 @@ hook 内のパスは実行時に Claude Code が設定する `$CLAUDE_PROJECT_DI
 操作用 GitHub 公式 MCP、詳細は `CLAUDE.md`「環境課題の連携」節）を事前承認し、接続時の確認プロンプトを
 機構的に省略する設定。
 
+`permissions.deny` に `Bash(git push --force:*)` / `Bash(git push -f:*)` を設定し、force push を
+実行前ブロックする（`GIT_PUSH_TOKEN` によりコンテナ内 push が可能になったことを受けた導入）。
+プレフィックス一致のため `git push origin main --force` のような後置形や `git -C <path> push --force`、
+`+refspec` 形式は素通りする既知の制約があり、これを補完する「force push 前は必ずユーザー確認する」
+という文書ルールを `CLAUDE.md`「ルールと制約」節に併記している（二重化）。
+
 ### `settings.local.json`
 
 個人環境の permissions allow リスト（実行許可ホワイトリスト）と `skipDangerousModePermissionPrompt` を定義します（git 管理外）。

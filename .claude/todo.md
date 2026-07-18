@@ -175,6 +175,9 @@
 ## 保留
 
 - [ ] plan self-review（`/spec-panel`）の強制を CLAUDE.md の強調文から hook へ移行する検討（ExitPlanMode 前に `mgmt/spec-findings/` の指摘記録存在を検査する）
+  - 注: `spec-panel-gate.sh`（PreToolUse: ExitPlanMode）で該当機構は実装済みの可能性が高い。claude-md-panel レビュー（2026-07-18）で気づいた古い項目のため、現状との突き合わせが必要
+- [ ] **force push ガードの hook 化**: `.claude/settings.json` の `permissions.deny`（`git push --force:*`/`-f:*`）は前置形のみ検知し、後置形（`git push origin main --force`）・`git -C <path> push --force`・`+refspec` は素通りする（実機確認済み、2026-07-18）。PreToolUse(Bash) hook で正規表現検知に置き換え、誤検知（無関係コマンドのブロック）・見逃し（新たな素通りパターン）の両方向を検証してから CLAUDE.md 側の散文ルール（「ブランチ運用ルール」節）を hook 呼び出しの1行に短縮する
+- [ ] **CLAUDE.md「仕様優先原則」節の見直しトリガー**: HLD/LLD 完成後は本節が主従逆転（「ドキュメント・実装整合性原則」が主）するため、`mgmt/hld_progress.md`・`mgmt/lld_progress.md`（新設時）の完了判定と合わせて本節の記述縮約要否を確認する（claude-md-panel レビュー、2026-07-18 指摘）
 
 ---
 

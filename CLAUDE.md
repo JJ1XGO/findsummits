@@ -91,15 +91,14 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 - **1 項目 1 課題**: 複数の課題を1件に詰め込まない
 - **issue のスコープ**: 「問い＋決着（決定＋ADR/SRS への記録）」まで。記録完了 = 対応完了
-- **impersonation 禁止**: 署名ルールはグローバル CLAUDE.md の定義に従う（findsummits 自身への投稿のため末尾にモデル名のみ、経緯説明は書かない）
+- **impersonation 禁止**: 署名ルールはグローバル CLAUDE.md の定義に従う（自リポジトリ内投稿でも省略せず、末尾に `— <モデル名> (jj1xgo/findsummits)` の署名のみ。経緯説明は書かない）
 - **クローズは `gh issue close` を正とする**（コミットの `fixes #N` は push まで閉じないため使わない）
 
 **フロー**: `gh issue create` で登録 → 作業開始時に対応方針コメント → 実装 → 対応完了コメント →
 **ユーザーが動作確認後に `gh issue close`**。調査の結果「仕様どおり・対応不要」と判明した場合は
 対応側が説明コメント付きでクローズしてよい。
 
-session-start hook が `jj1xgo/findsummits` の open issue 一覧を自動確認・注入する
-（フェイルソフト。`gh` 不在・API 失敗時は一行メッセージのみでスキップする）。
+open issue 一覧は session-start hook が自動注入する（再取得不要）。
 
 ## 環境課題の連携（claude-container への issue 起票）
 
@@ -122,6 +121,7 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
 （`GH_TOKEN_SECONDARY_FILE`）にフォールバックする。hooks（`session-start.sh` 等）はシェル
 スクリプトのため MCP を呼び出せず、従来どおり gh CLI＋非 export トークン読み取りを維持する。
 自リポジトリ（`jj1xgo/findsummits`）への操作は従来どおり gh CLI（プライマリトークン）を使う。
+グローバル CLAUDE.md のセカンダリトークン運用（非 export の落とし穴等）は本フォールバック経路にのみ適用される。
 
 ## ToDo リスト運用ルール
 
@@ -142,12 +142,12 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 **省略・短縮は禁止**。以下を必ず守ること:
 
 - `/spec-panel` の実行をスキップしない。理由・規模・確信度によらず省略しない
-- `/spec-panel` 実行後、指摘記録ファイル（`mgmt/spec-findings/` 配下）が実際に作成されたことを確認してから `ExitPlanMode` を出す。ファイルの存在確認なしに次へ進まない
+- `/spec-panel` 実行後、指摘記録ファイル（`mgmt/spec-findings/` 配下）が実際に作成されたことを確認してから `ExitPlanMode` を出す（`spec-panel-gate.sh` hook が未実施の兆候を検知するが、fail-soft のため本確認の代替にはしない）
 - 指摘がある場合は計画に反映するか、確認事項としてユーザーに明示してから `ExitPlanMode` を出す
 
 ## 計画ファイル・handover の扱い
 
-- **置き場・命名**: `.claude/plans/<slug>.md`。`.claude/settings.json` の `plansDirectory: ".claude/plans"` により plan ファイルは最初からリポジトリ内に生成されるため、**承認後の `mv` は不要**。万一 `~/.claude/plans/`（ホーム配下・グローバル）に生成された場合は設定が効いていないサインなので、異常として報告した上で `mv` で `.claude/plans/<slug>.md` へ移動する。`<slug>` はセッションごとに異なるため、複数セッションが同時に Plan Mode を使っても衝突しない。承認に至らず放棄された下書きが未追跡ファイルとして残っていたら、気づいた時点で削除してよい
+- **置き場・命名**: `.claude/plans/<slug>.md`。`.claude/settings.json` の `plansDirectory: ".claude/plans"` により plan ファイルは最初からリポジトリ内に生成されるため、**承認後の `mv` は不要**。万一 `~/.claude/plans/`（ホーム配下・グローバル）に生成された場合は設定異常として報告する。`<slug>` はセッションごとに異なるため、複数セッションが同時に Plan Mode を使っても衝突しない。承認に至らず放棄された下書きが未追跡ファイルとして残っていたら、気づいた時点で削除してよい
 - **plan ファイル内のファイル参照はコード表記（バッククォート）にする**: plan ファイルの位置からの相対リンクは閲覧環境によって解決されず broken-link になるため。plan ファイルは lint 対象に含めたまま運用する（隠さない）
 - **計画の各タスクに実行モデルを明記する**: グローバル CLAUDE.md「モデルを使い分ける」の3条件に該当し上位モデル（Fable、不可時 Opus）委譲が想定されるタスクに理由を付記する（既定は Sonnet 直接対応のため無印でよい）
 - **ExitPlanMode 直前に委譲対象を一言明示する**: 計画のタスク一覧に含まれる項目のうち、3条件該当で上位モデルへ委譲・検証したものがあれば（上記のタスク単位ラベルとは別に）、該当有無・件数をユーザーへの提示メッセージの冒頭で一言要約する（「切替忘れ」の検知・確認は行わない。事後の可視化のみ）
@@ -161,7 +161,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 ## ドキュメント更新時のルール
 
 ユーザーはドキュメントを GitHub 上で確認しているため、ローカル編集だけでは確認できない。
-**ドキュメントの更新が完了した直後（その作業ターン内）に必ず commit する**こと。push は別途指示があるまで不要。
+**ドキュメントの更新が完了した直後（その作業ターン内）に必ず commit する**こと。push の扱いは「ブランチ運用ルール」節を参照。
 
 対象ドキュメント:
 
@@ -172,7 +172,7 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 ※ `.claude/best_practices.md` は例外: 上記の手動手順ではなく `/update-best-practices` 実行時にコマンド内で完結する（詳細は「Best Practices（教訓蒸留）運用ルール」参照）。
 
-更新が完了したターン内に: ① `make lint` 警告ゼロを確認 → ② 意図した変更ファイルを個別に `git add`（全対象を確認済みなら `git add -A` 可）→ ③ Conventional Commits でコミット → ④ push は別途指示まで行わない。
+更新が完了したターン内に: ① `make lint` 警告ゼロを確認 → ② 意図した変更ファイルを個別に `git add`（全対象を確認済みなら `git add -A` 可）→ ③ Conventional Commits でコミット（push は「ブランチ運用ルール」節参照）。
 
 例外: 同一作業内でコードと一緒に更新したドキュメントは、コードのコミットに含めて構わない。
 
@@ -180,14 +180,13 @@ handover を書く前に git をクリーンにする（コミットを先に済
 
 @.claude/best_practices.md
 
-上記は `@` インポートによりセッション開始時に毎回自動でコンテキストへ読み込まれる。lessons.md 側は全文注入せず、必要な場面（学び転記の重複チェック等）で都度 Read する運用とする。
+lessons.md は全文注入せず、必要な場面（学び転記の重複チェック等）で都度 Read する運用とする。
 
 - 学びは `.claude/lessons.md` に随時記録する（git 管理外・コミット不要）
 - `/update-best-practices`（グローバルコマンド、Fable 実行・利用不可時は Opus）が `.claude/lessons.md` を再分析し、
   `.claude/best_practices.md`（git 管理対象）を再合成する。蒸留観点・原則数の既定と
   watermark 更新・コミットはコマンド側で完結する
   - 本プロジェクトの除外例: dem10b 解像度・openpyxl API 等の技術詳細は原則に含めない
-- lessons.md が一定量増えるとセッション開始時に実行が自動的に推奨される（hooks 側で検知）
 
 ## 機械的チェック（lint / LSP 等）
 
@@ -207,3 +206,8 @@ handover を書く前に git をクリーンにする（コミットを先に済
   2. `git rm -r mgmt/`
   3. `git commit -m "chore: リリース用にmgmt/除外"`
   4. `git checkout main && git merge release/vX.X`
+- **push・PR 作成はユーザーの別途指示があるまで行わない**（`GIT_PUSH_TOKEN` は push を可能にする配線であり、この運用を変えない）
+- **force push（`--force`/`-f`/`--force-with-lease`/`+refspec`、フラグ位置を問わず）は実行前に必ず
+  ユーザー確認する。** `.claude/settings.json` の `permissions.deny` は `git push --force`/`-f`
+  の前置形のみ検知し、後置形（`git push origin main --force`）や `git -C <path> push --force`、
+  `+refspec` はプレフィックス一致の性質上素通りするため、本ルールは deny を補完する二重化として機能する
