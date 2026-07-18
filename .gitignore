@@ -62,8 +62,12 @@ build/
 # 環境設定（個人のパス等を含むため）
 params/config.ini
 .claude-container
-# claude-container 利用者個人のコンテナ依存パッケージ指定（プロジェクト共通仕様ではない）
-.claude-container.d/
+# .claude-container.d/ はビルド成果物用 *.d パターン（本ファイル2行目）と名前が衝突し
+# ディレクトリごと無視されるため明示的に un-ignore する。env のみ除外
+# （ホスト固有パスを含むランタイム設定のため）。allowed-domains.txt / packages.txt /
+# requirements.txt は第三者にも有用な環境情報として本体追跡する
+!.claude-container.d/
+.claude-container.d/env
 
 # fetch 設定（メールアドレス等の個人情報を含むため）
 params/fetch_config.ini
@@ -87,15 +91,10 @@ ref/geojson_v*/
 mgmt/bug-system/bug_tracker.xlsx
 mgmt/bug-system/reports/bug_tracker.xlsx
 
-# claude code files
-.claude/settings.local.json
-.claude/conversations/
-.claude/sessions/
-.claude/skills/.cache/
-.claude/handovers/
-.claude/incidents/
-.claude/bash_history
-.claude/lessons.md
+# CLAUDE.md・.claude/ はメンテナ個人の開発運用ファイル（プロダクト本体ではない）。
+# .claude/ は独立 git リポジトリ（jj1xgo/findsummits-ops）として nested repo 化する
+CLAUDE.md
+.claude/
 
 # spec-panel 指摘記録（作業用メモ、git 管理対象外）
 mgmt/spec-findings/
