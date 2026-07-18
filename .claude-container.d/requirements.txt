@@ -1,0 +1,7 @@
+# findsummits プロジェクト固有の pip パッケージ一覧（コンテナのシステム Python 向け）。
+# claude-container リポジトリ同梱のデフォルト（空）を置き換える（追加ではない）。
+#
+# このプロジェクトの Python 依存は make venv で作成する /workspace/venv/ に隔離管理される
+# （docs/01_environment.md 参照）ため、システム Python 側は空のままでよい。
+# 過去にシステム Python で mgmt/tracker/track.py を直接実行し openpyxl 不足で失敗した
+# 事例があり（.claude/handovers/2026-05-17_1403.md）、venv/bin/python3 経由が正しい運用。

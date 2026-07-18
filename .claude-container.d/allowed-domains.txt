@@ -1,0 +1,13 @@
+# findsummits プロジェクト固有のエグレス許可ドメイン一覧。
+# claude-container リポジトリ同梱のデフォルト（api.anthropic.com 等）に追加される。
+#
+# 国土地理院 標高タイル配信サーバー（scripts/prefetch_tiles.py が dem5/dem10b タイルを取得）
+cyberjapandata.gsi.go.jp
+
+# PyPI（make venv / make venv-rebuild が実行時に pip install するため両方必要。
+# index への到達だけでは pip install は完走しない。claude-container README 参照）
+pypi.org
+files.pythonhosted.org
+
+# GitHub 公式 MCP サーバー（クロスリポジトリ issue 操作。CLAUDE.md「環境課題の連携」節参照）
+api.githubcopilot.com

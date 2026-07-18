@@ -1,0 +1,14 @@
+# findsummits プロジェクト固有の apt パッケージ一覧。
+# claude-container リポジトリ同梱のデフォルト（空）を置き換える（追加ではない）。
+# 依存の詳細は docs/01_environment.md「C 解析エンジン ビルド依存」を参照。
+
+# C 解析エンジン（src/）のビルド依存
+gcc
+# gcc パッケージの libc6-dev 依存は Recommends のみで、Dockerfile は
+# --no-install-recommends のため明示しないと入らない（ヘッダファイル一式）
+libc6-dev
+make
+libpng-dev
+
+# Python venv 基盤（make venv が使用）。python3 は python3-venv の Depends 経由で入る
+python3-venv
