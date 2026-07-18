@@ -119,7 +119,7 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
 起票・コメント・クローズは GitHub 公式 MCP サーバー（`.mcp.json` の `github` サーバー定義）経由を
 第一とし、MCP が使えない場合（未配線環境・接続失敗時）は gh CLI＋セカンダリトークン
 （`GH_TOKEN_SECONDARY_FILE`）にフォールバックする。hooks（`session-start.sh` 等）はシェル
-スクリプトのため MCP を呼び出せず、従来どおり gh CLI＋非 export トークン読み取りを維持する。
+スクリプトのため MCP を呼び出せず、従来どおり gh CLI（プライマリトークンでの読み取り専用）を使う。
 自リポジトリ（`jj1xgo/findsummits`）への操作は従来どおり gh CLI（プライマリトークン）を使う。
 グローバル CLAUDE.md のセカンダリトークン運用（非 export の落とし穴等）は本フォールバック経路にのみ適用される。
 
