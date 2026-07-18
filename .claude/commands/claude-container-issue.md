@@ -28,6 +28,14 @@ description: claude-container への GitHub issue 起票・対応完了確認・
 `gh` はコンテナ内セッションのみ利用可能（ホストセッションには無い）。挙動は `CLAUDE.md`
 「課題管理ルール」節の hook 説明と同じ（対象リポジトリが `jj1xgo/claude-container` である点のみ異なる）。
 
-起票・コメント・クローズは GitHub 公式 MCP サーバー経由を第一とし、使えない場合は gh CLI＋
-セカンダリトークンへフォールバックする（詳細は `CLAUDE.md`「環境課題の連携」節「クロスリポジトリ
-操作の手段」を参照）。
+## クロスリポジトリ操作の手段
+
+本節は claude-container 宛に限らず、dotclaude-ops など他リポジトリへの issue 起票・コメント・
+クローズ全般に適用される。
+
+起票・コメント・クローズは GitHub 公式 MCP サーバー（`.mcp.json` の `github` サーバー定義）経由を
+第一とし、MCP が使えない場合（未配線環境・接続失敗時）は gh CLI＋セカンダリトークン
+（`GH_TOKEN_SECONDARY_FILE`）にフォールバックする。hooks（`session-start.sh` 等）はシェル
+スクリプトのため MCP を呼び出せず、従来どおり gh CLI（プライマリトークンでの読み取り専用）を使う。
+自リポジトリ（`jj1xgo/findsummits`）への操作は従来どおり gh CLI（プライマリトークン）を使う。
+グローバル CLAUDE.md のセカンダリトークン運用（非 export の落とし穴等）は本フォールバック経路にのみ適用される。

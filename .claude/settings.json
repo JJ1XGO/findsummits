@@ -1,12 +1,6 @@
 {
   "plansDirectory": ".claude/plans",
   "enabledMcpjsonServers": ["github"],
-  "permissions": {
-    "deny": [
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)"
-    ]
-  },
   "hooks": {
     "PreToolUse": [
       {

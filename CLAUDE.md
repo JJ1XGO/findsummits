@@ -64,7 +64,7 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 **バグ・欠陥を発見しても、すぐに修正を始めてはならない。必ず以下のフローを守ること。**
 
 1. テスト結果を確認し、発見した欠陥を**すべて洗い出してから**まとめて一覧提示する
-2. ユーザーに確認を取ってから `gh issue create --repo jj1xgo/findsummits --label bug --label priority:<高|中|低>`（ラベル体系は「課題管理ルール」節参照）で登録する
+2. ユーザーに確認を取ってから `gh issue create --repo jj1xgo/findsummits --label bug --label priority:<高|中|低>` で登録する
 3. 登録完了後、修正作業の承認を得てから着手する
 
 詳細な運用手順・ラベル体系は「課題管理ルール」節を参照。
@@ -91,7 +91,7 @@ docs/ 配下を編集するときは採番・フォーマット・ADR ルール�
 
 - **1 項目 1 課題**: 複数の課題を1件に詰め込まない
 - **issue のスコープ**: 「問い＋決着（決定＋ADR/SRS への記録）」まで。記録完了 = 対応完了
-- **impersonation 禁止**: 署名ルールはグローバル CLAUDE.md の定義に従う（自リポジトリ内投稿でも省略せず、末尾に `— <モデル名> (jj1xgo/findsummits)` の署名のみ。経緯説明は書かない）
+- **署名**: グローバル CLAUDE.md の署名ルールに従う（本リポジトリの署名は `— <モデル名> (jj1xgo/findsummits)`）
 - **クローズは `gh issue close` を正とする**（コミットの `fixes #N` は push まで閉じないため使わない）
 
 **フロー**: `gh issue create` で登録 → 作業開始時に対応方針コメント → 実装 → 対応完了コメント →
@@ -115,13 +115,8 @@ findsummits 自体の仕様・実装ではなく、コンテナ環境（claude-c
 
 起票・対応完了確認・クローズの詳細フロー（署名書式・リビルド確認手順等）は `/claude-container-issue` を参照。
 
-**クロスリポジトリ操作の手段**: claude-container・dotclaude-ops など他リポジトリへの issue
-起票・コメント・クローズは GitHub 公式 MCP サーバー（`.mcp.json` の `github` サーバー定義）経由を
-第一とし、MCP が使えない場合（未配線環境・接続失敗時）は gh CLI＋セカンダリトークン
-（`GH_TOKEN_SECONDARY_FILE`）にフォールバックする。hooks（`session-start.sh` 等）はシェル
-スクリプトのため MCP を呼び出せず、従来どおり gh CLI（プライマリトークンでの読み取り専用）を使う。
-自リポジトリ（`jj1xgo/findsummits`）への操作は従来どおり gh CLI（プライマリトークン）を使う。
-グローバル CLAUDE.md のセカンダリトークン運用（非 export の落とし穴等）は本フォールバック経路にのみ適用される。
+**クロスリポジトリ操作**: MCP（`github` サーバー）第一、不可時 gh CLI＋セカンダリトークン。詳細
+（hooks の例外・非 export の落とし穴等）は `/claude-container-issue` 参照。
 
 ## ToDo リスト運用ルール
 
@@ -139,9 +134,8 @@ issue を todo.md へ降格する場合は `issue close` の理由欄に「todo.
 
 **対象パス**: `/spec-panel` の対象は `.claude/plans/<slug>.md`（下記「計画ファイル・handover の扱い」節参照）。
 
-**省略・短縮は禁止**。以下を必ず守ること:
+**省略・短縮は禁止**（理由・規模・確信度によらず）。以下を必ず守ること:
 
-- `/spec-panel` の実行をスキップしない。理由・規模・確信度によらず省略しない
 - `/spec-panel` 実行後、指摘記録ファイル（`mgmt/spec-findings/` 配下）が実際に作成されたことを確認してから `ExitPlanMode` を出す（`spec-panel-gate.sh` hook が未実施の兆候を検知するが、fail-soft のため本確認の代替にはしない）
 - 指摘がある場合は計画に反映するか、確認事項としてユーザーに明示してから `ExitPlanMode` を出す
 
@@ -208,6 +202,8 @@ lessons.md は全文注入せず、必要な場面（学び転記の重複チェ
   4. `git checkout main && git merge release/vX.X`
 - **push・PR 作成はユーザーの別途指示があるまで行わない**（`GIT_PUSH_TOKEN` は push を可能にする配線であり、この運用を変えない）
 - **force push（`--force`/`-f`/`--force-with-lease`/`+refspec`、フラグ位置を問わず）は実行前に必ず
-  ユーザー確認する。** `.claude/settings.json` の `permissions.deny` は `git push --force`/`-f`
-  の前置形のみ検知し、後置形（`git push origin main --force`）や `git -C <path> push --force`、
-  `+refspec` はプレフィックス一致の性質上素通りするため、本ルールは deny を補完する二重化として機能する
+  ユーザー確認する。** `permissions.deny`（グローバル層 `~/.claude/settings.json` に統合済み。
+  スコープ間でマージされる仕様のためプロジェクト層への重複定義は不要）は `git push --force`/
+  `--force-with-lease`/`-f` の前置形のみ検知し、後置形（`git push origin main --force`）や
+  `git -C <path> push --force`、`+refspec` はプレフィックス一致の性質上素通りするため、本ルールは
+  deny を補完する二重化として機能する
