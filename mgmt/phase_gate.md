@@ -3,8 +3,9 @@
 > ステージ本体成果物の確定後・次ステージ本格着手前に、クローズ可否をチェックリストで判定する
 > マイルストーンレビュー（工程完了審査 / phase gate review / quality gate 相当）。
 > ステージ定義の正は `docs/CLAUDE.md` の採番表（`00_GLOSSARY` 〜 `80_OPS`）を参照し、本ファイルでは
-> 再定義しない。個別ステージの成果物品質そのものの管理は `mgmt/srs_review_progress.md`・
-> `mgmt/hld_progress.md` 等の進捗管理表が担い、本ファイルはステージ間の遷移判定のみを扱う。
+> 再定義しない。個別ステージの成果物品質そのものの管理は `mgmt/srs_review_progress.md`（SRS）や、
+> HLD以降は GitHub Issues の進捗トラッキング（親issue「HLD 執筆トラッキング」、findsummits-ops#17）
+> が担い、本ファイルはステージ間の遷移判定のみを扱う。
 
 ## GitHub マイルストーンとの役割分担
 
