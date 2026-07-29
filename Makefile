@@ -70,7 +70,7 @@ lint: lint-md lint-py lint-geojson lint-html
 
 # Markdown lint（チェックのみ・ファイルは書き換えない）。
 # 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
-# .claude/ は nested repo（findsummits-ops）のため本体の git ls-files では拾えず、
+# .claude/ は別途管理されるため本体の git ls-files では拾えず、
 # git -C .claude ls-files で個別に列挙し .claude/ プレフィックスを付与して連結する。
 # handovers/・incidents/・lessons.md は運用ファイルでありlint対象外（分離前から.gitignore
 # 除外・handover スキルにも明記の既存運用を維持）。

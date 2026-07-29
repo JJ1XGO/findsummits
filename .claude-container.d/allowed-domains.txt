@@ -12,10 +12,10 @@ files.pythonhosted.org
 # GitHub 公式 MCP サーバー（クロスリポジトリ issue 操作。CLAUDE.md「環境課題の連携」節参照）
 api.githubcopilot.com
 
-# Codex CLI（MCPセカンドオピニオン用、findsummits-ops#18）。ChatGPTアカウント認証時、
+# Codex CLI（MCPセカンドオピニオン用、内部運用issue参照）。ChatGPTアカウント認証時、
 # API ベース URL を https://chatgpt.com/backend-api/ にハードコードしているため必須
 chatgpt.com
 
 # Context7 MCP（ユーザースコープ ~/.claude.json に登録済み。ライブラリ最新ドキュメント参照用、
-# findsummits-ops#20）
+# 内部運用issue参照）
 mcp.context7.com

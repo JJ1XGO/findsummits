@@ -92,7 +92,7 @@ mgmt/bug-system/bug_tracker.xlsx
 mgmt/bug-system/reports/bug_tracker.xlsx
 
 # CLAUDE.md・.claude/ はメンテナ個人の開発運用ファイル（プロダクト本体ではない）。
-# .claude/ は独立 git リポジトリ（jj1xgo/findsummits-ops）として nested repo 化する
+# .claude/ は別途管理するため追跡しない
 CLAUDE.md
 .claude/
 
