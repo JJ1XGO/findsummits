@@ -52,12 +52,8 @@ NOTATION_RULES = [
      '「ポイントバンド変更候補」は「バンド変更候補」に統一してください'),
 ]
 
-# 検査C・D 対象外ファイル（ルール自体の経緯を記録したメタドキュメント）。
-# ADR-SRS-040 は「ISSUE-ID/mgmt/ 参照禁止ルール」の導入決定そのものを記録しており、
-# 本文中でルール対象の概念（ISSUE-ID・mgmt/tracker/）に言及するのが趣旨のため対象外とする。
-CHECK_CD_EXEMPT_FILES = {
-    'ADR-SRS-040-remove-internal-tracker-id-from-docs.md',
-}
+# 検査C・D 対象外ファイル（ルール自体の経緯を記録したメタドキュメントが将来追加された場合の受け皿）。
+CHECK_CD_EXEMPT_FILES = set()
 
 
 def _get_known_refs():
@@ -157,7 +153,7 @@ def check_file(filepath):
                 violations.append(
                     f"{filepath}:{i + 1}: TRACKER-ID: "
                     f"内部トラッカーID「{m.group()}」は docs に書かないでください"
-                    f"（経緯は日付・ADR リンクで残す。根拠: ADR-SRS-040）"
+                    f"（経緯は日付・ADR リンクで残す）"
                 )
 
             # 検査C: mgmt/ パス参照はコードスパン内も対象のため、生の行で検査する
@@ -165,7 +161,7 @@ def check_file(filepath):
                 violations.append(
                     f"{filepath}:{i + 1}: MGMT-PATH: "
                     f"mgmt/ への参照「{m.group()}」は docs に書かないでください"
-                    f"（main ブランチで参照不能。根拠: docs/CLAUDE.md）"
+                    f"（mgmt/ は廃止済みのため参照先が存在しない。根拠: docs/CLAUDE.md）"
                 )
 
             # 検査D: コードブロック内・見出し行を除く本文中の裸参照を検出

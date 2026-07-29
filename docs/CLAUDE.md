@@ -38,7 +38,7 @@ docs/ 配下および `ref/SOURCES.md` を編集・作成するときはこの�
 - `docs/decisions/ADR-*.md` — アーキテクチャ決定記録
 - `docs/decisions/research/` — ADR 決定前の設計調査資料
 
-`docs/` は devel・main 両ブランチに含める。`mgmt/` は devel ブランチのみ（リリース時に `git rm -r mgmt/` で除外）。
+`docs/` は devel・main 両ブランチに含める。
 
 ## モックアップの扱い
 
@@ -137,7 +137,7 @@ docs/ 配下および `ref/SOURCES.md` を編集・作成するときはこの�
 - ADR は自己完結した文書とする
 - 参照可能なファイル: `docs/` 配下・`ref/` 配下・`CLAUDE.md`
 - **内部トラッカーID（`ISSUE-XXX`/`BUG-XXX`）を docs に書かない**。経緯は日付・文脈・ADR へのリンクで残す。違反は `make lint-md`（検査C）で検出される
-- **`mgmt/` への参照は禁止**（devel ブランチ専用のため main で参照できない）
+- **`mgmt/` への参照は禁止**（廃止済みのディレクトリのため参照先が存在しない）
 - 詳細な調査資料が必要な場合は `docs/decisions/research/` に置き ADR から参照する
 
 **調査資料（research/）**:

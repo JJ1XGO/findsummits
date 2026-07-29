@@ -69,47 +69,48 @@ venv-rebuild:
 lint: lint-md lint-py lint-geojson lint-html
 
 # Markdown lint（チェックのみ・ファイルは書き換えない）。
-# 既定対象: git 管理下の全 .md（mgmt/archive/ は凍結スナップショットのため除外）。
+# 既定対象: git 管理下の全 .md。
 # .claude/ は別途管理されるため本体の git ls-files では拾えず、
 # git -C .claude ls-files で個別に列挙し .claude/ プレフィックスを付与して連結する。
 # handovers/・incidents/・lessons.md は運用ファイルでありlint対象外（分離前から.gitignore
-# 除外・handover スキルにも明記の既存運用を維持）。
+# 除外・handover スキルにも明記の既存運用を維持）。archives/ は凍結スナップショット、
+# spec-findings/ は spec-panel レビュー成果物（handovers と同種の運用ファイル）のため同様に除外。
 # LINT_MD_PATHS を指定した場合はそのパスを再帰走査する（override、この場合 .claude/ 側は対象外）。
 LINT_MD_PATHS ?=
 lint-md: venv
 	@if [ -n "$(LINT_MD_PATHS)" ]; then targets="$(LINT_MD_PATHS)"; ropt="-r"; \
-	else targets=$$(git -c core.quotepath=false ls-files '*.md' ':!:mgmt/archive/**'); \
-	ops_targets=$$(git -C .claude ls-files '*.md' ':!:handovers/**' ':!:incidents/**' ':!:lessons.md' | sed 's#^#.claude/#'); \
+	else targets=$$(git -c core.quotepath=false ls-files '*.md'); \
+	ops_targets=$$(git -C .claude ls-files '*.md' ':!:handovers/**' ':!:incidents/**' ':!:lessons.md' ':!:archives/**' ':!:spec-findings/**' | sed 's#^#.claude/#'); \
 	targets="$$targets $$ops_targets"; ropt=""; fi; \
 	venv/bin/python3 -m pymarkdown -c .pymarkdown scan $$ropt $$targets; s1=$$?; \
 	venv/bin/python3 scripts/lint_docs.py $$targets; s2=$$?; \
 	exit $$([ $$s1 -ge $$s2 ] && echo $$s1 || echo $$s2)
 
 # Python lint（チェックのみ・ファイルは書き換えない）。
-# 既定対象: git 管理下の全 .py（mgmt/archive/ は凍結スナップショットのため除外）。
+# 既定対象: git 管理下の全 .py。
 # LINT_PY_PATHS を指定した場合はそのパスを対象にする（override）。
 LINT_PY_PATHS ?=
 lint-py: venv
 	@if [ -n "$(LINT_PY_PATHS)" ]; then targets="$(LINT_PY_PATHS)"; \
-	else targets=$$(git ls-files '*.py' ':!:mgmt/archive/**'); fi; \
+	else targets=$$(git ls-files '*.py'); fi; \
 	venv/bin/python3 -m ruff check $$targets
 
 # GeoJSON lint（チェックのみ・ファイルは書き換えない）。
-# 既定対象: git 管理下の全 .geojson（mgmt/archive/ は凍結スナップショットのため除外）。
+# 既定対象: git 管理下の全 .geojson。
 # LINT_GEOJSON_PATHS を指定した場合はそのパスを対象にする（override）。
 LINT_GEOJSON_PATHS ?=
 lint-geojson: venv
 	@if [ -n "$(LINT_GEOJSON_PATHS)" ]; then targets="$(LINT_GEOJSON_PATHS)"; \
-	else targets=$$(git ls-files '*.geojson' ':!:mgmt/archive/**'); fi; \
+	else targets=$$(git ls-files '*.geojson'); fi; \
 	venv/bin/python3 scripts/lint_geojson.py $$targets
 
 # HTML lint（チェックのみ・ファイルは書き換えない）。
-# 既定対象: git 管理下の全 .html（mgmt/archive/ は凍結スナップショットのため除外）。
+# 既定対象: git 管理下の全 .html。
 # LINT_HTML_PATHS を指定した場合はそのパスを対象にする（override）。
 LINT_HTML_PATHS ?=
 lint-html: venv
 	@if [ -n "$(LINT_HTML_PATHS)" ]; then targets="$(LINT_HTML_PATHS)"; \
-	else targets=$$(git ls-files '*.html' ':!:mgmt/archive/**'); fi; \
+	else targets=$$(git ls-files '*.html'); fi; \
 	venv/bin/python3 -m djlint $$targets --lint --profile html
 
 # lint ツールを最新版へ上げてからチェック（手動更新確認 + CI 用）。

@@ -10,7 +10,6 @@
 # AI コンテキストへ注入される指示・ガイドライン
 /CLAUDE.md               @JJ1XGO
 /docs/CLAUDE.md          @JJ1XGO
-/mgmt/lessons.md         @JJ1XGO
 
 # AI 関連の自動実行設定・フック・ルール
 /.claude/                @JJ1XGO

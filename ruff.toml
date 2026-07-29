@@ -3,9 +3,3 @@ line-length = 120
 
 [lint]
 select = ["F", "E", "W", "I", "B", "UP"]
-
-[lint.per-file-ignores]
-# track.py は CLI 対話ツール。
-# セミコロン複文（E702/E701）は意図的なコンパクトスタイル。
-# argparse 定義行・カラーバー出力行は行分割不可（E501）。
-"mgmt/tracker/track.py" = ["E702", "E701", "E501"]

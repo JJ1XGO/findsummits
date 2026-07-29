@@ -87,14 +87,7 @@ ref/geojson_v*/
 # LibreOffice lock files
 .~lock.*
 
-# mgmt generated files (廃止済みbug-system残骸)
-mgmt/bug-system/bug_tracker.xlsx
-mgmt/bug-system/reports/bug_tracker.xlsx
-
 # CLAUDE.md・.claude/ はメンテナ個人の開発運用ファイル（プロダクト本体ではない）。
 # .claude/ は別途管理するため追跡しない
 CLAUDE.md
 .claude/
-
-# spec-panel 指摘記録（作業用メモ、git 管理対象外）
-mgmt/spec-findings/
